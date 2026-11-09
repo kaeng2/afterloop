@@ -820,3 +820,232 @@ describe('재시도: 데모 정상 문장은 ok: true', () => {
     expect(check.ok).toBe(false);
   });
 });
+
+// ───────────────────────────── T031 (재검증 보고서의 새 문제 ①②③) ─────────────────────────────
+
+/**
+ * **통과해야 하는 한국어 문장.** 서연·지호에게 보낼 법한 말투로 쓴다.
+ * 한국어 답장이 데모의 핵심 장면이므로, 이 표가 막히면 전송 버튼이 꺼져 데모가 멈춘다.
+ * 앞 세 문장은 재검증 보고서가 "새로 막힘"으로 적은 문장이다.
+ */
+const KO_CLEAN_SENTENCES = [
+  '색상이 불만족스러우셨다면 정말 죄송합니다.',
+  '이번 일이 원만히 해결되기를 바랍니다.',
+  '고객님이 불이익을 받지 않도록 하겠습니다.',
+  '불편을 드려 죄송합니다.',
+  '불만족스러우셨다면 말씀해 주세요.',
+  '이 불량 건은 새 상품으로 교환해 드리겠습니다.',
+  '원만히 해결되도록 돕겠습니다.',
+  '원하시면 교환해 드리겠습니다.',
+  '원래 색상은 오트밀입니다.',
+  '이 원단은 메리노 울 혼방입니다.',
+  '일이 원활하게 진행되고 있습니다.',
+  '고객님이 원하시는 사이즈로 다시 보내드리겠습니다.',
+  '사이즈 2 원하시면 알려 주세요.',
+  '한 번 더 확인해 보겠습니다.',
+  '이번 주 안에 답변드리겠습니다.',
+  '삼일 안에 답변드리겠습니다.',
+  '이 일로 불편을 드려 죄송합니다.',
+  '만약 원하신다면 반품도 가능합니다.',
+  '천천히 확인해 보시고 알려 주세요.',
+  '오 분 정도 걸립니다.',
+  '십 분 뒤에 다시 확인해 주세요.',
+  '이만 줄이겠습니다. 좋은 하루 보내세요.',
+  '백 퍼센트 울 제품입니다.',
+  '배송이 불과 3일 만에 끝났습니다.',
+  '택배 기사 불만 접수는 택배사에서 처리합니다.',
+  '택배사 불만은 저희가 대신 전달하겠습니다.',
+  '주문 2 불만 사항을 확인했습니다.',
+  '사이즈 1 원만하게 교환해 드리겠습니다.',
+  '문의하신 사항이 원만하게 해결되도록 돕겠습니다.',
+  '고객님이 불만을 느끼셨다면 사과드립니다.',
+  '혹시 이 불만 사항이 해결되지 않으면 알려 주세요.',
+  '담당 사원이 확인했습니다.',
+  '포근한 이불을 함께 보내드립니다.',
+  '3 원단 샘플을 먼저 보내드릴까요?',
+  '원인을 확인하고 바로 알려 드리겠습니다.',
+  '불가피하게 발송이 늦어졌습니다.',
+  '불량품은 왕복 배송비 없이 교환해 드립니다.',
+  '이 불편이 반복되지 않도록 하겠습니다.',
+  '구김이 불규칙하게 생겼다면 다림질을 권합니다.',
+  '사십 분 안에 처리해 드리겠습니다.',
+];
+
+/**
+ * **계속 막아야 하는 금액 표기.** T010 검증 보고서 1차·재검증의 "막혀야 하는 표기"를 한국어 중심으로 모았다
+ * (라틴·일본어 표기는 위 `AMOUNT_BLOCKED`·`AMOUNT_AFTER_BLOCKED` 표가 계속 지킨다).
+ */
+const KO_AMOUNT_BLOCKED = [
+  '24불',
+  '24 불',
+  '7불',
+  '24불 정도',
+  '24,000원',
+  '24000 원',
+  '9600원',
+  '24,000원이',
+  '9,600원을',
+  '2만 4천원',
+  '2만 원',
+  '만 원',
+  '이만 사천 원',
+  '삼십 달러',
+  '칠 달러',
+  '이십사 달러',
+  '24달러',
+  '24 달러',
+  '24 US달러',
+  '24 미국 달러',
+  '7달러',
+  '7.20달러',
+  '₩9,600',
+  '24,000 KRW',
+  '24ドル',
+  '七ドル',
+  '二十四ドル',
+  '$24',
+  '24 $',
+  '24,00 $',
+  '24 US-Dollar',
+  '7米ドル',
+  'USD 7.20',
+  'seven dollars',
+  'sieben Dollar',
+  'twenty-four dollars',
+];
+
+describe('T031: 한국어 정상 문장 / 금액 표기', () => {
+  it(`통과해야 하는 한국어 문장 ${KO_CLEAN_SENTENCES.length}개`, () => {
+    expect(KO_CLEAN_SENTENCES.length).toBeGreaterThanOrEqual(30);
+    for (const text of KO_CLEAN_SENTENCES) {
+      expect(literalsOf(text), text).toEqual([]);
+      expect(checkTokens(text, text, []).ok, text).toBe(true);
+    }
+  });
+
+  it(`막아야 하는 금액 표기 ${KO_AMOUNT_BLOCKED.length}개 (모양만 / 문장 속 둘 다)`, () => {
+    for (const text of KO_AMOUNT_BLOCKED) {
+      expect(literalsOf(text), text).not.toEqual([]);
+      expect(literalsOf(`오늘 ${text} 환불해 드렸습니다`), text).not.toEqual([]);
+    }
+  });
+
+  it('한글 통화 낱말: 숫자가 바로 붙으면 조사가 와도 금액으로 본다', () => {
+    // 조사는 전방탐색으로만 확인하므로 보고 문자열에는 들어가지 않는다
+    expect(literalsOf('24,000원만 결제해 주세요')).toEqual(['24,000원']);
+    expect(literalsOf('24불이 환불되었습니다')).toEqual(['24불']);
+    expect(literalsOf('9,600원을 환불했습니다')).toEqual(['9,600원']);
+  });
+
+  it('한글 통화 낱말: 수와 떨어져 있으면 낱말인지 가린다', () => {
+    expect(literalsOf('주문 2 불만 사항')).toEqual([]);
+    expect(literalsOf('사이즈 1 원만하게')).toEqual([]);
+    expect(literalsOf('24 불 환불')).toEqual(['24 불']);
+    expect(literalsOf('24000 원 환불')).toEqual(['24000 원']);
+  });
+
+  it('한글 수 + 원: 두 글자 이상이거나 자릿수 낱말일 때만', () => {
+    expect(literalsOf('이만 사천 원')).toEqual(['사천 원']);
+    expect(literalsOf('만 원')).toEqual(['만 원']);
+    expect(literalsOf('이 원단은 부드럽습니다')).toEqual([]);
+    expect(literalsOf('사원이 확인했습니다')).toEqual([]);
+  });
+
+  it('쉼표 소수 뒤에 길이·무게 단위가 오면 금액이 아니다', () => {
+    for (const text of ['1,50 m', '2,54 cm', '0,45 kg', '1,50m', '52,50 cm', '0,75 l']) {
+      expect(literalsOf(`Die Maße: ${text} insgesamt`), text).toEqual([]);
+    }
+    // 통화가 붙거나 단위가 없으면 그대로 금액 후보다
+    expect(literalsOf('24,00 $')).toEqual(['24,00 $']);
+    expect(literalsOf('24,00 USD')).toEqual(['24,00 USD']);
+    expect(literalsOf('환불 24,00 처리')).toEqual(['24,00']);
+    // 점 소수는 그대로 막는다 (실행 층과 같은 기준)
+    expect(literalsOf('0.45 kg')).not.toEqual([]);
+  });
+});
+
+describe('T031: 실행 자리표시자 안의 개인통관고유부호', () => {
+  const PCCC_SLOT = '{{P123456789012}}';
+
+  it('전송본에만 있으면 extra에 가린 이름으로 넣는다', () => {
+    const check = checkTokens('code on file', `부호 ${PCCC_SLOT} 접수했습니다`, []);
+    expect(check.extra).toEqual(['{{P************}}']);
+    expect(JSON.stringify(check)).not.toContain('123456789012');
+    expect(check.ok).toBe(false);
+  });
+
+  it('초안에만 있으면 missing에 가린 이름으로 넣는다', () => {
+    const check = checkTokens(`code ${PCCC_SLOT}`, '접수했습니다', []);
+    expect(check.missing).toEqual(['{{P************}}']);
+    expect(JSON.stringify(check)).not.toContain('123456789012');
+  });
+
+  it('이름에 다른 글자가 섞여 있어도 부호만 가린다', () => {
+    const check = checkTokens('', '{{pccc P123456789012}}', []);
+    expect(check.extra).toEqual(['{{pccc P************}}']);
+    expect(JSON.stringify(check)).not.toContain('123456789012');
+  });
+
+  it('양쪽에 같은 개수로 있으면 literalFacts만 가린 값으로 남는다', () => {
+    const check = checkTokens(`a ${PCCC_SLOT}`, `가 ${PCCC_SLOT}`, []);
+    expect(check.missing).toEqual([]);
+    expect(check.extra).toEqual([]);
+    expect(check.literalFacts).toEqual(['P************']);
+    expect(JSON.stringify(check)).not.toContain('123456789012');
+  });
+});
+
+describe('T031: 100%만 있는 약속', () => {
+  /** 재료·성분 낱말이 둘레에 있으면 상품 설명이다. */
+  const PERCENT_MATERIAL = [
+    '100% wool',
+    '100% 울',
+    '100 % Baumwolle',
+    '울 100%입니다',
+    '100%綿です',
+    '100% コットン',
+    '100% cotton blend',
+    'zu 100 % aus Wolle',
+    '１００％ 울 제품',
+    '100% 캐시미어',
+    '100% 순면 소재',
+    '100% Merinowolle',
+  ];
+
+  /** 그 밖의 `100%`는 약속 표현이다. */
+  const PERCENT_PROMISE = [
+    '100% 환불해 드립니다',
+    '100% 보장',
+    'I am 100% sure it will arrive tomorrow',
+    '100% 내일 도착합니다',
+    '100%届きます',
+    'Es kommt zu 100 % sicher morgen an',
+    'It is 100% guaranteed',
+    '１００％ 보장합니다',
+    '100 % 환불',
+    '100% 책임지겠습니다',
+  ];
+
+  it(`재료 낱말이 함께 오면 약속이 아니다 (${PERCENT_MATERIAL.length}개)`, () => {
+    for (const text of PERCENT_MATERIAL) {
+      expect(checkTokens('nothing here', text, []).newPromises, text).toEqual([]);
+    }
+  });
+
+  it(`그 밖의 100%는 새 약속이다 (${PERCENT_PROMISE.length}개)`, () => {
+    for (const text of PERCENT_PROMISE) {
+      expect(checkTokens('nothing here', text, []).newPromises, text).not.toEqual([]);
+    }
+  });
+
+  it('초안에 같은 뜻의 약속이 있으면 통과한다', () => {
+    expect(checkTokens('We guarantee a full refund.', '100% 환불해 드립니다.', []).newPromises).toEqual([]);
+    expect(checkTokens('I am 100% sure.', '보장합니다.', []).newPromises).toEqual([]);
+  });
+
+  it('초안의 상품 설명 100%는 새 약속을 통과시키지 않는다', () => {
+    const check = checkTokens('It is 100% wool.', '울 100% 제품입니다. 100% 환불해 드립니다.', []);
+    expect(check.newPromises).toEqual(['100%']);
+    expect(check.ok).toBe(false);
+  });
+});

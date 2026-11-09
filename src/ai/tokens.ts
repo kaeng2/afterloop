@@ -170,9 +170,26 @@ const CURRENCY_CODE = '(?<![A-Za-z])(?:USD|KRW|EUR|GBP|JPY)(?![A-Za-z])';
 const CURRENCY_QUALIFIER = '(?:U\\.?\\s?S\\.?|US|미국|미|美国|米国|米|美)';
 /** 라틴 문자 통화 낱말 뒤 경계. `60 centimeters`의 `cent`, `2 europäische`의 `euro`를 금액으로 보지 않는다. */
 const LATIN_TAIL = '(?![A-Za-zÄÖÜäöüß])';
-/** 한글 통화 낱말 뒤 경계. 조사·종결이 오거나 한글이 끝나야 통화다 (`원하시면`·`원단`·`불가` 제외). */
-const KO_TAIL = '(?:(?![가-힣])|(?=[을를이은는의에와과도만로으부까짜입였예요]))';
-/** 통화 이름. `3 weeks`·`2 items` 같은 단위·수량은 들어 있지 않다. */
+
+/**
+ * 한글 통화 낱말(`원`·`불`) 뒤 경계. 조사·종결이 오거나 한글이 끝나야 통화다.
+ * `KO_PARTICLE`은 숫자가 바로 붙은 금액(`24,000원만`, `24불이`)에만 쓴다. 수와 떨어져 있을 때는
+ * `KO_PARTICLE_STRICT`를 써서 `만`·`이`·`과`를 뺀다 — `불만`·`불이익`·`원만히`·`불과` 같은 낱말이
+ * 조사보다 훨씬 흔하고, 한국어 정상 문장이 막히면 데모의 핵심 장면이 멈춘다 (T031).
+ */
+const KO_PARTICLE = '[을를이은는의에와과도만로으부까짜입였예요]';
+const KO_PARTICLE_STRICT = '[을를은는의에와도로으부까짜입였예요]';
+const koTail = (particles: string): string => `(?:(?![가-힣])|(?=${particles}))`;
+
+/** 한글 자릿수 낱말. 아라비아 숫자와 섞어 쓴다 (`4천원`, `2만 원`). */
+const KO_UNIT = '[십백천만억]';
+/** 한자어 수사 (`이십`, `삼만`, `오천`, `사천`). */
+const KO_NUMERAL = '[일이삼사오육칠팔구십백천만억]';
+
+/**
+ * 통화 이름. `3 weeks`·`2 items` 같은 단위·수량은 들어 있지 않다.
+ * `원`·`불`은 흔한 낱말과 겹쳐서 여기에 두지 않고 아래 `amountKo…` 모양에서 따로 본다 (T031).
+ */
 const CURRENCY_WORD = [
   `(?:${CURRENCY_QUALIFIER}[-\\s]?)?(?:dollars?|cents?|bucks?|euros?)${LATIN_TAIL}`,
   `(?:${CURRENCY_QUALIFIER}[-\\s]?)?달러`,
@@ -180,9 +197,13 @@ const CURRENCY_WORD = [
   '센트',
   '유로',
   'ユーロ',
-  `(?:원|불)${KO_TAIL}`,
   '円(?![々一-龥])',
 ].join('|');
+
+/** 길이·무게·부피 단위. 쉼표 소수 뒤에 오면 금액이 아니다 (`1,50 m`, `0,45 kg` — 독일어 사이즈 안내). */
+const SIZE_UNIT =
+  '(?:mm|cm|dm|km|m|kg|mg|g|ml|cl|l|Zoll|inch(?:es)?|Zentimeter|Millimeter|Meter|Gramm|Kilogramm|Kilo)' +
+  '(?![A-Za-zÄÖÜäöüß])';
 
 /** 글로 쓴 수 (흔한 것만): `seven dollars`, `twenty-four dollars`, `sieben Dollar`, `칠 달러`, `七ドル`. */
 const SMALL_NUMBER_EN =
@@ -190,10 +211,11 @@ const SMALL_NUMBER_EN =
   '|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|hundred';
 const SMALL_NUMBER_DE =
   'ein(?:s|e|en|em)?|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|zwanzig|dreißig|vierzig|fünfzig|hundert';
-// 한글 수는 통화 낱말 앞에 띄어쓰기를 둬야 통화로 본다 — `이불`·`사원`처럼 수 글자로 시작하는 낱말을 피한다
+// 한글 수는 통화 낱말 앞에 띄어쓰기를 둬야 통화로 본다 — `이불`·`사원`처럼 수 글자로 시작하는 낱말을 피한다.
+// 앞 글자가 한글이면 수로 보지 않는다 — `색상이 불…`의 `이`, `택배 기사 불…`의 `사`가 수로 읽히던 것을 막는다 (T031)
 const NUM_WORD = [
   `(?<![A-Za-zÄÖÜäöüß])(?:${SMALL_NUMBER_EN}|${SMALL_NUMBER_DE})${LATIN_TAIL}\\s*`,
-  '[일이삼사오육칠팔구십백천만]{1,4}\\s+',
+  `(?<![가-힣])${KO_NUMERAL}{1,4}\\s+`,
   '[〇一二三四五六七八九十百千万]{1,4}\\s*',
 ].join('|');
 
@@ -259,7 +281,8 @@ function slashLooksLikeDate(text: string): boolean {
  * (`$7.20`을 받았으면 그 안의 `7.20`은 따로 세지 않는다).
  *
  * 막지 않는 것: 기간(`3 weeks`, `3주`, `2 days`), 수량(`1개`, `2 items`), 비율(`15%`),
- * 치수(`60 centimeters`, `52cm`), 조동사 `may`, 분수·관용 표기(`24/7`, `3/4`), 쿠폰 코드(`FERNWOOD15`).
+ * 치수(`60 centimeters`, `52cm`, `1,50 m`), 조동사 `may`, 분수·관용 표기(`24/7`, `3/4`),
+ * 쿠폰 코드(`FERNWOOD15`), 그리고 한국어 정상 문장(`불만족`, `원만히`, `불이익`, `원하시면`).
  * 경계는 `tests/unit/tokens.test.ts`의 표에 적어 둔다.
  */
 const LITERAL_SHAPES: { shape: string; pattern: RegExp; keep?: (text: string) => boolean }[] = [
@@ -269,14 +292,35 @@ const LITERAL_SHAPES: { shape: string; pattern: RegExp; keep?: (text: string) =>
   { shape: 'amountSymbolAfter', pattern: new RegExp(`${NUM}\\s*(?:US)?${CURRENCY_SYMBOL}`, 'gi') },
   // 금액: `USD 7.20`, `usd7.20`, `USD 24,00`
   { shape: 'amountCodeBefore', pattern: new RegExp(`${CURRENCY_CODE}\\s*${NUM}`, 'gi') },
-  // 금액: `7.20 dollars`, `7달러`, `24ドル`, `24 Dollar`, `20 cents`, `24 US-Dollar`, `24米ドル`, `7USドル`, `24불`
+  // 금액: `7.20 dollars`, `7달러`, `24ドル`, `24 Dollar`, `20 cents`, `24 US-Dollar`, `24米ドル`, `7USドル`
   { shape: 'amountWordAfter', pattern: new RegExp(`${NUM}\\s*(?:${CURRENCY_CODE}|${CURRENCY_WORD})`, 'gi') },
+  // 금액: 숫자가 바로 붙은 `원`·`불` — `9600원`, `24,000원만`, `24불이`, `4천원`, `2만원`.
+  // 숫자가 붙어 있으면 금액이라는 증거가 뚜렷하므로 조사까지 받는다
+  { shape: 'amountKoAttached', pattern: new RegExp(`${NUM}${KO_UNIT}*(?:원|불)${koTail(KO_PARTICLE)}`, 'g') },
+  // 금액: 숫자와 `원`·`불`이 떨어진 꼴 — `24 불`, `24000 원`, `2만 원`. 뒤 경계를 좁게 봐서
+  // `주문 2 불만 사항`·`사이즈 1 원만하게`를 금액으로 읽지 않는다 (T031)
+  {
+    shape: 'amountKoSpaced',
+    pattern: new RegExp(`${NUM}${KO_UNIT}*\\s+(?:원|불)${koTail(KO_PARTICLE_STRICT)}`, 'g'),
+  },
   // 금액: 글로 쓴 수 + 통화 낱말 — `seven dollars`, `twenty-four dollars`, `sieben Dollar`, `칠 달러`, `七ドル`
   { shape: 'amountNumberWord', pattern: new RegExp(`(?:${NUM_WORD})(?:${CURRENCY_CODE}|${CURRENCY_WORD})`, 'gi') },
+  // 금액: 글로 쓴 한글 수 + `원` — `이만 사천 원`, `만 원`. 한 글자 수사(`이`, `사`)는 조사·낱말과 겹쳐
+  // 오탐이 크므로 두 글자 이상 수 표현이거나 자릿수 낱말일 때만 본다 (`이 원단`, `사원이`는 통과)
+  {
+    shape: 'amountKoWordWon',
+    pattern: new RegExp(`(?<![가-힣])(?:${KO_NUMERAL}{2,4}\\s*|${KO_UNIT}\\s+)원${koTail(KO_PARTICLE_STRICT)}`, 'g'),
+  },
   // 금액: 천 단위 구분이 있는 소수 (`1,234.56`). 위 모양보다 아래 `amountDecimal`보다 먼저 받아 전체를 보고한다
   { shape: 'amountGrouped', pattern: new RegExp(`(?<!${D})${D}{1,3}(?:[,，]${D}{3})+[.．]${D}{1,2}(?!${D})`, 'g') },
-  // 금액: 통화 표기 없이 소수 둘째 자리까지 적힌 수 (`7.20`, `7,20`, `24,00`, `７.２０`). 실행 층과 같은 기준
-  { shape: 'amountDecimal', pattern: new RegExp(`(?<!${D})${D}+[.．,，]${D}{2}(?!${D})`, 'g') },
+  // 금액: 통화 표기 없이 소수 둘째 자리까지 적힌 수 (`7.20`, `７.２０`). 실행 층과 같은 기준
+  { shape: 'amountDecimal', pattern: new RegExp(`(?<!${D})${D}+[.．]${D}{2}(?!${D})`, 'g') },
+  // 금액: 쉼표 소수 (`7,20`, `24,00` — 독일어 표기). 뒤에 길이·무게 단위가 오면 치수 안내이므로 금액이 아니다
+  // (`1,50 m`, `0,45 kg`). 통화가 붙은 `24,00 $`·`24,00 USD`는 위 모양이 이미 전체로 받는다
+  {
+    shape: 'amountDecimalComma',
+    pattern: new RegExp(`(?<!${D})${D}+[,，]${D}{2}(?!${D})(?!\\s*${SIZE_UNIT})`, 'g'),
+  },
   // 날짜: `11월 17일`
   { shape: 'dateKo', pattern: new RegExp(`(?<!${D})${MON}\\s*월\\s*${DAY}\\s*일`, 'g') },
   // 날짜: `11月17日`
@@ -420,7 +464,7 @@ export const PROMISE_TERMS: Record<FactLocale, readonly string[]> = {
  * (초안 `guarantee` ↔ 전송본 `보장`은 통과).
  */
 export const PROMISE_GROUPS: { group: string; terms: readonly string[] }[] = [
-  // `100%`는 보장 쪽에 둔다 — 뒤에 보장류 낱말이 올 때만 약속으로 본다 (`100% wool`은 상품 설명이다)
+  // `100%`는 보장 쪽에 둔다 — 둘레에 재료 낱말이 없을 때만 약속으로 본다 (`100% wool`은 상품 설명이다)
   { group: 'guarantee', terms: ['guarantee', '보장', '保証', 'garantier', '100%'] },
   { group: 'promise', terms: ['promise', '약속드', '約束', 'versprech'] },
   { group: 'certainty', terms: ['definitely', 'without fail', '반드시', '틀림없이', '무조건', '必ず', 'auf jeden Fall'] },
@@ -433,21 +477,62 @@ export const PROMISE_GROUPS: { group: string; terms: readonly string[] }[] = [
  */
 const WORD_START_TERMS = new Set(['guarantee', 'promise', 'definitely', 'without fail', 'garantier', 'versprech', 'auf jeden Fall']);
 
-/** `100%`는 뒤에 보장류 낱말이 올 때만 약속이다. 독일어식 띄어쓰기(`100 %`)도 받는다. */
-const PERCENT_PROMISE = /100\s*%(?=\s*(?:guarantee|보장|保証|garantie))/gi;
+/** `100%` 자리. 독일어식 띄어쓰기(`100 %`)와 전각(`１００％`)도 받는다. */
+const PERCENT = /(?:100|１００)\s*[%％]/g;
+
+/**
+ * 재료·성분 낱말. `100% 울`·`100% wool`·`zu 100 % aus Wolle`는 상품 설명이지 약속이 아니다.
+ * 한글은 낱말 양쪽 경계를 본다 — `서울`의 `울`, `원하시면`의 `면`을 재료로 읽지 않는다 (T031).
+ */
+const MATERIAL_LATIN = [
+  'wool', 'cotton', 'cashmere', 'merino', 'silk', 'linen', 'polyester', 'acryl', 'alpaca', 'nylon', 'viscose',
+  'Wolle', 'Baumwolle', 'Kaschmir', 'Seide', 'Leinen', 'Merinowolle', 'Viskose',
+];
+const MATERIAL_KO = ['울', '면', '순면', '양모', '캐시미어', '메리노', '실크', '린넨', '아크릴', '나일론', '폴리에스터', '비스코스'];
+const MATERIAL_CJK = ['ウール', 'コットン', 'カシミヤ', 'カシミア', 'シルク', 'リネン', 'ポリエステル', 'アクリル', 'ナイロン', '綿', '絹', '麻', '羊毛'];
+
+const MATERIAL = new RegExp(
+  [
+    // 라틴 문자는 낱말 앞 경계만 본다 (`Baumwollmischung`, `wools` 같은 합성·복수형도 재료다)
+    `(?<![A-Za-zÄÖÜäöüß])(?:${MATERIAL_LATIN.map(escapeRegExp).join('|')})`,
+    `(?<![가-힣])(?:${[...MATERIAL_KO].sort((a, b) => b.length - a.length).join('|')})${koTail(KO_PARTICLE)}`,
+    `(?:${MATERIAL_CJK.join('|')})`,
+  ].join('|'),
+  'i',
+);
+
+/** `100%` 둘레에서 재료 낱말을 찾을 범위 (앞 12자, 뒤 16자 ≒ 몇 낱말). */
+const MATERIAL_BEFORE = 12;
+const MATERIAL_AFTER = 16;
+
+/**
+ * 약속으로 볼 `100%`의 첫 자리. 둘레 몇 낱말 안에 재료 낱말이 있으면 상품 설명이므로 건너뛴다.
+ * 그 밖의 `100%`(`100% 환불해 드립니다`, `I am 100% sure …`)는 약속 표현이다 (T031).
+ */
+function firstPercentPromise(text: string): { at: number; text: string } | null {
+  for (const match of text.matchAll(PERCENT)) {
+    const end = match.index + match[0].length;
+    const before = text.slice(Math.max(0, match.index - MATERIAL_BEFORE), match.index);
+    const after = text.slice(end, end + MATERIAL_AFTER);
+    if (MATERIAL.test(before) || MATERIAL.test(after)) continue;
+    return { at: match.index, text: match[0] };
+  }
+  return null;
+}
 
 /** 약속 표현 하나를 찾는 정규식. 대소문자를 무시하고, 보고 문자열은 전송본에 적힌 그대로다. */
 const PROMISE_PATTERNS = new Map<string, RegExp>(
-  [...new Set([...Object.values(PROMISE_TERMS).flat(), ...PROMISE_GROUPS.flatMap((entry) => entry.terms)])].map((term) => [
-    term,
-    term === '100%'
-      ? PERCENT_PROMISE
-      : new RegExp(`${WORD_START_TERMS.has(term) ? '(?<![A-Za-zÄÖÜäöüß])' : ''}${escapeRegExp(term)}`, 'gi'),
-  ]),
+  [...new Set([...Object.values(PROMISE_TERMS).flat(), ...PROMISE_GROUPS.flatMap((entry) => entry.terms)])]
+    .filter((term) => term !== '100%')
+    .map((term) => [
+      term,
+      new RegExp(`${WORD_START_TERMS.has(term) ? '(?<![A-Za-zÄÖÜäöüß])' : ''}${escapeRegExp(term)}`, 'gi'),
+    ]),
 );
 
 /** 글에 적힌 약속 표현의 첫 자리. 전역 정규식의 `lastIndex`가 남지 않게 `matchAll`만 쓴다. */
 function firstPromise(text: string, term: string): { at: number; text: string } | null {
+  if (term === '100%') return firstPercentPromise(text);
   const pattern = PROMISE_PATTERNS.get(term);
   if (!pattern) return null;
   for (const match of text.matchAll(pattern)) return { at: match.index, text: match[0] };
@@ -501,10 +586,11 @@ export const checkTokens: CheckTokensFn = (draft: string, outgoing: string, fact
 
   // 실행 자리표시자도 이름·개수까지 비교한다. 번역하면서 `{{offerAmount}}`가 금액 글자로 바뀌거나
   // 사라지면 여기서 걸린다 (컨트롤 타워 결정, T010 재시도). 값을 채우는 것은 여전히 실행 층 몫이다
+  // 개수는 원래 이름으로 비교하고, 보고할 때만 개인통관고유부호를 가린다 (SPEC 10장, T031)
   const draftSlots = execPlaceholders(draft);
   const outgoingSlots = execPlaceholders(outgoing);
-  missing.push(...shortfall(draftSlots, outgoingSlots));
-  extra.push(...shortfall(outgoingSlots, draftSlots));
+  missing.push(...shortfall(draftSlots, outgoingSlots).map(maskPccc));
+  extra.push(...shortfall(outgoingSlots, draftSlots).map(maskPccc));
 
   const literalFacts = findLiteralFacts(draft, outgoing, facts);
   const newPromises = findNewPromises(draft, outgoing);
