@@ -13,7 +13,16 @@
  *                   아무것도 만들거나 바꾸지 않는다 (manifest·링크 파일도 쓰지 않는다).
  *   `-- --fresh`  : 승인 링크가 만료됐을 때 쓴다. 요청 ID에 실행 시각 접미사를 붙여 주문을 **새로** 만들고
  *                   manifest의 `orderId`와 링크 파일을 새 값으로 바꾼다 (이전 ID는 `previousOrderIds`에 남는다).
- *                   이미 캡처된(`COMPLETED`) 주문은 새로 만들지 않고 그대로 둔다.
+ *
+ * 승인·캡처된 주문 보호 (T030 — 아침에 사람이 승인·캡처하는 동안 실수로 다시 실행해도 기록이 사라지지 않게):
+ *   - 옵션 없는 실행은 **manifest에 주문 ID가 있는 키를 POST하지 않는다**. 12건이 모두 있으면 아무것도
+ *     만들지 않고 종료 코드 0으로 끝난다 (`captureId`·`previousOrderIds`·`disputes`를 지우지 않는다).
+ *   - `--fresh`는 건마다 먼저 상태를 조회해 `APPROVED`·`COMPLETED`는 그대로 두고
+ *     `CREATED`·`PAYER_ACTION_REQUIRED`·만료(404)만 새로 만든다. 상태를 읽지 못한 주문은 건드리지 않는다.
+ *   - manifest에 `captureId`가 적힌 주문은 **어떤 경로로도** 새로 만들지 않는다 (조회가 4xx거나 실패해도).
+ *   - 새로 만든 주문이 0건이면 manifest·링크 파일을 쓰지 않는다. 일부만 성공하면 성공한 행만 바꾸고
+ *     나머지 행은 지난 실행이 적어 둔 링크를 그대로 둔다 (링크 파일은 늘 12행이다).
+ *   - `--` 없이 준 옵션(`npm run sandbox:orders --fresh`)은 npm이 삼키므로 호출하지 않고 멈춘다.
  *
  * 캡처는 하지 않는다 (사람·브라우저 에이전트가 승인한 뒤 `npm run sandbox:capture`).
  * 추적 등록·분쟁 조회도 하지 않는다 (`npm run sandbox:setup -- track | disputes`, T001).
@@ -25,7 +34,7 @@
  *
  * 승인 링크가 샌드박스(`*.sandbox.paypal.com`)가 아니면 그 자리에서 멈춘다 (live는 쓰지 않는다).
  */
-import { writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import ordersJson from '../seed/orders.json';
@@ -33,6 +42,7 @@ import productsJson from '../seed/products.json';
 import { ROOT, SandboxEnvError, loadSandboxEnv } from './sandbox/env';
 import { kstStamp } from './sandbox/last-run';
 import { readManifest, writeManifest, type Manifest, type ManifestOrder } from './sandbox/manifest';
+import { swallowedOptionsError, type EnvVars } from './sandbox/npm-args';
 import { asArray, asRecord, asText, createSandboxClient, errorSummary, failureLine, firstCaptureId, hasTracker } from './sandbox/paypal';
 import type { PayPalClient, PayPalEnv } from '@/types';
 
@@ -253,8 +263,11 @@ export type CreateRow = {
   itemName: string;
   amount: string;
   tracked: boolean;
-  /** 새로 만들었으면 `created`, 같은 요청 ID로 돌려받았으면 `existing` */
-  result: 'created' | 'existing' | 'failed';
+  /**
+   * `created` 새로 만듦 · `existing` 같은 요청 ID로 200으로 돌려받음 ·
+   * `kept` manifest에 주문 ID가 이미 있어 POST하지 않음 (T030) · `failed` 실패
+   */
+  result: 'created' | 'existing' | 'kept' | 'failed';
   httpStatus: number | null;
   orderId: string;
   /** 주문 상태 (`CREATED`·`APPROVED`·`COMPLETED` …) */
@@ -265,9 +278,18 @@ export type CreateRow = {
 
 export type CreateOutcome = { rows: CreateRow[]; orders: ManifestOrder[]; problems: string[] };
 
+/** manifest에 이미 있는 키를 건너뛸 때 적는 문구 (T030). */
+export const KEPT_NOTE =
+  'manifest에 주문 ID가 이미 있다 — POST하지 않았다 (`-- --status`로 상태 확인, `-- --fresh`로 만료된 것만 다시 만들기)';
+
+/** 12건이 모두 manifest에 있을 때 보여 주는 한 줄 (T030 지시서 문장 그대로). */
+export const ALREADY_CREATED_NOTE = 'already created — use `-- --status` to check, `-- --fresh` to recreate expired ones';
+
 /**
- * 주문 12건을 만든다. 같은 요청 ID라 다시 실행해도 PayPal이 같은 주문을 돌려준다(200).
- * 이미 manifest에 있던 주문 ID와 다른 ID가 돌아오면 문제로 적는다 (멱등 창이 지났을 수 있다).
+ * manifest에 **없는** 키만 만든다 (T030). 이미 주문 ID가 적힌 키는 POST하지 않고 manifest 항목을
+ * 그대로 옮긴다 — 승인·캡처가 끝난 주문을 다시 실행으로 덮지 않기 위해서다
+ * (`captureId`·`previousOrderIds`도 그대로 남는다).
+ *
  * 한 건이 실패해도 나머지는 계속한다. 승인 링크 도메인이 샌드박스가 아니면 그 자리에서 던진다.
  */
 export async function runCreateOrders(client: PayPalClient, specs: OrderSpec[], existing: Manifest): Promise<CreateOutcome> {
@@ -287,6 +309,13 @@ export async function runCreateOrders(client: PayPalClient, specs: OrderSpec[], 
     };
     const before = previous.get(spec.key);
 
+    // 이미 있는 주문은 건드리지 않는다 — 호출도 하지 않는다 (T030 지시서 2번).
+    if (before !== undefined) {
+      orders.push(before);
+      rows.push({ ...base, result: 'kept', httpStatus: null, orderId: before.orderId, orderStatus: '', approveUrl: '', note: KEPT_NOTE });
+      continue;
+    }
+
     try {
       const res = await client.call({
         method: 'POST',
@@ -298,7 +327,6 @@ export async function runCreateOrders(client: PayPalClient, specs: OrderSpec[], 
       if (res.status >= 300) {
         rows.push({ ...base, result: 'failed', httpStatus: res.status, orderId: '', orderStatus: '', approveUrl: '', note: errorSummary(res.body) });
         problems.push(`${spec.key} 주문 생성 → ${res.status}: ${errorSummary(res.body)}`);
-        if (before !== undefined) orders.push(before); // 전에 적어 둔 주문 ID는 지우지 않는다
         continue;
       }
 
@@ -306,28 +334,11 @@ export async function runCreateOrders(client: PayPalClient, specs: OrderSpec[], 
       if (orderId === '') {
         rows.push({ ...base, result: 'failed', httpStatus: res.status, orderId: '', orderStatus: '', approveUrl: '', note: '응답에 주문 ID가 없다' });
         problems.push(`${spec.key} 주문 생성 → ${res.status}인데 응답에 주문 ID가 없다`);
-        if (before !== undefined) orders.push(before);
         continue;
       }
 
       const approveUrl = sandboxApproveUrl(spec.key, res.body);
-      const notes: string[] = [];
-      if (approveUrl === '') notes.push('응답에 승인 링크(approve·payer-action)가 없다');
-      if (before !== undefined && before.orderId !== orderId) {
-        notes.push(`manifest에 있던 주문 ID와 다른 ID가 돌아왔다 (멱등 창이 지났을 수 있다. 이전: ${before.orderId})`);
-        problems.push(`${spec.key}: 전에 적어 둔 주문 ${before.orderId} 대신 새 주문 ${orderId}이 생겼다. 승인은 새 주문으로 한다.`);
-      }
-
-      // 캡처 ID는 같은 주문일 때만 이어 쓴다 (주문이 바뀌면 캡처도 다시 해야 한다).
-      const captureId = before !== undefined && before.orderId === orderId ? before.captureId : undefined;
-      orders.push({
-        key: spec.key,
-        orderId,
-        buyer: spec.buyer,
-        sku: spec.sku,
-        tracked: spec.tracked,
-        ...(captureId === undefined ? {} : { captureId }),
-      });
+      orders.push({ key: spec.key, orderId, buyer: spec.buyer, sku: spec.sku, tracked: spec.tracked });
       rows.push({
         ...base,
         result: res.status === 201 ? 'created' : 'existing',
@@ -335,18 +346,26 @@ export async function runCreateOrders(client: PayPalClient, specs: OrderSpec[], 
         orderId,
         orderStatus: asText(asRecord(res.body).status),
         approveUrl,
-        note: notes.length === 0 ? 'ok' : notes.join(' · '),
+        note: approveUrl === '' ? '응답에 승인 링크(approve·payer-action)가 없다' : 'ok',
       });
       if (approveUrl === '') problems.push(`${spec.key} 주문 ${orderId}: 승인 링크가 응답에 없다`);
     } catch (error) {
       if (error instanceof NotSandboxLinkError) throw error; // live일 수 있다 — 더 부르지 않는다
       rows.push({ ...base, result: 'failed', httpStatus: null, orderId: '', orderStatus: '', approveUrl: '', note: failureLine(error) });
       problems.push(`${spec.key} 주문 생성 실패: ${failureLine(error)}`);
-      if (before !== undefined) orders.push(before);
     }
   }
 
-  return { rows, orders, problems };
+  return { rows, orders: [...orders, ...unknownKeyOrders(existing, specs)], problems };
+}
+
+/**
+ * 시드에 없는 키의 manifest 항목 (지우지 않고 끝에 붙인다).
+ * 지시서 표가 바뀌어 키가 줄어도 전에 적어 둔 주문·캡처 기록을 잃지 않게 한다.
+ */
+function unknownKeyOrders(existing: Manifest, specs: OrderSpec[]): ManifestOrder[] {
+  const known = new Set(specs.map((spec) => spec.key));
+  return existing.orders.filter((order) => !known.has(order.key));
 }
 
 // ── 주문 상태 조회 (`--status`, T029) ──────────────────────────────────────────
@@ -410,6 +429,30 @@ export async function runOrderStatus(client: PayPalClient, manifest: Manifest): 
 
 // ── 링크 다시 만들기 (`--fresh`, T029) ─────────────────────────────────────────
 
+/**
+ * `--fresh` 건별 판정 (T030).
+ *   `recreated`      만료·미승인이라 새로 만들었다
+ *   `existing`       같은 접미사로 PayPal이 같은 주문을 200으로 돌려줬다
+ *   `kept-approved`  사람이 이미 승인한 주문이라 그대로 뒀다 (새로 만들면 승인이 사라진다)
+ *   `kept-captured`  캡처된(또는 manifest에 캡처 ID가 있는) 주문이라 그대로 뒀다
+ *   `skipped`        상태를 읽지 못해 건드리지 않았다 (종료 코드 1)
+ *   `failed`         새로 만들기가 실패했다 (manifest 항목은 그대로)
+ */
+export type FreshResult = 'recreated' | 'existing' | 'kept-approved' | 'kept-captured' | 'skipped' | 'failed';
+
+/** 결과 표·요약에 쓰는 이름 (지시서 3번 문장 그대로). */
+export const FRESH_LABEL: Record<FreshResult, string> = {
+  recreated: 'recreated',
+  existing: 'recreated (same suffix)',
+  'kept-approved': 'kept (approved)',
+  'kept-captured': 'kept (captured)',
+  skipped: 'skipped (status unknown)',
+  failed: 'failed',
+};
+
+/** 새로 만들어도 되는 주문 상태 (아직 아무 일도 일어나지 않은 주문). */
+export const RECREATE_STATUSES = ['CREATED', 'PAYER_ACTION_REQUIRED'];
+
 export type FreshRow = {
   key: string;
   buyer: string;
@@ -417,8 +460,7 @@ export type FreshRow = {
   itemName: string;
   amount: string;
   tracked: boolean;
-  /** `created` 새로 만듦 · `existing` 같은 접미사로 돌려받음 · `kept` 캡처돼 그대로 둠 · `failed` */
-  result: 'created' | 'existing' | 'kept' | 'failed';
+  result: FreshResult;
   httpStatus: number | null;
   orderId: string;
   /** 이번에 밀려난 이전 주문 ID (바뀌지 않았으면 빈 문자열) */
@@ -437,11 +479,17 @@ export function pushPreviousOrderId(before: ManifestOrder, orderId: string): str
 }
 
 /**
- * 승인 링크가 만료됐을 때 주문 12건을 새 요청 ID로 다시 만든다.
+ * 승인 링크가 만료됐을 때 주문을 새 요청 ID로 다시 만든다 — **살아 있는 주문은 버리지 않는다** (T030).
  *
- * 건마다: manifest에 주문이 있으면 먼저 `GET`으로 상태를 보고 **이미 캡처된(`COMPLETED`) 주문은
- * 건드리지 않는다**. 그 밖(만료·미승인·조회 실패)이면 `suffix`를 붙인 요청 ID로 새 주문을 만들고
- * 이전 주문 ID를 `previousOrderIds`에 남긴다. 캡처 ID는 주문이 바뀌면 이어 쓰지 않는다.
+ * 건마다:
+ *   1. manifest에 `captureId`가 있으면 상태만 확인하고 **절대 새로 만들지 않는다**. 조회가 4xx거나
+ *      실패해도 그대로 둔다 (경고를 적는다) — 캡처·분쟁과의 연결이 끊기면 되살릴 수 없다.
+ *   2. 그 밖에는 먼저 `GET`으로 상태를 본다.
+ *      `COMPLETED`·`APPROVED`            → 그대로 둔다 (`kept (captured)` · `kept (approved)`)
+ *      `CREATED`·`PAYER_ACTION_REQUIRED` → 새로 만든다
+ *      만료·404                          → 새로 만든다
+ *      그 밖의 응답·네트워크 실패         → 건드리지 않고 `skipped (status unknown)` (종료 코드 1)
+ *   3. 새로 만들면 이전 주문 ID를 `previousOrderIds`에 남긴다. 캡처 ID는 주문이 바뀌면 이어 쓰지 않는다.
  *
  * `suffix`는 호출하는 쪽이 한 번만 만들어 넘긴다 — 같은 접미사로 다시 돌리면 PayPal이 같은 주문을
  * 200으로 돌려주므로 중복 주문이 생기지 않는다.
@@ -463,26 +511,27 @@ export async function runFreshOrders(
     const base = { key: spec.key, buyer: spec.buyer, sku: spec.sku, itemName: spec.itemName, amount: spec.amount, tracked: spec.tracked };
     const before = previous.get(spec.key);
 
-    try {
-      // 1) 이미 캡처된 주문은 그대로 둔다 (새로 만들면 캡처·분쟁이 끊긴다).
-      if (before !== undefined) {
-        const detail = await client.get(`/v2/checkout/orders/${encodeURIComponent(before.orderId)}`);
-        if (detail.status === 200 && asText(asRecord(detail.body).status) === 'COMPLETED') {
-          orders.push(before);
-          rows.push({
-            ...base,
-            result: 'kept',
-            httpStatus: 200,
-            orderId: before.orderId,
-            previousOrderId: '',
-            orderStatus: 'COMPLETED',
-            approveUrl: '',
-            note: '이미 캡처됨 — 새로 만들지 않았다 (승인 링크가 필요 없다)',
-          });
-          continue;
-        }
+    // 1) 살아 있는 주문·캡처된 주문은 새로 만들지 않는다 (조회만 한다).
+    if (before !== undefined) {
+      const decision = await keepDecision(client, before);
+      if (decision !== undefined) {
+        orders.push(before);
+        rows.push({
+          ...base,
+          result: decision.result,
+          httpStatus: decision.httpStatus,
+          orderId: before.orderId,
+          previousOrderId: '',
+          orderStatus: decision.orderStatus,
+          approveUrl: '',
+          note: decision.note,
+        });
+        if (decision.problem !== undefined) problems.push(`${spec.key} ${decision.problem}`);
+        continue;
       }
+    }
 
+    try {
       // 2) 새 요청 ID로 다시 만든다.
       const res = await client.call({
         method: 'POST',
@@ -527,7 +576,7 @@ export async function runFreshOrders(
       if (replaced) notes.push('이전 주문을 밀어냈다 (previousOrderIds에 남겼다)');
       rows.push({
         ...base,
-        result: res.status === 201 ? 'created' : 'existing',
+        result: res.status === 201 ? 'recreated' : 'existing',
         httpStatus: res.status,
         orderId,
         previousOrderId: replaced ? before.orderId : '',
@@ -544,7 +593,98 @@ export async function runFreshOrders(
     }
   }
 
-  return { rows, orders, problems };
+  return { rows, orders: [...orders, ...unknownKeyOrders(existing, specs)], problems };
+}
+
+/** `keepDecision`이 "그대로 둔다"고 할 때의 건별 결과. `undefined`면 새로 만들어도 된다. */
+type KeepDecision = {
+  result: Exclude<FreshResult, 'recreated' | 'existing' | 'failed'>;
+  httpStatus: number | null;
+  orderStatus: string;
+  note: string;
+  /** 사람이 봐야 하는 경고 (문제 목록에 들어가고 종료 코드를 1로 만든다) */
+  problem?: string;
+};
+
+/**
+ * manifest에 있는 주문을 새로 만들어도 되는지 **조회만으로** 판정한다 (T030 지시서 1·3번).
+ * `undefined`를 돌려줄 때만 새로 만든다. POST는 하지 않는다.
+ */
+async function keepDecision(client: PayPalClient, before: ManifestOrder): Promise<KeepDecision | undefined> {
+  const captured = (before.captureId ?? '') !== '';
+  const orderPath = `/v2/checkout/orders/${encodeURIComponent(before.orderId)}`;
+
+  let detail: { status: number; body: unknown };
+  try {
+    detail = await client.get(orderPath);
+  } catch (error) {
+    // 조회가 네트워크·5xx로 실패한 주문은 건드리지 않는다 (살아 있을 수 있다).
+    return captured
+      ? {
+          result: 'kept-captured',
+          httpStatus: null,
+          orderStatus: '',
+          note: `경고: manifest에 캡처 ID가 있는데 상태를 읽지 못했다 (${failureLine(error)}) — 새로 만들지 않았다`,
+          problem: `주문 ${before.orderId}: 캡처된 주문의 상태 조회가 실패했다 (${failureLine(error)}). 새로 만들지 않았다 — 캡처 ID를 지키기 위해서다.`,
+        }
+      : {
+          result: 'skipped',
+          httpStatus: null,
+          orderStatus: '',
+          note: `상태를 읽지 못했다 (${failureLine(error)}) — 건드리지 않았다`,
+          problem: `주문 조회 실패: ${failureLine(error)}. 새로 만들지 않았다 (`
+            + `살아 있는 주문을 버리지 않기 위해서다). 조회가 될 때 다시 실행한다.`,
+        };
+  }
+
+  const orderStatus = detail.status === 200 ? asText(asRecord(detail.body).status) : '';
+
+  // 캡처 ID가 적힌 주문은 어떤 응답이 와도 새로 만들지 않는다 (지시서 1번).
+  if (captured) {
+    if (orderStatus === 'COMPLETED') {
+      return { result: 'kept-captured', httpStatus: 200, orderStatus, note: '이미 캡처됨 — 새로 만들지 않았다 (승인 링크가 필요 없다)' };
+    }
+    const seen = detail.status === 200 ? `주문 상태 ${orderStatus || '(없음)'}` : `HTTP ${detail.status} ${errorSummary(detail.body)}`;
+    return {
+      result: 'kept-captured',
+      httpStatus: detail.status,
+      orderStatus,
+      note: `경고: manifest에 캡처 ID가 있는데 ${seen}이다 — 새로 만들지 않았다`,
+      problem: `주문 ${before.orderId}: manifest에 캡처 ID가 있는데 조회 결과가 ${seen}이다. 새로 만들지 않았다 — 캡처 ID를 지키기 위해서다. \`npm run sandbox:check\`로 확인한다.`,
+    };
+  }
+
+  if (detail.status === 200) {
+    if (orderStatus === 'COMPLETED') {
+      return { result: 'kept-captured', httpStatus: 200, orderStatus, note: '이미 캡처됨 — 새로 만들지 않았다 (승인 링크가 필요 없다)' };
+    }
+    if (orderStatus === 'APPROVED') {
+      return {
+        result: 'kept-approved',
+        httpStatus: 200,
+        orderStatus,
+        note: '사람이 이미 승인했다 — 새로 만들지 않았다 (다음: npm run sandbox:capture)',
+      };
+    }
+    if (RECREATE_STATUSES.includes(orderStatus)) return undefined; // 아직 아무 일도 없었다 → 새로 만든다
+    return {
+      result: 'skipped',
+      httpStatus: 200,
+      orderStatus,
+      note: `주문 상태 ${orderStatus || '(없음)'} — 다시 만들지 않았다`,
+      problem: `주문 ${before.orderId}의 상태가 ${orderStatus || '(없음)'}이다. \`--fresh\`가 다루는 상태(${RECREATE_STATUSES.join(', ')})가 아니라 건드리지 않았다.`,
+    };
+  }
+
+  if (looksGone(detail.status, detail.body)) return undefined; // 만료·없는 주문 → 새로 만든다
+
+  return {
+    result: 'skipped',
+    httpStatus: detail.status,
+    orderStatus: '',
+    note: `주문 조회 → ${detail.status} ${errorSummary(detail.body)} — 건드리지 않았다`,
+    problem: `주문 조회 → ${detail.status}: ${errorSummary(detail.body)}. 만료로 읽을 수 없는 응답이라 새로 만들지 않았다.`,
+  };
 }
 
 // ── 승인 링크 파일 ─────────────────────────────────────────────────────────────
@@ -557,17 +697,80 @@ export const buyerCell = (buyer: string): string => {
   return name === undefined ? buyer : `${buyer} = ${name}`;
 };
 
-/** 링크 파일이 읽는 칸만. `CreateRow`(생성)와 `FreshRow`(`--fresh`) 둘 다 이 꼴이다. */
-export type ApproveRow = Pick<CreateRow, 'key' | 'buyer' | 'amount' | 'approveUrl' | 'note'>;
+/**
+ * 링크 파일이 읽는 칸만. `CreateRow`(생성)와 `FreshRow`(`--fresh`) 둘 다 이 꼴이다.
+ * `linkCell`을 주면 링크 칸에 그 값을 그대로 쓴다 (T030: 승인·캡처된 행의 상태 표시, 바뀌지 않은 행의 기존 링크).
+ */
+export type ApproveRow = Pick<CreateRow, 'key' | 'buyer' | 'amount' | 'approveUrl' | 'note'> & { linkCell?: string };
+
+/** 링크 칸 하나. `linkCell`이 있으면 그것, 없으면 새 링크, 그것도 없으면 사유. */
+export const linkCellOf = (r: ApproveRow): string =>
+  r.linkCell ?? (r.approveUrl === '' ? `승인 링크 없음 — ${r.note}` : r.approveUrl);
+
+/** 승인·캡처된 행의 링크 칸 (링크 대신 상태를 적는다 — 이 주문은 승인할 것이 없다). */
+export const APPROVED_CELL = '승인됨 — 승인 링크가 필요 없다 (다음: `npm run sandbox:capture`)';
+export const CAPTURED_CELL = '이미 캡처됨 — 승인 링크가 필요 없다';
+/** 바뀌지 않은 행인데 지난 실행의 링크 기록이 없을 때. */
+export const NO_RECORD_CELL = '지난 링크 기록이 없다 — `npm run sandbox:orders -- --status`로 상태를 확인한다';
+
+/** 바뀌지 않은 행: 지난 실행이 적어 둔 링크 칸을 그대로 쓴다 (없으면 사유). */
+export function unchangedCell(previousCell: string, note: string): string {
+  const kept = previousCell.trim();
+  if (kept !== '') return kept;
+  return note.trim() === '' ? NO_RECORD_CELL : `승인 링크 없음 — ${note}`;
+}
+
+/**
+ * 지금 있는 링크 파일에서 주문 키별 링크 칸을 읽는다 (T030: 바뀌지 않은 행을 그대로 두기 위해).
+ * 파일이 없거나 표가 아니면 빈 Map. 파일을 쓰지는 않는다.
+ */
+export function readApproveLinkCells(root: string = ROOT): Map<string, string> {
+  const cells = new Map<string, string>();
+  const file = approveLinksPath(root);
+  if (!existsSync(file)) return cells;
+  for (const line of readFileSync(file, 'utf8').split('\n')) {
+    if (!line.startsWith('|')) continue;
+    const parts = line.split('|').map((cell) => cell.trim());
+    // `| 키 | 구매자 | 금액 | 링크 |` → ['', 키, 구매자, 금액, 링크, '']
+    if (parts.length < 6) continue;
+    const key = parts[1];
+    if (!/^O\d{2}$/.test(key)) continue;
+    cells.set(key, parts[4]);
+  }
+  return cells;
+}
+
+/** 생성 결과 → 링크 파일 행 (바뀌지 않은 행은 기존 링크를 그대로 둔다). */
+export function createLinkRows(rows: CreateRow[], previous: Map<string, string>): ApproveRow[] {
+  return rows.map((r) => {
+    const base = { key: r.key, buyer: r.buyer, amount: r.amount, approveUrl: r.approveUrl, note: r.note };
+    if (r.approveUrl !== '') return base;
+    return { ...base, linkCell: unchangedCell(previous.get(r.key) ?? '', r.note) };
+  });
+}
+
+/** `--fresh` 결과 → 링크 파일 행 (승인·캡처된 행은 상태 표시, 바뀌지 않은 행은 기존 링크). */
+export function freshLinkRows(rows: FreshRow[], previous: Map<string, string>): ApproveRow[] {
+  return rows.map((r) => {
+    const base = { key: r.key, buyer: r.buyer, amount: r.amount, approveUrl: r.approveUrl, note: r.note };
+    if (r.result === 'kept-captured') return { ...base, linkCell: CAPTURED_CELL };
+    if (r.result === 'kept-approved') return { ...base, linkCell: APPROVED_CELL };
+    if (r.approveUrl !== '') return base;
+    return { ...base, linkCell: unchangedCell(previous.get(r.key) ?? '', r.note) };
+  });
+}
 
 /** `reports/sandbox-approve-links.md` 내용. 비밀값·이메일은 들어가지 않는다. */
 export function renderApproveLinks(rows: ApproveRow[], now: Date = new Date(), note = ''): string {
-  const done = rows.filter((r) => r.approveUrl !== '');
+  const done = rows.filter((r) => linkCellOf(r).startsWith('http'));
   const lines = [
     '# 샌드박스 승인 링크 (주문 12건)',
     '',
     `> \`npm run sandbox:orders\`가 ${kstStamp(now)}에 덮어썼다. 승인 링크 ${done.length}건 / 주문 ${rows.length}건.`,
     ...(note === '' ? [] : ['', `> ${note}`]),
+    '',
+    '**이 파일은 마지막 실행이 쓴 것만 쓴다. 승인을 시작한 뒤에는 `--fresh`를 다시 실행하지 않는다.**',
+    '(`--fresh`는 아직 승인 전인 주문을 새 주문으로 바꾼다. 승인·캡처된 주문은 그대로 두고 링크 자리에 상태를 적는다.)',
     '',
     '**브라우저 에이전트**: 아래 링크를 한 건씩 열어 그 행의 샌드박스 구매자 계정으로 로그인해 결제를 승인한다 (계정 비밀번호는 사람이 넣는다).',
     '링크는 모두 `sandbox.paypal.com` 도메인이다 — 다른 도메인(특히 live `www.paypal.com`)이 나오면 즉시 멈추고 사람에게 알린다.',
@@ -575,7 +778,7 @@ export function renderApproveLinks(rows: ApproveRow[], now: Date = new Date(), n
     '',
     row(['주문번호', '구매자', '금액', 'approve URL']),
     row(['---', '---', '---', '---']),
-    ...rows.map((r) => row([r.key, buyerCell(r.buyer), `$${r.amount}`, r.approveUrl === '' ? `승인 링크 없음 — ${r.note}` : r.approveUrl])),
+    ...rows.map((r) => row([r.key, buyerCell(r.buyer), `$${r.amount}`, linkCellOf(r)])),
     '',
   ];
   return `${lines.join('\n')}`;
@@ -609,7 +812,9 @@ function printRows(rows: CreateRow[]): void {
     );
   }
   const count = (result: CreateRow['result']) => rows.filter((r) => r.result === result).length;
-  console.log(`\n새로 만듦 ${count('created')} · 이미 있음 ${count('existing')} · 실패 ${count('failed')}`);
+  console.log(
+    `\n새로 만듦 ${count('created')} · 같은 요청 ID로 돌려받음 ${count('existing')} · 이미 있어 건드리지 않음 ${count('kept')} · 실패 ${count('failed')}`,
+  );
 }
 
 function printStatus(rows: StatusRow[]): void {
@@ -638,7 +843,7 @@ function printFresh(rows: FreshRow[]): void {
         r.key,
         r.buyer,
         `$${r.amount}`,
-        r.result,
+        FRESH_LABEL[r.result],
         r.httpStatus ?? '호출 실패',
         r.orderId || '-',
         r.previousOrderId || '-',
@@ -647,10 +852,12 @@ function printFresh(rows: FreshRow[]): void {
       ]),
     );
   }
-  const count = (result: FreshRow['result']) => rows.filter((r) => r.result === result).length;
-  console.log(
-    `\n새로 만듦 ${count('created')} · 같은 접미사로 돌려받음 ${count('existing')} · 캡처돼 그대로 둠 ${count('kept')} · 실패 ${count('failed')}`,
-  );
+  const count = (result: FreshResult) => rows.filter((r) => r.result === result).length;
+  const summary = (Object.keys(FRESH_LABEL) as FreshResult[])
+    .filter((result) => count(result) > 0)
+    .map((result) => `${FRESH_LABEL[result]} ${count(result)}`)
+    .join(' · ');
+  console.log(`\n주문 ${rows.length}건: ${summary}`);
 }
 
 // ── 명령줄 ─────────────────────────────────────────────────────────────────────
@@ -659,6 +866,9 @@ function printFresh(rows: FreshRow[]): void {
 export type OrdersMode = 'create' | 'status' | 'fresh';
 
 export const ORDERS_USAGE = '쓰는 법: npm run sandbox:orders [-- --status | -- --fresh]';
+
+/** `--` 없이 주면 npm이 삼키는 옵션들 (T030 지시서 5번). */
+export const ORDERS_FLAGS = ['--status', '--fresh'];
 
 /** 인자 해석. 모르는 인자나 두 개 이상이면 `error`를 돌려주고 호출하지 않는다. */
 export function parseOrdersMode(args: string[]): { mode: OrdersMode } | { error: string } {
@@ -669,43 +879,184 @@ export function parseOrdersMode(args: string[]): { mode: OrdersMode } | { error:
   return { error: `${ORDERS_USAGE} (받은 것: ${given.join(' ')})` };
 }
 
+// ── 모드별 실행 (파일 쓰기·종료 코드) ───────────────────────────────────────────
+
+/**
+ * 모드 실행에 필요한 것만. 단위 테스트는 가짜 클라이언트와 임시 폴더를 넘긴다
+ * (그래서 실제 PayPal도, 저장소의 manifest·링크 파일도 건드리지 않는다).
+ */
+export type OrdersDeps = { client: PayPalClient; root: string };
+
+const printProblems = (problems: string[]): void => {
+  if (problems.length === 0) return;
+  console.log('\n문제:');
+  for (const problem of problems) console.log(`- ${problem}`);
+};
+
+/** `-- --status`: 조회만 한다. manifest·링크 파일을 쓰지 않는다. */
+export async function runStatusMode(deps: OrdersDeps, before: Manifest): Promise<number> {
+  if (before.orders.length === 0) {
+    console.error('manifest에 주문이 없다. 먼저 `npm run sandbox:orders`로 12건을 만든다.');
+    return 1;
+  }
+  const { rows, problems } = await runOrderStatus(deps.client, before);
+  console.log('');
+  printStatus(rows);
+  printProblems(problems);
+  console.log('\n조회만 했다 — manifest·링크 파일은 쓰지 않았다.');
+  return problems.length > 0 ? 1 : 0;
+}
+
+/**
+ * 옵션 없는 실행: manifest에 **없는** 키만 만든다 (T030 지시서 2번).
+ * 만든 주문이 0건이면 manifest·링크 파일을 쓰지 않는다.
+ */
+export async function runCreateMode(deps: OrdersDeps, specs: OrderSpec[], before: Manifest, now: Date): Promise<number> {
+  let outcome: CreateOutcome;
+  try {
+    outcome = await runCreateOrders(deps.client, specs, before);
+  } catch (error) {
+    if (error instanceof NotSandboxLinkError) {
+      console.error(`\n${error.message}`);
+      console.error('링크 파일과 manifest는 쓰지 않았다. 남은 주문도 만들지 않았다.');
+      return 1;
+    }
+    throw error;
+  }
+
+  const made = outcome.rows.filter((r) => r.result === 'created' || r.result === 'existing');
+  const kept = outcome.rows.filter((r) => r.result === 'kept');
+
+  console.log('');
+  printRows(outcome.rows);
+  printProblems(outcome.problems);
+
+  if (made.length === 0) {
+    if (kept.length === outcome.rows.length) {
+      console.log(`\n${ALREADY_CREATED_NOTE}`);
+      console.log('아무것도 만들지 않았다 — manifest·승인 링크 파일을 그대로 두었다 (주문 ID·캡처 ID·분쟁 기록이 남아 있다).');
+      return 0;
+    }
+    console.error('\n만든 주문이 0건이다 — manifest·승인 링크 파일을 그대로 두었다. 위 문제를 보고 다시 실행한다.');
+    return 1;
+  }
+
+  writeManifest({ ...before, orders: outcome.orders }, deps.root);
+  const file = writeApproveLinks(
+    createLinkRows(outcome.rows, readApproveLinkCells(deps.root)),
+    now,
+    deps.root,
+    kept.length === 0
+      ? ''
+      : `이번 실행은 ${made.length}건만 새로 만들었다. 나머지 ${kept.length}건은 manifest에 이미 있어 건드리지 않았다 (링크 칸은 지난 실행이 적어 둔 값이다).`,
+  );
+
+  console.log(`\nmanifest 주문 ${outcome.orders.length}건 · 승인 링크 파일: ${path.relative(deps.root, file)}`);
+
+  const missing = made.filter((r) => r.approveUrl === '').length;
+  if (outcome.problems.length > 0 || missing > 0) {
+    console.error(`\n새로 만든 ${made.length}건 가운데 ${missing}건이 승인 링크 없이 끝났다. 위 문제를 보고 다시 실행한다 (이미 있는 주문은 다시 만들지 않는다).`);
+    return 1;
+  }
+  console.log('\n다음: 브라우저 에이전트가 링크를 승인한 뒤 `npm run sandbox:capture`.');
+  return 0;
+}
+
+/**
+ * `--fresh`: 접미사를 **여기서 한 번만** 만들어 넘긴다 (12건이 같은 값을 쓴다).
+ * 새로 만든 주문이 0건이면 manifest·링크 파일을 그대로 둔다 (T030 지시서 4번).
+ */
+export async function runFreshMode(deps: OrdersDeps, specs: OrderSpec[], before: Manifest, now: Date): Promise<number> {
+  const suffix = freshSuffix(now);
+  console.log(`요청 ID 접미사: ${suffix} (같은 분에 다시 돌리면 같은 주문이 돌아온다)`);
+
+  let outcome: FreshOutcome;
+  try {
+    outcome = await runFreshOrders(deps.client, specs, before, suffix);
+  } catch (error) {
+    if (error instanceof NotSandboxLinkError) {
+      console.error(`\n${error.message}`);
+      console.error('링크 파일과 manifest는 쓰지 않았다. 남은 주문도 만들지 않았다.');
+      return 1;
+    }
+    throw error;
+  }
+
+  console.log('');
+  printFresh(outcome.rows);
+
+  const made = outcome.rows.filter((r) => r.result === 'recreated' || r.result === 'existing');
+  if (made.length === 0) {
+    console.log('\n새로 만든 주문이 0건이다 — manifest와 승인 링크 파일을 그대로 두었다 (지난 실행의 링크가 남아 있다).');
+  } else {
+    writeManifest({ ...before, orders: outcome.orders }, deps.root);
+    const file = writeApproveLinks(
+      freshLinkRows(outcome.rows, readApproveLinkCells(deps.root)),
+      now,
+      deps.root,
+      `\`-- --fresh\`로 ${made.length}건을 다시 만들었다 (요청 ID 접미사 ${suffix}). 나머지 행은 그대로다 — 승인·캡처된 주문은 링크 대신 상태를, 손대지 않은 주문은 지난 링크를 적었다. 이전 주문 ID는 manifest의 previousOrderIds에 남아 있다.`,
+    );
+    console.log(`\nmanifest 주문 ${outcome.orders.length}건 · 승인 링크 파일: ${path.relative(deps.root, file)}`);
+  }
+
+  printProblems(outcome.problems);
+
+  const missing = made.filter((r) => r.approveUrl === '').length;
+  if (outcome.problems.length > 0 || missing > 0) {
+    console.error(
+      '\n위 문제를 사람이 본다. 그대로 둔 주문(kept·skipped)은 새로 만들지 않았다 — ' +
+        '승인을 한 건이라도 시작한 뒤에는 `--fresh`를 다시 돌리지 않는다.',
+    );
+    return 1;
+  }
+  console.log('\n다음: 브라우저 에이전트가 새 링크를 승인한 뒤 `npm run sandbox:capture`.');
+  return 0;
+}
+
 // ── 진입점 ─────────────────────────────────────────────────────────────────────
 
-export async function main(args: string[] = process.argv.slice(2), now: Date = new Date()): Promise<number> {
+/** 진입점이 바깥에서 받는 것 (단위 테스트는 실제 자격 증명·네트워크 대신 이걸 넘긴다). */
+export type OrdersMainDeps = {
+  loadEnv?: () => PayPalEnv;
+  makeClient?: (env: PayPalEnv) => PayPalClient;
+  root?: string;
+};
+
+export async function main(
+  args: string[] = process.argv.slice(2),
+  now: Date = new Date(),
+  procEnv: EnvVars = process.env,
+  deps: OrdersMainDeps = {},
+): Promise<number> {
+  // `--` 없이 준 옵션은 npm이 삼킨다 — 자격 증명을 읽기도 전에 멈춘다 (T030 지시서 5번).
+  const swallowed = swallowedOptionsError('sandbox:orders', ORDERS_FLAGS, args, procEnv);
+  if (swallowed !== undefined) {
+    console.error(swallowed);
+    return 1;
+  }
+
   const parsed = parseOrdersMode(args);
   if ('error' in parsed) {
     console.error(parsed.error);
     return 1;
   }
   const { mode } = parsed;
+  const root = deps.root ?? ROOT;
 
   let env: PayPalEnv;
   try {
-    env = loadSandboxEnv();
+    env = (deps.loadEnv ?? loadSandboxEnv)();
   } catch (error) {
     console.error(error instanceof SandboxEnvError ? error.message : '자격 증명을 읽지 못했다.');
     return 1;
   }
 
-  const client = createSandboxClient(env, (line) => console.log(`  · ${line}`));
-  const before = readManifest();
+  const client = (deps.makeClient ?? ((value: PayPalEnv) => createSandboxClient(value, (line) => console.log(`  · ${line}`))))(env);
+  const before = readManifest(root);
+  const ordersDeps: OrdersDeps = { client, root };
 
   // `--status`는 시드를 읽지 않는다 (manifest에 적힌 주문만 조회한다).
-  if (mode === 'status') {
-    if (before.orders.length === 0) {
-      console.error('manifest에 주문이 없다. 먼저 `npm run sandbox:orders`로 12건을 만든다.');
-      return 1;
-    }
-    const { rows, problems } = await runOrderStatus(client, before);
-    console.log('');
-    printStatus(rows);
-    if (problems.length > 0) {
-      console.log('\n문제:');
-      for (const problem of problems) console.log(`- ${problem}`);
-    }
-    console.log('\n조회만 했다 — manifest·링크 파일은 쓰지 않았다.');
-    return problems.length > 0 ? 1 : 0;
-  }
+  if (mode === 'status') return runStatusMode(ordersDeps, before);
 
   let specs: OrderSpec[];
   try {
@@ -715,88 +1066,8 @@ export async function main(args: string[] = process.argv.slice(2), now: Date = n
     return 1;
   }
 
-  if (mode === 'fresh') return runFreshMode(client, specs, before, now);
-
-  let outcome: CreateOutcome;
-  try {
-    outcome = await runCreateOrders(client, specs, before);
-  } catch (error) {
-    if (error instanceof NotSandboxLinkError) {
-      console.error(`\n${error.message}`);
-      console.error('링크 파일과 manifest는 쓰지 않았다. 남은 주문도 만들지 않았다.');
-      return 1;
-    }
-    throw error;
-  }
-
-  if (outcome.orders.length > 0) {
-    writeManifest({ ...before, orders: outcome.orders });
-  }
-  const file = writeApproveLinks(outcome.rows);
-
-  console.log('');
-  printRows(outcome.rows);
-  console.log(`\nmanifest 주문 ${outcome.orders.length}건 · 승인 링크 파일: ${path.relative(ROOT, file)}`);
-  if (outcome.problems.length > 0) {
-    console.log('\n문제:');
-    for (const problem of outcome.problems) console.log(`- ${problem}`);
-  }
-
-  const ready = outcome.rows.filter((r) => r.result !== 'failed' && r.approveUrl !== '').length;
-  if (ready !== specs.length) {
-    console.error(`\n승인 링크가 ${ready}/${specs.length}건만 모였다. 위 문제를 보고 다시 실행한다 (같은 요청 ID라 중복 생성되지 않는다).`);
-    return 1;
-  }
-  console.log('\n다음: 브라우저 에이전트가 링크 12건을 승인한 뒤 `npm run sandbox:capture`.');
-  return 0;
-}
-
-/**
- * `--fresh`: 접미사를 **여기서 한 번만** 만들어 넘긴다 (12건이 같은 값을 쓴다).
- * 캡처된 주문은 링크가 필요 없으므로 "모였다" 셈에서 뺀다.
- */
-async function runFreshMode(client: PayPalClient, specs: OrderSpec[], before: Manifest, now: Date): Promise<number> {
-  const suffix = freshSuffix(now);
-  console.log(`요청 ID 접미사: ${suffix} (같은 분에 다시 돌리면 같은 주문이 돌아온다)`);
-
-  let outcome: FreshOutcome;
-  try {
-    outcome = await runFreshOrders(client, specs, before, suffix);
-  } catch (error) {
-    if (error instanceof NotSandboxLinkError) {
-      console.error(`\n${error.message}`);
-      console.error('링크 파일과 manifest는 쓰지 않았다. 남은 주문도 만들지 않았다.');
-      return 1;
-    }
-    throw error;
-  }
-
-  if (outcome.orders.length > 0) {
-    writeManifest({ ...before, orders: outcome.orders });
-  }
-  const file = writeApproveLinks(
-    outcome.rows,
-    now,
-    ROOT,
-    `\`-- --fresh\`로 다시 만든 링크다 (요청 ID 접미사 ${suffix}). 이전 주문 ID는 manifest의 previousOrderIds에 남아 있다.`,
-  );
-
-  console.log('');
-  printFresh(outcome.rows);
-  console.log(`\nmanifest 주문 ${outcome.orders.length}건 · 승인 링크 파일: ${path.relative(ROOT, file)}`);
-  if (outcome.problems.length > 0) {
-    console.log('\n문제:');
-    for (const problem of outcome.problems) console.log(`- ${problem}`);
-  }
-
-  const needLink = outcome.rows.filter((r) => r.result !== 'kept');
-  const ready = needLink.filter((r) => r.result !== 'failed' && r.approveUrl !== '').length;
-  if (ready !== needLink.length) {
-    console.error(`\n승인 링크가 ${ready}/${needLink.length}건만 모였다. 위 문제를 보고 다시 실행한다 (같은 분이면 중복 생성되지 않는다).`);
-    return 1;
-  }
-  console.log('\n다음: 브라우저 에이전트가 새 링크를 승인한 뒤 `npm run sandbox:capture`.');
-  return 0;
+  if (mode === 'fresh') return runFreshMode(ordersDeps, specs, before, now);
+  return runCreateMode(ordersDeps, specs, before, now);
 }
 
 /** 단위 테스트가 import할 때는 돌지 않는다 (실제 PayPal을 부르지 않게). */
