@@ -14,7 +14,9 @@ import { z } from 'zod';
 import type { ActionPlan, BoardState, Evaluation, Params, PlanMoveFn } from '@/types';
 
 import { offerAmountCents } from './oracle';
+import type { EngineInput } from './params';
 import { apiMoveSchema, moveSchema, resolveEngineInput } from './params';
+import { recommend } from './recommend';
 
 /** 계획을 만들 수 없는 평가 (예외 문구). 숫자·구매자 정보는 넣지 않는다. */
 const ERROR = {
@@ -24,6 +26,10 @@ const ERROR = {
     `planMove: ${move} 평가에 실행 API가 없어 계획을 만들 수 없습니다 (apiMove: null)`,
   apiMoveMismatch: (move: Evaluation['move'], apiMove: string) =>
     `planMove: ${move}는 ${apiMove}로 실행할 수 없습니다 (SPEC 5장 "수 → API")`,
+  notThisBoard: (move: Evaluation['move'], apiMove: string, why: string) =>
+    `planMove: 평가가 이 보드의 것이 아님 (${move}/${apiMove}: ${why})`,
+  offerNotPositive: (move: Evaluation['move']) =>
+    `planMove: ${move} 제안 금액이 0¢ 이하여서 계획을 만들 수 없습니다 (제안률·분쟁 금액 확인)`,
 } as const;
 
 /**
@@ -50,9 +56,12 @@ type MovePlan = Pick<ActionPlan, 'apiMove' | 'amountCents' | 'refundType' | 'mes
 function movePlan(board: BoardState, evaluation: Evaluation, params: Params, apiMove: NonNullable<Evaluation['apiMove']>): MovePlan {
   if (evaluation.move === 'offer') {
     if (apiMove !== 'make_offer') throw new Error(ERROR.apiMoveMismatch(evaluation.move, apiMove));
+    const amountCents = offerAmountCents(board, params);
+    // 0¢ 제안은 구매자에게 보낼 수 없는 계획이다 (x = 0이거나 x·A < 0.5¢인 아주 작은 분쟁).
+    if (amountCents <= 0) throw new Error(ERROR.offerNotPositive(evaluation.move));
     return {
       apiMove,
-      amountCents: offerAmountCents(board, params),
+      amountCents,
       refundType: 'REFUND',
       messageRequired: false,
     };
@@ -86,8 +95,36 @@ function planIdFor(plan: Omit<ActionPlan, 'planId' | 'requiresApproval' | 'curre
 }
 
 /**
+ * 넘겨받은 평가가 **이 보드의 평가인지** 확인한다 (T018).
+ *
+ * 평가는 화면이 만들어 넘길 수도 있고, 분쟁을 다시 불러온 뒤 예전 보드의 평가가 섞일 수도 있다.
+ * 그래서 같은 보드·가정값·규칙으로 `recommend`를 다시 돌려, 같은 수의 평가가 지금도
+ * ① 있고 ② 같은 실행 API이고 ③ 차단되지 않았는지(`blockedBy`·`expectedLossCents`) 본다.
+ * 이것으로 제안 대상이 아닌 유형(A1 등)의 offer, 원인 없는 보드, `allowedMoves`에 없는 수가 함께 막힌다.
+ *
+ * `expectedLossCents` 값까지 같은지는 보지 않는다: 인수 테스트 AC4가 x 0.15로 만든 평가를 x 0.20으로
+ * 넘겨 계획을 만든다 (금액은 평가가 아니라 지금 보드·가정값에서 나온다). 보고서에 적어 두었다.
+ */
+function assertEvaluationFromBoard(input: EngineInput, evaluation: Evaluation, apiMove: NonNullable<Evaluation['apiMove']>): void {
+  const current = recommend(input.board, input.params, input.rules).all.find((e) => e.move === evaluation.move);
+
+  if (current === undefined) {
+    throw new Error(ERROR.notThisBoard(evaluation.move, apiMove, '이 보드에서 둘 수 없는 수'));
+  }
+  if (current.blockedBy !== undefined) {
+    throw new Error(ERROR.notThisBoard(evaluation.move, apiMove, current.blockedBy));
+  }
+  if (current.expectedLossCents === null) {
+    throw new Error(ERROR.notThisBoard(evaluation.move, apiMove, '이 보드에서 계산되지 않는 수'));
+  }
+  if (current.apiMove !== apiMove) {
+    throw new Error(ERROR.notThisBoard(evaluation.move, apiMove, `이 보드의 실행 API는 ${current.apiMove}`));
+  }
+}
+
+/**
  * 승인용 실행 계획 1건. params·rules를 넘기지 않으면 config/params.json·config/rules.json을 읽는다.
- * 차단된 평가(`blockedBy`)나 실행 API가 없는 평가(`apiMove: null`)면 예외를 던진다.
+ * 차단된 평가(`blockedBy`)나 실행 API가 없는 평가(`apiMove: null`), 이 보드의 것이 아닌 평가면 예외를 던진다.
  */
 export const planMove: PlanMoveFn = (board, evaluation, params, rules) => {
   const input = resolveEngineInput(board, params, rules);
@@ -95,6 +132,7 @@ export const planMove: PlanMoveFn = (board, evaluation, params, rules) => {
 
   if (checked.blockedBy !== undefined) throw new Error(ERROR.blocked(checked.move, checked.blockedBy));
   if (checked.apiMove === null) throw new Error(ERROR.noApiMove(checked.move));
+  assertEvaluationFromBoard(input, checked, checked.apiMove);
 
   const parts = {
     disputeId: input.board.disputeId,

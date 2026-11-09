@@ -40,6 +40,9 @@ const pWinShape: Record<Subtype, typeof probability> = {
   F2: probability,
 };
 
+/** 0 이상 정수인 설정값 (`escalation.ts`의 확대 위험 가중치 검증도 이 스키마를 쓴다). */
+export const nonNegativeIntSchema = count;
+
 /** 세부 유형 목록 (고정 순서). */
 export const SUBTYPES = Object.keys(pWinShape) as [Subtype, ...Subtype[]];
 
