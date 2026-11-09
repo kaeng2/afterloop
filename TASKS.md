@@ -25,7 +25,7 @@
 | T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(브라우저 에이전트 승인 뒤 캡처) | paypal | 대기 | v2.2 | T002, T007 | 새 `.env`(Q6, 사람) 필요. Secret은 `.env`에서만 읽고 출력·로그 금지. T001의 `orders`·`capture` 단계를 대신함. `tasks/T026.md` |
 | T011 | 추적번호 일괄 등록: 주문 상세로 미등록 판정 → `/track` 주문별 반복, 건별 결과 | paypal | 대기 | v2.2 | T002 | AC21 (작성 예정). M3 |
 | T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 대기 | v2.2 | T004 | Q4 확정 (2026-11-09): PRD 숫자를 하드코딩하지 않고 우리 계산 결과 사용. AC22는 결과를 보고 작성·승인. `tasks/T015.md` |
-| T028 | 시드 v2.2: 종결 손실 재계산 (합 40800 → 41300¢), `SeedDispute.orderId`, `SeedOrder.date` | data | 대기 | v2.2 | T007 | **AC17.** Q8·Q10 결정 (2026-11-09). `tasks/T028.md` |
+| T028 | 시드 v2.2: 종결 손실 재계산 (합 40800 → 41300¢), `SeedDispute.orderId`, `SeedOrder.date` | data | 완료 | v2.2 | T007 | AC17 통과 (56개). 병합 2026-11-09 22:52. `reports/T028-impl.md`, `reports/T028-verify.md` |
 | T018 | 확대 위험 점수 (원문 10-4 + M4) + `planMove` 보강 | engine | 완료 | v2.1 | T005 | AC7 통과 (5개). Q2 미확정 (임시 7 → 4). 병합 2026-11-09 22:31. `reports/T018-impl.md`, `reports/T018-verify.md` |
 | T019 | Transaction Search 조회 + 캐시 ('cached' 배지) | paypal | 대기 | v2.2 | T002 | AC25 (작성 예정). 실호출 4종 중 하나 (M7) |
 | T020 | AI 색상 문구: 분쟁 메시지에서 공통 불만 → EN·KO·JA·DE + 역번역 | ai | 대기 | v2.2 | T010 | AC26 (작성 예정). F5 |
