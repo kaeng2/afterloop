@@ -4,7 +4,7 @@
  * 이 파일은 Claude Code 설정(.claude/settings.json permissions.deny)으로 편집이 막혀 있다.
  * 바꿔야 하면 SPEC.md·DECISIONS.md에 이유를 적고 사람 승인을 받은 뒤 컨트롤 타워가 고친다.
  *
- * 기준: SPEC v2. 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
+ * 기준: SPEC v2.2 (v2 이후 바뀐 것은 8부 시드 필드 2개뿐). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
  * 1부: 분쟁 보드와 기대 손실 (v2: 16개 세부 유형, V·c·p_acc 곡선 삭제)
  * 2부: 실행 계약 (v1.1 그대로)
  * 3부: 설정 파일 (v2)
@@ -12,7 +12,7 @@
  * 5부: 정책·오토파일럿·확대 위험 (v2)
  * 6부: AI 분류·토큰 (v2)
  * 7부: 상품 진단 시뮬레이션 (v2)
- * 8부: 시드 데이터 (v2)
+ * 8부: 시드 데이터 (v2, v2.2에서 SeedDispute.orderId·SeedOrder.date 추가)
  *
  * 금액은 모두 센트 정수. API로 보낼 때만 "7.20" 같은 문자열로 바꾼다.
  */
@@ -293,10 +293,20 @@ export type SeedDispute = {
   reason: string;
   subtype: Subtype;
   status: 'open' | 'closed';
-  lossCents: number | null; // 종결 건만
+  lossCents: number | null; // 종결 건만. 전액 환불 = 상품 가격, 패소 = 상품 가격 + f, 승소 = 0 (수수료는 질 때만, SPEC 12장)
   source: 'sandbox' | 'seed';
+  orderId: string; // 이 분쟁이 걸린 주문 (SeedOrder.id). 구매자·상품이 같아야 한다 (v2.2)
 };
-export type SeedOrder = { id: string; buyerId: string; sku: string; amountCents: number; country: string; tracked: boolean; source: 'sandbox' | 'seed' };
+export type SeedOrder = {
+  id: string;
+  buyerId: string;
+  sku: string;
+  amountCents: number;
+  country: string;
+  tracked: boolean;
+  source: 'sandbox' | 'seed';
+  date: string; // 주문일 YYYY-MM-DD. 시연 시점(2026-11-10) 기준 90일 창 안 (v2.2)
+};
 
 // ───────────────────────────── 공개 함수 시그니처 ─────────────────────────────
 // 구현 파일은 `export const recommend = (...) => ... satisfies RecommendFn` 처럼 맞춘다.
