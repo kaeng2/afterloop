@@ -17,11 +17,10 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 |---|---|---|---|
 | Q1 | 기대 손실 식에 재구매 가치가 없는 게 의도인지 | 재구매 없음 | 기획자 확인 중 |
 | Q2 | 서연 확대 위험 7 → 4로 할지, 응답 기한을 옮겨 6 → 3을 유지할지 | 7 → 4 | 기획자 확인 중 |
-| Q6 | 샌드박스 US 비즈니스 계정 + 새 REST 앱 (지금 앱은 KR 비즈니스 계정) | — | 기획자가 직접 (T001 "사람이 먼저 할 일") |
 | Q7 | 판매자가 이겨도 분쟁 수수료가 부과되는지, claim 단계 이후 환불 시 수수료가 붙는지 | 질 때만 부과. 답이 오면 5장 식과 시드 종결 손실($413)에 함께 반영 | 기획자 확인 중 |
 | Q11 | 같은 분쟁의 두 번째 메시지가 중복으로 처리됨 | 보류 (P1). 방향은 DECISIONS.md | 데모 경로 완성 뒤 |
 
-결정 끝난 것 (참고): **Q8 종결 손실은 질 때만 수수료, 합 $413 · Q9 제안 금액은 센트로 반올림한 뒤 식에 넣음 · Q10 국가 비율·`X…` 구매자 유지, `SeedDispute.orderId`·`SeedOrder.date` 추가 (모두 SPEC v2.2)** · **Q4 화면 숫자는 PRD 값을 하드코딩하지 않고 sim·엔진 계산 결과 사용 (2026-11-09, T015 보류 해제)** · Q3 오토파일럿 가벼운 버전 P0 확정 · Q5 임시 가정값 승인(화면에 Assumption 배지) · **T011 추적번호는 Orders v2 `/track` 주문별 반복 호출**, 등록 여부는 주문 상세 조회 (trackers-batch는 지원 중단, 이 앱에서 403). PRD 원문의 trackers-batch 문구는 검토 파일 M3로 대체됨.
+결정 끝난 것 (참고): **Q6 해결 (2026-11-09): 기존 US 비즈니스 샌드박스 계정을 Fernwood Knits로 사용, 개인 계정 5개 생성, `.env`는 `afterloop-wt/paypal/.env`에 사람이 입력** · **Q8 종결 손실은 질 때만 수수료, 합 $413 · Q9 제안 금액은 센트로 반올림한 뒤 식에 넣음 · Q10 국가 비율·`X…` 구매자 유지, `SeedDispute.orderId`·`SeedOrder.date` 추가 (모두 SPEC v2.2)** · **Q4 화면 숫자는 PRD 값을 하드코딩하지 않고 sim·엔진 계산 결과 사용 (2026-11-09, T015 보류 해제)** · Q3 오토파일럿 가벼운 버전 P0 확정 · Q5 임시 가정값 승인(화면에 Assumption 배지) · **T011 추적번호는 Orders v2 `/track` 주문별 반복 호출**, 등록 여부는 주문 상세 조회 (trackers-batch는 지원 중단, 이 앱에서 403). PRD 원문의 trackers-batch 문구는 검토 파일 M3로 대체됨.
 
 전체 기록: [DECISIONS.md](DECISIONS.md).
 
@@ -81,7 +80,7 @@ worktree마다 다른 레인 폴더를 막는 로컬 설정 `.claude/settings.lo
 |---|---|
 | `engine` | `Edit(/src/paypal/**)`, `Edit(/src/exec/**)`, `Edit(/src/ai/**)`, `Edit(/src/app/**)`, `Edit(/seed/**)`, `Edit(/scripts/**)`, `Edit(/config/copy.*.json)` |
 | `data` | `Edit(/src/**)`, `Edit(/config/**)`, `Edit(/scripts/**)` |
-| `paypal` (T001) | `Edit(/src/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/scripts/eval-classifier.ts)` |
+| `paypal` (T001, T026) | `Edit(/src/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/scripts/eval-classifier.ts)` + **`.env` 보호** (2026-11-09, `.env`가 이 worktree에 있음): `Read(/.env)`, `Read(/.env.local)`, `Edit(/.env)`, `Edit(/.env.local)`, `Bash(*.env)`, `Bash(*.env *)`, `Bash(*.env;*)`, `Bash(*.env|*)`, `Bash(*.env&*)`, `Bash(*.env.local*)`, `Bash(printenv*)`, `Bash(env)`, `Bash(env *)`, `Bash(export*)`, `Bash(set)` |
 | `paypal-client` (T002) | `Edit(/src/exec/**)`, `Edit(/src/engine/**)`, `Edit(/src/ai/**)`, `Edit(/src/app/**)`, `Edit(/scripts/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/package.json)`, `Edit(/.gitignore)` |
 | `paypal-exec` (T008) | `Edit(/src/paypal/**)`, `Edit(/src/engine/**)`, `Edit(/src/ai/**)`, `Edit(/src/app/**)`, `Edit(/scripts/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/package.json)`, `Edit(/.gitignore)` |
 | `ai` (T006 이후) | `Edit(/src/engine/**)`, `Edit(/src/paypal/**)`, `Edit(/src/exec/**)`, `Edit(/src/app/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/scripts/sandbox/**)`, `Edit(/tests/sandbox/**)`, `Edit(/tests/fixtures/**)`, `Edit(/public/**)`, `Edit(/package.json)`, `Edit(/package-lock.json)`, `Edit(/.gitignore)`, `Edit(/.nvmrc)`, `Edit(/tsconfig.json)`, `Edit(/vitest.config.ts)`, `Edit(/next.config.ts)`, `Edit(/eslint.config.mjs)` |
