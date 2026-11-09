@@ -105,7 +105,7 @@
   },
   {
     "date": "2026-11-03",
-    "buyerId": "X001",
+    "buyerId": "X020",
     "original": "주문한 상품이 아직 도착하지 않았어요. 배송 상황을 알려주실 수 있을까요?",
     "english": "My order hasn't arrived yet. Could you let me know the shipping status?",
     "signal": "A2",
@@ -113,7 +113,7 @@
   },
   {
     "date": "2026-10-05",
-    "buyerId": "X003",
+    "buyerId": "X006",
     "original": "통관 중이라고 나오는데 며칠 더 걸릴까요?",
     "english": "It says it's in customs clearance. How many more days will it take?",
     "signal": "A2",
@@ -121,7 +121,7 @@
   },
   {
     "date": "2026-09-06",
-    "buyerId": "X005",
+    "buyerId": "X001",
     "original": "발송 안내를 아직 못 받았는데 언제 보내주시나요?",
     "english": "I haven't received a shipping notice yet. When will it be sent?",
     "signal": "A1",
@@ -129,8 +129,8 @@
   },
   {
     "date": "2026-10-27",
-    "buyerId": "X006",
-    "original": "배송 조회 번호를 알려주실 수 있나요?",
+    "buyerId": "X003",
+    "original": "운송장 번호를 알려주실 수 있나요?",
     "english": "Could you give me the tracking number?",
     "signal": "A1",
     "isDemo": true
@@ -153,7 +153,7 @@
   },
   {
     "date": "2026-10-20",
-    "buyerId": "X007",
+    "buyerId": "X015",
     "original": "I still have no shipping confirmation. When does my order go out?",
     "english": "I still have no shipping confirmation. When does my order go out?",
     "signal": "A1",
@@ -161,7 +161,7 @@
   },
   {
     "date": "2026-09-21",
-    "buyerId": "X013",
+    "buyerId": "X005",
     "original": "M 사이즈 어깨 너비가 몇 cm인가요?",
     "english": "What is the shoulder width of size M in cm?",
     "signal": "B2",
@@ -169,7 +169,7 @@
   },
   {
     "date": "2026-08-23",
-    "buyerId": "X014",
+    "buyerId": "X013",
     "original": "키가 165cm인데 S와 M 중 어느 것이 좋을까요?",
     "english": "I'm 165 cm tall. Would S or M suit me better?",
     "signal": "B2",
@@ -177,7 +177,7 @@
   },
   {
     "date": "2026-10-13",
-    "buyerId": "X020",
+    "buyerId": "X014",
     "original": "사이즈표가 인치로만 있어서요. cm로도 알려주실 수 있나요?",
     "english": "The size chart is only in inches. Could you give me the measurements in cm as well?",
     "signal": "B2",
@@ -186,14 +186,14 @@
   {
     "date": "2026-09-14",
     "buyerId": "X025",
-    "original": "스웨터 소매 길이도 알려주시면 좋겠어요.",
-    "english": "I would also like to know the sleeve length of the sweater.",
+    "original": "스웨터 소매 길이를 알려주실 수 있나요?",
+    "english": "Could you tell me the sleeve length of the sweater?",
     "signal": "B2",
     "isDemo": true
   },
   {
     "date": "2026-08-16",
-    "buyerId": "X008",
+    "buyerId": "X007",
     "original": "Is the cardigan true to size, or should I size up?",
     "english": "Is the cardigan true to size, or should I size up?",
     "signal": "B2",
@@ -201,7 +201,7 @@
   },
   {
     "date": "2026-10-06",
-    "buyerId": "X009",
+    "buyerId": "X008",
     "original": "Could you share the chest measurement for size L in cm?",
     "english": "Could you share the chest measurement for size L in cm?",
     "signal": "B2",
@@ -217,7 +217,7 @@
   },
   {
     "date": "2026-10-28",
-    "buyerId": "X036",
+    "buyerId": "X043",
     "original": "오트 색상이 사진보다 더 회색빛인가요?",
     "english": "Is the oat color greyer than it looks in the photo?",
     "signal": "B1",
@@ -225,7 +225,7 @@
   },
   {
     "date": "2026-09-29",
-    "buyerId": "X010",
+    "buyerId": "X009",
     "original": "Does the oat shade read more beige or more grey in daylight?",
     "english": "Does the oat shade read more beige or more grey in daylight?",
     "signal": "B1",
@@ -233,16 +233,16 @@
   },
   {
     "date": "2026-08-31",
-    "buyerId": "X043",
+    "buyerId": "X036",
     "original": "선물 포장도 해주시나요?",
     "english": "Do you offer gift wrapping as well?",
     "isDemo": true
   },
   {
     "date": "2026-10-21",
-    "buyerId": "X011",
-    "original": "Will you restock the beanie and scarf set?",
-    "english": "Will you restock the beanie and scarf set?",
+    "buyerId": "X010",
+    "original": "Will you restock the cashmere coat in grey?",
+    "english": "Will you restock the cashmere coat in grey?",
     "isDemo": true
   }
 ]

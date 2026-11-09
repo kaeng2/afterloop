@@ -143,26 +143,32 @@ export const disputes: SeedDispute[] = [
 type OrderDraft = { buyerId: string; sku: string; country: SeedOrder['country']; tracked: boolean };
 
 /**
- * 샌드박스 주문 12건 (원문 6-5, SPEC 9-5). 자리표시자다: 실제 PayPal 주문 ID는 T001이
+ * 샌드박스 주문 12건. 자리표시자다: 실제 PayPal 주문 ID는 T001이
  * `tests/sandbox/manifest.json`에 기록하고, 여기 `id`(O01~O12)가 그 `key`와 맞물린다.
- * 구매자별 건수는 SPEC 9-5의 "서연 1·지호 1·Yuki 3·Lena 2·buyer_m 5".
- * 추적 등록 7건 / 미등록 5건 (원문 6-5).
+ *
+ * **아래 12행은 `tasks/T001.md` "주문 12건 배정" 표가 정본이다.** 키·구매자·상품·추적 여부를
+ * 행마다 그대로 옮긴다 (T026의 주문 생성 스크립트도 같은 표를 따른다). 바꿀 일이 생기면
+ * 시드가 아니라 그 표를 먼저 고친다.
+ * 구매자 키 대응: seoyeon B01 · jiho B02 · yuki B03 · lena B05 · buyer_m B04 (원문 6-2).
+ * 구매자별 건수 서연 1 · 지호 1 · Yuki 3 · Lena 2 · buyer_m 5, 추적 등록 7 / 미등록 5 (원문 6-5).
  */
 export const sandboxOrderDrafts: ({ id: string } & OrderDraft)[] = [
   // D2의 추적 상태 메모가 "Customs hold"라서 서연 주문은 추적 등록된 상태다 (원문 6-5)
-  { id: 'O01', buyerId: 'B01', sku: 'FK-SW-NV', country: 'KR', tracked: true },
-  { id: 'O02', buyerId: 'B02', sku: 'FK-CD-OAT', country: 'KR', tracked: true },
-  { id: 'O03', buyerId: 'B03', sku: 'FK-CD-OAT', country: 'JP', tracked: true },
+  { id: 'O01', buyerId: 'B01', sku: 'FK-SW-NV', country: 'KR', tracked: true }, // D2 INR
+  { id: 'O02', buyerId: 'B02', sku: 'FK-CD-OAT', country: 'KR', tracked: false }, // D1 SNAD
+  { id: 'O03', buyerId: 'B03', sku: 'FK-CD-OAT', country: 'JP', tracked: false },
   { id: 'O04', buyerId: 'B03', sku: 'FK-SW-NV', country: 'JP', tracked: false },
-  { id: 'O05', buyerId: 'B03', sku: 'FK-BN-SET', country: 'JP', tracked: true },
-  { id: 'O06', buyerId: 'B05', sku: 'FK-CD-OAT', country: 'DE', tracked: true },
-  { id: 'O07', buyerId: 'B05', sku: 'FK-BN-SET', country: 'DE', tracked: false },
-  // D3: 배송 완료 기록이 있어야 F1(반복 주장) 규칙이 걸린다 (SPEC rules.abuse)
-  { id: 'O08', buyerId: 'B04', sku: 'FK-BN-SET', country: 'US', tracked: true },
-  { id: 'O09', buyerId: 'B04', sku: 'FK-BN-SET', country: 'US', tracked: false }, // D7 전액 환불
-  { id: 'O10', buyerId: 'B04', sku: 'FK-BN-SET', country: 'US', tracked: true }, // D8 배송 증빙으로 승소
-  { id: 'O11', buyerId: 'B04', sku: 'FK-CD-OAT', country: 'US', tracked: false },
-  { id: 'O12', buyerId: 'B04', sku: 'FK-SW-NV', country: 'US', tracked: false },
+  { id: 'O05', buyerId: 'B03', sku: 'FK-BN-SET', country: 'JP', tracked: false },
+  { id: 'O06', buyerId: 'B05', sku: 'FK-BN-SET', country: 'DE', tracked: true },
+  { id: 'O07', buyerId: 'B05', sku: 'FK-CD-OAT', country: 'DE', tracked: false },
+  // D3: 배송 완료 기록이 있어야 F1(반복 주장) 규칙이 걸린다 (SPEC rules.abuse).
+  // buyer_m의 비니 주문 4건(O08~O11)은 모두 추적 등록이고, 분쟁 D3·D7·D8이 그 중 세 건에 걸린다.
+  // `SeedDispute`에 주문 ID가 없어 어느 주문인지는 시드에서 고정하지 않는다.
+  { id: 'O08', buyerId: 'B04', sku: 'FK-BN-SET', country: 'US', tracked: true }, // D3 INR
+  { id: 'O09', buyerId: 'B04', sku: 'FK-BN-SET', country: 'US', tracked: true },
+  { id: 'O10', buyerId: 'B04', sku: 'FK-BN-SET', country: 'US', tracked: true },
+  { id: 'O11', buyerId: 'B04', sku: 'FK-BN-SET', country: 'US', tracked: true },
+  { id: 'O12', buyerId: 'B04', sku: 'FK-CD-OAT', country: 'US', tracked: true },
 ];
 
 /** 원문 6-2의 구매자 B06~B12 주문 10건 (샌드박스 아님). 분쟁 상품과 맞춘다 */
@@ -340,12 +346,22 @@ type GeneratedInquirySpec = {
   /** 원문 6-2의 문의 건수를 맞추려고 지정한 구매자. 없으면 자동 생성 구매자에게 붙는다 */
   buyerId?: string;
   date?: string;
+  /** 문장이 특정 상품을 가리키면, 그 상품을 주문한 구매자에게만 붙인다 */
+  requireSkus?: readonly string[];
+  /** 문장이 추적 상태를 가리키면, 그 상태의 주문을 가진 구매자에게만 붙인다 */
+  requireTracked?: boolean;
 };
+
+/** 사이즈(어깨 너비·기장·가슴 둘레) 문의가 성립하는 의류 3종. 비니 세트는 제외한다 */
+const APPAREL_SKUS = ['FK-CD-OAT', 'FK-SW-NV', 'FK-CT-GR'] as const;
 
 /**
  * 자동 생성 문의 23건의 고정 템플릿. LLM을 쓰지 않는다.
  * 한국어는 존댓말 템플릿이고 팀이 검수한다.
  * 한국어 12건 / 영어 11건 (23건의 절반 ±1건).
+ *
+ * 문장이 상품이나 추적 상태를 가리키면 `requireSkus`·`requireTracked`로 못 박아서,
+ * 그 문의가 붙는 구매자의 주문과 어긋나지 않게 한다.
  */
 export const generatedInquirySpecs: GeneratedInquirySpec[] = [
   // ── 배송 12건 ──
@@ -356,29 +372,30 @@ export const generatedInquirySpecs: GeneratedInquirySpec[] = [
   { type: 'shipping', lang: 'EN', buyerId: 'B09', date: '2026-10-05', signal: 'A1', original: 'There is no tracking number on my order. Has it shipped?', english: 'There is no tracking number on my order. Has it shipped?' },
   { type: 'shipping', lang: 'EN', buyerId: 'B09', date: '2026-10-14', signal: 'A1', original: 'Still nothing here and still no tracking. Please advise.', english: 'Still nothing here and still no tracking. Please advise.' },
   { type: 'shipping', lang: 'KO', signal: 'A2', original: '주문한 상품이 아직 도착하지 않았어요. 배송 상황을 알려주실 수 있을까요?', english: "My order hasn't arrived yet. Could you let me know the shipping status?" },
-  { type: 'shipping', lang: 'KO', signal: 'A2', original: '통관 중이라고 나오는데 며칠 더 걸릴까요?', english: "It says it's in customs clearance. How many more days will it take?" },
-  { type: 'shipping', lang: 'KO', signal: 'A1', original: '발송 안내를 아직 못 받았는데 언제 보내주시나요?', english: "I haven't received a shipping notice yet. When will it be sent?" },
-  { type: 'shipping', lang: 'KO', signal: 'A1', original: '배송 조회 번호를 알려주실 수 있나요?', english: 'Could you give me the tracking number?' },
-  { type: 'shipping', lang: 'KO', signal: 'A2', original: '통관에서 멈춘 것 같아요. 필요한 서류가 있으면 알려주세요.', english: "It looks like it's stuck in customs. Please let me know if any documents are needed." },
-  { type: 'shipping', lang: 'EN', signal: 'A2', original: "My tracking hasn't updated for several days. Any news?", english: "My tracking hasn't updated for several days. Any news?" },
-  { type: 'shipping', lang: 'EN', signal: 'A1', original: 'I still have no shipping confirmation. When does my order go out?', english: 'I still have no shipping confirmation. When does my order go out?' },
+  { type: 'shipping', lang: 'KO', signal: 'A2', original: '통관 중이라고 나오는데 며칠 더 걸릴까요?', english: "It says it's in customs clearance. How many more days will it take?", requireTracked: true },
+  { type: 'shipping', lang: 'KO', signal: 'A1', original: '발송 안내를 아직 못 받았는데 언제 보내주시나요?', english: "I haven't received a shipping notice yet. When will it be sent?", requireTracked: false },
+  { type: 'shipping', lang: 'KO', signal: 'A1', original: '운송장 번호를 알려주실 수 있나요?', english: 'Could you give me the tracking number?', requireTracked: false },
+  { type: 'shipping', lang: 'KO', signal: 'A2', original: '통관에서 멈춘 것 같아요. 필요한 서류가 있으면 알려주세요.', english: "It looks like it's stuck in customs. Please let me know if any documents are needed.", requireTracked: true },
+  { type: 'shipping', lang: 'EN', signal: 'A2', original: "My tracking hasn't updated for several days. Any news?", english: "My tracking hasn't updated for several days. Any news?", requireTracked: true },
+  { type: 'shipping', lang: 'EN', signal: 'A1', original: 'I still have no shipping confirmation. When does my order go out?', english: 'I still have no shipping confirmation. When does my order go out?', requireTracked: false },
 
   // ── 사이즈 6건 ──
-  { type: 'size', lang: 'KO', signal: 'B2', original: 'M 사이즈 어깨 너비가 몇 cm인가요?', english: 'What is the shoulder width of size M in cm?' },
-  { type: 'size', lang: 'KO', signal: 'B2', original: '키가 165cm인데 S와 M 중 어느 것이 좋을까요?', english: "I'm 165 cm tall. Would S or M suit me better?" },
-  { type: 'size', lang: 'KO', signal: 'B2', original: '사이즈표가 인치로만 있어서요. cm로도 알려주실 수 있나요?', english: 'The size chart is only in inches. Could you give me the measurements in cm as well?' },
-  { type: 'size', lang: 'KO', signal: 'B2', original: '스웨터 소매 길이도 알려주시면 좋겠어요.', english: 'I would also like to know the sleeve length of the sweater.' },
-  { type: 'size', lang: 'EN', signal: 'B2', original: 'Is the cardigan true to size, or should I size up?', english: 'Is the cardigan true to size, or should I size up?' },
-  { type: 'size', lang: 'EN', signal: 'B2', original: 'Could you share the chest measurement for size L in cm?', english: 'Could you share the chest measurement for size L in cm?' },
+  { type: 'size', lang: 'KO', signal: 'B2', original: 'M 사이즈 어깨 너비가 몇 cm인가요?', english: 'What is the shoulder width of size M in cm?', requireSkus: APPAREL_SKUS },
+  { type: 'size', lang: 'KO', signal: 'B2', original: '키가 165cm인데 S와 M 중 어느 것이 좋을까요?', english: "I'm 165 cm tall. Would S or M suit me better?", requireSkus: APPAREL_SKUS },
+  { type: 'size', lang: 'KO', signal: 'B2', original: '사이즈표가 인치로만 있어서요. cm로도 알려주실 수 있나요?', english: 'The size chart is only in inches. Could you give me the measurements in cm as well?', requireSkus: APPAREL_SKUS },
+  { type: 'size', lang: 'KO', signal: 'B2', original: '스웨터 소매 길이를 알려주실 수 있나요?', english: 'Could you tell me the sleeve length of the sweater?', requireSkus: ['FK-SW-NV'] },
+  { type: 'size', lang: 'EN', signal: 'B2', original: 'Is the cardigan true to size, or should I size up?', english: 'Is the cardigan true to size, or should I size up?', requireSkus: ['FK-CD-OAT'] },
+  { type: 'size', lang: 'EN', signal: 'B2', original: 'Could you share the chest measurement for size L in cm?', english: 'Could you share the chest measurement for size L in cm?', requireSkus: APPAREL_SKUS },
 
   // ── 색상 3건 ──
   { type: 'color', lang: 'KO', signal: 'B1', original: '화면에서 보이는 색과 실제 색이 많이 다른가요?', english: 'Is the actual color very different from what I see on screen?' },
-  { type: 'color', lang: 'KO', signal: 'B1', original: '오트 색상이 사진보다 더 회색빛인가요?', english: 'Is the oat color greyer than it looks in the photo?' },
-  { type: 'color', lang: 'EN', signal: 'B1', original: 'Does the oat shade read more beige or more grey in daylight?', english: 'Does the oat shade read more beige or more grey in daylight?' },
+  { type: 'color', lang: 'KO', signal: 'B1', original: '오트 색상이 사진보다 더 회색빛인가요?', english: 'Is the oat color greyer than it looks in the photo?', requireSkus: ['FK-CD-OAT'] },
+  { type: 'color', lang: 'EN', signal: 'B1', original: 'Does the oat shade read more beige or more grey in daylight?', english: 'Does the oat shade read more beige or more grey in daylight?', requireSkus: ['FK-CD-OAT'] },
 
   // ── 기타 2건 (분류 신호 없음) ──
   { type: 'other', lang: 'KO', original: '선물 포장도 해주시나요?', english: 'Do you offer gift wrapping as well?' },
-  { type: 'other', lang: 'EN', original: 'Will you restock the beanie and scarf set?', english: 'Will you restock the beanie and scarf set?' },
+  // 재입고 문의는 재고가 가장 적은 코트(25개)로 둔다. 비니 세트는 재고 150이라 문장과 어긋났다
+  { type: 'other', lang: 'EN', original: 'Will you restock the cashmere coat in grey?', english: 'Will you restock the cashmere coat in grey?', requireSkus: ['FK-CT-GR'] },
 ];
 
 /** 자동 생성 문의 날짜: 90일 안에 고정 간격으로 흩뜨린다 (i마다 다른 날) */
@@ -390,15 +407,48 @@ function generatedInquiryDate(i: number): string {
  * 문의 31건 = 원문 6-3 표 8건(앞) + 자동 생성 23건(뒤).
  * 배열 순서가 '표'와 '자동 생성'을 가른다 (`SeedInquiry`에 유형 필드가 없다).
  */
+/** 자동 생성 문의를 붙일 나라: 한국어는 한국 주문, 영어는 미국 주문 구매자 */
+const INQUIRY_POOL_COUNTRY: Record<'KO' | 'EN', SeedOrder['country']> = { KO: 'KR', EN: 'US' };
+
+/**
+ * 구매자를 지정하지 않은 자동 생성 문의에 자동 생성 구매자를 붙인다.
+ * 문장이 가리키는 상품·추적 상태(`requireSkus`·`requireTracked`)와 그 구매자의 주문이 맞아야 한다.
+ * 조건이 붙은 문의부터 먼저 고르고(제약이 없는 문의가 자리를 먼저 차지하지 않게), 각 단계는
+ * 주문 배열 순서대로 첫 번째로 맞는 구매자를 고른다 — 순서가 고정이라 결과도 결정적이다.
+ */
+function assignAnonBuyers(orders: SeedOrder[]): Map<number, string> {
+  const anonOrders = orders.filter((o) => o.buyerId.startsWith(ANON_BUYER_PREFIX));
+  const assigned = new Map<number, string>();
+  const used = new Set<string>();
+
+  const indexes = generatedInquirySpecs
+    .map((spec, i) => ({ spec, i }))
+    .filter(({ spec }) => !spec.buyerId);
+  const constrained = indexes.filter(({ spec }) => spec.requireSkus || spec.requireTracked !== undefined);
+  const free = indexes.filter(({ spec }) => !spec.requireSkus && spec.requireTracked === undefined);
+
+  for (const { spec, i } of [...constrained, ...free]) {
+    const match = anonOrders.find(
+      (o) =>
+        o.country === INQUIRY_POOL_COUNTRY[spec.lang] &&
+        !used.has(o.buyerId) &&
+        (!spec.requireSkus || spec.requireSkus.includes(o.sku)) &&
+        (spec.requireTracked === undefined || o.tracked === spec.requireTracked),
+    );
+    if (!match) throw new Error(`자동 생성 구매자를 찾지 못했다: ${spec.lang} "${spec.original}"`);
+    used.add(match.buyerId);
+    assigned.set(i, match.buyerId);
+  }
+
+  return assigned;
+}
+
 export function buildInquiries(orders: SeedOrder[]): SeedInquiry[] {
-  const anonByCountry = (country: SeedOrder['country']) =>
-    orders.filter((o) => o.buyerId.startsWith(ANON_BUYER_PREFIX) && o.country === country).map((o) => o.buyerId);
-  const pool: Record<'KO' | 'EN', string[]> = { KO: anonByCountry('KR'), EN: anonByCountry('US') };
-  const taken: Record<'KO' | 'EN', number> = { KO: 0, EN: 0 };
+  const anonBuyerBySpec = assignAnonBuyers(orders);
 
   let anonIndex = 0;
-  const generated = generatedInquirySpecs.map((spec): SeedInquiry => {
-    const buyerId = spec.buyerId ?? pool[spec.lang][taken[spec.lang]++];
+  const generated = generatedInquirySpecs.map((spec, i): SeedInquiry => {
+    const buyerId = spec.buyerId ?? anonBuyerBySpec.get(i);
     if (!buyerId) throw new Error(`${spec.lang} 자동 생성 구매자가 모자라다`);
     const date = spec.date ?? generatedInquiryDate(anonIndex);
     if (!spec.buyerId) anonIndex++;

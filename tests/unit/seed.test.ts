@@ -162,6 +162,39 @@ const DISPUTE_BUYER_ID: Record<string, string> = {
 /** 원문 6-5 / SPEC 9-5: 샌드박스 구매자별 주문 수 (합 12) */
 const SANDBOX_ORDERS_PER_BUYER: Record<string, number> = { B01: 1, B02: 1, B03: 3, B05: 2, B04: 5 };
 
+/**
+ * `tasks/T001.md` "주문 12건 배정" 표. **그 표가 샌드박스 12건의 정본이다.**
+ * 여기 값은 표에서 따로 옮겨 적었다 (상품은 표의 이름·금액 그대로. SKU는 6-1의 상품명으로 찾는다).
+ * 구매자 칸은 manifest의 `buyer` 키다 → 6-2 ID 대응은 아래 `BUYER_ID_BY_MANIFEST_KEY`.
+ */
+const TABLE_T001_SANDBOX_ORDERS = [
+  { key: 'O01', buyer: 'seoyeon', itemName: 'Wool Sweater, Navy', priceCents: 7200, tracked: true, dispute: 'D2' },
+  { key: 'O02', buyer: 'jiho', itemName: 'Knit Cardigan, Oat', priceCents: 4800, tracked: false, dispute: 'D1' },
+  { key: 'O03', buyer: 'yuki', itemName: 'Knit Cardigan, Oat', priceCents: 4800, tracked: false, dispute: null },
+  { key: 'O04', buyer: 'yuki', itemName: 'Wool Sweater, Navy', priceCents: 7200, tracked: false, dispute: null },
+  { key: 'O05', buyer: 'yuki', itemName: 'Beanie + Scarf Set', priceCents: 3500, tracked: false, dispute: null },
+  { key: 'O06', buyer: 'lena', itemName: 'Beanie + Scarf Set', priceCents: 3500, tracked: true, dispute: null },
+  { key: 'O07', buyer: 'lena', itemName: 'Knit Cardigan, Oat', priceCents: 4800, tracked: false, dispute: null },
+  { key: 'O08', buyer: 'buyer_m', itemName: 'Beanie + Scarf Set', priceCents: 3500, tracked: true, dispute: 'D3' },
+  { key: 'O09', buyer: 'buyer_m', itemName: 'Beanie + Scarf Set', priceCents: 3500, tracked: true, dispute: null },
+  { key: 'O10', buyer: 'buyer_m', itemName: 'Beanie + Scarf Set', priceCents: 3500, tracked: true, dispute: null },
+  { key: 'O11', buyer: 'buyer_m', itemName: 'Beanie + Scarf Set', priceCents: 3500, tracked: true, dispute: null },
+  { key: 'O12', buyer: 'buyer_m', itemName: 'Knit Cardigan, Oat', priceCents: 4800, tracked: true, dispute: null },
+];
+
+/** `tasks/T001.md`: "추적: 등록 7 (O01, O06, O08~O12) · 미등록 5 (O02~O05, O07)" */
+const TABLE_T001_TRACKED_KEYS = ['O01', 'O06', 'O08', 'O09', 'O10', 'O11', 'O12'];
+const TABLE_T001_UNTRACKED_KEYS = ['O02', 'O03', 'O04', 'O05', 'O07'];
+
+/** T001 표·manifest의 구매자 키 → 원문 6-2 ID (T001 "개인 계정 5개": 서연·지호·Yuki·Lena·buyer_m) */
+const BUYER_ID_BY_MANIFEST_KEY: Record<string, string> = {
+  seoyeon: 'B01',
+  jiho: 'B02',
+  yuki: 'B03',
+  lena: 'B05',
+  buyer_m: 'B04',
+};
+
 // ───────────────────────────── 건수 ─────────────────────────────
 
 describe('T007 건수 (원문 4-1, 6-1 ~ 6-4)', () => {
@@ -406,6 +439,66 @@ describe('T007 주문 (원문 6-5, 4-1)', () => {
     const named = orders.filter((o) => /^B\d{2}$/.test(o.buyerId));
     expect(named).toHaveLength(22);
     for (const o of orders) expect(/^(B\d{2}|X\d{3})$/.test(o.buyerId), o.buyerId).toBe(true);
+  });
+});
+
+// ─────────────── 샌드박스 12건 = tasks/T001.md "주문 12건 배정" 표 (정본) ───────────────
+
+describe('T007 샌드박스 12건이 tasks/T001.md 배정 표와 행마다 같다', () => {
+  const sandbox = orders.filter((o) => o.source === 'sandbox');
+  const skuByItemName = new Map(products.map((p) => [p.itemName, p.sku]));
+
+  it('12행의 키·구매자·상품·금액·추적 여부가 표와 같다', () => {
+    expect(sandbox.map((o) => o.id)).toEqual(TABLE_T001_SANDBOX_ORDERS.map((r) => r.key));
+    for (const row of TABLE_T001_SANDBOX_ORDERS) {
+      const o = sandbox.find((x) => x.id === row.key)!;
+      expect(o, row.key).toBeDefined();
+      expect(o.buyerId, `${row.key} 구매자`).toBe(BUYER_ID_BY_MANIFEST_KEY[row.buyer]);
+      expect(o.sku, `${row.key} 상품`).toBe(skuByItemName.get(row.itemName));
+      expect(o.amountCents, `${row.key} 금액`).toBe(row.priceCents);
+      expect(o.tracked, `${row.key} 추적`).toBe(row.tracked);
+    }
+  });
+
+  it('추적 등록 7건(O01, O06, O08~O12) · 미등록 5건(O02~O05, O07)이 표의 목록과 같다', () => {
+    expect(sandbox.filter((o) => o.tracked).map((o) => o.id)).toEqual(TABLE_T001_TRACKED_KEYS);
+    expect(sandbox.filter((o) => !o.tracked).map((o) => o.id)).toEqual(TABLE_T001_UNTRACKED_KEYS);
+    expect(TABLE_T001_TRACKED_KEYS).toHaveLength(7);
+    expect(TABLE_T001_UNTRACKED_KEYS).toHaveLength(5);
+  });
+
+  it('표의 분쟁 칸(O01 D2 · O02 D1 · O08 D3)이 그 주문의 구매자·상품과 맞는다', () => {
+    for (const row of TABLE_T001_SANDBOX_ORDERS.filter((r) => r.dispute)) {
+      const d = disputes.find((x) => x.id === row.dispute)!;
+      expect(d, row.dispute!).toBeDefined();
+      expect(d.buyerId, `${row.dispute} 구매자`).toBe(BUYER_ID_BY_MANIFEST_KEY[row.buyer]);
+      expect(d.sku, `${row.dispute} 상품`).toBe(skuByItemName.get(row.itemName));
+      expect(d.source, `${row.dispute} 출처`).toBe('sandbox');
+    }
+  });
+});
+
+// ─────────────── 자동 생성 문의가 그 구매자의 주문과 어긋나지 않는다 ───────────────
+
+describe('T007 자동 생성 문의와 주문의 맞물림', () => {
+  const ordersOf = (buyerId: string) => orders.filter((o) => o.buyerId === buyerId);
+
+  it('상품을 가리키는 문장은 그 상품을 주문한 구매자에게 붙는다', () => {
+    generatedInquirySpecs.forEach((spec, i) => {
+      if (!spec.requireSkus) return;
+      const q = inquiries[8 + i];
+      const skus = ordersOf(q.buyerId).map((o) => o.sku);
+      expect(skus.some((s) => spec.requireSkus!.includes(s)), `${q.buyerId} "${spec.original}"`).toBe(true);
+    });
+  });
+
+  it('추적 상태를 가리키는 문장은 그 상태의 주문을 가진 구매자에게 붙는다', () => {
+    generatedInquirySpecs.forEach((spec, i) => {
+      if (spec.requireTracked === undefined) return;
+      const q = inquiries[8 + i];
+      const states = ordersOf(q.buyerId).map((o) => o.tracked);
+      expect(states.includes(spec.requireTracked), `${q.buyerId} "${spec.original}"`).toBe(true);
+    });
   });
 });
 

@@ -14,7 +14,7 @@
     "sku": "FK-CD-OAT",
     "amountCents": 4800,
     "country": "KR",
-    "tracked": true,
+    "tracked": false,
     "source": "sandbox"
   },
   {
@@ -23,7 +23,7 @@
     "sku": "FK-CD-OAT",
     "amountCents": 4800,
     "country": "JP",
-    "tracked": true,
+    "tracked": false,
     "source": "sandbox"
   },
   {
@@ -41,14 +41,14 @@
     "sku": "FK-BN-SET",
     "amountCents": 3500,
     "country": "JP",
-    "tracked": true,
+    "tracked": false,
     "source": "sandbox"
   },
   {
     "id": "O06",
     "buyerId": "B05",
-    "sku": "FK-CD-OAT",
-    "amountCents": 4800,
+    "sku": "FK-BN-SET",
+    "amountCents": 3500,
     "country": "DE",
     "tracked": true,
     "source": "sandbox"
@@ -56,8 +56,8 @@
   {
     "id": "O07",
     "buyerId": "B05",
-    "sku": "FK-BN-SET",
-    "amountCents": 3500,
+    "sku": "FK-CD-OAT",
+    "amountCents": 4800,
     "country": "DE",
     "tracked": false,
     "source": "sandbox"
@@ -77,7 +77,7 @@
     "sku": "FK-BN-SET",
     "amountCents": 3500,
     "country": "US",
-    "tracked": false,
+    "tracked": true,
     "source": "sandbox"
   },
   {
@@ -92,19 +92,19 @@
   {
     "id": "O11",
     "buyerId": "B04",
-    "sku": "FK-CD-OAT",
-    "amountCents": 4800,
+    "sku": "FK-BN-SET",
+    "amountCents": 3500,
     "country": "US",
-    "tracked": false,
+    "tracked": true,
     "source": "sandbox"
   },
   {
     "id": "O12",
     "buyerId": "B04",
-    "sku": "FK-SW-NV",
-    "amountCents": 7200,
+    "sku": "FK-CD-OAT",
+    "amountCents": 4800,
     "country": "US",
-    "tracked": false,
+    "tracked": true,
     "source": "sandbox"
   },
   {
@@ -839,8 +839,8 @@
   {
     "id": "SO082",
     "buyerId": "X072",
-    "sku": "FK-CT-GR",
-    "amountCents": 18900,
+    "sku": "FK-SW-NV",
+    "amountCents": 7200,
     "country": "DE",
     "tracked": false,
     "source": "seed"
@@ -1109,8 +1109,8 @@
   {
     "id": "SO112",
     "buyerId": "X102",
-    "sku": "FK-BN-SET",
-    "amountCents": 3500,
+    "sku": "FK-CT-GR",
+    "amountCents": 18900,
     "country": "US",
     "tracked": false,
     "source": "seed"

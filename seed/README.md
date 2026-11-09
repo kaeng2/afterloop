@@ -33,6 +33,7 @@ npm test        # tests/unit/seed.test.ts — 원문 표와 대조
 | 체크리스트 빈 항목 | 자연광 사진 / 색상 고지 / cm 사이즈표 / 한국어 통관 안내 / 서명 배송 기준 (6-1) | `Natural-light photos` / `Color disclosure` / `Size chart in cm` / `Korean customs notice` / `Signature on delivery` | 화면이 영어다 (SPEC 4장). UI 레인이 문구 키로 받길 원하면 컨트롤 타워 결정 필요 |
 | 자동 생성 문의 유형 | 배송 12 · 사이즈 6 · 색상 3 · 기타 2 (6-3) | `data.ts`의 `type` (배열 순서로 묶음) | `SeedInquiry`에 유형 필드가 없다. 파일에서는 앞 8건이 표, 뒤 23건이 자동 생성 |
 | 자동 생성 구매자 | 없음 | `X001`~`X192` | 6-2는 '핵심 12명'만 적는다. 나머지 주문의 구매자는 `X` 접두사로 구분한다 |
+| 자동 생성 문의가 붙는 구매자 | 없음 | 문장이 가리키는 상품·추적 상태와 맞는 주문이 있는 구매자 | 문장(`data.ts`의 `requireSkus`·`requireTracked`)과 그 구매자의 주문이 어긋나지 않게 한다. 한국어는 한국 주문, 영어는 미국 주문 구매자에게 붙는다 |
 | 국가 비율 | US 45 · KR 25 · JP 15 · DE 15 (4-1) | US 95 · KR 53 · JP 31 · DE 31 · GB 4 (= 214) | 6-2의 B12(Sophie B.)가 영국이라 GB 4건을 먼저 빼고 남은 210건을 최대 잉여법으로 나눴다. 각 비율 오차 0.6%p 이하 |
 | 추적 등록 | "60%" (4-1), 샌드박스 7/12 (6-5) | 128 / 214 (59.8%) | 샌드박스 7 + 6-2 구매자 7 + 자동 생성 114 |
 | 종결 분쟁 손실 | 합 $408 (6-4) | 5600 · 5600 · 5600 · 4300 · 0 · 19700 = 40800¢ | SPEC 13장 Q8 "원문 그대로" |
@@ -41,22 +42,36 @@ npm test        # tests/unit/seed.test.ts — 원문 표와 대조
 
 `orders.json`의 샌드박스 12건은 **자리표시자**다. `id`가 `O01`~`O12`이고, T001이 쓰는
 `tests/sandbox/manifest.json`의 `orders[].key`와 같은 값이어야 한다 (AC13이 그 키로 조회한다).
-구매자·상품·추적 여부도 아래와 같이 맞췄다.
 
-| id | 구매자 | manifest `buyer` | SKU | 추적 |
-|---|---|---|---|---|
-| O01 | B01 김서연 | `seoyeon` | FK-SW-NV | ✓ (D2 통관 보류 메모) |
-| O02 | B02 박지호 | `jiho` | FK-CD-OAT | ✓ |
-| O03 | B03 Yuki T. | `yuki` | FK-CD-OAT | ✓ |
-| O04 | B03 Yuki T. | `yuki` | FK-SW-NV | — |
-| O05 | B03 Yuki T. | `yuki` | FK-BN-SET | ✓ |
-| O06 | B05 Lena K. | `lena` | FK-CD-OAT | ✓ |
-| O07 | B05 Lena K. | `lena` | FK-BN-SET | — |
-| O08 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ (D3) |
-| O09 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | — (D7) |
-| O10 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ (D8) |
-| O11 | B04 buyer_m*** | `buyer_m` | FK-CD-OAT | — |
-| O12 | B04 buyer_m*** | `buyer_m` | FK-SW-NV | — |
+**배정의 정본은 `tasks/T001.md`의 "주문 12건 배정" 표다.** 시드는 그 표의 키·구매자·상품·추적
+여부를 행마다 그대로 옮겨 적는다 (T026의 주문 생성 스크립트도 같은 표를 따른다). 아래 표는
+옮겨 적은 결과이고, 단위 테스트(`tests/unit/seed.test.ts`의 "샌드박스 12건이 tasks/T001.md 배정
+표와 행마다 같다")가 표 값과 직접 비교한다. 배정을 바꿔야 하면 시드가 아니라 `tasks/T001.md`를
+먼저 고친다 (컨트롤 타워 결정).
 
-D3은 F1(반복 주장) 규칙이 걸려야 하므로 배송 완료 기록이 있는 주문(O08)에 붙인다
-(`config/rules.json`의 `abuse.minPriorInrDisputes`).
+| id | 구매자 | manifest `buyer` | SKU | 추적 | 분쟁 |
+|---|---|---|---|---|---|
+| O01 | B01 김서연 | `seoyeon` | FK-SW-NV | ✓ (D2 통관 보류 메모) | D2 INR |
+| O02 | B02 박지호 | `jiho` | FK-CD-OAT | — | D1 SNAD |
+| O03 | B03 Yuki T. | `yuki` | FK-CD-OAT | — | — |
+| O04 | B03 Yuki T. | `yuki` | FK-SW-NV | — | — |
+| O05 | B03 Yuki T. | `yuki` | FK-BN-SET | — | — |
+| O06 | B05 Lena K. | `lena` | FK-BN-SET | ✓ | — |
+| O07 | B05 Lena K. | `lena` | FK-CD-OAT | — | — |
+| O08 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | D3 INR |
+| O09 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | — |
+| O10 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | — |
+| O11 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | — |
+| O12 | B04 buyer_m*** | `buyer_m` | FK-CD-OAT | ✓ | — |
+
+추적: 등록 7 (O01, O06, O08~O12) · 미등록 5 (O02~O05, O07).
+
+D3은 F1(반복 주장) 규칙이 걸려야 하므로 배송 완료 기록이 있는 주문에 붙는다
+(`config/rules.json`의 `abuse.minPriorInrDisputes`). 표대로면 buyer_m의 비니 주문 4건
+(O08~O11)이 모두 추적 등록이고, 분쟁 D3·D7·D8이 그 중 세 건에 걸린다. `SeedDispute`에 주문
+ID가 없어서 **어느 주문인지는 시드에서 고정하지 않는다** (계약에 `orderId`를 넣을지는 컨트롤
+타워 결정 사항이다).
+
+샌드박스 12건이 바뀌어도 전체 합계는 그대로다: 나머지 202건은 상품별(62·48·33·71)·국가별·추적
+할당량에서 남은 몫을 자동으로 채우므로, 샌드박스 쪽 상품·추적 배정이 바뀌면 자동 생성 주문의
+상품·추적만 그만큼 반대로 움직인다.
