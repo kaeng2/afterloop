@@ -8,15 +8,20 @@ import Anthropic from '@anthropic-ai/sdk';
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEFAULT_LLM_MAX_RETRIES,
   DEFAULT_LLM_MODEL,
+  DEFAULT_LLM_TIMEOUT_MS,
   LLM_MAX_TOKENS,
   LlmApiError,
   LlmConfigError,
+  LlmError,
   LlmRefusalError,
   LlmResponseError,
   type LlmClient,
+  type LlmClientOptions,
   type LlmEnv,
   createLlmCaller,
+  readClientOptions,
 } from '@/ai/llm';
 
 type CreateParams = Parameters<LlmClient['beta']['messages']['create']>[0];
@@ -264,5 +269,143 @@ describe('로그', () => {
     expect(lines.join('\n')).not.toContain(FAKE_KEY);
     expect(lines.join('\n')).not.toContain('SYSTEM-PROMPT-MARKER');
     expect(lines.join('\n')).not.toContain('USER-PROMPT-MARKER');
+  });
+
+  it('로그 한 줄도 개인정보 가림을 거친다 (줄을 늘려도 부호가 남지 않게)', async () => {
+    const lines: string[] = [];
+    const { client } = fakeClient(reply({ model: 'claude-opus-5-5 P123456789012' }));
+    await createLlmCaller(env(), { client, log: (line) => lines.push(line) })(REQ);
+
+    expect(lines[0]).toContain('⟦PCCC⟧');
+    expect(lines[0]).not.toContain('P123456789012');
+  });
+});
+
+// ───────────────────────────── T032 ─────────────────────────────
+
+describe('T032: 기본 모델', () => {
+  it('기본 모델 ID는 claude-opus-5-5 (날짜 접미사 없음)', async () => {
+    expect(DEFAULT_LLM_MODEL).toBe('claude-opus-5-5');
+    expect(DEFAULT_LLM_MODEL).not.toMatch(/-20[0-9]{6}$/);
+
+    const { sent, client } = fakeClient(reply());
+    await createLlmCaller(env(), { client })(REQ);
+    expect(sent[0].model).toBe('claude-opus-5-5');
+  });
+
+  it('LLM_MODEL로 덮어쓸 수 있다', async () => {
+    const { sent, client } = fakeClient(reply());
+    await createLlmCaller(env({ LLM_MODEL: 'claude-opus-5' }), { client })(REQ);
+
+    expect(sent[0].model).toBe('claude-opus-5');
+  });
+});
+
+describe('T032: 제한 시간·재시도 옵션', () => {
+  /** 클라이언트를 만들 때 들어가는 옵션을 받아 둔다 (실제 SDK 클라이언트를 만들지 않는다). */
+  function capturing(): { seen: (LlmClientOptions & { apiKey: string })[]; deps: Parameters<typeof createLlmCaller>[1] } {
+    const seen: (LlmClientOptions & { apiKey: string })[] = [];
+    const { client } = fakeClient(reply());
+    return {
+      seen,
+      deps: {
+        createClient: (options) => {
+          seen.push(options);
+          return client;
+        },
+      },
+    };
+  }
+
+  it('기본값: timeout 20000ms, maxRetries 1', () => {
+    expect(DEFAULT_LLM_TIMEOUT_MS).toBe(20_000);
+    expect(DEFAULT_LLM_MAX_RETRIES).toBe(1);
+    expect(readClientOptions({})).toEqual({ timeout: 20_000, maxRetries: 1 });
+  });
+
+  it('클라이언트를 만들 때 키와 함께 들어간다', async () => {
+    const { seen, deps } = capturing();
+    await createLlmCaller(env(), deps)(REQ);
+
+    expect(seen).toHaveLength(1);
+    expect(seen[0].timeout).toBe(20_000);
+    expect(seen[0].maxRetries).toBe(1);
+    expect(seen[0].apiKey).toBe(FAKE_KEY);
+  });
+
+  it('환경 변수로 바뀐다', async () => {
+    expect(readClientOptions({ LLM_TIMEOUT_MS: '5000', LLM_MAX_RETRIES: '0' })).toEqual({
+      timeout: 5000,
+      maxRetries: 0,
+    });
+
+    const { seen, deps } = capturing();
+    await createLlmCaller(env({ LLM_TIMEOUT_MS: ' 7500 ', LLM_MAX_RETRIES: '3' }), deps)(REQ);
+    expect(seen[0]).toMatchObject({ timeout: 7500, maxRetries: 3 });
+  });
+
+  it.each([
+    ['LLM_TIMEOUT_MS 음수', { LLM_TIMEOUT_MS: '-1' }],
+    ['LLM_TIMEOUT_MS 숫자 아님', { LLM_TIMEOUT_MS: 'soon' }],
+    ['LLM_TIMEOUT_MS 소수', { LLM_TIMEOUT_MS: '20.5' }],
+    ['LLM_TIMEOUT_MS 0', { LLM_TIMEOUT_MS: '0' }],
+    ['LLM_MAX_RETRIES 음수', { LLM_MAX_RETRIES: '-2' }],
+    ['LLM_MAX_RETRIES 숫자 아님', { LLM_MAX_RETRIES: 'many' }],
+  ])('잘못된 값은 설정 오류 — %s', async (_name, over) => {
+    expect(() => readClientOptions(over)).toThrow(LlmConfigError);
+
+    const { sent, client } = fakeClient(reply());
+    const call = createLlmCaller(env(over), { client });
+    await expect(call(REQ)).rejects.toBeInstanceOf(LlmConfigError);
+    expect(sent).toHaveLength(0);
+  });
+
+  it('설정 오류 문구에 키를 싣지 않는다', async () => {
+    const { client } = fakeClient(reply());
+    const error = await createLlmCaller(env({ LLM_TIMEOUT_MS: 'soon' }), { client })(REQ).catch((e: unknown) => e);
+
+    expect(String(error)).not.toContain(FAKE_KEY);
+  });
+});
+
+describe('T032: 오류 종류와 다시 묻기', () => {
+  it.each([
+    ['permission', 403, new Anthropic.PermissionDeniedError(403, {}, 'forbidden', new Headers()), false],
+    ['server', 500, new Anthropic.InternalServerError(500, {}, 'boom', new Headers()), true],
+    ['timeout', 408, new Anthropic.RequestTimeoutError(408, {}, 'too slow', new Headers()), true],
+    ['auth', 401, new Anthropic.AuthenticationError(401, {}, 'bad key', new Headers()), false],
+    ['bad_request', 400, new Anthropic.BadRequestError(400, {}, 'bad', new Headers()), false],
+    ['rate_limit', 429, new Anthropic.RateLimitError(429, {}, 'slow down', new Headers()), true],
+  ])('%s (%i) → retryable %s', async (kind, status, thrown, retryable) => {
+    const { client } = fakeClient({ fail: thrown });
+
+    const error = await createLlmCaller(env(), { client })(REQ).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(LlmApiError);
+    expect((error as LlmApiError).kind).toBe(kind);
+    expect((error as LlmApiError).status).toBe(status);
+    expect((error as LlmApiError).retryable).toBe(retryable);
+  });
+
+  it('제한 시간(연결 시간 초과)은 timeout이고 다시 물을 수 있다', async () => {
+    const { client } = fakeClient({ fail: new Anthropic.APIConnectionTimeoutError({ message: 'timed out' }) });
+
+    const error = await createLlmCaller(env(), { client })(REQ).catch((e: unknown) => e);
+    expect((error as LlmApiError).kind).toBe('timeout');
+    expect((error as LlmApiError).retryable).toBe(true);
+  });
+
+  it('설정 오류·거절은 다시 묻지 않고, 응답을 읽지 못한 것은 다시 묻는다', () => {
+    expect(new LlmConfigError('LLM_API_KEY is not set').retryable).toBe(false);
+    expect(new LlmRefusalError('cyber').retryable).toBe(false);
+    expect(new LlmResponseError('LLM response was not valid JSON').retryable).toBe(true);
+    expect(new LlmError('something else').retryable).toBe(true);
+  });
+
+  it('종류를 알 수 없는 예외도 다시 물을 수 있다', async () => {
+    const { client } = fakeClient({ fail: 'just a string' });
+
+    const error = await createLlmCaller(env(), { client })(REQ).catch((e: unknown) => e);
+    expect((error as LlmApiError).kind).toBe('unknown');
+    expect((error as LlmApiError).retryable).toBe(true);
   });
 });
