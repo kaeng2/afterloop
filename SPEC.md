@@ -1,4 +1,4 @@
-# SPEC v2 (2026-11-09 18:40 KST)
+# SPEC v2.1 (2026-11-09 21:02 KST)
 
 > **계약 변경 규칙.** 이 문서, `src/types.ts`, `tests/acceptance/`는 계약이다. 바꿔야 하면 컨트롤 타워가 변경 내용·이유·영향받는 작업을 `DECISIONS.md`에 먼저 적고, 사람이 승인한 뒤에만 바꾼다. 바꿀 때마다 위 버전을 올린다. 작업 세션은 이 세 곳과 `DECISIONS.md`, `TASKS.md`, `tasks/`를 고치지 않는다 (`.claude/settings.json`에서 편집이 막혀 있다).
 
@@ -6,6 +6,7 @@
 - 원문: `inbox/2026-11-09-prd-v2.md` (Fernwood Knits 버전). 이 SPEC에서 "원문 N장"은 이 파일의 장 번호다.
 - 검토: `inbox/2026-11-09-prd-v2-review.md`. **원문과 충돌하면 검토 파일이 우선**한다 (M1~M9).
 - 이 SPEC은 둘을 합친 결과다. 셋이 다르면 SPEC > 검토 > 원문 순서.
+- v2.1 (2026-11-09): 분쟁 수수료 f 800¢ → 1500¢ (`inbox/done/2026-11-09-dispute-fee.md`), 샌드박스 주문 스크립트 경로 추가 (11장). 나머지는 v2 그대로.
 - 미확정 항목은 13장. 임시값으로 진행한다.
 
 ## 1. 제품 한 줄
@@ -52,7 +53,8 @@
 - L_fight = (1 − p_win)(A + f) + t
 - L_offer = p_acc·x·A + (1 − p_acc)(1 − p_win)(A + f) + t (거절되면 다투기로 가지만 t는 한 번만)
 - L_refund = A + t
-- 기본값 (`config/params.json`): f = 800¢, t = 200¢, x = 0.15(정책 고정, 최적화하지 않음), p_acc = 0.72
+- 기본값 (`config/params.json`): f = 1500¢, t = 200¢, x = 0.15(정책 고정, 최적화하지 않음), p_acc = 0.72
+- f는 PayPal 미국 Standard Dispute Fee 15.00 USD (source "PayPal", https://www.paypal.com/webapps/mpp/merchant-fees). **질 때만 부과**한다 (위 식 그대로). 합의 단계에서 해결되거나 제안이 수락되면 면제이므로 L_offer의 수락 분기와 L_refund에는 f가 없다 (13장 Q7)
 - p_win: 세부 유형별 기본값, 추적 등록(배송 기록)이 있으면 별도 값 (A1·A3·A4·F1 0.15 → 0.80, A2 0.30 → 0.60, 원문 9-1). B1 0.30.
 - **제안은 색상·사이즈(B1, B2)만** 평가한다. 그 외는 `blockedBy: 'OFFER_SCOPE'`, `expectedLossCents: null`.
 - 재구매 가치 V, 이탈 확률 c, p_acc 곡선은 쓰지 않는다 (v1에서 삭제. 13장 Q1).
@@ -140,7 +142,7 @@
 | 레인 | 폴더 (수정 가능) |
 |---|---|
 | engine | `src/engine/` (기대 손실, 정책·오토파일럿 판정, 확대 위험 점수, 시뮬레이션), `config/params.json`, `config/rules.json` |
-| paypal | `src/paypal/`, `src/exec/`, `scripts/sandbox/`, `tests/sandbox/`, `tests/fixtures/` |
+| paypal | `src/paypal/`, `src/exec/`, `scripts/sandbox/`, `scripts/create-sandbox-orders.ts`, `scripts/capture-sandbox-orders.ts`, `tests/sandbox/`, `tests/fixtures/` |
 | ai | `src/ai/` (분류, 번역, 토큰 검사, 문구 생성), `scripts/eval-classifier.ts` |
 | ui | `src/app/`, `config/copy.*.json` |
 | data | `seed/` |
@@ -166,5 +168,7 @@
 | Q4 | 시뮬레이션 숫자: 원문의 $195/$43, $481/$143을 정확히 맞출지, 우리 시뮬레이션 결과로 화면·문서 숫자를 바꿀지 (원문 sim.js가 저장소에 없음) | 우리 결과로 맞춤, 원문 값 ±15% 안이면 그대로 |
 | Q5 | B1·A1·A2·F1 외 세부 유형의 p_win, 가디건 외 상품 3개의 유형별 기본 분쟁 확률 | 컨트롤 타워 임시 가정값 (`source: "가정(임시)"`) |
 | Q6 | 샌드박스 비즈니스 계정: 지금 앱은 KR 비즈니스 계정에 묶여 있음. US 비즈니스 계정과 새 앱이 필요 | 사람이 만들고 `.env` 교체 |
+| Q7 | 판매자가 이겨도 분쟁 수수료 f가 부과되는지 | 질 때만 부과 (5장 식 그대로) |
+| Q8 | 시드의 종결 분쟁 손실(원문 6-4, 합 $408)은 "환불액 + 수수료 $8"로 만든 값. f = $15에 맞춰 다시 계산할지 | 원문 그대로 (합 40800¢) |
 
 변경 이력은 `DECISIONS.md`.

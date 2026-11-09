@@ -1,8 +1,8 @@
 {
-  "version": "params-2026-11-09.v2",
-  "note": "SPEC v2 기대 손실·시뮬레이션 가정값. 엔진(src/engine/)은 읽기만 한다. source: \"가정\" | \"가정(임시)\" | \"공개 통계: <출처>\" | \"PayPal 데이터\". \"가정(임시)\"는 SPEC 13장 Q5 미확정 값이다.",
+  "version": "params-2026-11-09.v2.1",
+  "note": "SPEC v2.1 기대 손실·시뮬레이션 가정값. 엔진(src/engine/)은 읽기만 한다. source: \"가정\" | \"가정(임시)\" | \"공개 통계: <출처>\" | \"PayPal\"(공식 수수료표) | \"PayPal 데이터\". \"가정(임시)\"는 SPEC 13장 Q5 미확정 값이다.",
   "params": {
-    "feeCents": { "value": 800, "source": "가정", "note": "원문 10-3. 분쟁 수수료 f = $8" },
+    "feeCents": { "value": 1500, "source": "PayPal", "note": "분쟁 수수료 f = $15. PayPal 미국 Standard Dispute Fee 15.00 USD (https://www.paypal.com/webapps/mpp/merchant-fees). 질 때만 부과, 제안 수락·합의 단계 해결은 면제 (SPEC 5장, Q7)" },
     "timeCostCents": { "value": 200, "source": "가정", "note": "원문 10-3. 대응 시간 비용 t = $2 (분쟁당 한 번, 검토 M1)" },
     "offerRate": { "value": 0.15, "source": "가정", "note": "정책 제안률 x. 고정, 최적화하지 않음 (검토 결정 3)" },
     "pAccept": { "value": 0.72, "source": "가정", "note": "원문 10-3·검토 M1. 제안 수락률 p_acc" },

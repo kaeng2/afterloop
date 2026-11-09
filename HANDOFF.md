@@ -5,11 +5,11 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 ## 1. 지금 상태 한눈에
 | 항목 | 값 |
 |---|---|
-| SPEC | **v2** (2026-11-09 18:40 KST). 기준 문서 `inbox/2026-11-09-prd-v2.md` + `inbox/2026-11-09-prd-v2-review.md` (검토가 우선) |
+| SPEC | **v2.1** (2026-11-09 21:02 KST, f = 1500¢). 기준 문서 `inbox/2026-11-09-prd-v2.md` + `inbox/2026-11-09-prd-v2-review.md` (검토가 우선) |
 | main | 이 문서가 들어간 커밋 (`git log --oneline -1`) |
 | 인수 테스트 | AC1~AC14 잠금. AC1~AC10은 v2 기대값으로 승인됨. AC15 이후는 작성 예정 |
 | 기능 코드 | **아직 없음.** 엔진·PayPal·AI·화면 구현 전. 테스트는 모듈이 없어서 실패하는 것이 정상 |
-| 진행 중 작업 세션 | **없음** (이동 준비 중이라 새로 시작한 작업 없음) |
+| 진행 중 작업 세션 | 자동 배분 중 (2026-11-09 21시부터). 지금 상태는 `reports/STATUS.md`와 `TASKS.md` |
 | 원격 저장소 | **https://github.com/kaeng2/afterloop** (비공개, 기본 브랜치 main). main과 레인 브랜치 전부, `engine-v0-ref`까지 push됨 |
 
 ## 2. 대기 중인 결정
@@ -19,6 +19,8 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 | Q2 | 서연 확대 위험 7 → 4로 할지, 응답 기한을 옮겨 6 → 3을 유지할지 | 7 → 4 | 기획자 확인 중 |
 | Q4 | 시뮬레이션 숫자: 원문 sim.js를 받으면 그 기준, 못 받으면 우리 결과로 화면·문서 숫자를 맞춤 | sim.js 원본 대기 (T015 보류) | 기획자에게 요청함 |
 | Q6 | 샌드박스 US 비즈니스 계정 + 새 REST 앱 (지금 앱은 KR 비즈니스 계정) | — | 기획자가 직접 (T001 "사람이 먼저 할 일") |
+| Q7 | 판매자가 이겨도 분쟁 수수료가 부과되는지 | 질 때만 부과 | 기획자 확인 중 |
+| Q8 | 시드 종결 분쟁 손실($408 = 환불액 + 수수료 $8)을 f = $15로 다시 계산할지 | 원문 그대로 $408 | 기획자 |
 
 결정 끝난 것 (참고): Q3 오토파일럿 가벼운 버전 P0 확정 · Q5 임시 가정값 승인(화면에 Assumption 배지) · **T011 추적번호는 Orders v2 `/track` 주문별 반복 호출**, 등록 여부는 주문 상세 조회 (trackers-batch는 지원 중단, 이 앱에서 403). PRD 원문의 trackers-batch 문구는 검토 파일 M3로 대체됨.
 
@@ -38,7 +40,7 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 | 2 | T008 실행 executeMove | paypal / `lane/paypal-exec` | `../afterloop-wt/paypal-exec` | [tasks/T008.md](tasks/T008.md) |
 | 그다음 | T001(사람 작업 먼저), T005, T006, T010, T018 | | | T001·T006 지시서 있음 |
 
-작업 세션 첫 입력 (worktree 폴더에서 `claude` 실행 후):
+2026-11-09 21시부터는 컨트롤 타워가 자동 배분한다 (6장). 아래는 사람이 직접 띄울 때의 첫 입력 (worktree 폴더에서 `claude` 실행 후):
 > CLAUDE.md 규칙에 따라 tasks/T004.md를 읽고 작업해줘. 시작 전에 현재 폴더와 SPEC 버전(v2)을 확인하고, 끝나면 reports/에 보고하고 멈춰.
 
 (T004 자리에 T007, T002, T008을 넣어 쓴다.)
@@ -113,14 +115,44 @@ worktree마다 다른 레인 폴더를 막는 로컬 설정 `.claude/settings.lo
 | 명령 (`afterloop/`에서) | 기대 결과 |
 |---|---|
 | `git log --oneline -1` | 이 문서가 들어간 커밋 |
-| `head -1 SPEC.md` | `# SPEC v2 (2026-11-09 18:40 KST)` |
-| `npm run test:acceptance` | **Test Files 8 failed**, Tests 2 failed / 9 skipped. 실패 원인은 모듈 없음(`@/engine/*`, `@/exec/execute`, `@/paypal/client`)과 AC13 오프라인 2개(`.env.example` 없음, T001이 만듦) |
+| `head -1 SPEC.md` | `# SPEC v2.1 (2026-11-09 21:02 KST)` |
+| `npm run test:acceptance` (구현 전) | **Test Files 8 failed**, Tests 2 failed / 9 skipped. 실패 원인은 모듈 없음(`@/engine/*`, `@/exec/execute`, `@/paypal/client`)과 AC13 오프라인 2개(`.env.example` 없음, T001이 만듦) |
 | `npx tsc --noEmit` | 오류는 모두 TS2307 "Cannot find module" 5종 (`@/engine/recommend`, `@/engine/plan`, `@/engine/escalation`, `@/exec/execute`, `@/paypal/client`) |
 | 잠금 확인 (worktree 안): `claude -p --permission-mode acceptEdits 'Edit SPEC.md: replace "# SPEC v2" with "# SPEC v9". Report ALLOWED or DENIED.'` | DENIED |
 
 구현이 들어오면: T004 → `ac01-03`, `ac05-06-08`, `ac09-10` 통과 (27개), T005 → `ac04` (5개), T018 → `ac07` (5개), T008 → `ac11-12` (10개), T002 → `ac14` (14개), T001 → `ac13` (`RUN_SANDBOX=1`일 때 11개).
 
-## 6. 이 컴퓨터에만 있고 git에 없는 것
+## 6. 자동 배분 시작
+규칙은 [CLAUDE.md](CLAUDE.md) "운영 모드: 자동 배분". 사람은 작업 지시문을 붙여넣지 않는다.
+
+1. 컨트롤 타워 세션을 상위 폴더에서 시작하고 "자동 배분 시작"이라고 한다. 컨트롤 타워는 `TASKS.md`와 `reports/STATUS.md` 마지막 줄을 읽고 이어서 한다.
+2. 컨트롤 타워가 태스크마다 실행하는 것 (동시에 최대 2개):
+   ```bash
+   # 구현: 레인 worktree 안에서 (잠금 적용). 허용 명령은 npm·npx·git 읽기/커밋 정도로 제한
+   cd ../afterloop-wt/<레인> && git merge --ff-only main
+   claude -p --permission-mode acceptEdits --allowedTools "Bash(npm run *)" "Bash(npx vitest *)" "Bash(git commit *)" ... \
+     'CLAUDE.md 규칙에 따라 tasks/T0xx.md를 읽고 작업해줘. ... reports/T0xx-impl.md에 보고하고 멈춰.'
+   ```
+   - 검증: 구현을 모르는 새 서브에이전트 (코드 수정 금지) → `reports/T0xx-verify.md`
+   - 통과: `git merge --no-ff lane/<레인>` → `npm run test:acceptance`, `npm test`, `npx tsc --noEmit` → 푸시
+   - 기록: `reports/STATUS.md` 한 줄 + 푸시
+3. 터미널 `claude`가 로그인되어 있어야 한다 (`claude auth status`). 만료되면 구현 세션이 바로 실패한다.
+4. 모바일에서는 GitHub의 `reports/STATUS.md`만 보면 된다.
+5. 컨트롤 타워가 멈추고 사람을 부르는 경우: 계약·인수 테스트 변경 필요, 같은 태스크 2회 연속 실패, 사람 전용 작업, UI 병합 전 스크린샷 확인, 마일스톤 완료, 권한 대기.
+
+## 7. 브라우저 작업
+규칙은 [CLAUDE.md](CLAUDE.md) "브라우저 작업". 웹 화면은 브라우저 에이전트가 맡고, Secret은 사람만 다룬다. live PayPal 화면이 나오면 즉시 중단한다.
+
+| 순서 | 할 일 | 누가 | 끝나면 |
+|---|---|---|---|
+| 1 | developer.paypal.com에서 US 비즈니스 샌드박스 계정(Fernwood Knits) + 새 REST 앱. Customer disputes·Transaction search 켜기. 개인 계정 5개 (서연 KR, 지호 KR, Yuki JP, Lena DE, buyer_m US) | 브라우저 에이전트 (사람 확인) | Q6 해결 |
+| 2 | 새 앱의 Client ID·Secret을 `afterloop-wt/paypal/.env`에 **사람이 직접** 입력 (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com`). AI는 Secret을 읽거나 출력하지 않는다 | 사람 | T026·T001 시작 가능 |
+| 3 | `reports/sandbox-approve-links.md`의 승인 링크 12건을 구매자 계정으로 승인 (T026 `sandbox:orders` 뒤) | 브라우저 에이전트 | `npm run sandbox:capture` |
+| 4 | Resolution Center에서 분쟁 3건 접수: D1 지호 SNAD(O02), D2 서연 INR(O01, 한국어 메시지는 `tasks/T001.md` 그대로), D3 buyer_m INR(O08) | 브라우저 에이전트 | T001 `disputes`, `sandbox:check` |
+
+배포(Render)와 제출(Devpost) 화면도 브라우저 에이전트가 맡는다 (T025).
+
+## 8. 이 컴퓨터에만 있고 git에 없는 것
 | 항목 | 위치 | 새 컴퓨터에서 |
 |---|---|---|
 | 예전 Python 실습 (git 저장소 아님) | `~/paypal-hackathon/` (`paypal_client.py`, `orders.py`, `rules.py` 등, `.venv`) | 필요하면 폴더째 복사. T002 참고용 |
@@ -136,7 +168,7 @@ worktree마다 다른 레인 폴더를 막는 로컬 설정 `.claude/settings.lo
 | GitHub 로그인 | macOS 키체인 (`gh`) | `gh auth login` |
 | PayPal 샌드박스 상태 | PayPal 쪽 (KR 앱, 분쟁 PP-R-XWI-10197379) | v2에서 쓰지 않음. 새 US 앱으로 T001에서 다시 만듦 |
 
-## 7. 이동 전 점검 결과 (2026-11-09 19:30)
+## 9. 이동 전 점검 결과 (2026-11-09 19:30)
 - worktree 3개와 레인 브랜치: 커밋 안 된 변경 없음, main보다 앞선 커밋 없음
 - git 기록 전체(모든 브랜치)와 커밋 전 변경: 실제 `.env` 값 3개(PayPal Client ID·Secret, Anthropic 키) 0건, 토큰·키 형식 0건, `.env` 류 파일 커밋 이력 없음
 - 원격 저장소: `kaeng2/afterloop` 만들고 브랜치 9개 push, 로컬과 원격 커밋 일치 확인
