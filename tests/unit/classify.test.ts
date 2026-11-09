@@ -510,7 +510,7 @@ describe('T032: 메시지 본문의 이메일·전화번호', () => {
           '연락은 seoyeon.kim@example.com 으로 주세요',
           '전화는 010-1234-5678 입니다',
           '해외에서는 +82 10 1234 5678 로 연락 주세요',
-          '01012345678 로도 됩니다',
+          '02-123-4567 로도 됩니다',
         ],
       }),
       { llm },
@@ -520,7 +520,7 @@ describe('T032: 메시지 본문의 이메일·전화번호', () => {
     expect(user).not.toContain('seoyeon.kim@example.com');
     expect(user).not.toContain('010-1234-5678');
     expect(user).not.toContain('+82 10 1234 5678');
-    expect(user).not.toContain('01012345678');
+    expect(user).not.toContain('02-123-4567');
     expect(user.match(/⟦EMAIL⟧/g)).toHaveLength(1);
     expect(user.match(/⟦PHONE⟧/g)).toHaveLength(3);
   });
@@ -576,6 +576,12 @@ describe('T032: 오류 종류별 호출 횟수', () => {
     ['제한 시간', { fail: new LlmApiError('timeout', undefined) }, 2],
     ['응답을 읽지 못함 (깨진 JSON·길이 초과)', { fail: new LlmResponseError('not valid JSON') }, 2],
     ['스키마 위반', { json: { subtype: 'ZZ' } }, 2],
+    // T032 재시도: 다시 물어도 같은 결과인 4xx를 더했다
+    ['없는 모델·경로 404', { fail: new LlmApiError('api', 404) }, 1],
+    ['충돌 409', { fail: new LlmApiError('api', 409) }, 1],
+    ['본문 과다 413', { fail: new LlmApiError('api', 413) }, 1],
+    ['요청 검증 실패 422', { fail: new LlmApiError('api', 422) }, 1],
+    ['그 밖의 4xx 402는 그대로 다시 묻는다', { fail: new LlmApiError('api', 402) }, 2],
   ];
 
   it.each(CASES)('%s → %i회, 예외 없이 기본 유형', async (_name, reply, times) => {
@@ -600,5 +606,204 @@ describe('T032: 오류 종류별 호출 횟수', () => {
       needsReview: true,
       confidence: 0,
     });
+  });
+});
+
+// ─────────────────────── T032 재시도 (검증 보고서 반영) ───────────────────────
+
+/** 구분 글자를 뺀 꼴. 어떤 꼴로 쪼개 적었어도 숫자 12개가 남지 않았는지 본다. */
+function withoutSeparators(text: string): string {
+  return text.replace(/[\s\-.－‐-―．]/g, '');
+}
+
+const PLAIN_DIGITS = '123456789012';
+const WIDE_DIGITS = '１２３４５６７８９０１２';
+
+/**
+ * `reports/T032-verify.md`에서 **가려지지 않은 꼴 전부**.
+ *
+ * (가) 부호 바로 뒤에 구분 글자 + 다른 수(수량·전화번호·날짜·추적번호)가 오는 꼴 — 12번째 숫자 뒤의
+ * 수는 별개의 수이므로 부호는 가린다. (나) 구분 글자 종류 — 탭·줄바꿈·겹공백·NBSP·전각 공백·
+ * 전각 하이픈·엔 대시·`" - "`. 컨트롤 타워 결정: 개인정보를 가리는 쪽이 우선이다.
+ */
+const PCCC_LEFTOVER: [string, string][] = [
+  ['뒤에 수량', 'P123456789012 3개'],
+  ['뒤에 전화번호', 'P123456789012 010-9999-8888'],
+  ['뒤에 하이픈+숫자', 'P123456789012-1'],
+  ['뒤에 점+숫자', 'P123456789012.5'],
+  ['뒤에 일수', 'P123456789012 5 days ago'],
+  ['뒤에 날짜', 'P123456789012 2026-11-10'],
+  ['뒤에 추적번호', 'P123456789012 1Z999AA10123456784'],
+  ['띄어 쓴 꼴 + 뒤에 날짜', 'P 1234 5678 9012 2026-11-10'],
+  ['띄어 쓴 꼴 + 뒤에 4자리 (경계가 모호하면 앞에서부터 12개)', 'P 1234 5678 9012 3456'],
+  ['탭', 'P\t1234\t5678\t9012'],
+  ['줄바꿈', 'P1234\n5678\n9012'],
+  ['P 뒤 줄바꿈', 'P\n123456789012'],
+  ['겹공백', 'P  1234  5678  9012'],
+  ['NBSP', 'P 1234 5678 9012'],
+  ['전각 + 전각 공백', 'Ｐ　１２３４　５６７８　９０１２'],
+  ['전각 하이픈', 'Ｐ１２３４－５６７８－９０１２'],
+  ['엔 대시', 'P1234–5678–9012'],
+  ['공백 사이 하이픈', 'P1234 - 5678 - 9012'],
+];
+
+describe(`T032 재시도: 가려지지 않았던 ${PCCC_LEFTOVER.length}가지 꼴`, () => {
+  it.each(PCCC_LEFTOVER)('%s — 프롬프트·evidence·causeNote에 원문이 없다', async (_name, variant) => {
+    const { calls, llm } = fakeLlm(
+      llmAnswer({ evidence: [`buyer wrote ${variant} here`], cause: `PCCC ${variant} mismatch` }),
+    );
+    const cause = await classifyDispute(
+      input({
+        buyerMessages: [`통관번호는 ${variant} 입니다`],
+        trackingEvents: [`Customs: ${variant} required`],
+      }),
+      { llm },
+    );
+
+    const sent = `${calls[0].system}\n${calls[0].user}`;
+    expect(withoutSeparators(sent)).not.toContain(PLAIN_DIGITS);
+    expect(withoutSeparators(sent)).not.toContain(WIDE_DIGITS);
+    expect(calls[0].user).toContain('⟦PCCC⟧');
+
+    const dumped = JSON.stringify(cause);
+    expect(withoutSeparators(dumped)).not.toContain(PLAIN_DIGITS);
+    expect(withoutSeparators(dumped)).not.toContain(WIDE_DIGITS);
+    expect(cause.evidence[0]).toContain('⟦PCCC⟧');
+    expect(cause.causeNote).toContain('⟦PCCC⟧');
+  });
+
+  it('부호만 가리고 뒤에 오는 수는 남긴다 (분류에 쓰는 값이다)', async () => {
+    const { calls, llm } = fakeLlm(llmAnswer());
+    await classifyDispute(
+      input({
+        buyerMessages: ['P123456789012 3개 보냈어요', 'P 1234 5678 9012 2026-11-10 에 넣었어요'],
+        trackingEvents: ['P123456789012 1Z999AA10123456784 departed'],
+      }),
+      { llm },
+    );
+
+    const user = calls[0].user;
+    expect(user).toContain('⟦PCCC⟧ 3개');
+    expect(user).toContain('⟦PCCC⟧ 2026-11-10');
+    expect(user).toContain('⟦PCCC⟧ 1Z999AA10123456784');
+  });
+
+  it('부호 뒤 전화번호는 둘 다 가린다', async () => {
+    const { calls, llm } = fakeLlm(llmAnswer());
+    await classifyDispute(input({ buyerMessages: ['P123456789012 010-9999-8888'] }), { llm });
+
+    expect(calls[0].user).toContain('⟦PCCC⟧ ⟦PHONE⟧');
+  });
+});
+
+/**
+ * 가려지면 안 되는 꼴. 숫자가 구분 글자 없이 13개 이상 이어진 열·추적번호·주문번호·우편번호는
+ * 분류에 쓰는 값이므로 그대로 남는다 (`reports/T032-verify.md`의 "가려지면 안 되는 것").
+ */
+const NOT_MASKED: [string, string][] = [
+  ['P + 13자리 (구분 글자 없이 이어짐)', 'P1234567890123'],
+  ['P + 11자리', 'P12345678901'],
+  ['P + 5자리', 'P12345'],
+  ['주문번호 PO-', 'PO-123456789012'],
+  ['다른 코드 IDP', 'IDP123456789012'],
+  ['UPS 추적번호', '1Z999AA10123456784'],
+  ['EMS 추적번호', 'EE123456789KR'],
+  ['숫자 12개만', '123456789012'],
+  ['숫자 10개', '1234567890'],
+  ['13자리 숫자열', '6012345678901'],
+  ['우편번호', '06236'],
+  ['옛 우편번호', '135-080'],
+  ['0으로 시작하는 주문번호 10자리', '0123456789'],
+  ['0으로 시작하는 추적번호 11자리', '01234567890'],
+  ['날짜', '2026-11-17'],
+  ['PayPal 분쟁 번호', 'PP-D-123456'],
+];
+
+describe('T032 재시도: 가려지면 안 되는 꼴', () => {
+  it.each(NOT_MASKED)('%s — %s 는 그대로 남는다', async (_name, text) => {
+    const { calls, llm } = fakeLlm(llmAnswer({ evidence: [`buyer wrote ${text}`] }));
+    const cause = await classifyDispute(
+      input({ buyerMessages: [`번호는 ${text} 입니다`], trackingEvents: [`Tracking ${text} in transit`] }),
+      { llm },
+    );
+
+    expect(calls[0].user, text).toContain(text);
+    expect(calls[0].user, text).not.toContain('⟦PCCC⟧');
+    expect(calls[0].user, text).not.toContain('⟦PHONE⟧');
+    expect(cause.evidence[0], text).toBe(`buyer wrote ${text}`);
+  });
+});
+
+/** 전화번호: 구분 글자(하이픈·점·공백·괄호)나 `+` 국가번호가 있는 꼴만 가린다. */
+const PHONE_MASKED: [string, string][] = [
+  ['휴대전화 하이픈', '010-1234-5678'],
+  ['휴대전화 공백', '010 1234 5678'],
+  ['휴대전화 점', '010.1234.5678'],
+  ['서울 지역번호', '02-123-4567'],
+  ['경기 지역번호', '031-123-4567'],
+  ['괄호 지역번호', '(02) 123-4567'],
+  ['국가번호 + 공백', '+82 10 1234 5678'],
+  ['국가번호 + 하이픈', '+82-10-1234-5678'],
+  ['국가번호 붙여 쓴 꼴', '+821012345678'],
+  ['국가번호 + 괄호', '+1 (415) 555-1234'],
+];
+
+describe('T032 재시도: 전화번호 가림의 경계', () => {
+  it.each(PHONE_MASKED)('%s — %s 는 ⟦PHONE⟧으로 가린다', async (_name, text) => {
+    const { calls, llm } = fakeLlm(llmAnswer());
+    await classifyDispute(input({ buyerMessages: [`전화는 ${text} 입니다`] }), { llm });
+
+    expect(calls[0].user, text).not.toContain(text);
+    expect(calls[0].user, text).toContain('⟦PHONE⟧');
+  });
+
+  it('구분 글자가 없는 숫자열은 가리지 않는다 (주문·추적번호일 수 있다)', async () => {
+    const { calls, llm } = fakeLlm(llmAnswer());
+    await classifyDispute(
+      input({
+        buyerMessages: ['주문번호 0123456789 입니다', '01012345678 로도 됩니다'],
+        trackingEvents: ['tracking 01234567890 arrived'],
+      }),
+      { llm },
+    );
+
+    // 구분 글자가 없으면 전화번호인지 주문번호인지 모양으로 가를 수 없다 → 분류에 쓰는 번호를 남긴다
+    expect(calls[0].user).not.toContain('⟦PHONE⟧');
+    expect(calls[0].user).toContain('0123456789');
+    expect(calls[0].user).toContain('01012345678');
+    expect(calls[0].user).toContain('01234567890');
+  });
+});
+
+describe('T032 재시도: 가림 → 공백 정리 → 자르기 순서', () => {
+  it('줄바꿈·탭으로 나뉜 부호가 causeNote에 남지 않는다 (규칙 4)', async () => {
+    const { llm } = fakeLlm(llmAnswer());
+    const cause = await classifyDispute(
+      input({ reason: INR, trackingEvents: ['Customs hold: P1234\n5678\t9012 missing'] }),
+      { llm },
+    );
+
+    expect(cause.causeNote).toBe('Customs hold: ⟦PCCC⟧ missing');
+  });
+
+  it('공백을 줄여서 드러나는 꼴도 가린다 (가림 뒤에 한 번 더)', async () => {
+    const wide = `P1234${' '.repeat(10)}5678${' '.repeat(10)}9012`;
+    const { llm } = fakeLlm(llmAnswer({ evidence: [`buyer wrote ${wide}`], cause: `PCCC ${wide}` }));
+    const cause = await classifyDispute(input(), { llm });
+
+    expect(cause.evidence[0]).toBe('buyer wrote ⟦PCCC⟧');
+    expect(cause.causeNote).toBe('PCCC ⟦PCCC⟧');
+  });
+
+  it('자른 뒤에도 반쯤 잘린 부호 꼬리가 남지 않는다', async () => {
+    // 구분 글자 없이 13자리인 열은 일부러 가리지 않는다. 80자에서 자르면 그 꼬리가 `P` + 숫자 11개로 남는다.
+    const long = `${'c'.repeat(66)} P1234567890123`;
+    const { llm } = fakeLlm(llmAnswer({ evidence: [`${'e'.repeat(106)} P1234567890123`], cause: long }));
+    const cause = await classifyDispute(input(), { llm });
+
+    expect(cause.causeNote?.endsWith('⟦PCCC⟧…')).toBe(true);
+    expect(cause.causeNote).not.toContain('P1234');
+    expect(cause.evidence[0].endsWith('⟦PCCC⟧…')).toBe(true);
+    expect(cause.evidence[0]).not.toContain('P1234');
   });
 });

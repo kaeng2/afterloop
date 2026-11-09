@@ -19,7 +19,8 @@
  * - 로그에는 모델·effort·`stop_reason`·토큰 수만 남긴다. 프롬프트 전문은 남기지 않는다.
  *
  * 이 파일은 네트워크로 나가지 않는 단위 테스트를 위해 SDK 클라이언트를 주입받는다
- * (`createLlmCaller(env, { client })`). 주입하지 않으면 `new Anthropic({ apiKey })`를 만든다.
+ * (`createLlmCaller(env, { client })`). 주입하지 않으면 `new Anthropic({ apiKey, timeout, maxRetries })`를
+ * 만든다.
  */
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -50,6 +51,19 @@ export const DEFAULT_LLM_EFFORT: LlmEffort = 'low';
  */
 export const DEFAULT_LLM_TIMEOUT_MS = 20_000;
 export const DEFAULT_LLM_MAX_RETRIES = 1;
+
+/**
+ * 받아 주는 범위 (T032 재시도). 벗어난 값은 호출 없이 설정 오류다.
+ *
+ * 상한이 필요한 이유: Node의 타이머는 2^31−1ms를 넘는 지연을 **1ms로 바꾼다**. `LLM_TIMEOUT_MS`에
+ * 그런 값을 적으면 SDK가 거는 타이머가 곧바로 발화해 모든 요청이 제한 시간에 걸린다 — 분류가 늘
+ * 기본 유형으로 내려가는데 설정이 틀렸다는 표시는 어디에도 없다. 재시도 횟수도 마찬가지로 상한을 둔다
+ * (`timeout × (maxRetries + 1) × 분류기 재요청 2회`가 화면이 기다리는 시간이다).
+ */
+export const LLM_TIMEOUT_MS_MIN = 1_000;
+export const LLM_TIMEOUT_MS_MAX = 120_000;
+export const LLM_MAX_RETRIES_MIN = 0;
+export const LLM_MAX_RETRIES_MAX = 3;
 
 /** 분류 응답(JSON 한 덩어리)에 넉넉한 상한. 생각 토큰까지 함께 센다. */
 export const LLM_MAX_TOKENS = 1024;
@@ -100,7 +114,8 @@ export type LlmDeps = {
  *
  * `retryable`은 "같은 요청을 한 번 더 보낼 값이 있는가"다 (T032). 분류기가 이 값을 보고 재요청을
  * 정한다 — 분류기가 SDK를 끌어오지 않게 클래스가 아니라 속성으로 약속한다
- * (`src/ai/classify.ts`). `false`인 것만 모아 둔다: 설정 오류, 거절, 인증·권한·잘못된 요청.
+ * (`src/ai/classify.ts`). `false`인 것만 모아 둔다: 설정 오류, 거절, 인증·권한·잘못된 요청,
+ * 그리고 다시 물어도 같은 결과인 4xx(404·409·413·422).
  */
 export class LlmError extends Error {
   readonly retryable: boolean;
@@ -144,6 +159,12 @@ export class LlmRefusalError extends LlmError {
  */
 const FINAL_API_KINDS: readonly string[] = ['auth', 'permission', 'bad_request'];
 
+/**
+ * 다시 물어도 같은 결과인 상태 코드 (T032 재시도): 없는 모델·경로(404), 충돌(409),
+ * 본문이 너무 큼(413), 요청 내용 검증 실패(422). SDK가 종류로 접어 주지 않는 것들이라 상태로 본다.
+ */
+const FINAL_API_STATUSES: readonly number[] = [404, 409, 413, 422];
+
 /** API 오류. SDK의 타입 있는 예외를 종류로 접어 둔다. */
 export class LlmApiError extends LlmError {
   readonly kind: 'auth' | 'permission' | 'bad_request' | 'rate_limit' | 'timeout' | 'server' | 'connection' | 'api' | 'unknown';
@@ -152,8 +173,11 @@ export class LlmApiError extends LlmError {
   constructor(kind: LlmApiError['kind'], status: number | undefined, options?: { cause?: unknown }) {
     super(`LLM call failed (${kind}${status === undefined ? '' : ` ${status}`})`, {
       ...options,
-      // 종류로 알 수 없는 5xx(`api`)도 일시적 오류로 본다
-      retryable: !FINAL_API_KINDS.includes(kind) || (status !== undefined && status >= 500),
+      // 종류로 알 수 없는 5xx(`api`)는 일시적 오류로 본다. 그 밖에는 종류·상태가 "같은 결과" 목록에 있는지 본다
+      retryable:
+        status !== undefined && status >= 500
+          ? true
+          : !FINAL_API_KINDS.includes(kind) && !(status !== undefined && FINAL_API_STATUSES.includes(status)),
     });
     this.name = 'LlmApiError';
     this.kind = kind;
@@ -184,25 +208,38 @@ function readEffort(env: LlmEnv): LlmEffort {
 }
 
 /**
- * 음이 아닌 정수만 받는다. 음수·소수·숫자가 아닌 값은 설정 오류다 (값 자체는 메시지에 싣는다 —
- * 비밀값이 아니라 사람이 `.env`에 적은 숫자다).
+ * `min`~`max` 범위의 정수만 받는다. 음수·소수·숫자가 아닌 값·범위를 벗어난 값은 설정 오류다
+ * (값 자체는 메시지에 싣는다 — 비밀값이 아니라 사람이 `.env`에 적은 숫자다).
+ * 빈 값·공백만 있는 값은 기본값으로 본다 (`.env`에 `LLM_TIMEOUT_MS=`만 적은 경우).
  */
-function readInt(raw: string | undefined, fallback: number, name: string, min: number): number {
+function readInt(raw: string | undefined, fallback: number, name: string, min: number, max: number): number {
   const text = raw?.trim();
   if (!text) return fallback;
   if (!/^[0-9]+$/.test(text)) throw new LlmConfigError(`${name} must be an integer (got "${text}")`);
   const value = Number(text);
-  if (!Number.isSafeInteger(value) || value < min) {
-    throw new LlmConfigError(`${name} must be an integer of at least ${min}`);
+  if (!Number.isSafeInteger(value) || value < min || value > max) {
+    throw new LlmConfigError(`${name} must be an integer between ${min} and ${max} (got "${text}")`);
   }
   return value;
 }
 
-/** 제한 시간·재시도 횟수. 틀린 값이면 호출하지 않고 설정 오류를 던진다 (T032). */
+/** 제한 시간·재시도 횟수. 틀린 값·범위를 벗어난 값이면 호출하지 않고 설정 오류를 던진다 (T032). */
 export function readClientOptions(env: LlmEnv): LlmClientOptions {
   return {
-    timeout: readInt(env.LLM_TIMEOUT_MS, DEFAULT_LLM_TIMEOUT_MS, 'LLM_TIMEOUT_MS', 1),
-    maxRetries: readInt(env.LLM_MAX_RETRIES, DEFAULT_LLM_MAX_RETRIES, 'LLM_MAX_RETRIES', 0),
+    timeout: readInt(
+      env.LLM_TIMEOUT_MS,
+      DEFAULT_LLM_TIMEOUT_MS,
+      'LLM_TIMEOUT_MS',
+      LLM_TIMEOUT_MS_MIN,
+      LLM_TIMEOUT_MS_MAX,
+    ),
+    maxRetries: readInt(
+      env.LLM_MAX_RETRIES,
+      DEFAULT_LLM_MAX_RETRIES,
+      'LLM_MAX_RETRIES',
+      LLM_MAX_RETRIES_MIN,
+      LLM_MAX_RETRIES_MAX,
+    ),
   };
 }
 

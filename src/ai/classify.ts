@@ -15,7 +15,13 @@
  */
 import { z } from 'zod';
 
-import { CLASSIFY_OUTPUT_SCHEMA, CLASSIFY_SYSTEM, buildClassifyUser, maskPersonal } from '@/ai/prompts/classify';
+import {
+  CLASSIFY_OUTPUT_SCHEMA,
+  CLASSIFY_SYSTEM,
+  buildClassifyUser,
+  maskPersonal,
+  maskTruncatedPccc,
+} from '@/ai/prompts/classify';
 import { SUBTYPES, rulesFromConfig } from '@/engine/params';
 import type { Cause, ClassifyFn, ClassifyInput, LlmCaller, PolicyConfig, Subtype } from '@/types';
 
@@ -92,10 +98,16 @@ function oneLine(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-/** 화면·보고에 남길 한 조각: 개인정보 가림 + 한 줄 + 길이 제한 (SPEC 3장·10장). */
+/**
+ * 화면·보고에 남길 한 조각: 개인정보 가림 + 한 줄 + 길이 제한 (SPEC 3장·10장).
+ *
+ * 순서가 중요하다 (T032 재시도): **가림 → 공백 정리 → 다시 가림 → 자르기 → 꼬리 가림.**
+ * 공백을 줄이면 줄바꿈·탭·겹공백으로 나뉘어 있던 부호가 `P 1234 5678 9012` 꼴로 드러나므로
+ * 공백 정리 뒤에 한 번 더 가리고, 길이로 자른 뒤에도 반쯤 잘린 부호 꼬리를 한 번 더 없앤다.
+ */
 function clip(text: string, max: number): string {
-  const line = oneLine(maskPersonal(text));
-  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+  const line = maskPersonal(oneLine(maskPersonal(text)));
+  return line.length > max ? `${maskTruncatedPccc(line.slice(0, max - 1))}…` : line;
 }
 
 /** 근거 한 조각 (120자). */
