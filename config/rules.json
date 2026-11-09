@@ -1,20 +1,33 @@
 {
-  "version": "rules-2026-11-09.1",
-  "note": "정책 규칙 (PRD S7). 엔진(src/engine/)은 읽기만 한다. 값을 바꾸면 정책 변경이므로 DECISIONS.md에 기록하고, 인수 테스트 AC4~AC8 기대값이 바뀌는지 컨트롤 타워가 확인한다.",
-  "R1": { "maxAmountCents": 5000, "cause": "B_EXPECTATION", "maxOfferRate": 0.20, "note": "금액 이하이고 원인 B → 제안 비율 상한" },
-  "R2": { "minAmountCents": 15000, "refundType": "REFUND_WITH_RETURN", "note": "금액 이상 → 환불은 반품 조건" },
-  "R3": { "cause": "A_DELIVERY", "requiresDeliveredTracking": true, "note": "배송 완료 추적이 있으면 증빙 + 안내 메시지로 고정" },
-  "R4": { "causes": ["F_ABUSE"], "minBuyerDisputes90d": 2, "note": "원인 F 또는 90일 내 분쟁 n회 이상 → 제안 금지" },
-  "R5": { "channels": ["EXTERNAL"], "note": "외부 채널 → 협상 없이 증빙" },
-  "approval": {
-    "autoExecute": false,
-    "alwaysRequireCauses": ["E_FRAUD", "F_ABUSE"],
-    "alwaysRequireMoves": ["accept_claim"],
-    "note": "MVP는 자동 처리 없음. 모든 수는 판매자 승인 후 실행"
+  "version": "rules-2026-11-09.v2",
+  "note": "SPEC v2 정책·오토파일럿·확대 위험. 엔진(src/engine/)과 분류(src/ai/)는 읽기만 한다. 값을 바꾸면 DECISIONS.md에 기록한다.",
+  "offer": {
+    "eligibleSubtypes": ["B1", "B2"],
+    "maxRate": 0.20,
+    "note": "부분 환불 제안은 색상·사이즈만 (원문 10-3). 제안률은 params.offerRate(0.15) 고정, 한도 20%를 넘으면 설정 오류"
   },
-  "classification": { "minConfidence": 0.7, "note": "미만이면 needsReview = true" },
-  "excludedReasons": {
-    "values": [],
-    "note": "엔진 추천에서 빼고 '직접 처리'로 보낼 분쟁 사유 (PayPal reason 값). PRD 반영 후 채운다"
+  "autopilot": {
+    "skipCategories": ["F"],
+    "skipChannels": ["EXTERNAL"],
+    "minConfidence": 0.7,
+    "moneyMoves": ["offer", "refund"],
+    "note": "원문 10-6. 순서: 악용 의심(F) → 카드사 분쟁(EXTERNAL) → 확신도 미만 → 돈이 움직이는 수는 승인 대기 → 그 외 분쟁도 승인 대기. 자동 실행은 FAQ 답변만"
+  },
+  "abuse": {
+    "minPriorInrDisputes": 2,
+    "note": "검토 M5. 같은 구매자의 이전 미수령 분쟁 2회 이상(이번이 3번째 이상) + 배송 완료 기록 → F1"
+  },
+  "escalation": {
+    "cardCompanyMention": 3,
+    "unanswered": 2,
+    "angryTone": 1,
+    "dueWithin72h": 1,
+    "watchFrom": 3,
+    "highFrom": 5,
+    "note": "원문 10-4 + 검토 M4. 무응답 두 신호는 둘 중 하나만 가산"
+  },
+  "classification": {
+    "minConfidence": 0.7,
+    "note": "미만이면 needsReview ('Check type' 배지)"
   }
 }

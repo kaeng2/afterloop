@@ -1,18 +1,60 @@
 {
-  "version": "params-2026-11-09.1",
-  "note": "기대 손실 계산 가정값. 엔진(src/engine/)은 읽기만 한다. source: \"가정\" | \"공개 통계: <출처>\" | \"PayPal 데이터\". 값을 바꾸면 DECISIONS.md에 기록한다.",
+  "version": "params-2026-11-09.v2",
+  "note": "SPEC v2 기대 손실·시뮬레이션 가정값. 엔진(src/engine/)은 읽기만 한다. source: \"가정\" | \"가정(임시)\" | \"공개 통계: <출처>\" | \"PayPal 데이터\". \"가정(임시)\"는 SPEC 13장 Q5 미확정 값이다.",
   "params": {
-    "pWinBase":             { "value": 0.40, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 싸웠을 때 이길 확률 p_win" },
-    "feeCents":             { "value": 1500, "unit": "cents", "source": "가정", "note": "PRD 6-3. 패소 수수료 f" },
-    "tFightCents":          { "value": 1000, "unit": "cents", "source": "가정", "note": "PRD 6-3. 증빙 대응 시간 비용 t_fight" },
-    "tOfferCents":          { "value": 500,  "unit": "cents", "source": "가정", "note": "PRD 6-3. 제안 대응 시간 비용 t_offer" },
-    "repurchaseValueCents": { "value": 6000, "unit": "cents", "source": "가정", "note": "PRD 6-3. 재구매 가치 V (원인 F이면 엔진이 0으로 둔다)" },
-    "cFight":               { "value": 0.50, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 싸운 뒤 이탈 확률" },
-    "cAccept":              { "value": 0.20, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 제안 수락 후 이탈 확률" },
-    "cRefund":              { "value": 0.15, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 환불 후 이탈 확률" },
-    "offerRate":            { "value": 0.15, "unit": "ratio", "source": "가정", "note": "PRD 6-3. 제안 비율 x (판매자 설정 고정값, 최적화하지 않음)" },
-    "pAcceptBase":          { "value": 0.35, "unit": "prob",  "source": "가정", "note": "PRD 6-2. p_acc(x) = min(cap, base + slope·x)의 기본률" },
-    "pAcceptSlope":         { "value": 2.5,  "unit": "ratio", "source": "가정", "note": "PRD 6-2. p_acc 배수" },
-    "pAcceptCap":           { "value": 0.90, "unit": "prob",  "source": "가정", "note": "PRD 6-2. p_acc 상한" }
+    "feeCents": { "value": 800, "source": "가정", "note": "원문 10-3. 분쟁 수수료 f = $8" },
+    "timeCostCents": { "value": 200, "source": "가정", "note": "원문 10-3. 대응 시간 비용 t = $2 (분쟁당 한 번, 검토 M1)" },
+    "offerRate": { "value": 0.15, "source": "가정", "note": "정책 제안률 x. 고정, 최적화하지 않음 (검토 결정 3)" },
+    "pAccept": { "value": 0.72, "source": "가정", "note": "원문 10-3·검토 M1. 제안 수락률 p_acc" },
+    "pWin": {
+      "value": {
+        "A1": 0.15, "A2": 0.30, "A3": 0.15, "A4": 0.15,
+        "B1": 0.30, "B2": 0.30, "B3": 0.30, "B4": 0.30, "B5": 0.30,
+        "C1": 0.10, "C2": 0.30, "C3": 0.30,
+        "D1": 0.20,
+        "E1": 0.10,
+        "F1": 0.15, "F2": 0.30
+      },
+      "source": "가정(임시)",
+      "note": "추적 기록이 없을 때 승률. 근거 있는 값: A1·A3·A4·F1 0.15, A2 0.30 (원문 9-1 배송 분쟁 승률), B1 0.30 (검토 M2). 나머지는 컨트롤 타워 임시값 (Q5)"
+    },
+    "pWinWithTracking": {
+      "value": { "A1": 0.80, "A2": 0.60, "A3": 0.80, "A4": 0.80, "F1": 0.80 },
+      "source": "가정",
+      "note": "추적(배송) 기록이 있을 때 승률. 원문 9-1 (0.15 → 0.8, A2 0.3 → 0.6), 검토 M2 AC2"
+    }
+  },
+  "fixes": {
+    "tracking_24h": {
+      "value": { "rateMultiplier": { "A1": 0.25 }, "pWinOverride": { "A1": 0.80, "A2": 0.60, "A3": 0.80, "A4": 0.80, "F1": 0.80 } },
+      "source": "가정",
+      "note": "원문 9-1. 추적번호 24시간 내 등록: A1 확률 ×0.25, 배송 분쟁 승률 상향. 추적 없음은 등록 대비 A1 4배 (원문 10-2)"
+    },
+    "color_note": { "value": { "rateMultiplier": { "B1": 0.4 } }, "source": "가정", "note": "원문 9-1. 색상 고지 문구 (AI 생성): B1 ×0.4" },
+    "kr_customs_notice": { "value": { "rateMultiplier": { "A2": 0.5 } }, "source": "가정", "note": "원문 9-1. 한국 통관 안내: A2 ×0.5" },
+    "settle_first": { "value": { "rateMultiplier": {} }, "source": "가정", "note": "원문 9-1. 분쟁 수는 그대로, 분쟁마다 기대 손실이 가장 작은 수로 대응" }
+  },
+  "habitRefundShare": { "value": 0.5, "source": "가정", "note": "원문 9-1. 지금 습관: 분쟁 50% 전액 환불 / 50% 다투기" },
+  "productRates": {
+    "FK-CD-OAT": {
+      "value": { "A1": 0.0068, "A2": 0.0068, "B1": 0.0176, "B2": 0.0034, "B3": 0.0014 },
+      "source": "가정",
+      "note": "원문 6-1 가디건 (합 3.6%). 원문의 '기타 0.14%'는 B3에 둠"
+    },
+    "FK-SW-NV": {
+      "value": { "A1": 0.004, "A2": 0.015, "B2": 0.002 },
+      "source": "가정(임시)",
+      "note": "Q5. 90일 분쟁 1/48(통관 보류)을 바탕으로 한 컨트롤 타워 임시값 (합 2.1%)"
+    },
+    "FK-CT-GR": {
+      "value": { "A1": 0.005, "B3": 0.005, "E1": 0.02 },
+      "source": "가정(임시)",
+      "note": "Q5. 90일 분쟁 1/33(도용 결제)을 바탕으로 한 컨트롤 타워 임시값 (합 3.0%)"
+    },
+    "FK-BN-SET": {
+      "value": { "A1": 0.006, "A4": 0.006, "F1": 0.03 },
+      "source": "가정(임시)",
+      "note": "Q5. 90일 분쟁 3/71(반복 미수령 주장)을 바탕으로 한 컨트롤 타워 임시값 (합 4.2%)"
+    }
   }
 }

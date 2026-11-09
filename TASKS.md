@@ -1,48 +1,69 @@
 # TASKS (작업 보드)
 
-- 기준: SPEC v1.1 · 갱신 2026-11-09 18:10 KST · 컨트롤 타워만 수정
-- **초안**: PRD가 아직 `inbox/`에 없다. 아래는 빌드 순서 지시와 기존 테스트 지시서(수읽기 버전 B), 샌드박스 사전 확인 결과로 만든 것이다. PRD가 들어오면 "inbox 반영해줘"로 다시 쪼갠다.
-- 상태: 대기 / 진행중 / 검토 / 완료 / 보류. 작업 하나는 2시간 이내.
-- 인수 테스트: AC1~AC14는 작성·잠금 완료. **AC15~AC26은 작성 예정** (컨트롤 타워가 쓰고 사람 승인 후 잠금).
+- 기준: SPEC v2 · 갱신 2026-11-09 18:50 KST · 컨트롤 타워만 수정
+- 기준 문서: `inbox/2026-11-09-prd-v2.md` + `inbox/2026-11-09-prd-v2-review.md` (검토 우선)
+- 상태: 대기 / 진행중 / 검토 / 완료 / 보류. 작업 하나는 2시간 이내. P1은 P0가 끝난 뒤.
+- 인수 테스트: AC11·AC12·AC13(v2)·AC14 잠금. **AC1~AC10 v2 기대값 승인 대기** (테스트 파일은 아직 v1). AC15 이후는 작성 예정.
+
+## P0
+
+| ID | 작업 | 레인 | 상태 | 기준 SPEC | 의존 | 완료 기준 · 비고 |
+|---|---|---|---|---|---|---|
+| T000 | 하네스: 계약·인수 테스트·잠금·운영 문서 | 컨트롤 타워 | 완료 | v2 | — | AC1~AC14 |
+| T001 | 샌드박스 세팅 (M8): US 비즈니스 + 개인 5, 주문 12·추적 7·분쟁 3, manifest, `sandbox:check` | paypal | 대기 | v2 | — | AC13. 사람 작업 포함 (US 비즈니스 계정·새 앱, 승인 12회, 분쟁 접수). `tasks/T001.md` |
+| T002 | OAuth 클라이언트 | paypal | 대기 | v2 | — | AC14. v2 변경 없음. 브랜치 `lane/paypal-client`. `tasks/T002.md` |
+| T003 | 분쟁 목록·상세 + mapper → `BoardState` v2, `check.ts`를 클라이언트로 교체 | paypal | 대기 | v2 | T001, T002 | AC15 (작성 예정). fixture 갱신 |
+| T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 대기 | v2 | — | AC1~3·5·6·8~10 (v2 승인 후 배정). 참고 `engine-v0-ref`. `tasks/T004.md` |
+| T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 대기 | v2 | T004 | AC4, AC10 |
+| T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 대기 | v2 | — | AC16 (작성 예정). `tasks/T006.md` |
+| T007 | 시드 데이터 (원문 6장) | data | 대기 | v2 | — | AC17 (작성 예정). `tasks/T007.md` |
+| T008 | 실행 `executeMove` | paypal | 대기 | v2 | — | AC11, AC12. v2 변경 없음. 브랜치 `lane/paypal-exec`. `tasks/T008.md` |
+| T010 | 사실값 토큰 + 번역 검사 (모든 AI 초안에 적용, 결정 4) | ai | 대기 | v2 | — | AC20 (작성 예정). `CheckTokensFn` |
+| T011 | 추적번호 일괄 등록: 주문 상세로 미등록 판정 → `/track` 주문별 반복, 건별 결과 | paypal | 대기 | v2 | T002 | AC21 (작성 예정). M3 |
+| T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 대기 | v2 | T004 | AC22 (작성 예정). Q4·Q5 미확정 |
+| T018 | 확대 위험 점수 (원문 10-4 + M4) | engine | 대기 | v2 | — | AC7 (v2 승인 후). Q2 미확정 (임시 7 → 4) |
+| T019 | Transaction Search 조회 + 캐시 ('cached' 배지) | paypal | 대기 | v2 | T002 | AC25 (작성 예정). 실호출 4종 중 하나 (M7) |
+| T020 | AI 색상 문구: 분쟁 메시지에서 공통 불만 → EN·KO·JA·DE + 역번역 | ai | 대기 | v2 | T010 | AC26 (작성 예정). F5 |
+| T021 | FAQ 자동 답변 (오토파일럿 `common_questions`, Yuki 사이즈 문의) | ai | 대기 | v2 | T010 | AC27 (작성 예정). 이메일은 시뮬레이션 |
+| T009 | **S5 Case** (서연 SC4): 대화 토글, AI 원인 ↔ 코드 점수, 코칭 → 영어 초안 → 한국어 전송본 → 토큰 검사 → send-message | ui | 대기 | v2 | T003, T006, T008, T010, T018 | AC18 (작성 예정). 대표 시나리오 |
+| T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대기 | v2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 미확정. AG Grid Community만 |
+| T013 | **S2 Product check**: 리허설(점 그림·폭포·분포 막대), 처방 토글 0.5초 내 재계산, 색상 문구 | ui | 대기 | v2 | T015, T019, T020 | AC23 (작성 예정). F3·F4 |
+| T016 | **S3 At-risk orders**: 미등록 5건 선택 → 일괄 등록 결과, 통관 안내·환불 자리(P1) | ui | 대기 | v2 | T011 | AC28 (작성 예정). M3 문구 |
+| T014 | **S1 Today**: 브리핑, 할 일 3개, KPI 4개 (숫자는 `sim` 합계) | ui | 대기 | v2 | T015, T012 | AC24 (작성 예정) |
+| T025 | 배포 (Render) + 데모 리허설 체크 (원문 16장) | 운영 | 대기 | v2 | T009, T012, T013, T014, T016 | 녹화 백업, 숫자 대조표 |
+
+## P1
 
 | ID | 작업 | 레인 | 상태 | 기준 SPEC | 의존 | 비고 |
 |---|---|---|---|---|---|---|
-| T000 | 하네스: 계약·인수 테스트·잠금·운영 문서 | 컨트롤 타워 | 검토 | v1.1 | — | 이 세션. AC1~AC12 |
-| T001 | 샌드박스 세팅: `.env.example`, `scripts/sandbox/check.ts`(토큰 발급 + 분쟁 목록 1회), fixture 정리 | paypal | 대기 | v1.1 | — | AC13. 분쟁 PP-R-XWI-10197379 사용. 구매자는 비 KR 계정 |
-| T002 | OAuth 클라이언트: 토큰 재사용, 401 갱신 1회, 429 재시도, 분당 30회 제한, PayPal-Request-Id, 비밀값 비노출 | paypal | 대기 | v1.1 | — | AC14. 브랜치 `lane/paypal-client` (T001과 병렬). 보류 해제 (types.ts 4부·AC14 승인 2026-11-09) |
-| T003 | 분쟁 조회 + mapper: 목록·상세 → `BoardState` (`links[].rel` → allowedMoves, escalate 무시) | paypal | 대기 | v1.1 | T001, T002 | AC15. fixture 2종(UNDER_REVIEW 초기 / 판매자 응답 대기). `scripts/sandbox/check.ts`를 클라이언트로 교체 포함 |
-| T004 | 엔진 v1 맞춤: `@/types` 사용, `config/params.json`·`rules.json` 읽기, `recommend(board, params?, rules?)` | engine | 보류 | v1.1 | — | **SPEC v2 대기.** AC1~AC3, AC9, AC10. p_acc 곡선 3개는 v2에서 정리. 참고 자료: `lane/engine`의 "v0 참고용, 미완성" 커밋 (사람이 커밋하면 지시서에 링크) |
-| T005 | 엔진 실행 계획: `planMove` (금액, refundType, messageRequired, planId) + R1~R5 기준값 설정화 | engine | 대기 | v1.1 | T004 | AC4~AC8, AC10 |
-| T006 | 원인 분류: `src/ai/classify.ts` (zod, 1회 재요청, confidence < 0.7 → needsReview, 숫자 필드 제거) | ai | 보류 | v1.1 | — | **SPEC v2 대기.** AC16. LLM은 mock으로 테스트 |
-| T007 | 시드 분쟁 30건 (A9 B8 C4 D2 E3 F4), `isDemo: true` | data | 보류 | v1.1 | — | **SPEC v2 대기.** AC17. 분류 평가(T006 이후)와 분쟁함·리포트가 사용 |
-| T008 | 실행: `src/exec/execute.ts` (승인 확인, 자리표시자 채우기, 제안은 make-offer 1회(note), 제안 없을 때만 send-message, accept-claim, 중복 승인 1회 호출) | paypal | 대기 | v1.1 | — | AC11, AC12. 브랜치 `lane/paypal-exec` (T001·T002와 병렬). 타입만 의존 (호출은 주입) |
-| T009 | 분쟁 상세 화면: 보드·트리·추천·승인 버튼 → 실행 | ui | 대기 | v1.1 | T003, T005, T006, T008 | AC18(SC1), AC19(SC3). 배포 URL에서 SC1·SC3 확인 |
-| T010 | 번역 토큰 검사: 초안 번역 후 자리표시자 보존·금액 직접 표기 검출 | ai | 대기 | v1.1 | T006 | AC20 |
-| T011 | 추적번호 일괄 등록: Orders v2 `/track` 주문별 반복 호출 + 건별 성공·실패 묶음 결과. 등록 여부는 주문 상세 조회로 확인 | paypal | 대기 | v1.1 | T002 | AC21. 결정 2026-11-09 (DECISIONS). 상태는 SHIPPED만. PRD의 trackers-batch 문구는 SPEC v2에서 정리 |
-| T012 | 분쟁함: 분쟁 목록·마감일 정렬·원인 배지·Demo 배지 | ui | 대기 | v1.1 | T003, T007 | AC22 |
-| T013 | 상품 진단 리허설 | ui · data | 보류 | v1.1 | T007 | AC23. PRD 정의 필요 |
-| T014 | 홈 | ui | 보류 | v1.1 | T012 | AC24. PRD 정의 필요 |
-| T015 | 원인 리포트: 집계(engine) + 화면(ui)로 나눔 | engine · ui | 보류 | v1.1 | T006, T007 | AC25. 숫자 집계는 engine. PRD 정의 필요 |
-| T016 | P1 기능 | — | 보류 | v1.1 | — | AC26. PRD 정의 필요 |
-| T017 | 증빙 제출: provide-evidence (multipart 업로드) | paypal | 대기 | v1.1 | T002, T008 | **우선순위 P1.** AC 미정. T008에서 뺀 부분. SC3 클레임 단계에 필요 |
+| T017 | 증빙 제출 provide-evidence (multipart) | paypal | 보류 | v2 | T002, T008 | P1. 합의 단계에서는 send-message로 증빙 안내 |
+| T022 | 환불 실행 (Lena, `POST /v2/payments/captures/{id}/refund`, Request-Id) | paypal | 보류 | v2 | T002 | P1. F11. 샌드박스 주문 O06 또는 O07을 Lena 건으로 |
+| T023 | 한국 통관 안내: 개인통관고유부호 없는 KR 주문 탐지 + 한국어 안내 미리보기 | ai · ui | 보류 | v2 | T010 | P1. F12. M9 개인정보 원칙 |
+| T024 | 웹훅 수신·서명 검증 (`CUSTOMER.DISPUTE.*`) | paypal | 보류 | v2 | T003 | P1. M7 |
+
+## 로드맵 (만들지 않음, 영상 끝 10초)
+택배사 비교, 정책 설정 전용 화면, 원인 분석 리포트, 기한 타임라인, 부분 환불 제안 UI, 재발 예방(원문 10-7).
 
 ## 지금 시작할 수 있는 작업
-- T008 (paypal, `lane/paypal-exec`): 바로 배정 가능 (AC11·AC12 있음)
-- T001 (paypal, `lane/paypal`): 바로 배정 가능 (AC13)
-- T002 (paypal, `lane/paypal-client`): 바로 배정 가능 (AC14)
-- 지시서: `tasks/T001.md`, `tasks/T002.md`, `tasks/T008.md`
-- T004·T006·T007은 SPEC v2 대기.
+- **T001** (사람 작업부터), **T002**, **T008**: worktree 준비됨. T002·T008은 기준 SPEC만 v2로 바뀌었고 내용은 같다
+- **T006**, **T007**, **T010**, **T018**: 의존 없음. T006·T007 지시서 있음, T010·T018 지시서는 "작업 쪼개줘"로 만든다
+- **T004**: AC1~AC10 v2 승인 후
 
-## 작성 예정 인수 테스트
-| ID | 내용 | 연결 작업 |
-|---|---|---|
-| AC13 | `RUN_SANDBOX=1`: `check.ts --json` → 토큰·분쟁 목록·분쟁 상세 200, 출력에 비밀값 없음 (작성 완료) | T001 |
-| AC14 | 클라이언트: 토큰 재사용·만료 재발급, 401 1회 갱신, 429·5xx 재시도, 분당 30회, Request-Id 재사용, 비밀값 비노출, 샌드박스 외 거부 (작성 완료) | T002 |
-| AC15 | fixture → BoardState 필드 일치, "48.00" → 4800, 빠진 필드는 예외 없이 기본값+경고 | T003 |
-| AC16 | 분류 스키마 통과/재요청/needsReview, 숫자 필드 무시 | T006 |
-| AC17 | 시드 30건 분포·스키마·isDemo | T007 |
-| AC18 | SC1 가디건 SNAD → 원인 B → offer → 승인 → send-message·make-offer 본문 | T009 |
-| AC19 | SC3 비니 INR 반복 분쟁 → 원인 F → offer 차단 → 증빙 계열 → 단계별 API | T009 |
-| AC20 | 번역본 자리표시자 보존, 금액 직접 표기 거부 | T010 |
-| AC21 | 추적번호 일괄 등록 요청 본문·부분 실패 처리 | T011 |
-| AC22~AC26 | 분쟁함, 상품 진단, 홈, 원인 리포트, P1 | T012~T016 (PRD 후) |
+## 인수 테스트 목록
+| ID | 내용 | 상태 | 작업 |
+|---|---|---|---|
+| AC1 | D1 박지호 B1: fight 4120 / offer 1816 / refund 5000, 오토파일럿 승인 대기 | v2 승인 대기 | T004 |
+| AC2 | D3 buyer_m F1: fight 1060 / refund 3700, offer 차단, 오토파일럿 건너뜀 | v2 승인 대기 | T004 |
+| AC3 | B1 ↔ F1만 바꾸면 오토파일럿 판정이 바뀜 | v2 승인 대기 | T004 |
+| AC4 | 제안률 정책 고정·한도 | v2 승인 대기 | T005 |
+| AC5 | 제안은 B1·B2만 | v2 승인 대기 | T004 |
+| AC6 | 오토파일럿 건너뜀 규칙 (EXTERNAL, 확신도, F2) | v2 승인 대기 | T004 |
+| AC7 | 확대 위험: 서연 7 → 4, 무응답 중복 가산 없음 | v2 승인 대기 | T018 |
+| AC8 | 수 → API (합의 단계 send-message, 클레임 단계 provide_evidence) | v2 승인 대기 | T004 |
+| AC9 | allowedMoves에 없는 수는 평가 제외 | v2 승인 대기 | T004 |
+| AC10 | 결정론 100회 | v2 승인 대기 | T004, T005 |
+| AC11 | 메시지 금액 = API 금액, 호출 1회 | 잠금 | T008 |
+| AC12 | 승인 없이는 호출 없음 | 잠금 | T008 |
+| AC13 | 샌드박스 세팅 (M8 구성) | 잠금 (v2) | T001 |
+| AC14 | OAuth 클라이언트 | 잠금 | T002 |
+| AC15~AC28 | mapper, 분류, 시드, SC4, S4, 토큰, 추적, sim, S2, S1, Transaction Search, 색상 문구, FAQ, S3 | 작성 예정 | 각 작업 |
