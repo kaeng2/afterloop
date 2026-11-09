@@ -21,7 +21,8 @@
 | T007 | 시드 데이터 (원문 6장) | data | 완료 | v2.1 | — | 병합 2026-11-09 21:41 (1차 검증 실패 → 재시도 통과). 단위 38개. **AC17은 Q10 결정 뒤 작성·승인.** `reports/T007-impl.md`, `reports/T007-verify.md` |
 | T008 | 실행 `executeMove` | paypal | 완료 | v2.1 | — | AC11, AC12 통과 (10개). 병합 2026-11-09 21:57. `reports/T008-impl.md`, `reports/T008-verify.md` |
 | T027 | 실행 보강: 직접 쓴 금액·남은 토큰·빈 메시지 거부, 검증 순서, 영어 문구 | paypal | 완료 | v2.1 | T008 | AC11·AC12 유지 (10개), 단위 130. 병합 2026-11-09 22:26. 남은 다듬기는 P1 (DECISIONS). `reports/T027-impl.md`, `reports/T027-verify.md` |
-| T010 | 사실값 토큰 + 번역 검사 (모든 AI 초안에 적용, 결정 4) | ai | 대기 | v2.2 | — | AC20 (작성 예정). `CheckTokensFn`. `tasks/T010.md` |
+| T010 | 사실값 토큰 + 번역 검사 (모든 AI 초안에 적용, 결정 4) | ai | 완료 | v2.2 | — | 병합 2026-11-10 00:06 (1차 검증 실패 → 재시도 → 재검증 통과). 단위 94개. AC20은 작성 예정. 다듬기는 T031. `reports/T010-impl.md`, `reports/T010-verify.md` |
+| T031 | 토큰 검사 다듬기: 한국어 정상 문장이 금액으로 잡히는 오탐, 자리표시자 속 개인통관고유부호 가림, `100%` 약속 기준 | ai | 진행중 | v2.2 | T010 | T010 재검증 후속. `tasks/T031.md` |
 | T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(승인 뒤 캡처) | paypal | 완료 | v2.2 | T002, T007 | 병합 2026-11-09 23:33. 주문 12건 생성(201 × 12), 링크 12개 모두 sandbox. **캡처는 아직 실행 안 함** (사람 승인 뒤). 주문은 만든 지 3시간쯤 지나면 만료될 수 있어 아침에 링크를 다시 만들어야 할 수 있음. `reports/T026-impl.md`, `reports/T026-verify.md` |
 | T029 | 샌드박스 보조: 실제 분쟁 목록 읽기 확인(빈 목록), 주문 12건 상태 확인, 링크 다시 만들기(`--fresh`), `disputes` 단계 수정 | paypal | 완료 | v2.2 | T001, T003, T026 | 병합 2026-11-09 23:51. 실제 샌드박스에서 분쟁 0건(빈 목록) 확인, 주문 12건 모두 CREATED (만든 지 20분 뒤). `reports/T029-impl.md`, `reports/T029-verify.md` |
 | T030 | 주문 스크립트 보호: 캡처·승인된 주문을 덮어쓰지 않게, `--` 빠진 실행 막기, 캡처 결과 구분 | paypal | 진행중 | v2.2 | T026, T029 | 실호출 없음 (단위 테스트만). `tasks/T030.md` |
