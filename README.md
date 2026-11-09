@@ -18,7 +18,7 @@ npm run dev
 
 | 경로 | 내용 | 수정 |
 |---|---|---|
-| `SPEC.md`, `DECISIONS.md`, `TASKS.md`, `tasks/` | 사양, 결정, 작업 보드, 작업 지시서 | 컨트롤 타워 |
+| `SPEC.md`, `DECISIONS.md`, `TASKS.md`, `tasks/`, `HANDOFF.md` | 사양, 결정, 작업 보드, 작업 지시서, 이동 안내 | 컨트롤 타워 |
 | `src/types.ts`, `tests/acceptance/` | 계약과 인수 테스트 (잠금) | 컨트롤 타워 + 사람 승인 |
 | `config/` | 가정값, 정책 기준값, 화면 문구 | engine / ui 레인 |
 | `src/engine/`, `src/paypal/`, `src/exec/`, `src/ai/`, `src/app/`, `seed/` | 레인별 구현 | 해당 레인 (SPEC 8장) |
