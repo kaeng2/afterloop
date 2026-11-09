@@ -7,7 +7,8 @@
     "subtype": "B1",
     "status": "open",
     "lossCents": null,
-    "source": "sandbox"
+    "source": "sandbox",
+    "orderId": "O02"
   },
   {
     "id": "D2",
@@ -17,7 +18,8 @@
     "subtype": "A2",
     "status": "open",
     "lossCents": null,
-    "source": "sandbox"
+    "source": "sandbox",
+    "orderId": "O01"
   },
   {
     "id": "D3",
@@ -27,7 +29,8 @@
     "subtype": "F1",
     "status": "open",
     "lossCents": null,
-    "source": "sandbox"
+    "source": "sandbox",
+    "orderId": "O08"
   },
   {
     "id": "D4",
@@ -36,8 +39,9 @@
     "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
     "subtype": "B1",
     "status": "closed",
-    "lossCents": 5600,
-    "source": "seed"
+    "lossCents": 4800,
+    "source": "seed",
+    "orderId": "SO003"
   },
   {
     "id": "D5",
@@ -46,8 +50,9 @@
     "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
     "subtype": "B1",
     "status": "closed",
-    "lossCents": 5600,
-    "source": "seed"
+    "lossCents": 6300,
+    "source": "seed",
+    "orderId": "SO002"
   },
   {
     "id": "D6",
@@ -56,8 +61,9 @@
     "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
     "subtype": "A1",
     "status": "closed",
-    "lossCents": 5600,
-    "source": "seed"
+    "lossCents": 6300,
+    "source": "seed",
+    "orderId": "SO004"
   },
   {
     "id": "D7",
@@ -66,8 +72,9 @@
     "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
     "subtype": "F1",
     "status": "closed",
-    "lossCents": 4300,
-    "source": "seed"
+    "lossCents": 3500,
+    "source": "seed",
+    "orderId": "O09"
   },
   {
     "id": "D8",
@@ -77,7 +84,8 @@
     "subtype": "F1",
     "status": "closed",
     "lossCents": 0,
-    "source": "seed"
+    "source": "seed",
+    "orderId": "O10"
   },
   {
     "id": "D9",
@@ -86,7 +94,8 @@
     "reason": "UNAUTHORISED",
     "subtype": "E1",
     "status": "closed",
-    "lossCents": 19700,
-    "source": "seed"
+    "lossCents": 20400,
+    "source": "seed",
+    "orderId": "SO006"
   }
 ]
