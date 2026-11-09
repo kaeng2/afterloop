@@ -4,10 +4,11 @@
  * 이 파일은 Claude Code 설정(.claude/settings.json permissions.deny)으로 편집이 막혀 있다.
  * 바꿔야 하면 SPEC.md "계약 변경 기록"에 이유를 적고 사람 승인을 받은 뒤 사람이 직접 고친다.
  *
- * 기준: SPEC v1. 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
+ * 기준: SPEC v1.1. 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
  * 1부: 테스트 지시서(수읽기 버전 B) "데이터 계약" 원문 + v1에서 Params에 p_acc 곡선 3개 추가.
  * 2부: 인수 테스트 AC5·AC11·AC12를 쓰기 위해 추가한 실행 계약. (SPEC.md 5장, 2026-11-09 승인)
  * 3부: config/*.json 형태.
+ * 4부: PayPal 클라이언트 (v1.1, 2026-11-09 승인).
  *
  * 금액은 모두 센트 정수. API로 보낼 때만 "7.20" 같은 문자열로 바꾼다.
  */
@@ -127,6 +128,26 @@ export type RulesConfig = {
   excludedReasons: { values: string[] };
 };
 
+// ───────────────────────────── 4부: PayPal 클라이언트 (SPEC v1.1, 5-1장) ─────────────────────────────
+
+/** 서버에서만 만든다. baseUrl은 https://api-m.sandbox.paypal.com만 허용 */
+export type PayPalEnv = { clientId: string; clientSecret: string; baseUrl: string };
+
+/** 테스트에서 시간·대기·네트워크를 바꿔 끼우기 위한 주입 함수 */
+export type ClientDeps = {
+  fetch: typeof fetch;
+  now: () => number; // ms
+  sleep: (ms: number) => Promise<void>;
+  log?: (line: string) => void; // 비밀값을 넘기지 않는다
+};
+
+export type PayPalClient = {
+  /** POST. PayPal-Request-Id = req.requestId */
+  call: PayPalCaller;
+  /** GET. path는 baseUrl 뒤에 붙는 경로 (예: /v1/customer/disputes) */
+  get: (path: string) => Promise<{ status: number; body: unknown }>;
+};
+
 // ───────────────────────────── 공개 함수 시그니처 ─────────────────────────────
 // 구현 파일은 `export const recommend = (...) => ... satisfies RecommendFn` 처럼 맞춘다.
 // params·rules를 넘기지 않으면 엔진이 config/params.json·config/rules.json을 읽는다.
@@ -141,6 +162,9 @@ export type PlanMoveFn = (
   params?: Partial<Params>,
   rules?: RulesConfig,
 ) => ActionPlan;
+
+/** src/paypal/client.ts: export function createPayPalClient. 샌드박스 외 baseUrl이면 만들 때 예외 */
+export type CreatePayPalClientFn = (env: PayPalEnv, deps: ClientDeps) => PayPalClient;
 
 /** src/exec/execute.ts: export function executeMove */
 export type ExecuteMoveFn = (input: ExecuteInput, deps: { call: PayPalCaller }) => Promise<ExecuteResult>;

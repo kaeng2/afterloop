@@ -1,7 +1,8 @@
 /**
  * 인수 테스트 AC11~AC12: 메시지 금액 일치, 승인 없이는 실행 안 함 (잠금 파일, 실행만 하고 수정하지 않는다)
  * 기대값 출처: PRD 6-3 / 기획자 확정 2026-11-09
- * 기준: SPEC v1. 실행 계약: SPEC.md 5장·7장. 엔진 구현 없이 돌도록 ActionPlan을 직접 만들고, PayPal 호출은 mock으로 받는다.
+ * 기준: SPEC v1.1. 실행 계약: SPEC.md 5장·7장. 엔진 구현 없이 돌도록 ActionPlan을 직접 만들고, PayPal 호출은 mock으로 받는다.
+ * v1.1: 한 계획에 호출 1회. 제안은 make-offer 1회(메시지는 note), send-message는 제안이 없을 때만 (2026-11-09 결정).
  */
 import { describe, expect, it, vi } from 'vitest';
 
@@ -69,16 +70,22 @@ function messagesOf(requests: ApiRequest[]): string[] {
 /** 문장 안의 달러 금액 표기 ("$7.20", "$ 7.20") */
 const dollarAmounts = (text: string) => [...text.matchAll(/\$\s?(\d[\d,]*(?:\.\d+)?)/g)].map((m) => m[1]);
 
+/** 호출한 대응 엔드포인트 목록 (경로 마지막 부분) */
+const endpoints = (requests: ApiRequest[]) => requests.map((r) => r.path.split('/').pop());
+
 // 기대값 출처: PRD 6-3 / 기획자 확정 2026-11-09
 describe('AC11 메시지 초안 안의 금액 = 실행할 API 금액', () => {
-  it('make_offer: 본문 offer_amount "7.20" USD, 메시지 속 금액도 모두 $7.20', async () => {
+  it('make_offer: make-offer 1회만 (send-message 없음), 메시지는 note, offer_amount "7.20" USD, 메시지 속 금액도 모두 $7.20', async () => {
     const { call, requests } = mockCaller();
     const input: ExecuteInput = { board: CARDIGAN, plan: OFFER_PLAN, messageTemplate: OFFER_TEMPLATE, approval: approve(OFFER_PLAN) };
     const result = await executeMove(input, { call });
 
     expect(result.ok).toBe(true);
-    const offer = requests.find((r) => r.path.endsWith('/make-offer'));
-    expect(offer?.body.offer_amount).toEqual({ currency_code: 'USD', value: '7.20' });
+    expect(endpoints(requests)).toEqual(['make-offer']);
+    const offer = requests[0];
+    expect(offer.path).toBe(`/v1/customer/disputes/${CARDIGAN.disputeId}/make-offer`);
+    expect(offer.body.offer_amount).toEqual({ currency_code: 'USD', value: '7.20' });
+    expect(offer.body.note).toEqual(expect.stringContaining('$7.20'));
 
     const messages = messagesOf(requests);
     expect(messages.length).toBeGreaterThan(0);
@@ -99,11 +106,37 @@ describe('AC11 메시지 초안 안의 금액 = 실행할 API 금액', () => {
     const result = await executeMove(input, { call });
 
     expect(result.ok).toBe(true);
-    const accept = requests.find((r) => r.path.endsWith('/accept-claim'));
-    expect(accept?.body.refund_amount).toEqual({ currency_code: 'USD', value: '48.00' });
+    expect(endpoints(requests)).toEqual(['accept-claim']);
+    const accept = requests[0];
+    expect(accept.body.refund_amount).toEqual({ currency_code: 'USD', value: '48.00' });
     const amounts = messagesOf(requests).flatMap(dollarAmounts);
     expect(amounts.length).toBeGreaterThan(0);
     for (const a of amounts) expect(a).toBe('48.00');
+  });
+
+  it('send_message (제안 없음): send-message 1회, 메시지 속 금액은 분쟁 금액 $48.00', async () => {
+    const plan: ActionPlan = {
+      ...OFFER_PLAN,
+      planId: 'plan-test-message',
+      move: 'fight',
+      apiMove: 'send_message',
+      amountCents: null,
+      refundType: null,
+      messageRequired: true,
+    };
+    const { call, requests } = mockCaller();
+    const input: ExecuteInput = {
+      board: CARDIGAN,
+      plan,
+      messageTemplate: '{{disputeAmount}} 결제 건은 배송 완료 기록을 확인했습니다. 추적 정보를 함께 보내 드립니다.',
+      approval: approve(plan),
+    };
+    const result = await executeMove(input, { call });
+
+    expect(result.ok).toBe(true);
+    expect(endpoints(requests)).toEqual(['send-message']);
+    expect(requests[0].body.message).toEqual(expect.stringContaining('$48.00'));
+    for (const a of messagesOf(requests).flatMap(dollarAmounts)) expect(a).toBe('48.00');
   });
 
   it.each([

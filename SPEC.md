@@ -1,4 +1,4 @@
-# SPEC v1 (2026-11-09 17:00 KST)
+# SPEC v1.1 (2026-11-09 18:10 KST)
 
 > **계약 변경 규칙.** 이 문서, `src/types.ts`, `tests/acceptance/`는 계약이다. 바꿔야 하면 컨트롤 타워가 변경 내용·이유·영향받는 작업을 `DECISIONS.md`에 먼저 적고, 사람이 승인한 뒤에만 바꾼다. 바꿀 때마다 위 버전을 올린다 (v1 → v2). 작업 세션은 이 세 곳과 `DECISIONS.md`, `TASKS.md`, `tasks/`를 고치지 않는다 (`.claude/settings.json`에서 편집이 막혀 있다).
 
@@ -61,6 +61,26 @@
   - `plan.apiMove`가 `board.allowedMoves`에 없으면 호출 전에 거부.
   - `accept_claim`은 `approval.confirmAcceptClaim === true`일 때만.
   - 메시지 자리표시자를 `plan` 값으로 채워 보낸다. 메시지 금액과 API 본문 금액은 같은 `plan.amountCents`에서 나온다.
+  - 호출 (v1.1): 한 계획에 PayPal 호출은 1회다.
+
+    | `plan.apiMove` | 호출 | 메시지 위치 |
+    |---|---|---|
+    | `make_offer` | `POST .../make-offer` 1회 | `note` (send-message는 부르지 않는다) |
+    | `send_message` | `POST .../send-message` 1회 (제안이 없을 때만) | `message` |
+    | `accept_claim` | `POST .../accept-claim` 1회 | `note` |
+    | `provide_evidence` | 아직 실행하지 않음 (T017, multipart) | — |
+
+## 5-1. PayPal 클라이언트 (`types.ts` 4부, v1.1)
+- `createPayPalClient(env, deps)` → `{ call, get }`. 모든 PayPal 호출은 이 클라이언트를 지난다.
+- `deps.now`, `deps.sleep`을 주입받는다 (테스트에서 실제 시간을 기다리지 않음).
+- 토큰은 만료 60초 전까지 재사용. 401이면 1회 갱신 후 재시도. 429는 `Retry-After`(없으면 30초) 대기 후 최대 2회. 5xx·네트워크 오류는 2초 → 4초 후 최대 2회. 최근 60초 30회를 넘으면 대기.
+- POST는 `PayPal-Request-Id: requestId`, 재시도에도 같은 값.
+- `baseUrl`은 `https://api-m.sandbox.paypal.com`만 허용.
+- Client Secret, 액세스 토큰, `Authorization` 헤더 값은 로그·에러 메시지·결과·프론트 번들에 넣지 않는다. 클라이언트는 서버 코드에서만 쓴다.
+
+## 5-2. 추적번호 (v1.1)
+- 등록: Orders v2 `POST /v2/checkout/orders/{id}/track` 주문별 호출. "일괄 등록"은 코드에서 반복 호출하고 건별 성공·실패를 묶어 보여준다.
+- 등록 여부 확인: 주문 상세 `GET /v2/checkout/orders/{id}`. `/v1/shipping/trackers*`는 쓰지 않는다 (지원 중단, 이 앱에서 403).
 
 ## 6. LLM이 하는 일 / 하지 않는 일
 | 한다 | 하지 않는다 |

@@ -16,3 +16,9 @@
 | 2026-11-09 | v1 | `Params`의 p_acc 곡선 3개는 지금 유지하고 v2에서 정리 (제안률은 정책값 고정, 최적화하지 않을 가능성이 높아 빠질 수 있음) | 기획자 지시 | T004 |
 | 2026-11-09 | v1 | 세션 95e9c98f의 엔진 작업 중단. 사람이 `lane/engine`에 "v0 참고용, 미완성"으로 커밋하면 T004 지시서에 참고 자료로 링크 | v0 기준 작업이라 v2에 그대로 쓰지 않음 | T004 |
 | 2026-11-09 | v1 | T009 의존에 T006 추가 | 분쟁 상세 화면이 원인 분류 결과를 보여 줌 | T009 |
+| 2026-11-09 | v1.1 | T011 추적번호 등록은 **Orders v2 `POST /v2/checkout/orders/{id}/track`** 사용. "일괄 등록"은 우리 코드에서 주문별 반복 호출로 구현하고, 화면에는 건별 성공·실패를 묶어서 보여준다. 등록 여부 확인은 `GET /v1/shipping/trackers` 대신 주문 상세 조회(`GET /v2/checkout/orders/{id}`)로 한다 | ① PayPal 문서가 `/v1/shipping/trackers-batch`를 지원 중단(레거시)으로 표시하고 Orders v2 사용을 안내 (developer.paypal.com/api/tracking/v1/trackers-batch-post, developer.paypal.com/docs/tracking/) ② 우리 앱에서 trackers-batch는 실제 결제 ID로도 403 ③ Orders v2 `/track`은 2026-11-09 사전 확인에서 성공. 대가: 주문당 1회 호출(분당 30회 제한 적용), 상태는 SHIPPED만 가능. PRD의 trackers-batch 문구는 SPEC v2 반영 때 맞춘다. 기획자 결정 | T011 |
+| 2026-11-09 | v1.1 | T017 증빙 제출(provide-evidence)을 T008에서 분리, 우선순위 P1 | multipart 업로드라 범위가 다름. 기획자 동의 | T008, T017 |
+| 2026-11-09 | v1.1 | `src/types.ts` 4부 추가: PayPal 클라이언트 타입 (`PayPalEnv`, `ClientDeps`(시간·대기 함수 주입), `PayPalClient`, `CreatePayPalClientFn`). 인수 테스트 AC13(샌드박스 세팅), AC14(OAuth 클라이언트) 추가 | T001·T002 완료 기준이 필요. 기획자 승인 | T001, T002, T003 |
+| 2026-11-09 | v1.1 | 실행 규칙 변경: 제안(make_offer)은 **make-offer 1회만** 호출하고 메시지는 `note`에 담는다. send-message는 제안이 없을 때(증빙 대응을 메시지로 할 때)만. AC11에 호출 목록 검사 추가 | 구매자가 같은 메시지를 두 번 받지 않게. 기획자 결정 | T008, T009 |
+| 2026-11-09 | v1.1 | SPEC 버전을 v1 → v1.1로 올림 (계약 변경). v2는 새 PRD 반영용으로 남겨 둔다 | 계약 변경마다 버전을 올리는 규칙. PRD 반영 전의 작은 변경이라 소수점 버전 | 전체 (지시서 기준 SPEC을 v1.1로) |
+| 2026-11-09 | v1.1 | T002를 `lane/paypal-client` 브랜치로 분리해 T001과 병렬 진행. `scripts/sandbox/check.ts`를 클라이언트로 바꾸는 일은 T003으로 옮김 | 세 작업(T001, T002, T008)을 동시에 시작하려면 수정 폴더가 겹치지 않아야 함 | T001, T002, T003 |
