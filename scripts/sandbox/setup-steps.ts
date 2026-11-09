@@ -164,3 +164,23 @@ export async function runDisputes(
 
   return { outcomes, disputes };
 }
+
+/**
+ * 이번에 찾은 분쟁을 **이미 적힌 것 위에 덧붙인다** (T029, T001 검증 보고서 "발견한 문제" 1번).
+ * 같은 키는 새로 찾은 값으로 갱신하고, 이번에 못 찾은 키는 전에 적힌 값을 그대로 남긴다 —
+ * 한 건의 조회만 실패했을 때 manifest에서 다른 분쟁이 지워지지 않게 한다.
+ * 결과는 키 순서로 정렬한다 (파일 차이가 조회 순서에 흔들리지 않게).
+ */
+export function mergeDisputes(existing: ManifestDispute[], found: ManifestDispute[]): ManifestDispute[] {
+  const byKey = new Map(existing.map((dispute) => [dispute.key, dispute]));
+  for (const dispute of found) byKey.set(dispute.key, dispute);
+  return [...byKey.values()].sort((a, b) => a.key.localeCompare(b.key));
+}
+
+/** D1~D3 가운데 manifest에 아직 없는 키 (키 순서). */
+export function missingDisputeKeys(disputes: ManifestDispute[]): string[] {
+  const have = new Set(disputes.map((dispute) => dispute.key));
+  return Object.keys(DISPUTE_ORDER_KEY)
+    .filter((key) => !have.has(key))
+    .sort();
+}

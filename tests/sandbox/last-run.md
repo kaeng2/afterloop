@@ -29,3 +29,12 @@ manifest가 비어 있어 주문·분쟁 조회는 건너뛰었다 (1단계).
 | 36자 (UUID, 비교용) | 36 | 201 | 7SB1374355564260G | ok |
 
 - 멱등: 같은 61자 ID로 두 번 보내 같은 주문 ID가 돌아왔다.
+
+<!-- afterloop:last-run:disputes -->
+## 분쟁 읽기 (`npm run sandbox:disputes`)
+
+- 시각: 2026-11-09 23:30 KST
+- 엔드포인트: GET /v1/customer/disputes → GET /v1/customer/disputes/{id} (조회만)
+- 분쟁 0건 · 변환 성공 0건 · 변환 실패 0건
+
+0 disputes (empty list)

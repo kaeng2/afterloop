@@ -17,6 +17,8 @@ export const ManifestOrderSchema = z.object({
   tracked: z.boolean(),
   /** 캡처 ID (T026 capture 단계가 적는다. 없으면 주문 상세에서 읽는다) */
   captureId: z.string().min(1).optional(),
+  /** 링크가 만료돼 `sandbox:orders -- --fresh`로 다시 만들었을 때의 이전 주문 ID들 (오래된 것부터, T029) */
+  previousOrderIds: z.array(z.string().min(1)).optional(),
 });
 
 export const ManifestDisputeSchema = z.object({

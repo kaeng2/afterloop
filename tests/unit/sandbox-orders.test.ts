@@ -1,5 +1,5 @@
 /**
- * 단위 테스트: 샌드박스 주문 생성·캡처 스크립트 (T026).
+ * 단위 테스트: 샌드박스 주문 생성·캡처 스크립트 (T026) + `--status`·`--fresh` 옵션 (T029).
  * 가짜 PayPal 클라이언트로만 돈다 — 실제 샌드박스를 부르지 않는다.
  *
  * 확인하는 것
@@ -8,6 +8,8 @@
  *  - 다시 실행: 같은 요청 ID → 200으로 같은 주문 ID → manifest에 중복이 생기지 않는다
  *  - 승인 링크: approve/payer-action 고르기, 샌드박스가 아닌 도메인이면 멈춤, 링크 파일 형식
  *  - 캡처: APPROVED면 캡처, COMPLETED면 건너뜀, 승인 전이면 "not approved yet"
+ *  - `--status`(T029): 조회만, 만료는 "expired or not found"
+ *  - `--fresh`(T029): 새 요청 ID, 캡처된 주문 보존, manifest·링크 파일 갱신, 같은 접미사면 중복 없음
  *  - 출력·링크 파일·manifest에 비밀값(Secret·토큰·Authorization)이 없다
  */
 import { mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
@@ -16,6 +18,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   BUYER_DISPLAY_NAME,
+  EXPIRED_NOTE,
   NotSandboxLinkError,
   ORDERS_PER_BUYER,
   TRACKED_COUNT,
@@ -24,16 +27,21 @@ import {
   approveUrlKind,
   buildOrderBody,
   buyerCell,
+  freshSuffix,
+  looksGone,
   orderRequestId,
+  parseOrdersMode,
   readSandboxOrderSpecs,
   renderApproveLinks,
   runCreateOrders,
+  runFreshOrders,
+  runOrderStatus,
   writeApproveLinks,
   type CreateRow,
   type OrderSpec,
 } from '../../scripts/create-sandbox-orders';
 import { captureRequestId, runCapture } from '../../scripts/capture-sandbox-orders';
-import type { Manifest } from '../../scripts/sandbox/manifest';
+import { ManifestSchema, type Manifest } from '../../scripts/sandbox/manifest';
 import type { ApiRequest, PayPalClient } from '@/types';
 
 type Seen = { method: 'GET' | 'POST'; path: string; requestId?: string; body?: Record<string, unknown> };
@@ -479,6 +487,348 @@ describe('runCapture (캡처)', () => {
     });
 
     const { rows, orders } = await runCapture(client, { orders: [manifest.orders[0]], disputes: [] });
+
+    const text = JSON.stringify({ rows, orders });
+    expect(text).not.toContain('@');
+    expect(text).not.toContain('PAYER1');
+    expect(text).not.toMatch(/access_token|authorization|bearer/i);
+  });
+});
+
+// ── T029: `--status`·`--fresh` ──────────────────────────────────────────────────
+
+/** manifest 12건 (주문 ID는 `ORDER-O01` 꼴로 단순화). */
+const manifest12 = (): Manifest => ({
+  orders: readSandboxOrderSpecs().map((spec) => ({
+    key: spec.key,
+    orderId: `ORDER-${spec.key}`,
+    buyer: spec.buyer,
+    sku: spec.sku,
+    tracked: spec.tracked,
+  })),
+  disputes: [],
+});
+
+/** 주문 상세 응답 1건. */
+const orderDetail = (status: string, options: { captureId?: string; trackerStatus?: string } = {}) => ({
+  id: 'ORDER-X',
+  status,
+  purchase_units: [
+    {
+      ...(options.trackerStatus === undefined ? {} : { shipping: { trackers: [{ status: options.trackerStatus }] } }),
+      payments: { captures: options.captureId === undefined ? [] : [{ id: options.captureId }] },
+    },
+  ],
+});
+
+describe('parseOrdersMode (명령줄)', () => {
+  it('인자가 없으면 주문 만들기, `--status`·`--fresh`는 그 모드다', () => {
+    expect(parseOrdersMode([])).toEqual({ mode: 'create' });
+    expect(parseOrdersMode(['--status'])).toEqual({ mode: 'status' });
+    expect(parseOrdersMode(['--fresh'])).toEqual({ mode: 'fresh' });
+  });
+
+  it('모르는 인자나 두 개를 같이 주면 호출하지 않고 쓰는 법을 알려 준다', () => {
+    expect(parseOrdersMode(['--status', '--fresh'])).toMatchObject({ error: expect.stringContaining('쓰는 법') });
+    expect(parseOrdersMode(['--capture'])).toMatchObject({ error: expect.stringContaining('--capture') });
+    expect(parseOrdersMode(['status'])).toMatchObject({ error: expect.stringContaining('status') });
+  });
+});
+
+describe('runOrderStatus (`-- --status`)', () => {
+  it('manifest 주문마다 GET 1회로 상태를 읽고 아무것도 만들지 않는다', async () => {
+    const manifest = manifest12();
+    const replies: Record<string, Reply> = {};
+    for (const order of manifest.orders) {
+      replies[`GET /v2/checkout/orders/${order.orderId}`] = { status: 200, body: orderDetail('CREATED') };
+    }
+    const { client, seen } = fakeClient(replies);
+
+    const { rows, problems } = await runOrderStatus(client, manifest);
+
+    expect(rows).toHaveLength(12);
+    expect(seen).toHaveLength(12);
+    expect(seen.every((s) => s.method === 'GET')).toBe(true);
+    expect(rows.every((r) => r.status === 'CREATED' && r.httpStatus === 200 && r.note === 'ok')).toBe(true);
+    expect(rows.map((r) => r.key)).toEqual(manifest.orders.map((o) => o.key));
+    expect(problems).toEqual([]);
+  });
+
+  it('상태·캡처 ID·추적 여부를 그대로 옮긴다 (취소된 추적은 미등록)', async () => {
+    const manifest: Manifest = { orders: manifest12().orders.slice(0, 3), disputes: [] };
+    const { client } = fakeClient({
+      'GET /v2/checkout/orders/ORDER-O01': { status: 200, body: orderDetail('COMPLETED', { captureId: 'CAP-O01', trackerStatus: 'SHIPPED' }) },
+      'GET /v2/checkout/orders/ORDER-O02': { status: 200, body: orderDetail('APPROVED') },
+      'GET /v2/checkout/orders/ORDER-O03': { status: 200, body: orderDetail('COMPLETED', { captureId: 'CAP-O03', trackerStatus: 'CANCELLED' }) },
+    });
+
+    const { rows } = await runOrderStatus(client, manifest);
+
+    expect(rows.map((r) => [r.key, r.status, r.captureId, r.tracked])).toEqual([
+      ['O01', 'COMPLETED', 'CAP-O01', true],
+      ['O02', 'APPROVED', '', false],
+      ['O03', 'COMPLETED', 'CAP-O03', false],
+    ]);
+  });
+
+  it('404·만료로 보이는 응답은 "expired or not found"로 적고 나머지는 계속 읽는다', async () => {
+    const manifest: Manifest = { orders: manifest12().orders.slice(0, 3), disputes: [] };
+    const { client } = fakeClient({
+      'GET /v2/checkout/orders/ORDER-O01': { status: 404, body: { name: 'RESOURCE_NOT_FOUND', debug_id: 'dbg-1' } },
+      'GET /v2/checkout/orders/ORDER-O02': { status: 422, body: { name: 'UNPROCESSABLE_ENTITY', details: [{ issue: 'ORDER_EXPIRED' }] } },
+      'GET /v2/checkout/orders/ORDER-O03': { status: 200, body: orderDetail('PAYER_ACTION_REQUIRED') },
+    });
+
+    const { rows, problems } = await runOrderStatus(client, manifest);
+
+    expect(rows.map((r) => [r.key, r.status, r.note])).toEqual([
+      ['O01', '', EXPIRED_NOTE],
+      ['O02', '', EXPIRED_NOTE],
+      ['O03', 'PAYER_ACTION_REQUIRED', 'ok'],
+    ]);
+    expect(problems).toHaveLength(2);
+    expect(problems[0]).toContain('O01 주문 조회 → 404');
+  });
+
+  it('만료가 아닌 오류는 그대로 요약한다 (멋대로 만료로 읽지 않는다)', async () => {
+    const { client } = fakeClient({
+      'GET /v2/checkout/orders/ORDER-O01': { status: 403, body: { name: 'NOT_AUTHORIZED', debug_id: 'dbg-3' } },
+    });
+
+    const { rows } = await runOrderStatus(client, { orders: manifest12().orders.slice(0, 1), disputes: [] });
+
+    expect(rows[0].note).toBe('NOT_AUTHORIZED · debug_id=dbg-3');
+    expect(looksGone(403, { name: 'NOT_AUTHORIZED' })).toBe(false);
+    expect(looksGone(404, {})).toBe(true);
+    expect(looksGone(422, { details: [{ issue: 'ORDER_EXPIRED' }] })).toBe(true);
+  });
+
+  it('호출이 예외로 끝나도 나머지 주문을 계속 읽는다', async () => {
+    const manifest: Manifest = { orders: manifest12().orders.slice(0, 2), disputes: [] };
+    const client: PayPalClient = {
+      get: async (p: string) => {
+        if (p.endsWith('ORDER-O01')) throw new Error('PayPal GET /v2/checkout/orders 실패: 네트워크');
+        return { status: 200, body: orderDetail('CREATED') };
+      },
+      call: async () => {
+        throw new Error('POST를 보내면 안 된다');
+      },
+    };
+
+    const { rows, problems } = await runOrderStatus(client, manifest);
+
+    expect(rows.map((r) => [r.key, r.httpStatus])).toEqual([
+      ['O01', null],
+      ['O02', 200],
+    ]);
+    expect(problems[0]).toContain('O01 주문 조회 실패');
+  });
+
+  it('구매자 개인정보는 결과에 담지 않는다', async () => {
+    const { client } = fakeClient({
+      'GET /v2/checkout/orders/ORDER-O01': {
+        status: 200,
+        body: {
+          ...orderDetail('COMPLETED', { captureId: 'CAP-O01' }),
+          payer: { email_address: 'buyer@example.test', payer_id: 'PAYER1', name: { given_name: 'Seoyeon' } },
+        },
+      },
+    });
+
+    const { rows } = await runOrderStatus(client, { orders: manifest12().orders.slice(0, 1), disputes: [] });
+
+    const text = JSON.stringify(rows);
+    expect(text).not.toContain('@');
+    expect(text).not.toContain('PAYER1');
+  });
+});
+
+describe('freshSuffix (요청 ID 접미사)', () => {
+  it('KST 분 단위 `r<YYYYMMDDHHmm>`이다', () => {
+    expect(freshSuffix(new Date('2026-11-09T22:31:00Z'))).toBe('r202611100731');
+    expect(freshSuffix(new Date('2026-11-09T14:00:59Z'))).toBe('r202611092300');
+  });
+
+  it('같은 분이면 같고, 다른 분이면 다르다', () => {
+    expect(freshSuffix(new Date('2026-11-09T14:00:00Z'))).toBe(freshSuffix(new Date('2026-11-09T14:00:59Z')));
+    expect(freshSuffix(new Date('2026-11-09T14:00:00Z'))).not.toBe(freshSuffix(new Date('2026-11-09T14:01:00Z')));
+  });
+
+  it('요청 ID는 접미사를 붙여도 주문 키마다 다르고, 접미사가 없으면 T026의 꼴 그대로다', () => {
+    expect(orderRequestId('O01')).toBe('afterloop-order-O01');
+    expect(orderRequestId('O01', 'r202611100731')).toBe('afterloop-order-O01-r202611100731');
+    expect(orderRequestId('O01', 'r202611100731')).not.toBe(orderRequestId('O02', 'r202611100731'));
+    // T001이 확인한 상한(61자)을 넘지 않는다
+    expect(orderRequestId('O12', freshSuffix(new Date())).length).toBeLessThanOrEqual(61);
+  });
+});
+
+describe('runFreshOrders (`-- --fresh`)', () => {
+  const SUFFIX = 'r202611100731';
+
+  /** 12건 모두: 기존 주문은 만료(404), 새 주문은 `FRESH-<키>`로 만들어진다. */
+  const freshReplies = (options: { completed?: string[]; captureId?: string } = {}): Record<string, Reply | (() => Reply)> => {
+    const replies: Record<string, Reply | (() => Reply)> = {};
+    for (const order of manifest12().orders) {
+      replies[`GET /v2/checkout/orders/${order.orderId}`] = (options.completed ?? []).includes(order.key)
+        ? { status: 200, body: orderDetail('COMPLETED', { captureId: options.captureId ?? `CAP-${order.key}` }) }
+        : { status: 404, body: { name: 'RESOURCE_NOT_FOUND' } };
+    }
+    let n = 0;
+    replies['POST /v2/checkout/orders'] = () => {
+      n += 1;
+      return { status: 201, body: orderCreated(`FRESH-${n}`) };
+    };
+    return replies;
+  };
+
+  it('만료된 12건을 접미사 붙은 새 요청 ID로 다시 만든다', async () => {
+    const { client, seen } = fakeClient(freshReplies());
+    const specs = readSandboxOrderSpecs();
+
+    const { rows, orders, problems } = await runFreshOrders(client, specs, manifest12(), SUFFIX);
+
+    const posts = seen.filter((s) => s.method === 'POST');
+    expect(posts).toHaveLength(12);
+    expect(posts.map((s) => s.requestId)).toEqual(specs.map((s) => `afterloop-order-${s.key}-${SUFFIX}`));
+    expect(posts[0].body).toEqual(buildOrderBody(specs[0]));
+    expect(rows.every((r) => r.result === 'created' && r.approveUrl.startsWith(SANDBOX_APPROVE))).toBe(true);
+    expect(orders.map((o) => o.orderId)).toEqual(Array.from({ length: 12 }, (_, i) => `FRESH-${i + 1}`));
+    expect(problems).toEqual([]);
+  });
+
+  it('이미 캡처된(COMPLETED) 주문은 새로 만들지 않고 manifest 항목을 그대로 둔다', async () => {
+    const { client, seen } = fakeClient(freshReplies({ completed: ['O01', 'O08'] }));
+    const before = manifest12();
+    before.orders[0] = { ...before.orders[0], captureId: 'CAP-O01' };
+
+    const { rows, orders } = await runFreshOrders(client, readSandboxOrderSpecs(), before, SUFFIX);
+
+    expect(seen.filter((s) => s.method === 'POST')).toHaveLength(10);
+    const kept = rows.filter((r) => r.result === 'kept').map((r) => r.key);
+    expect(kept).toEqual(['O01', 'O08']);
+    expect(rows.find((r) => r.key === 'O01')?.note).toContain('이미 캡처됨');
+    expect(orders.find((o) => o.key === 'O01')).toEqual({
+      key: 'O01',
+      orderId: 'ORDER-O01',
+      buyer: 'seoyeon',
+      sku: 'FK-SW-NV',
+      tracked: true,
+      captureId: 'CAP-O01',
+    });
+  });
+
+  it('이전 주문 ID는 manifest의 previousOrderIds에 남고 캡처 ID는 이어 쓰지 않는다', async () => {
+    const { client } = fakeClient(freshReplies());
+    const before = manifest12();
+    before.orders[0] = { ...before.orders[0], captureId: 'CAP-OLD', previousOrderIds: ['ORDER-OLDEST'] };
+
+    const { rows, orders } = await runFreshOrders(client, readSandboxOrderSpecs().slice(0, 1), before, SUFFIX);
+
+    expect(orders[0]).toEqual({
+      key: 'O01',
+      orderId: 'FRESH-1',
+      buyer: 'seoyeon',
+      sku: 'FK-SW-NV',
+      tracked: true,
+      previousOrderIds: ['ORDER-OLDEST', 'ORDER-O01'],
+    });
+    expect(orders[0].captureId).toBeUndefined();
+    expect(rows[0].previousOrderId).toBe('ORDER-O01');
+    expect(rows[0].note).toContain('이전 주문을 밀어냈다');
+    expect(ManifestSchema.parse({ orders, disputes: [] }).orders[0].previousOrderIds).toEqual(['ORDER-OLDEST', 'ORDER-O01']);
+  });
+
+  it('같은 접미사로 다시 돌리면 200으로 같은 주문이 와서 중복이 생기지 않는다', async () => {
+    const first = await runFreshOrders(fakeClient(freshReplies()).client, readSandboxOrderSpecs(), manifest12(), SUFFIX);
+
+    const replies = freshReplies();
+    for (const order of first.orders) {
+      replies[`GET /v2/checkout/orders/${order.orderId}`] = { status: 200, body: orderDetail('CREATED') };
+    }
+    let n = 0;
+    replies['POST /v2/checkout/orders'] = () => {
+      n += 1;
+      return { status: 200, body: orderCreated(`FRESH-${n}`) }; // 같은 요청 ID → 같은 주문
+    };
+    const { client, seen } = fakeClient(replies);
+
+    const second = await runFreshOrders(client, readSandboxOrderSpecs(), { orders: first.orders, disputes: [] }, SUFFIX);
+
+    expect(seen.filter((s) => s.method === 'POST').map((s) => s.requestId)).toEqual(
+      readSandboxOrderSpecs().map((s) => `afterloop-order-${s.key}-${SUFFIX}`),
+    );
+    expect(second.rows.every((r) => r.result === 'existing')).toBe(true);
+    expect(second.orders.map((o) => o.orderId)).toEqual(first.orders.map((o) => o.orderId));
+    // 이전 주문 기록은 1회차 그대로다 — 같은 ID가 두 번 쌓이지 않는다
+    expect(second.orders.map((o) => o.previousOrderIds)).toEqual(first.orders.map((o) => o.previousOrderIds));
+    expect(second.orders[0].previousOrderIds).toEqual(['ORDER-O01']);
+    expect(second.problems).toEqual([]);
+  });
+
+  it('접미사를 주지 않으면 호출하지 않고 던진다 (실수로 같은 주문을 돌려받지 않게)', async () => {
+    const { client, seen } = fakeClient(freshReplies());
+    await expect(runFreshOrders(client, readSandboxOrderSpecs(), manifest12(), '')).rejects.toThrow(/접미사/);
+    expect(seen).toEqual([]);
+  });
+
+  it('한 건이 실패하면 그 주문의 manifest 항목은 그대로 두고 나머지는 계속 만든다', async () => {
+    const replies = freshReplies();
+    let n = 0;
+    replies['POST /v2/checkout/orders'] = () => {
+      n += 1;
+      if (n === 1) return { status: 422, body: { name: 'UNPROCESSABLE_ENTITY', details: [{ issue: 'CURRENCY_NOT_SUPPORTED' }] } };
+      return { status: 201, body: orderCreated(`FRESH-${n}`) };
+    };
+    const { client } = fakeClient(replies);
+
+    const { rows, orders, problems } = await runFreshOrders(client, readSandboxOrderSpecs(), manifest12(), SUFFIX);
+
+    expect(rows[0].result).toBe('failed');
+    expect(rows[0].note).toBe('UNPROCESSABLE_ENTITY · CURRENCY_NOT_SUPPORTED');
+    expect(orders[0]).toEqual({ key: 'O01', orderId: 'ORDER-O01', buyer: 'seoyeon', sku: 'FK-SW-NV', tracked: true });
+    expect(orders).toHaveLength(12);
+    expect(problems[0]).toContain('O01 주문 생성 → 422');
+  });
+
+  it('승인 링크 도메인이 샌드박스가 아니면 그 자리에서 멈춘다 (live 금지)', async () => {
+    const replies = freshReplies();
+    replies['POST /v2/checkout/orders'] = { status: 201, body: orderCreated('FRESH-LIVE', 'https://www.paypal.com') };
+    const { client, seen } = fakeClient(replies);
+
+    await expect(runFreshOrders(client, readSandboxOrderSpecs(), manifest12(), SUFFIX)).rejects.toThrow(NotSandboxLinkError);
+    expect(seen.filter((s) => s.method === 'POST')).toHaveLength(1);
+  });
+
+  it('링크 파일을 새 주문 ID로 바꿔 쓴다 (캡처된 주문은 링크 없음 사유를 적는다)', async () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'afterloop-fresh-'));
+    mkdirSync(path.join(root, 'reports'), { recursive: true });
+    const { client } = fakeClient(freshReplies({ completed: ['O01'] }));
+
+    const { rows } = await runFreshOrders(client, readSandboxOrderSpecs(), manifest12(), SUFFIX);
+    const file = writeApproveLinks(rows, new Date('2026-11-09T22:31:00Z'), root, `접미사 ${SUFFIX}`);
+
+    const text = readFileSync(file, 'utf8');
+    expect(text).toContain('승인 링크 11건 / 주문 12건');
+    expect(text).toContain(`접미사 ${SUFFIX}`);
+    expect(text).toContain('| O01 | seoyeon = Seoyeon Kim | $72.00 | 승인 링크 없음 — 이미 캡처됨');
+    expect(text).toContain(`${SANDBOX_APPROVE}FRESH-1`);
+    expect(text).not.toContain('ORDER-O02'); // 이전 주문 링크는 남지 않는다
+    expect(text).not.toContain('@');
+  });
+
+  it('결과에 비밀값·구매자 개인정보가 들어가지 않는다', async () => {
+    const replies = freshReplies();
+    replies['GET /v2/checkout/orders/ORDER-O01'] = {
+      status: 200,
+      body: {
+        ...orderDetail('APPROVED'),
+        payer: { email_address: 'buyer@example.test', payer_id: 'PAYER1', name: { given_name: 'Seoyeon' } },
+      },
+    };
+    const { client } = fakeClient(replies);
+
+    const { rows, orders } = await runFreshOrders(client, readSandboxOrderSpecs().slice(0, 1), manifest12(), SUFFIX);
 
     const text = JSON.stringify({ rows, orders });
     expect(text).not.toContain('@');
