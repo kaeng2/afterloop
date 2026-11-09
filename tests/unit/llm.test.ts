@@ -11,7 +11,11 @@ import {
   DEFAULT_LLM_MAX_RETRIES,
   DEFAULT_LLM_MODEL,
   DEFAULT_LLM_TIMEOUT_MS,
+  LLM_MAX_RETRIES_MAX,
+  LLM_MAX_RETRIES_MIN,
   LLM_MAX_TOKENS,
+  LLM_TIMEOUT_MS_MAX,
+  LLM_TIMEOUT_MS_MIN,
   LlmApiError,
   LlmConfigError,
   LlmError,
@@ -407,5 +411,83 @@ describe('T032: 오류 종류와 다시 묻기', () => {
     const error = await createLlmCaller(env(), { client })(REQ).catch((e: unknown) => e);
     expect((error as LlmApiError).kind).toBe('unknown');
     expect((error as LlmApiError).retryable).toBe(true);
+  });
+});
+
+// ─────────────────────── T032 재시도 (검증 보고서 반영) ───────────────────────
+
+describe('T032 재시도: 제한 시간·재시도 횟수의 상·하한', () => {
+  it('상·하한은 내보낸 상수와 같고 기본값이 그 안에 있다', () => {
+    expect([LLM_TIMEOUT_MS_MIN, LLM_TIMEOUT_MS_MAX]).toEqual([1_000, 120_000]);
+    expect([LLM_MAX_RETRIES_MIN, LLM_MAX_RETRIES_MAX]).toEqual([0, 3]);
+    expect(DEFAULT_LLM_TIMEOUT_MS).toBeGreaterThanOrEqual(LLM_TIMEOUT_MS_MIN);
+    expect(DEFAULT_LLM_TIMEOUT_MS).toBeLessThanOrEqual(LLM_TIMEOUT_MS_MAX);
+    expect(DEFAULT_LLM_MAX_RETRIES).toBeLessThanOrEqual(LLM_MAX_RETRIES_MAX);
+  });
+
+  it('경계값은 받는다', () => {
+    expect(readClientOptions({ LLM_TIMEOUT_MS: '1000', LLM_MAX_RETRIES: '0' })).toEqual({
+      timeout: 1_000,
+      maxRetries: 0,
+    });
+    expect(readClientOptions({ LLM_TIMEOUT_MS: '120000', LLM_MAX_RETRIES: '3' })).toEqual({
+      timeout: 120_000,
+      maxRetries: 3,
+    });
+  });
+
+  it.each([
+    ['제한 시간이 하한보다 작다', { LLM_TIMEOUT_MS: '999' }],
+    ['제한 시간이 상한보다 크다', { LLM_TIMEOUT_MS: '120001' }],
+    // Node 타이머는 2^31−1ms를 넘는 지연을 1ms로 바꾼다 → 모든 요청이 곧바로 제한 시간에 걸린다
+    ['제한 시간이 Node 타이머 상한을 넘는다', { LLM_TIMEOUT_MS: '2147483648' }],
+    ['제한 시간이 아주 크다', { LLM_TIMEOUT_MS: '999999999999' }],
+    ['재시도가 상한보다 많다', { LLM_MAX_RETRIES: '4' }],
+    ['재시도가 아주 많다', { LLM_MAX_RETRIES: '1000000' }],
+  ])('범위를 벗어난 값은 호출 없이 설정 오류 — %s', async (_name, over) => {
+    expect(() => readClientOptions(over)).toThrow(LlmConfigError);
+
+    const { sent, client } = fakeClient(reply());
+    await expect(createLlmCaller(env(over), { client })(REQ)).rejects.toBeInstanceOf(LlmConfigError);
+    expect(sent).toHaveLength(0);
+  });
+
+  it('범위를 벗어난 값의 설정 오류 문구에 키를 싣지 않는다', async () => {
+    const { client } = fakeClient(reply());
+    const error = await createLlmCaller(env({ LLM_TIMEOUT_MS: '2147483648' }), { client })(REQ).catch(
+      (e: unknown) => e,
+    );
+
+    expect(String(error)).not.toContain(FAKE_KEY);
+    expect(String(error)).toContain('LLM_TIMEOUT_MS');
+  });
+});
+
+describe('T032 재시도: 다시 물어도 같은 결과인 4xx', () => {
+  it.each([
+    ['없는 모델·경로 404', new Anthropic.NotFoundError(404, {}, 'not found', new Headers()), 404],
+    ['충돌 409', new Anthropic.ConflictError(409, {}, 'conflict', new Headers()), 409],
+    ['본문 과다 413', new Anthropic.ContentTooLargeError(413, {}, 'too large', new Headers()), 413],
+    ['요청 검증 실패 422', new Anthropic.UnprocessableEntityError(422, {}, 'unprocessable', new Headers()), 422],
+  ])('%s → 다시 묻지 않는다', async (_name, thrown, status) => {
+    const { client } = fakeClient({ fail: thrown });
+
+    const error = await createLlmCaller(env(), { client })(REQ).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(LlmApiError);
+    expect((error as LlmApiError).status).toBe(status);
+    expect((error as LlmApiError).retryable).toBe(false);
+  });
+
+  it('목록에 없는 4xx(402)와 5xx(529)는 그대로 다시 묻는다', async () => {
+    const { client } = fakeClient({ fail: new Anthropic.APIError(402, {}, 'payment required', new Headers()) });
+    const paymentError = await createLlmCaller(env(), { client })(REQ).catch((e: unknown) => e);
+    expect((paymentError as LlmApiError).retryable).toBe(true);
+
+    const { client: overloaded } = fakeClient({
+      fail: new Anthropic.OverloadedError(529, {}, 'overloaded', new Headers()),
+    });
+    const serverError = await createLlmCaller(env(), { client: overloaded })(REQ).catch((e: unknown) => e);
+    expect((serverError as LlmApiError).kind).toBe('server');
+    expect((serverError as LlmApiError).retryable).toBe(true);
   });
 });
