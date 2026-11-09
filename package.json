@@ -16,6 +16,8 @@
     "test:sandbox": "node -e \"if(process.env.RUN_SANDBOX!=='1'){console.log('RUN_SANDBOX=1 일 때만 실행합니다.');process.exit(0)}\" && vitest run tests/sandbox",
     "sandbox:check": "tsx scripts/sandbox/check.ts",
     "sandbox:setup": "tsx scripts/sandbox/setup.ts",
+    "sandbox:orders": "tsx scripts/create-sandbox-orders.ts",
+    "sandbox:capture": "tsx scripts/capture-sandbox-orders.ts",
     "eval:classifier": "tsx scripts/eval-classifier.ts",
     "seed": "tsx seed/generate.ts"
   },
