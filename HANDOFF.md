@@ -10,7 +10,7 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 | 인수 테스트 | AC1~AC14 잠금. AC1~AC10은 v2 기대값으로 승인됨. AC15 이후는 작성 예정 |
 | 기능 코드 | **아직 없음.** 엔진·PayPal·AI·화면 구현 전. 테스트는 모듈이 없어서 실패하는 것이 정상 |
 | 진행 중 작업 세션 | **없음** (이동 준비 중이라 새로 시작한 작업 없음) |
-| 원격 저장소 | **연결 안 됨.** push 전에 원격을 만들어야 한다 (5장 1단계) |
+| 원격 저장소 | **https://github.com/kaeng2/afterloop** (비공개, 기본 브랜치 main). main과 레인 브랜치 전부, `engine-v0-ref`까지 push됨 |
 
 ## 2. 대기 중인 결정
 | ID | 내용 | 지금 쓰는 임시값 | 누가 |
@@ -49,16 +49,8 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 - 컨트롤 타워가 커밋하기 전에 공유 폴더(`afterloop/`)가 `main`인지 확인한다.
 
 ## 5. 새 컴퓨터 세팅 순서
-### 1단계 (이 컴퓨터에서): 원격 만들고 push
-지금 원격이 없다. 둘 중 하나:
-```bash
-gh repo create <계정>/afterloop --private --source ~/paypal-hackathon/afterloop --remote origin
-git -C ~/paypal-hackathon/afterloop push -u origin --all
-```
-또는 원격 없이 파일 하나로 옮기기:
-```bash
-git -C ~/paypal-hackathon/afterloop bundle create ~/afterloop.bundle --all
-```
+### 1단계: 원격 (완료)
+`https://github.com/kaeng2/afterloop` (비공개)에 모든 브랜치를 push했다 (2026-11-09). 새 컴퓨터에서 `gh auth login`으로 kaeng2 계정에 로그인해야 clone할 수 있다.
 
 ### 2단계: 도구
 - Node **20.x** (이 컴퓨터는 v20.20.0), npm, git, GitHub CLI(`gh auth login`)
@@ -67,7 +59,7 @@ git -C ~/paypal-hackathon/afterloop bundle create ~/afterloop.bundle --all
 ### 3단계: clone과 브랜치
 ```bash
 mkdir -p ~/paypal-hackathon && cd ~/paypal-hackathon
-git clone <원격 URL 또는 ~/afterloop.bundle> afterloop
+gh repo clone kaeng2/afterloop afterloop
 cd afterloop
 for b in lane/engine lane/paypal lane/paypal-client lane/paypal-exec lane/ai lane/ui lane/data engine-v0-ref; do git branch --track "$b" "origin/$b"; done
 npm ci
@@ -141,4 +133,4 @@ worktree마다 다른 레인 폴더를 막는 로컬 설정 `.claude/settings.lo
 ## 7. 이동 전 점검 결과 (2026-11-09 19:30)
 - worktree 3개와 레인 브랜치: 커밋 안 된 변경 없음, main보다 앞선 커밋 없음
 - git 기록 전체(모든 브랜치)와 커밋 전 변경: 실제 `.env` 값 3개(PayPal Client ID·Secret, Anthropic 키) 0건, 토큰·키 형식 0건, `.env` 류 파일 커밋 이력 없음
-- 원격 저장소: 없음 → 5장 1단계 필요
+- 원격 저장소: `kaeng2/afterloop` 만들고 브랜치 9개 push, 로컬과 원격 커밋 일치 확인
