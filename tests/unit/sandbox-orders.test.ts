@@ -18,7 +18,9 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   BUYER_DISPLAY_NAME,
+  CAPTURED_CELL,
   EXPIRED_NOTE,
+  KEPT_NOTE,
   NotSandboxLinkError,
   ORDERS_PER_BUYER,
   TRACKED_COUNT,
@@ -27,6 +29,7 @@ import {
   approveUrlKind,
   buildOrderBody,
   buyerCell,
+  freshLinkRows,
   freshSuffix,
   looksGone,
   orderRequestId,
@@ -188,45 +191,68 @@ describe('runCreateOrders (주문 생성)', () => {
     expect(JSON.stringify(orders)).not.toContain('@');
   });
 
-  it('다시 실행하면 같은 요청 ID로 200이 와서 중복 주문이 생기지 않는다', async () => {
+  // T030: 다시 실행해도 manifest에 있는 주문은 POST하지 않는다 (전에는 12건을 다시 POST하고 PayPal 멱등에 맡겼다).
+  it('다시 실행하면 이미 있는 주문은 POST하지 않는다 (호출 0회)', async () => {
     const first = await runCreateOrders(
       fakeClient({ 'POST /v2/checkout/orders': { status: 201, body: orderCreated('ORDER-SAME') } }).client,
       specs,
       emptyManifest,
     );
 
-    const { client, seen } = fakeClient({ 'POST /v2/checkout/orders': { status: 200, body: orderCreated('ORDER-SAME') } });
+    const { client, seen } = fakeClient({
+      'POST /v2/checkout/orders': () => {
+        throw new Error('이미 있는 주문을 다시 POST하면 안 된다');
+      },
+    });
     const second = await runCreateOrders(client, specs, { orders: first.orders, disputes: [] });
 
-    expect(seen.map((s) => s.requestId)).toEqual(specs.map((s) => orderRequestId(s.key)));
-    expect(second.rows.every((r) => r.result === 'existing')).toBe(true);
-    expect(second.orders).toHaveLength(12);
-    expect(second.orders.map((o) => o.orderId)).toEqual(first.orders.map((o) => o.orderId));
+    expect(seen).toEqual([]);
+    expect(second.rows.every((r) => r.result === 'kept')).toBe(true);
+    expect(second.orders).toEqual(first.orders);
     expect(second.problems).toEqual([]);
   });
 
-  it('manifest에 있던 주문 ID와 다른 ID가 오면 문제로 적고 새 ID를 쓴다', async () => {
-    const { client } = fakeClient({ 'POST /v2/checkout/orders': { status: 201, body: orderCreated('ORDER-NEW') } });
+  it('manifest에 주문 ID가 있는 키는 건드리지 않는다 (captureId·previousOrderIds 그대로)', async () => {
+    const { client, seen } = fakeClient({ 'POST /v2/checkout/orders': { status: 201, body: orderCreated('ORDER-NEW') } });
+    const before = {
+      key: 'O01',
+      orderId: 'ORDER-OLD',
+      buyer: 'seoyeon',
+      sku: 'FK-SW-NV',
+      tracked: true,
+      captureId: 'CAP-OLD',
+      previousOrderIds: ['ORDER-OLDEST'],
+    };
 
-    const { rows, orders, problems } = await runCreateOrders(client, [specs[0]], {
-      orders: [{ key: 'O01', orderId: 'ORDER-OLD', buyer: 'seoyeon', sku: 'FK-SW-NV', tracked: true, captureId: 'CAP-OLD' }],
-      disputes: [],
-    });
+    const { rows, orders, problems } = await runCreateOrders(client, [specs[0]], { orders: [before], disputes: [] });
 
-    expect(orders).toEqual([{ key: 'O01', orderId: 'ORDER-NEW', buyer: 'seoyeon', sku: 'FK-SW-NV', tracked: true }]);
-    expect(rows[0].note).toContain('다른 ID가 돌아왔다');
-    expect(problems[0]).toContain('ORDER-NEW');
+    expect(seen).toEqual([]);
+    expect(orders).toEqual([before]);
+    expect(rows[0].result).toBe('kept');
+    expect(rows[0].orderId).toBe('ORDER-OLD');
+    expect(rows[0].note).toBe(KEPT_NOTE);
+    expect(problems).toEqual([]);
   });
 
-  it('같은 주문이면 manifest의 캡처 ID를 이어 쓴다', async () => {
-    const { client } = fakeClient({ 'POST /v2/checkout/orders': { status: 200, body: orderCreated('ORDER-O01') } });
+  it('manifest에 없는 키만 만든다 (일부만 비어 있을 때)', async () => {
+    const { client, seen } = fakeClient({ 'POST /v2/checkout/orders': { status: 201, body: orderCreated('ORDER-NEW') } });
+    const kept = { key: 'O01', orderId: 'ORDER-O01', buyer: 'seoyeon', sku: 'FK-SW-NV', tracked: true, captureId: 'CAP-O01' };
 
-    const { orders } = await runCreateOrders(client, [specs[0]], {
-      orders: [{ key: 'O01', orderId: 'ORDER-O01', buyer: 'seoyeon', sku: 'FK-SW-NV', tracked: true, captureId: 'CAP-O01' }],
-      disputes: [],
-    });
+    const { rows, orders } = await runCreateOrders(client, specs.slice(0, 2), { orders: [kept], disputes: [] });
 
-    expect(orders[0].captureId).toBe('CAP-O01');
+    expect(seen.filter((s) => s.method === 'POST')).toHaveLength(1);
+    expect(seen[0].requestId).toBe(orderRequestId('O02'));
+    expect(rows.map((r) => r.result)).toEqual(['kept', 'created']);
+    expect(orders).toEqual([kept, { key: 'O02', orderId: 'ORDER-NEW', buyer: 'jiho', sku: 'FK-CD-OAT', tracked: false }]);
+  });
+
+  it('시드에 없는 키의 manifest 항목도 지우지 않는다', async () => {
+    const { client } = fakeClient({ 'POST /v2/checkout/orders': { status: 201, body: orderCreated('ORDER-NEW') } });
+    const stranger = { key: 'O99', orderId: 'ORDER-O99', buyer: 'buyer_m', sku: 'FK-BN-SET', tracked: false, captureId: 'CAP-O99' };
+
+    const { orders } = await runCreateOrders(client, [specs[0]], { orders: [stranger], disputes: [] });
+
+    expect(orders).toContainEqual(stranger);
   });
 
   it('한 건이 422면 오류 name·issue를 적고 나머지는 계속 만든다', async () => {
@@ -386,13 +412,23 @@ describe('runCapture (캡처)', () => {
     purchase_units: [{ payments: { captures: captureId === undefined ? [] : [{ id: captureId, status: 'COMPLETED' }] } }],
   });
 
+  /** 캡처 응답 (T030: 캡처 자체의 상태를 담는다). */
+  const captureBody = (captureId: string, status = 'COMPLETED', reason?: string) => ({
+    id: 'ORDER-O01',
+    status: 'COMPLETED',
+    purchase_units: [
+      {
+        payments: {
+          captures: [{ id: captureId, status, ...(reason === undefined ? {} : { status_details: { reason } }) }],
+        },
+      },
+    ],
+  });
+
   it('APPROVED면 캡처하고, COMPLETED면 건너뛰고, 승인 전이면 넘어간다', async () => {
     const { client, seen } = fakeClient({
       'GET /v2/checkout/orders/ORDER-O01': { status: 200, body: detail('APPROVED') },
-      'POST /v2/checkout/orders/ORDER-O01/capture': {
-        status: 201,
-        body: { id: 'ORDER-O01', status: 'COMPLETED', purchase_units: [{ payments: { captures: [{ id: 'CAP-O01' }] } }] },
-      },
+      'POST /v2/checkout/orders/ORDER-O01/capture': { status: 201, body: captureBody('CAP-O01') },
       'GET /v2/checkout/orders/ORDER-O02': { status: 200, body: detail('COMPLETED', 'CAP-O02') },
       'GET /v2/checkout/orders/ORDER-O03': { status: 200, body: detail('CREATED') },
     });
@@ -404,8 +440,9 @@ describe('runCapture (캡처)', () => {
     expect(rows.map((r) => [r.key, r.result, r.captureId])).toEqual([
       ['O01', 'captured', 'CAP-O01'],
       ['O02', 'skipped', 'CAP-O02'],
-      ['O03', 'pending', ''],
+      ['O03', 'not_approved', ''],
     ]);
+    expect(rows[0].label).toBe('captured · ok');
     expect(rows[2].note).toBe('not approved yet');
     expect(problems).toEqual([]);
     expect(orders.map((o) => o.captureId)).toEqual(['CAP-O01', 'CAP-O02', undefined]);
@@ -416,7 +453,7 @@ describe('runCapture (캡처)', () => {
   it('캡처 요청 ID는 주문 키 기준이고 본문은 비어 있다', async () => {
     const { client, seen } = fakeClient({
       'GET /v2/checkout/orders/ORDER-O01': { status: 200, body: detail('APPROVED') },
-      'POST /v2/checkout/orders/ORDER-O01/capture': { status: 201, body: { purchase_units: [{ payments: { captures: [{ id: 'CAP-O01' }] } }] } },
+      'POST /v2/checkout/orders/ORDER-O01/capture': { status: 201, body: captureBody('CAP-O01') },
     });
 
     await runCapture(client, { orders: [manifest.orders[0]], disputes: [] });
@@ -692,7 +729,7 @@ describe('runFreshOrders (`-- --fresh`)', () => {
     expect(posts).toHaveLength(12);
     expect(posts.map((s) => s.requestId)).toEqual(specs.map((s) => `afterloop-order-${s.key}-${SUFFIX}`));
     expect(posts[0].body).toEqual(buildOrderBody(specs[0]));
-    expect(rows.every((r) => r.result === 'created' && r.approveUrl.startsWith(SANDBOX_APPROVE))).toBe(true);
+    expect(rows.every((r) => r.result === 'recreated' && r.approveUrl.startsWith(SANDBOX_APPROVE))).toBe(true);
     expect(orders.map((o) => o.orderId)).toEqual(Array.from({ length: 12 }, (_, i) => `FRESH-${i + 1}`));
     expect(problems).toEqual([]);
   });
@@ -705,7 +742,7 @@ describe('runFreshOrders (`-- --fresh`)', () => {
     const { rows, orders } = await runFreshOrders(client, readSandboxOrderSpecs(), before, SUFFIX);
 
     expect(seen.filter((s) => s.method === 'POST')).toHaveLength(10);
-    const kept = rows.filter((r) => r.result === 'kept').map((r) => r.key);
+    const kept = rows.filter((r) => r.result === 'kept-captured').map((r) => r.key);
     expect(kept).toEqual(['O01', 'O08']);
     expect(rows.find((r) => r.key === 'O01')?.note).toContain('이미 캡처됨');
     expect(orders.find((o) => o.key === 'O01')).toEqual({
@@ -718,10 +755,11 @@ describe('runFreshOrders (`-- --fresh`)', () => {
     });
   });
 
-  it('이전 주문 ID는 manifest의 previousOrderIds에 남고 캡처 ID는 이어 쓰지 않는다', async () => {
+  it('이전 주문 ID는 manifest의 previousOrderIds에 남는다 (캡처되지 않은 주문)', async () => {
     const { client } = fakeClient(freshReplies());
     const before = manifest12();
-    before.orders[0] = { ...before.orders[0], captureId: 'CAP-OLD', previousOrderIds: ['ORDER-OLDEST'] };
+    // 캡처 ID가 있는 주문은 아예 새로 만들지 않는다 (T030) — 여기서는 캡처되지 않은 주문을 본다
+    before.orders[0] = { ...before.orders[0], previousOrderIds: ['ORDER-OLDEST'] };
 
     const { rows, orders } = await runFreshOrders(client, readSandboxOrderSpecs().slice(0, 1), before, SUFFIX);
 
@@ -800,18 +838,18 @@ describe('runFreshOrders (`-- --fresh`)', () => {
     expect(seen.filter((s) => s.method === 'POST')).toHaveLength(1);
   });
 
-  it('링크 파일을 새 주문 ID로 바꿔 쓴다 (캡처된 주문은 링크 없음 사유를 적는다)', async () => {
+  it('링크 파일을 새 주문 ID로 바꿔 쓴다 (캡처된 주문은 링크 대신 상태를 적는다)', async () => {
     const root = mkdtempSync(path.join(tmpdir(), 'afterloop-fresh-'));
     mkdirSync(path.join(root, 'reports'), { recursive: true });
     const { client } = fakeClient(freshReplies({ completed: ['O01'] }));
 
     const { rows } = await runFreshOrders(client, readSandboxOrderSpecs(), manifest12(), SUFFIX);
-    const file = writeApproveLinks(rows, new Date('2026-11-09T22:31:00Z'), root, `접미사 ${SUFFIX}`);
+    const file = writeApproveLinks(freshLinkRows(rows, new Map()), new Date('2026-11-09T22:31:00Z'), root, `접미사 ${SUFFIX}`);
 
     const text = readFileSync(file, 'utf8');
     expect(text).toContain('승인 링크 11건 / 주문 12건');
     expect(text).toContain(`접미사 ${SUFFIX}`);
-    expect(text).toContain('| O01 | seoyeon = Seoyeon Kim | $72.00 | 승인 링크 없음 — 이미 캡처됨');
+    expect(text).toContain(`| O01 | seoyeon = Seoyeon Kim | $72.00 | ${CAPTURED_CELL} |`);
     expect(text).toContain(`${SANDBOX_APPROVE}FRESH-1`);
     expect(text).not.toContain('ORDER-O02'); // 이전 주문 링크는 남지 않는다
     expect(text).not.toContain('@');

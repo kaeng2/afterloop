@@ -19,11 +19,23 @@ import { checkSection, probeRequestId, probeSection, runCheck } from './check-st
 import { SandboxEnvError, loadSandboxEnv } from './env';
 import { writeLastRunSection } from './last-run';
 import { readManifest } from './manifest';
+import { swallowedOptionsError } from './npm-args';
 import { createSandboxClient, failureLine } from './paypal';
 import type { PayPalEnv } from '@/types';
 
+/** `--` 없이 주면 npm이 삼키는 옵션들 (T030). */
+const CHECK_FLAGS = ['--json', '--probe-request-id'];
+
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
+
+  // `npm run sandbox:check --json`처럼 `--` 없이 주면 npm이 옵션을 삼킨다 — 호출하지 않고 멈춘다.
+  const swallowed = swallowedOptionsError('sandbox:check', CHECK_FLAGS, args);
+  if (swallowed !== undefined) {
+    console.error(swallowed);
+    return 1;
+  }
+
   const jsonOnly = args.includes('--json');
   const probeOnly = args.includes('--probe-request-id');
   const unknown = args.filter((arg) => arg !== '--json' && arg !== '--probe-request-id');
