@@ -136,3 +136,137 @@
 6. **응답 본문에 비밀값이 되돌아올 때**: 반환 `body`는 가공 없이 넘긴다. 로그·에러에는 안 나온다. 선택지: (가) 그대로 (PayPal이 토큰을 되돌려주는 일은 보통 없고, 호출자가 `body`를 통째로 로그·화면에 내지 않는다는 규칙을 T003·T008 지시서에 적는다). (나) 반환 `body`의 문자열에도 가리기를 적용한다.
 7. **JSON이 아닌 본문**: 지시서는 "body는 JSON 파싱, 빈 본문은 null". 구현은 JSON이 아니면 원문 문자열을 돌려준다 (예: HTML 오류 페이지). 선택지: (가) 그대로. (나) null 또는 에러.
 8. **429와 5xx 재시도 횟수를 따로 세는 것**: 한 요청에서 429 2회 + 5xx 2회가 섞이면 호출이 최대 5회, 401 갱신까지 겹치면 API 호출 최대 10회다 (모두 유한). 선택지: (가) 그대로 (종류별 최대 2회). (나) 합쳐서 최대 2회.
+
+## 재검증 (2026-11-09 21:59 KST)
+- 판정: **통과**   (기준: 요구한 수정 (1)~(5) 충족 + AC14·회귀 없음 + 비밀값 노출 0건 + 범위 밖 수정 없음)
+- 검증 대상: lane/paypal-client `b629501` (재시도 코드 커밋 `2543790`, 범위 `git diff 8e4058f..HEAD`) · SPEC 첫 줄 `# SPEC v2.1 (2026-11-09 21:02 KST)` 확인
+- 판정 근거 한 줄: 요구한 수정 (1)~(5)를 가짜 `fetch`·`now`·`sleep`으로 모두 재현했고, 지시받은 실패 경로 전부에서 가짜 Secret·Basic·토큰 노출 0건, AC14 14/14, 1차에서 일치했던 핵심 동작 그대로, 범위 밖 수정 0.
+- **판정이 바뀔 수 있는 조건**: 아래 "발견한 문제" 1번. 호출자가 path 안에 Secret을 넣고 그 Secret 중간에 제어문자(줄바꿈·탭·NUL 등)가 끼어 있으면, 거부 에러의 `message`와 `path` 속성에 Secret 원문이 다시 이어 붙어 나온다 (재현함, 로그에는 없음). 지시받은 시나리오 밖에서 내가 추가로 만든 입력이고, 그런 path를 만드는 호출자가 없으며(액세스 토큰은 호출자가 얻을 방법도 없다), 호출자가 이미 넘긴 값이 되돌아오는 것이라 **병합 후 수정**으로 분류했다. 컨트롤 타워가 이것을 "비밀값 노출 1건"으로 세면 판정은 실패다.
+- 검증 방법: 코드·설정·테스트는 고치지 않았다. 실제 네트워크 호출 없음 (전역 `fetch`는 불리면 실패하도록 막고 0회 확인). `.env`는 찾거나 읽지 않았다. 구현의 단위 테스트는 근거로 쓰지 않았다.
+- 임시 스크립트 (worktree 밖): `/private/tmp/claude-501/-Users-kaeng2--claude-spares-spare-ynZJEi/68e4e97b-9470-41c8-aa12-f4a21f8164f5/scratchpad/verify-T002/recheck.ts`, `/private/tmp/claude-501/-Users-kaeng2--claude-spares-spare-ynZJEi/68e4e97b-9470-41c8-aa12-f4a21f8164f5/scratchpad/verify-T002/recheck2.ts`, `/private/tmp/claude-501/-Users-kaeng2--claude-spares-spare-ynZJEi/68e4e97b-9470-41c8-aa12-f4a21f8164f5/scratchpad/verify-T002/recheck3.ts`
+
+### 실행한 명령과 결과
+| 명령 | 통과 | 실패 | 비고 |
+|---|---|---|---|
+| `git diff --name-status main...HEAD` | — | — | 추가 4개뿐: `src/paypal/client.ts`, `tests/unit/client.test.ts`, `reports/T002-impl.md`, `reports/T002-verify.md` |
+| `git diff --name-status 8e4058f..HEAD` | — | — | 재시도 범위는 `src/paypal/client.ts`, `tests/unit/client.test.ts`, `reports/T002-impl.md` 3개 |
+| `git diff main...HEAD -- package.json package-lock.json src/types.ts tests/acceptance SPEC.md config CLAUDE.md tasks TASKS.md DECISIONS.md README.md .claude` | — | — | 출력 0줄. 계약 파일·의존성 변경 없음. `client.ts`의 import는 `@/types` 타입 1줄뿐 (새 의존성 없음) |
+| `git rev-list --left-right --count main...HEAD` | — | — | `14 6`. main이 14개 앞 (`src/exec/`, `seed/`, `package.json`, 보고서 등). main 쪽 변경 파일과 이 레인 파일 4개는 겹치지 않는다 |
+| `npx vitest run tests/acceptance/ac14.client.test.ts` | 14 | 0 | 기대 14개 그대로 |
+| `npm test` | 152 | 0 | 4개 파일. `tests/unit/client.test.ts` 86개, 45ms |
+| `npx tsc --noEmit` | — | 3 | 1차와 같은 TS2307 3개 (`@/engine/plan`, `@/engine/escalation`, `@/exec/execute`, 다른 레인). `src/paypal/`, `tests/unit/client.test.ts` 오류 0 |
+| `npm run test:acceptance` | 41 | 2 | 9 skip, 파일 4개 실패. 1차와 같다 (ac04·ac07·ac11-12 모듈 없음, ac13 2건 `.env.example`). 모두 범위 밖 |
+| `npx eslint src/paypal/client.ts tests/unit/client.test.ts` | — | 0 | 종료 코드 0 |
+| `npx tsx …/verify-T002/recheck.ts` (재검증 시나리오) | 213 | 2 | 225행 (정보성 10). 실패 2행: 문제 1 (쪼갠 비밀값), 문제 4 (400자리 `Retry-After`). 미처리 Promise 거부 0건, 실제 실행 0.23초 |
+| `npx tsx …/verify-T002/recheck2.ts`, `recheck3.ts` (보충) | — | — | 교착 확인, 같은 토큰 재발급, 변형된 비밀값, 버리는 본문 닫기. 결과는 아래 표 |
+
+### 요구한 수정 확인
+가짜 Secret `VERIFY-FAKE-SECRET-do-not-leak-zzzz`, 가짜 토큰 `VERIFY-FAKE-TOKEN-…` 12개. "토큰"은 `/v1/oauth2/token` fetch 수, "api"는 그 밖의 fetch 수. 동시성은 가상 타이머(가짜 `sleep`이 가상 시계에 등록, 진행이 멈추면 시계를 다음 타이머로 옮김)로 돌렸다.
+
+| 항목 | 시나리오 | 기대 | 실제 | 일치 |
+|---|---|---|---|---|
+| (1) | 토큰 없는 상태 동시 GET 5개 | 토큰 1 | 토큰 1, api 5, 성공 5/5, Bearer 1종 | 예 |
+| (1) | 토큰 없는 상태 동시 GET 100개 | 토큰 1 | 토큰 1, api 100, 성공 100/100, 60초 창 최대 fetch 30, 가상 경과 180초 (1차: 토큰 100회) | 예 |
+| (1) | 토큰 만료 뒤 동시 GET 5개 | 추가 발급 1 | 토큰 합계 2, 5개 모두 새 토큰 | 예 |
+| (1) | 동시 GET 5개가 모두 401 | 갱신 1 | 토큰 합계 2 (갱신 1회), 성공 5/5, 재시도 5회 모두 새 토큰 (1차: 갱신 5회) | 예 |
+| (1) | 동시 GET 40개가 모두 401 | 갱신 1 | 토큰 합계 2, 성공 40/40 | 예 |
+| (1) | 발급 5xx 계속, 동시 5개가 공유 | 5개 모두 실패, 다음 호출은 다시 발급 | 실패 5/5, 토큰 fetch 3 (발급 1건의 재시도), api 0. 다음 호출: 토큰 fetch 3회 더 하고 실패. 복구 뒤 호출: 성공 | 예 |
+| (1) | 발급 네트워크 예외 계속, 동시 5개 | 위와 같음 | 실패 5/5, 토큰 fetch 3 → 6 → 복구 뒤 성공 (누계 7) | 예 |
+| (1) | 발급 401 / 200인데 `access_token` 없음, 동시 5개 | 위와 같음 | 실패 5/5, 토큰 fetch 1 → 2 → 복구 뒤 성공 (누계 3) | 예 |
+| (1) | 동시 401 5개의 갱신이 5xx로 실패 | 5개 모두 실패, 다음 호출은 옛 토큰을 안 씀 | 실패 5/5, 다음 호출은 새로 발급받은 토큰으로 api 1회 성공 | 예 |
+| (1) | 401 갱신 응답을 붙잡아 둔 동안 새 GET·POST 2개 | 옛 토큰으로 fetch 0 | 붙잡힌 동안 새 호출의 api fetch 0회. 풀린 뒤 3회 모두 새 토큰, 토큰 합계 2 | 예 |
+| (1) | 만료(정확히 60초 전) 재발급을 붙잡아 둔 동안 새 호출 | 옛 토큰으로 fetch 0 | 0회. 풀린 뒤 2회 모두 새 토큰, 토큰 합계 2 | 예 |
+| (1) | 다른 호출이 이미 갱신한 뒤 늦게 도착한 401 | 추가 발급 0 | 추가 발급 0, 새 토큰으로 재시도해 성공 | 예 |
+| (1) | 창이 30/30으로 찬 상태 + 토큰 만료 + 동시 5개 (교착 확인) | 끝남 | 성공 5/5, 토큰 2, `sleep` 1회, 가상 60초, 창 최대 30 | 예 |
+| (1) | 발급 재시도 중 `deps.sleep`이 거부 | 영구 실패 없음 | 공유한 2개 실패, 다음 호출 성공 | 예 |
+| (1) | 재발급해도 같은 토큰 값이 올 때 동시 401 5개 | 유한 횟수 뒤 에러 | 에러 5/5 (status 401), 토큰 fetch 2, api 11. 그 뒤 다른 호출은 정상 | 예 |
+| (2) | 1차에서 뚫린 path: `.evil.example/x`, `:8443/x`, `v1/customer/disputes`, `https://evil.example/x`, `@evil.example/x` | 예외, fetch 0 | GET·POST 모두 예외(거부된 Promise). fetch 0회 (토큰 없는 상태·있는 상태 모두, 토큰 발급 포함) | 예 |
+| (2) | `//evil.example/x`, `/\evil.example`, `/\\evil.example`, `\\evil.example/x` | 예외, fetch 0 | 예외, fetch 0회 | 예 |
+| (2) | `/x\n`, CRLF + `Host:`, 탭(중간·시작), 공백(중간·시작), NUL, DEL, NBSP, U+2028, 전각 공백 | 예외, fetch 0 | 예외, fetch 0회 | 예 |
+| (2) | 빈 문자열, `?x=1`, `#x`, `/x/http://evil.example`, `HTTPS://evil.example/x`, `javascript:alert(1)` | 예외, fetch 0 | 예외, fetch 0회 | 예 |
+| (2) | 문자열이 아닌 path: `undefined`, `null`, `123`, `toString`을 가진 객체, 배열 | 예외, fetch 0 | 예외, fetch 0회 | 예 |
+| (2) | 통과하는 변형: `/%2F%2Fevil.example`, `/..//evil.example`, `/.//evil.example`, `/v1/../../steal`, `/@evil.example`, `/;@evil.example`, `/%5Cevil.example`, `/%0d%0aHost:evil.example` | 통과한다면 호스트는 샌드박스 | 통과. 요청 호스트는 모두 `api-m.sandbox.paypal.com` (`new URL`과 `new Request` 둘 다로 해석). `/..//evil.example`은 같은 호스트의 경로 `//evil.example`이 된다 | 예 |
+| (2) | 유니코드 혼동 문자: 전각 슬래시 U+FF0F, 나눗셈 슬래시 U+2215, 전각 마침표 U+3002, 전각 @ U+FF20, 폭 없는 공백 U+200B, 한글 경로 | 통과한다면 호스트는 샌드박스 | 통과. 호스트 샌드박스, 경로에 퍼센트 인코딩되어 들어간다 | 예 |
+| (2) | `/` 뒤 `?`만(`/?`), `/`, `/#frag`, 2만 자 경로 | 통과한다면 호스트는 샌드박스 | 통과, 호스트 샌드박스 | 예 |
+| (2) | 정상 경로: `/v1/customer/disputes?page_size=1`, `/v2/checkout/orders/ABC/track`, `/v1/customer/disputes/PP-D-12345/make-offer`, `…?start_time=2026-11-01T00:00:00.000Z&page_size=50&dispute_state=A,B`, `/v1/reporting/transactions?start_date=…-0700&fields=all`, `/v2/payments/captures/…/refund`, `…/provide-evidence`, `…?q=a%20b%2Bc` | 통과 | GET·POST 모두 통과, 호스트 샌드박스 | 예 |
+| (3) | 샌드박스 외 baseUrl 11종: Secret이 baseUrl 자리에, `https://id:secret@api-m.sandbox…`, `https://id:secret@evil…`, 쿼리에 Secret, Basic 값이 섞임, 줄바꿈·공백 뒤 Secret, Secret 뒤 baseUrl, live 주소, http, 빈 문자열 | 예외, fetch 0, 문구에 받은 값 없음 | 예외 11/11, fetch 0회. 문구는 1종뿐(고정 문구), 받은 값이 실린 경우 0건, 비밀값 0건 | 예 |
+| (3) | 토큰 발급 401·400 (본문이 Secret·Basic을 되돌려줌) | 노출 0 | 에러 표면·로그 0건 | 예 |
+| (3) | 토큰 발급 5xx 계속 (`debug_id` 값이 Secret) / 429 계속 | 노출 0 | 0건. `debug_id`는 `[redacted]`로 나온다 | 예 |
+| (3) | 토큰 발급 네트워크 예외 (예외 message·cause·속성에 Basic·Secret), 문자열·객체 throw | 노출 0 | 0건 (`cause` 붙이지 않음, Error가 아니면 고정 문구) | 예 |
+| (3) | 토큰 응답 200인데 `access_token` 없음·JSON 아님 (본문에 Secret) | 노출 0 | 0건 | 예 |
+| (3) | API 400·403·404·422 (본문이 Secret·Basic·토큰을 되돌려줌) | 로그 노출 0 | 로그 0건 (반환 `body`는 결정 6 현행 유지라 보지 않음) | 예 |
+| (3) | API 5xx 계속 (본문·`debug_id`에 토큰) / 429 계속 / 401 계속 | 노출 0 | 0건. `debug_id` 안에 섞인 토큰도 `[redacted]` | 예 |
+| (3) | API 네트워크 예외 (message·cause·속성에 Bearer 토큰), 401 갱신 뒤 두 번째 토큰 포함 | 노출 0 | 0건 | 예 |
+| (3) | path 예외: 거부되는 path 6종에 Secret·Basic·발급된 토큰 | 노출 0 | 0건 (`PayPal x/[redacted]: …` 꼴) | 예 |
+| (3) | 통과하는 path에 Secret·Basic·토큰이 든 채 5xx 소진 (120자 경계에 걸친 경우 포함) | 노출 0 | 에러·로그 0건 | 예 |
+| (3) | `requestId` 예외 (path에 Secret·토큰·쿼리) | 노출 0 | 0건 | 예 |
+| (3) | 정상 GET·POST 40회 + 속도 제한 대기 로그 52줄 (본문에 Secret) | 노출 0 | 0건 | 예 |
+| (3) | 쿼리 문자열: path `/v1/customer/disputes?buyer=…&page_size=1#frag`로 위 실패 경로 전부 | 에러의 path·로그에 쿼리 없음 | `path` 속성은 `/v1/customer/disputes`. 로그 0건. 에러 message는 **네트워크 예외일 때만** 예외 문구에 든 URL·쿼리가 그대로 실린다 (문제 2) | 예 (path·로그). 네트워크 예외 문구는 문제 2 |
+| (3) | 검색한 표면 | — | 에러마다 `message`, `String(err)`, `stack`, `name`, `cause`(재귀), 자기 속성 전부(비열거 포함, 재귀), `JSON.stringify(err)`, `JSON.stringify({...err})`, `util.inspect(showHidden)` + `deps.log` 전체 | — |
+| (3) | **추가**: path 안의 Secret·토큰이 `\n`·`\r`·`\t`·NUL·DEL로 쪼개져 있을 때 (거부되는 path) | 노출 0 | **에러 `message`와 `path` 속성에 Secret·토큰 원문이 이어 붙어 나온다.** 로그 0건, fetch 0회. 공백·역슬래시·`?`·`#`로 쪼갠 경우는 나오지 않는다 | **아니오** (문제 1) |
+| (4) | `Retry-After: "5"` | 5000ms | 5000 | 예 |
+| (4) | `"0"` | 0ms | 0 | 예 |
+| (4) | `""` | 30000ms | 30000 (1차: 0) | 예 |
+| (4) | `" 5 "` | 5000ms (양끝 공백은 다듬음) | 5000 | 예 |
+| (4) | `"-5"` | 30000ms | 30000 | 예 |
+| (4) | `"1.5"` | 30000ms | 30000 (1차: 1500) | 예 |
+| (4) | `"1e3"` | 30000ms | 30000 (1차: 1,000,000) | 예 |
+| (4) | `"0x10"` | 30000ms | 30000 (1차: 16,000) | 예 |
+| (4) | `"86400"` | 60000ms (상한) | 60000 (1차: 86,400,000) | 예 |
+| (4) | HTTP 날짜 | 30000ms | 30000 | 예 |
+| (4) | 헤더 없음 | 30000ms | 30000 | 예 |
+| (4) | 그 밖: `"60"`·`"61"`·25자리 숫자 / `"+5"`·`"Infinity"`·`"abc"`·`"5, 10"`·공백뿐·아랍 숫자·전각 숫자 / `"00005"` | 60000 / 30000 / 5000 | 60000 / 30000 / 5000. 토큰 엔드포인트의 429도 모든 값에서 같은 대기 | 예 |
+| (4) | 400자리 숫자 | 60000ms (정수이므로 상한) | 30000 | 아니오 (문제 4, 의견) |
+| (5) | `requestId` `""`, `"   "`, `"\t\n"` | 호출 전 거부, fetch 0 | 셋 다 거부된 Promise(동기 throw 아님), fetch 0회 (토큰 없는 상태·있는 상태 모두). 1차: 공백뿐은 통과 | 예 |
+| (5) | `undefined`, `null`, `123`, NBSP, 전각 공백 | 거부, fetch 0 | 거부, fetch 0회 | 예 |
+| (5) | 값이 있는 `requestId` | 그대로 전송 | `PayPal-Request-Id: plan-1:send-message` | 예 |
+| 권장 | 재시도를 다 쓴 5xx 에러 | status와 `debug_id`만 | 열거 속성 `name`, `status`, `path`, `debugId`. `debugId: "dbg-7f3a9c"`, 본문의 다른 필드·구매자 값 없음. 본문이 JSON이 아니면 `debugId: null` | 예 |
+| 권장 | 버리는 응답 본문 닫기 (가짜 응답의 `cancel`·`text` 호출 기록) | 닫음 | API 401·429·재시도하는 5xx: 닫음. 토큰 발급 401·429·재시도하는 5xx: 닫음. 마지막 5xx는 `debug_id`를 읽느라 읽음. 200·404는 읽음. 실제 `Response` 객체로도 예외·미처리 거부 없음 | 예 |
+
+### 회귀 확인
+| 동작 | 기대 | 실제 | 일치 |
+|---|---|---|---|
+| 40분 동안 GET 5회 | 토큰 1 | 토큰 1, api 5 | 예 |
+| 토큰 발급 요청 꼴 | POST, Basic, `grant_type=client_credentials`, Request-Id 없음 | 그대로 | 예 |
+| 만료 60초 1ms 전 / 정확히 60초 전 | 재사용 / 재발급 | 토큰 1 / 2, 새 토큰 사용 | 예 |
+| 401 → 200 | 갱신 1회, 대기 없음 | 토큰 2, api 2, `sleep` 0회 | 예 |
+| 401 계속 | 에러, 무한 루프 없음 | 에러(status 401), 토큰 2, api 2 | 예 |
+| 429 계속 (`Retry-After: 7`) | api 3, 대기 [7000, 7000], 에러 | 그대로 (status 429) | 예 |
+| 500·502·503·504 계속 | api 3, 대기 [2000, 4000], 에러 | 그대로 (status 포함) | 예 |
+| 네트워크 예외 계속 / 503, 503, 200 | api 3 뒤 에러(status null) / 성공 | 그대로 | 예 |
+| 429·503 번갈아 계속 | api 5회 뒤 에러 (결정 8 현행 유지) | api 5, 에러 | 예 |
+| 순차 GET 31회 | 30번째 GET에서 60000ms 1회 대기 (결정 2 현행 유지) | 대기한 GET 순번 [30], `sleep` [60000] | 예 |
+| 순차 GET 100회 / 토큰 있는 상태 동시 45회 | 60초 창 안 fetch ≤ 30 | 최대 30 / 최대 30, 성공 45/45 | 예 |
+| POST: 503 → 429 → 네트워크 예외 → 401 → 201 | 5회 모두 같은 `PayPal-Request-Id`·본문·URL | Request-Id 1종, 본문 1종, URL 1종, 201 | 예 |
+| GET | Request-Id·Content-Type·body 없음 | 헤더는 `authorization`, `accept`뿐 | 예 |
+| 샌드박스 외 baseUrl 21종 (1차와 같은 꼴) | 만들 때 예외, fetch 0 | 예외 21/21, fetch 0회 | 예 |
+| 올바른 baseUrl, 끝 슬래시 `…com/`, `…com///` | 생성됨 (결정 4 현행 유지) | 생성 3/3, 요청 호스트 샌드박스 | 예 |
+| 만들기만 / 객체 속성 | fetch 0 / `call`, `get`뿐 | 그대로 | 예 |
+| 400·403·404·422, 204, 공백 본문, JSON 아님 | 재시도 없이 반환, null, null, 원문 (결정 7 현행 유지) | 그대로, `sleep` 0회 | 예 |
+| `deps.log` 미주입 | 동작 | 동작 | 예 |
+| 실제 타이머·시계·전역 fetch | 0회 | `client.ts` 스택에서 `setTimeout`·`setInterval`·`setImmediate`·`Date.now`·`performance.now`·전역 `fetch` 0회 (감시 장치가 `client.ts` 스택을 알아보는 것도 확인). 소스에 해당 호출·`process.env`·`console`·`'use client'` 없음 (주석 2줄뿐) | 예 |
+| 기존 단위 테스트 22개의 기대값 | 그대로 | 재시도 diff에서 지워진 줄은 3줄뿐 (`OK_TOKEN` 상수를 `tokenReply()` 헬퍼로 바꾼 것, 값은 같다) | 예 |
+| 로그의 디버깅 정보 | 메서드·경로·상태·재시도 횟수가 남음 | 예: `GET /v1/customer/disputes/PP-D-27803 → 404`, `GET /v1/customer/disputes → 503 · retry 1/2 after 2000ms`. 정상 Secret에서는 지나친 가리기 없음 | 예 |
+
+### 발견한 문제
+1. **[병합 후 수정] 제어문자로 쪼개진 비밀값이 가리기 뒤에 다시 이어 붙는다.** `labelPath`가 비밀값을 가린 **뒤에** 제어문자를 지운다 (`src/paypal/client.ts:170-172`). path가 `/v1/x/<Secret 앞부분>\n<Secret 뒷부분>` 꼴이면 가리기는 글자 그대로 일치하지 않아 지나가고, 그다음 줄바꿈이 지워지면서 Secret 원문이 거부 에러의 `message`와 `path` 속성에 나온다. `\n`, `\r`, `\t`, NUL, DEL 5가지에서 Secret과 발급된 토큰 모두 재현했다. 로그에는 나오지 않고(거부된 path는 로그에 가지 않는다) fetch도 0회다. 조건이 좁다: 호출자가 path에 Secret을 넣어야 하고 그 중간에 제어문자가 있어야 한다. 지금 `get`·`call`을 부르는 코드는 없고(main의 `src/exec/request.ts:41`은 `/v1/customer/disputes/<분쟁 ID>/<끝점>`만 만든다), 액세스 토큰은 클라이언트 밖으로 나가지 않아 호출자가 path에 넣을 수 없다. 두 단계의 순서를 바꾸면(제어문자를 먼저 지우고 가림) 막힌다.
+   - 같은 뿌리의 의견: 가리기는 원문 그대로 일치만 잡는다. 퍼센트 인코딩된 Secret이 path에 있으면 인코딩된 꼴이 에러 `message`·`path` 속성·로그에 남는다 (가짜 Secret `fake+secret/with=chars&more`로 확인. 원문은 나오지 않는다).
+2. **[의견] 네트워크 예외 문구가 에러 사유에 그대로 실린다.** `reasonOf`가 `error.message`를 통째로 쓴다 (`client.ts:139-141`, `:245`). 비밀값은 가려지지만, 가짜 fetch가 URL을 넣은 문구(`fetch failed for https://…?buyer=…`)를 던지면 쿼리 문자열과 구매자 값이 에러 `message`에 들어간다 (`path` 속성과 로그에는 없다). 길이 제한도 없다 (5만 자 문구 → message 50,036자). Node 내장 fetch가 실제로 어떤 문구를 던지는지는 네트워크 호출 금지라 확인하지 않았다.
+3. **[의견] `debug_id` 값에 길이·줄바꿈 제한이 없다.** 5000자 + 줄바꿈이 든 `debug_id`가 에러 `message`(5,062자, 줄바꿈 포함)와 `debugId`에 그대로 실린다 (`client.ts:270-272`). 비밀값은 가려진다.
+4. **[의견] 400자리 `Retry-After`는 60초가 아니라 30초.** `Number()`가 Infinity가 되어 기본값으로 떨어진다 (`client.ts:133-134`). 어느 쪽이든 60초 이하라 해는 없다. 구현 보고서의 "초대형 값은 상한"은 21자리까지만 테스트했다.
+5. **[의견] path 검사가 인코딩하지 않은 쿼리를 막는다.** `/v1/x?return_url=https://merchant.example/cb`(`://`)와 `/v1/x?note=a b`(공백)는 예외다. 퍼센트 인코딩하면 통과한다. 위 표의 PayPal 정상 경로 8종은 모두 통과하므로 지금 막히는 호출은 없다. T003 등 쿼리를 만드는 호출자는 값을 인코딩해야 한다.
+6. **[의견] 그 밖.**
+   a. 폭 없는 공백(U+200B)뿐인 `requestId`는 통과한다 (`trim()`이 지우지 않는 문자).
+   b. Secret이 1글자면(`"/"`, `"a"`) 가리기가 경로·`debug_id`를 조각낸다 (`[redacted]v1[redacted]customer…`). 빈 Secret은 생성 때 거부하지 않는다. 실제 Secret 길이에서는 생기지 않는다.
+   c. 1차 의견 5a(시계를 옮기지 않는 가짜 `sleep`), 5d(`redirect`·`AbortSignal`), 5e(`deps.log` 예외)는 지시에 없어 그대로다. 다시 판정하지 않았다.
+7. **[참고] 구현 보고서 "재시도" 절과 다른 곳.**
+   - "에러 `message`·`stack`과 열거 속성, 로그 줄이 모두 가려진 뒤에 만들어진다"는 문제 1의 입력에서 사실과 다르다 (가린 뒤 제어문자를 지우면서 다시 생긴다).
+   - "초대형 값 → 상한"은 문제 4의 범위(약 309자리 이상)에서는 30초다.
+   - 절 제목 시각(21:52)이 보고서 커밋 시각(21:50)보다 늦다.
+   - 그 밖의 주장(테스트 숫자 14 / 152·86 / 41·2·9 skip / tsc 3 / eslint 0, 고친 것 표 1~7, 기존 22개 기대값 유지, 유지한 결정 6건)은 내가 확인한 결과와 같다.
+
+병합 차단 문제: **없음.**
+
+### 컨트롤 타워가 결정할 것
+1. **문제 1의 처리**: (가) 이대로 병합하고 후속 작업으로 등록한다 (`labelPath`에서 제어문자 제거를 가리기 앞으로 옮기는 수정, `src/paypal/client.ts`와 단위 테스트 안에서 끝나고 계약 변경 없음). (나) "비밀값 노출 1건"으로 세어 판정을 실패로 읽는다. 이 경우 T002는 2회 연속 실패가 되어 CLAUDE.md 규칙상 사람을 불러야 한다.
+2. **쿼리 값 인코딩 규칙** (문제 5): path 검사가 공백과 `://`를 막으므로, 쿼리를 만드는 뒤 작업(T003 등) 지시서에 "쿼리 값은 퍼센트 인코딩한다"를 적을지.
