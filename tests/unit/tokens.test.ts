@@ -1108,9 +1108,8 @@ const SPACED_WORD_ALLOWED = [
   '이 원단은 메리노 울 혼방입니다.',
   '백 퍼센트 울 제품입니다.',
   '이만 줄이겠습니다. 좋은 하루 보내세요.',
-  // 지시서 1항·4항대로 그대로 두는 꼴 (한 글자 수사 + `불`)
-  '칠 불 정도 차이가 납니다.',
-  '오 불 정도입니다.',
+  // 한 글자 수사 + `불`(`칠 불 정도`, `오 불 정도`)은 T033에서 막는 쪽으로 옮겼다 (사람 결정 2026-11-10).
+  // 아래 `T033_KO_WORD_NUMBER_BLOCKED`에 같은 문장이 있다
 ];
 
 describe('T031 재시도: 띄어 쓴 금액 뒤의 조사 이·만·과', () => {
@@ -1329,4 +1328,269 @@ describe('T031 재시도 2: 천 단위 쉼표 사슬도 선형이다', () => {
       expect(checkTokens('', text, []).literalFacts, text).toEqual([reported]);
     }
   });
+});
+
+// ───────────────── T033 (띄어 쓴 `원`·`불` 금액. T031 재검증 보고서의 구멍 4종류) ─────────────────
+
+/**
+ * **아라비아 숫자 수 표현.** 한 자리·두 자리·쉼표 천 단위·`2만`·`2만 4천`
+ * (T031 재검증 "(b) main에서 막던 금액 표기 → 지금 통과"의 수 표현).
+ */
+const T033_ARABIC_NUMBERS = ['24', '7', '2', '120', '24,000', '24000', '9,600', '2만', '2만 4천'];
+
+/**
+ * **글로 쓴 수.** 두 글자 이상 수 표현과, 겹침이 적은 한 글자 수사
+ * (`이`·`일`은 `이 불편`·`일 불편`과 겹치므로 뺀다).
+ */
+const T033_KO_NUMBERS = ['칠', '오', '삼', '구', '십', '만', '천', '이십', '이십사', '삼만', '오천', '만 오천', '이만 사천'];
+
+/**
+ * **띄어 쓴 `원`·`불` 뒤에 올 수 있는 것.** 조사·종결·문장 끝·문장부호.
+ * `이었습니다`·`이고`처럼 조사 뒤에 한글이 이어지는 꼴이 T031에서 가장 많이 놓친 자리다 (240개).
+ */
+const T033_TAILS = [
+  '이었습니다.',
+  '이고 오늘 처리됩니다.',
+  '이며 배송비는 별도입니다.',
+  '이에요.',
+  '이라고 전달받았습니다.',
+  '이 환불됩니다.',
+  '만 돌려 드립니다.',
+  '과 배송비를 함께 돌려 드립니다.',
+  '을 환불해 드렸습니다.',
+  '은 오늘 환불됩니다.',
+  '도 함께 돌려 드립니다.',
+  '입니다.',
+  '',
+  ',',
+  '.',
+];
+
+/** 수 표현 × `원`/`불` × 뒤따르는 것. 금액이므로 전부 막아야 한다. */
+function t033Cross(numbers: readonly string[], currencies: readonly string[]): string[] {
+  const out: string[] = [];
+  for (const number of numbers) {
+    for (const currency of currencies) {
+      for (const tail of T033_TAILS) out.push(`환불 금액은 ${number} ${currency}${tail}`);
+    }
+  }
+  return out;
+}
+
+/** 1·2번 꼴: 아라비아 숫자 + 공백 + `원`/`불` + 조사·종결. */
+const T033_ARABIC_BLOCKED = t033Cross(T033_ARABIC_NUMBERS, ['원', '불']);
+/** 3번 꼴: 글로 쓴 수 + 공백 + `원`/`불`. */
+const T033_KO_WORD_BLOCKED = t033Cross(T033_KO_NUMBERS, ['원', '불']);
+
+/**
+ * **사람 결정으로 막는 쪽으로 바뀐 문장** (T033 출처: "`24 불`처럼 띄어 쓴 금액을 놓치는 문제는
+ * 작은 후속 일로 고쳐라"). T031 테스트에서 `SPACED_WORD_ALLOWED`에 통과로 적혀 있던 두 문장이다.
+ */
+const T033_KO_WORD_NUMBER_BLOCKED = ['칠 불 정도 차이가 납니다.', '오 불 정도입니다.'];
+
+/** 지시서 3항이 든 글로 쓴 수 + `불`. */
+const T033_KO_WORD_BUL = ['칠 불', '이십 불', '이십사 불', '만 불', '오천 불'];
+
+/**
+ * **통과해야 하는 조각.** 숫자·수사 뒤에 띄어 쓴 `원…`·`불…`이 통화가 아닌 낱말로 이어지는 꼴
+ * (T033 완료 기준의 통과 표). 이 조각이 막히면 한국어 답장이 전송되지 않는다.
+ */
+const T033_WORD_FRAGMENTS = [
+  '주문 2 불만 사항을 확인했습니다',
+  '주문 12 불만 사항',
+  '주문 12 불만사항',
+  '사이즈 2 원하시면',
+  '3 원단 중 하나',
+  '색상 2 불량 건',
+  '옵션 1 원래 색상',
+  '이 불편을 드려',
+  '일 불편',
+  '기사 불친절',
+  '만 원하시면',
+  '천 원단',
+  '사이즈 1 원만하게',
+  '접수된 12 불량 건',
+  '옵션 10 불가 안내',
+  '다음 3 원인 중 하나',
+  '로트 12 원단과 로트 13 원단',
+  '주문 12 불만은 해결되었습니다',
+  '주문 12 불만이 접수되었습니다',
+  '주문 12 불만족 사유',
+  '사이즈 100 원만하게',
+  '이천 원단 시장',
+  '색상 2 불안정한 염색',
+  '옵션 3 불필요한 부자재',
+  '사이즈 2 원피스',
+  '3 원산지 표기',
+];
+
+/** 통화 + 조사 `만`으로 봐야 하는 꼴 (지시서: `불만` 뒤에 환불·금액 낱말이 오면 금액이다). */
+const T033_BUL_MAN_REFUND = [
+  '7 불만 돌려 드립니다.',
+  '24 불만 환불해 드립니다.',
+  '2 불만 입금해 드렸습니다.',
+  '7 불만을 환불해 드립니다.',
+  '12 불만이 환불됩니다.',
+];
+
+/** 서연·지호에게 보낼 자연스러운 존댓말 문장에 든 사실값 토큰. */
+const T033_FACTS: FactToken[] = [
+  { token: '⟦DATE_1⟧', kind: 'DATE', value: '2026-11-17' },
+  { token: '⟦TRACKING_1⟧', kind: 'TRACKING', value: 'EE123456789KR' },
+  { token: '⟦CUSTOMS_STATUS_1⟧', kind: 'CUSTOMS_STATUS', value: '통관 완료' },
+];
+
+/** 사과 10 + 통관·추적 안내 10(토큰 포함 6) + 부분 환불 제안 8(자리표시자 포함) + 교환·반품 12. */
+const T033_KO_CLEAN_SENTENCES = [
+  '배송이 늦어져 정말 죄송합니다. 다시 확인해서 빠르게 안내드리겠습니다.',
+  '색상이 달라 보여 불편을 드려 죄송합니다.',
+  '이번 일로 불편을 드린 점 깊이 사과드립니다.',
+  '사이즈가 작아 불만족스러우셨다면 교환해 드리겠습니다.',
+  '포장이 불량했던 점 사과드리며 다시 생기지 않도록 하겠습니다.',
+  '기사 불친절로 놀라셨다면 택배사에 바로 전달하겠습니다.',
+  '답변이 늦어 불안하셨을 텐데 기다려 주셔서 감사합니다.',
+  '고객님이 불이익을 받지 않도록 끝까지 확인하겠습니다.',
+  '이번 일이 원만히 해결되기를 바랍니다.',
+  '저희 불찰로 안내가 늦었습니다. 다시 한번 사과드립니다.',
+  '고객님의 소포는 ⟦DATE_1⟧에 통관을 마쳤습니다.',
+  '추적번호는 ⟦TRACKING_1⟧입니다. 조회가 안 되시면 알려 주세요.',
+  '현재 상태는 ⟦CUSTOMS_STATUS_1⟧입니다. 통관 후 2~3 영업일 안에 도착합니다.',
+  '⟦DATE_1⟧에 발송했고 추적번호 ⟦TRACKING_1⟧로 확인하실 수 있습니다.',
+  '배송 상태는 ⟦CUSTOMS_STATUS_1⟧이며 추적번호 ⟦TRACKING_1⟧로 조회됩니다.',
+  '⟦DATE_1⟧ 이후에도 배송이 시작되지 않으면 원인을 확인해 드리겠습니다.',
+  '통관을 위해 개인통관고유부호가 필요합니다. 관세청 홈페이지에서 발급받으실 수 있습니다.',
+  '세관 심사가 길어져 도착이 원래 일정보다 늦어지고 있습니다.',
+  '배송은 영업일 기준 3~5일 걸리고 통관이 길어지면 더 늦어질 수 있습니다.',
+  '재입고는 원래 ⟦DATE_1⟧ 예정이었고 조금 늦어질 수 있습니다.',
+  '{{offerAmount}}을 부분 환불로 드리고 가디건은 그대로 사용하시면 어떨까요?',
+  '{{offerAmount}}만 받으시고 반품은 하지 않으셔도 됩니다.',
+  '{{offerAmount}}이 충분하지 않으시면 다시 말씀해 주세요.',
+  '{{offerAmount}}과 배송비를 함께 돌려 드리겠습니다.',
+  '{{refundAmount}}을 오늘 환불해 드렸습니다. 영업일 기준 3~5일 안에 표시됩니다.',
+  '{{offerAmount}} 환불이 원만한 해결책이 되었으면 합니다.',
+  '{{offerAmount}}을 제안드리며, 불만족스러우시면 다시 알려 주세요.',
+  '{{disputeAmount}} 전액 환불도 가능하니 원하시는 방법을 알려 주세요.',
+  '교환만 원하시면 왕복 배송비는 저희가 부담하겠습니다.',
+  '사이즈 2 원하시면 바로 보내드리겠습니다.',
+  '3 원단 샘플 중 하나를 골라 주세요.',
+  '색상 2 불량 건은 새 상품으로 교환해 드립니다.',
+  '옵션 1 원래 색상으로 다시 보내드릴까요?',
+  '주문 2 불만 사항을 확인했습니다.',
+  '주문 12 불만 사항은 오늘 처리되었습니다.',
+  '천 원단 특성상 세탁 후 조금 줄어들 수 있습니다.',
+  '반품은 수령 후 7일 안에 가능하고 불량은 기간 제한이 없습니다.',
+  '이 원단은 메리노 울 혼방이라 손세탁을 권합니다.',
+  '교환이 불가한 상품은 미리 안내드리겠습니다.',
+  '만약 원하신다면 다른 색상으로도 보내드릴 수 있습니다.',
+];
+
+describe('T033: 띄어 쓴 원·불 금액은 막고, 통화가 아닌 낱말은 통과한다', () => {
+  const blockedTables: [string, string[]][] = [
+    ['아라비아 숫자 + 띄어 쓴 원·불', T033_ARABIC_BLOCKED],
+    ['글로 쓴 수 + 띄어 쓴 원·불', T033_KO_WORD_BLOCKED],
+  ];
+
+  for (const [name, blocked] of blockedTables) {
+    it(`막아야 하는 표 — ${name} ${blocked.length}개`, () => {
+      expect(blocked.length).toBeGreaterThanOrEqual(60);
+      for (const sentence of blocked) {
+        const check = appended(sentence);
+        expect(check.literalFacts, sentence).not.toEqual([]);
+        expect(check.ok, sentence).toBe(false);
+        // 자리표시자를 건드리지 않았으므로 막는 이유는 금액 글자뿐이다
+        expect(check.missing, sentence).toEqual([]);
+        expect(check.extra, sentence).toEqual([]);
+      }
+    });
+  }
+
+  it(`사람 결정으로 막는 쪽으로 옮긴 문장 ${T033_KO_WORD_NUMBER_BLOCKED.length}개`, () => {
+    for (const sentence of T033_KO_WORD_NUMBER_BLOCKED) {
+      expect(literalsOf(sentence), sentence).not.toEqual([]);
+      expect(appended(sentence).ok, sentence).toBe(false);
+    }
+  });
+
+  it(`글로 쓴 수 + 불 표기 ${T033_KO_WORD_BUL.length}개 (모양만 / 문장 속 둘 다)`, () => {
+    for (const text of T033_KO_WORD_BUL) {
+      expect(literalsOf(text), text).not.toEqual([]);
+      expect(literalsOf(`오늘 ${text} 환불해 드렸습니다`), text).not.toEqual([]);
+    }
+  });
+
+  it(`불만 뒤에 환불·금액 낱말이 오면 통화 + 조사 만이다 (${T033_BUL_MAN_REFUND.length}개)`, () => {
+    for (const sentence of T033_BUL_MAN_REFUND) {
+      expect(literalsOf(sentence), sentence).not.toEqual([]);
+    }
+  });
+
+  it(`통과해야 하는 표 — 통화가 아닌 낱말 조각 ${T033_WORD_FRAGMENTS.length}개`, () => {
+    for (const text of T033_WORD_FRAGMENTS) {
+      expect(literalsOf(text), text).toEqual([]);
+      expect(literalsOf(`안내드립니다 ${text} 참고해 주세요`), text).toEqual([]);
+    }
+  });
+
+  it(`통과해야 하는 표 — 자연스러운 존댓말 문장 ${T033_KO_CLEAN_SENTENCES.length}개`, () => {
+    expect(T033_KO_CLEAN_SENTENCES.length).toBeGreaterThanOrEqual(30);
+    for (const text of T033_KO_CLEAN_SENTENCES) {
+      expect(literalsOf(text, T033_FACTS), text).toEqual([]);
+      expect(checkTokens(text, text, T033_FACTS).ok, text).toBe(true);
+    }
+  });
+
+  it('통과해야 하는 표 — T031의 통과 문장은 그대로 통과한다', () => {
+    const stillClean = [...KO_CLEAN_SENTENCES, ...SPACED_WORD_ALLOWED];
+    expect(stillClean.length).toBeGreaterThanOrEqual(55);
+    for (const text of stillClean) {
+      expect(literalsOf(text), text).toEqual([]);
+    }
+  });
+
+  it('보고 문자열은 T031 때와 같다 (조사 이·만·과만 함께 보고한다)', () => {
+    expect(literalsOf('24 불만 환불해 드립니다.')).toEqual(['24 불만']);
+    expect(literalsOf('2만 원만 환불')).toEqual(['2만 원만']);
+    expect(literalsOf('24 불 환불')).toEqual(['24 불']);
+    expect(literalsOf('24000 원 환불')).toEqual(['24000 원']);
+    expect(literalsOf('오늘 삼만 원이 환불됩니다.')).toEqual(['삼만 원']);
+    expect(literalsOf('만 원과 배송비를 돌려 드립니다.')).toEqual(['만 원']);
+    // 조사 뒤에 한글이 이어지면 조사는 보고 문자열에 넣지 않지만 금액으로는 막는다 (T033에서 새로 막는 꼴)
+    expect(literalsOf('결제하신 금액은 24 불이었습니다.')).toEqual(['24 불']);
+    expect(literalsOf('환불 금액은 삼만 원이고 오늘 처리됩니다.')).toEqual(['삼만 원']);
+  });
+
+  it('붙여 쓴 꼴·달러·날짜·추적번호는 그대로다', () => {
+    expect(literalsOf('24,000원만 결제해 주세요')).toEqual(['24,000원']);
+    expect(literalsOf('24불이 환불되었습니다')).toEqual(['24불']);
+    expect(literalsOf('칠 달러')).toEqual(['칠 달러']);
+    expect(literalsOf('사원이 확인했습니다')).toEqual([]);
+    expect(literalsOf('포근한 이불을 함께 보내드립니다')).toEqual([]);
+    expect(literalsOf('11월 17일')).toEqual(['11월 17일']);
+    expect(literalsOf('EE123456789KR')).toEqual(['EE123456789KR']);
+  });
+
+  it('100% 약속·재료 판정은 건드리지 않았다', () => {
+    expect(checkTokens('It is 100% wool.', '이 스웨터는 100% 울입니다.', []).newPromises).toEqual([]);
+    expect(checkTokens('nothing here', '100% 환불해 드립니다.', []).newPromises).toEqual(['100%']);
+  });
+});
+
+describe('T033: 새 규칙에서도 긴 입력이 길이에 비례한다', () => {
+  const LONG_INPUTS: [string, string][] = [
+    ['1 불 2만 번', '1 불 '.repeat(20000)],
+    ['불만 2만 번', '불만'.repeat(20000)],
+    ['1 불만 2만 번', '1 불만 '.repeat(20000)],
+    ['2 원하시면 2만 번', '2 원하시면 '.repeat(20000)],
+    ['칠 불 2만 번', '칠 불 '.repeat(20000)],
+  ];
+
+  for (const [name, text] of LONG_INPUTS) {
+    it(`${name}: 200ms 안에 끝난다`, () => {
+      const started = performance.now();
+      const check = checkTokens(text, text, []);
+      const elapsed = performance.now() - started;
+      expect(typeof check.ok, name).toBe('boolean');
+      expect(elapsed, `${name}: ${elapsed.toFixed(1)}ms`).toBeLessThan(200);
+    });
+  }
 });
