@@ -1,8 +1,8 @@
 /**
  * `tests/sandbox/last-run.md` 기록 (T001).
  *
- * 절(section)마다 따로 덮어쓴다: `sandbox:check`는 "조회" 절, `--probe-request-id`는 "요청 ID 길이" 절.
- * 한쪽을 다시 돌려도 다른 쪽 기록은 남는다.
+ * 절(section)마다 따로 덮어쓴다: `sandbox:check`는 "조회" 절, `--probe-request-id`는 "요청 ID 길이" 절,
+ * `sandbox:disputes`는 "분쟁 읽기" 절. 한쪽을 다시 돌려도 다른 쪽 기록은 남는다.
  *
  * 들어가는 것: 엔드포인트, 상태 코드, 주문·분쟁·캡처 ID, 시각.
  * 들어가지 않는 것: Client ID·Secret, 액세스 토큰, Authorization 헤더, 구매자 식별값(payer_id·이메일·이름).
@@ -11,13 +11,14 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env';
 
-export type SectionName = 'check' | 'probe';
+export type SectionName = 'check' | 'probe' | 'disputes';
 
 /** 파일에 적히는 순서. */
-const ORDER: SectionName[] = ['check', 'probe'];
+const ORDER: SectionName[] = ['check', 'probe', 'disputes'];
 const TITLE: Record<SectionName, string> = {
   check: '조회 (`npm run sandbox:check`)',
   probe: '요청 ID 길이 확인 (`npm run sandbox:check -- --probe-request-id`)',
+  disputes: '분쟁 읽기 (`npm run sandbox:disputes`)',
 };
 
 const HEADER = '# 샌드박스 마지막 실행 기록\n\n> 스크립트가 덮어쓴다. 비밀값(Secret·토큰)과 구매자 개인정보는 적지 않는다.\n';
