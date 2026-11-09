@@ -14,7 +14,7 @@
 | T000 | 하네스: 계약·인수 테스트·잠금·운영 문서 | 컨트롤 타워 | 완료 | v2.1 | — | AC1~AC14 |
 | T001 | 샌드박스 세팅 (M8): US 비즈니스 + 개인 5, 주문 12·추적 7·분쟁 3, manifest, `sandbox:check` | paypal | 대기 | v2.2 | — | AC13. **1단계**(`.env.example`, check, 요청 ID 61자 확인)는 지금, **2단계**(track, disputes, RUN_SANDBOX=1)는 주문 캡처·분쟁 접수 뒤. `.env` 입력됨 (2026-11-09). `tasks/T001.md` |
 | T002 | OAuth 클라이언트 | paypal | 완료 | v2.1 | — | AC14 통과 (14개), 단위 86. 병합 2026-11-09 22:02 (검증 통과 뒤 비밀값·경로 보강 재시도 → 재검증 통과). `reports/T002-impl.md`, `reports/T002-verify.md` |
-| T003 | 분쟁 읽기: 목록·상세 조회 + mapper → `BoardState` | paypal | 대기 | v2.2 | T002 | AC15 (작성 예정). 브랜치 `lane/paypal-client` (`.env` 없이 fixture로). T002 후속 포함 (`client.ts` 제어문자). `check.ts`는 T001이 처음부터 클라이언트로 만든다. `tasks/T003.md` |
+| T003 | 분쟁 읽기: 목록·상세 조회 + mapper → `BoardState` | paypal | 완료 | v2.2 | T002 | 병합 2026-11-09 23:09. 단위 85개 (fixture 기준). 실제 분쟁 3건으로의 확인은 분쟁 접수 뒤. AC15는 작성 예정. `reports/T003-impl.md`, `reports/T003-verify.md` |
 | T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 완료 | v2.1 | — | AC1~3·5·6·8~10 통과 (27개). 병합 2026-11-09 21:24. `reports/T004-impl.md`, `reports/T004-verify.md` |
 | T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 완료 | v2.1 | T004 | AC4, AC10 통과 (5개). 병합 2026-11-09 22:14. 후속(평가와 보드 대조)은 T018에서. `reports/T005-impl.md`, `reports/T005-verify.md` |
 | T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 대기 | v2.2 | — | AC16 (작성 예정). `tasks/T006.md` |
