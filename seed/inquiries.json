@@ -1,0 +1,248 @@
+[
+  {
+    "date": "2026-11-09",
+    "buyerId": "B01",
+    "original": "벌써 3주째인데 아직도 안 왔어요. 연락 없으면 카드사에 이의제기할게요.",
+    "english": "It's been 3 weeks and it still hasn't arrived. If I don't hear back, I'll file a dispute with my card company.",
+    "signal": "A2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-11-02",
+    "buyerId": "B01",
+    "original": "배송 조회가 일주일째 그대로예요. 확인 부탁드려요.",
+    "english": "Tracking hasn't changed in a week. Could you check?",
+    "signal": "A2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-11-08",
+    "buyerId": "B10",
+    "original": "Can you ship to a different address than my billing address?",
+    "english": "Can you ship to a different address than my billing address?",
+    "signal": "E1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-11-05",
+    "buyerId": "B06",
+    "original": "개인통관고유부호는 어디에 입력하면 되나요?",
+    "english": "Where do I enter my personal customs clearance code?",
+    "signal": "A2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-29",
+    "buyerId": "B05",
+    "original": "Sie hatten mir eine Rückerstattung versprochen. Wann kommt sie?",
+    "english": "You promised me a refund. When will it come?",
+    "signal": "C1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-20",
+    "buyerId": "B02",
+    "original": "사진이랑 색이 너무 달라요. 베이지가 아니라 회색이에요.",
+    "english": "The color is very different from the photo. It's grey, not beige.",
+    "signal": "B1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-11",
+    "buyerId": "B04",
+    "original": "Package says delivered but I don't have it.",
+    "english": "Package says delivered but I don't have it.",
+    "signal": "F1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-15",
+    "buyerId": "B03",
+    "original": "Mサイズの着丈は何cmですか？",
+    "english": "What is the length of size M in cm?",
+    "signal": "B2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-20",
+    "buyerId": "B04",
+    "original": "My order never showed up. Can you check what happened?",
+    "english": "My order never showed up. Can you check what happened?",
+    "signal": "A1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-02",
+    "buyerId": "B04",
+    "original": "Another order of mine is missing. I never got it.",
+    "english": "Another order of mine is missing. I never got it.",
+    "signal": "A1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-28",
+    "buyerId": "B04",
+    "original": "Same problem again - the package is not here.",
+    "english": "Same problem again - the package is not here.",
+    "signal": "F1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-05",
+    "buyerId": "B09",
+    "original": "There is no tracking number on my order. Has it shipped?",
+    "english": "There is no tracking number on my order. Has it shipped?",
+    "signal": "A1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-14",
+    "buyerId": "B09",
+    "original": "Still nothing here and still no tracking. Please advise.",
+    "english": "Still nothing here and still no tracking. Please advise.",
+    "signal": "A1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-11-03",
+    "buyerId": "X001",
+    "original": "주문한 상품이 아직 도착하지 않았어요. 배송 상황을 알려주실 수 있을까요?",
+    "english": "My order hasn't arrived yet. Could you let me know the shipping status?",
+    "signal": "A2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-05",
+    "buyerId": "X003",
+    "original": "통관 중이라고 나오는데 며칠 더 걸릴까요?",
+    "english": "It says it's in customs clearance. How many more days will it take?",
+    "signal": "A2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-06",
+    "buyerId": "X005",
+    "original": "발송 안내를 아직 못 받았는데 언제 보내주시나요?",
+    "english": "I haven't received a shipping notice yet. When will it be sent?",
+    "signal": "A1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-27",
+    "buyerId": "X006",
+    "original": "배송 조회 번호를 알려주실 수 있나요?",
+    "english": "Could you give me the tracking number?",
+    "signal": "A1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-28",
+    "buyerId": "X012",
+    "original": "통관에서 멈춘 것 같아요. 필요한 서류가 있으면 알려주세요.",
+    "english": "It looks like it's stuck in customs. Please let me know if any documents are needed.",
+    "signal": "A2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-08-30",
+    "buyerId": "X004",
+    "original": "My tracking hasn't updated for several days. Any news?",
+    "english": "My tracking hasn't updated for several days. Any news?",
+    "signal": "A2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-20",
+    "buyerId": "X007",
+    "original": "I still have no shipping confirmation. When does my order go out?",
+    "english": "I still have no shipping confirmation. When does my order go out?",
+    "signal": "A1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-21",
+    "buyerId": "X013",
+    "original": "M 사이즈 어깨 너비가 몇 cm인가요?",
+    "english": "What is the shoulder width of size M in cm?",
+    "signal": "B2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-08-23",
+    "buyerId": "X014",
+    "original": "키가 165cm인데 S와 M 중 어느 것이 좋을까요?",
+    "english": "I'm 165 cm tall. Would S or M suit me better?",
+    "signal": "B2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-13",
+    "buyerId": "X020",
+    "original": "사이즈표가 인치로만 있어서요. cm로도 알려주실 수 있나요?",
+    "english": "The size chart is only in inches. Could you give me the measurements in cm as well?",
+    "signal": "B2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-14",
+    "buyerId": "X025",
+    "original": "스웨터 소매 길이도 알려주시면 좋겠어요.",
+    "english": "I would also like to know the sleeve length of the sweater.",
+    "signal": "B2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-08-16",
+    "buyerId": "X008",
+    "original": "Is the cardigan true to size, or should I size up?",
+    "english": "Is the cardigan true to size, or should I size up?",
+    "signal": "B2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-06",
+    "buyerId": "X009",
+    "original": "Could you share the chest measurement for size L in cm?",
+    "english": "Could you share the chest measurement for size L in cm?",
+    "signal": "B2",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-07",
+    "buyerId": "X026",
+    "original": "화면에서 보이는 색과 실제 색이 많이 다른가요?",
+    "english": "Is the actual color very different from what I see on screen?",
+    "signal": "B1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-28",
+    "buyerId": "X036",
+    "original": "오트 색상이 사진보다 더 회색빛인가요?",
+    "english": "Is the oat color greyer than it looks in the photo?",
+    "signal": "B1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-09-29",
+    "buyerId": "X010",
+    "original": "Does the oat shade read more beige or more grey in daylight?",
+    "english": "Does the oat shade read more beige or more grey in daylight?",
+    "signal": "B1",
+    "isDemo": true
+  },
+  {
+    "date": "2026-08-31",
+    "buyerId": "X043",
+    "original": "선물 포장도 해주시나요?",
+    "english": "Do you offer gift wrapping as well?",
+    "isDemo": true
+  },
+  {
+    "date": "2026-10-21",
+    "buyerId": "X011",
+    "original": "Will you restock the beanie and scarf set?",
+    "english": "Will you restock the beanie and scarf set?",
+    "isDemo": true
+  }
+]

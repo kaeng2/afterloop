@@ -1,0 +1,92 @@
+[
+  {
+    "id": "D1",
+    "buyerId": "B02",
+    "sku": "FK-CD-OAT",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+    "subtype": "B1",
+    "status": "open",
+    "lossCents": null,
+    "source": "sandbox"
+  },
+  {
+    "id": "D2",
+    "buyerId": "B01",
+    "sku": "FK-SW-NV",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "subtype": "A2",
+    "status": "open",
+    "lossCents": null,
+    "source": "sandbox"
+  },
+  {
+    "id": "D3",
+    "buyerId": "B04",
+    "sku": "FK-BN-SET",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "subtype": "F1",
+    "status": "open",
+    "lossCents": null,
+    "source": "sandbox"
+  },
+  {
+    "id": "D4",
+    "buyerId": "B08",
+    "sku": "FK-CD-OAT",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+    "subtype": "B1",
+    "status": "closed",
+    "lossCents": 5600,
+    "source": "seed"
+  },
+  {
+    "id": "D5",
+    "buyerId": "B07",
+    "sku": "FK-CD-OAT",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+    "subtype": "B1",
+    "status": "closed",
+    "lossCents": 5600,
+    "source": "seed"
+  },
+  {
+    "id": "D6",
+    "buyerId": "B09",
+    "sku": "FK-CD-OAT",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "subtype": "A1",
+    "status": "closed",
+    "lossCents": 5600,
+    "source": "seed"
+  },
+  {
+    "id": "D7",
+    "buyerId": "B04",
+    "sku": "FK-BN-SET",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "subtype": "F1",
+    "status": "closed",
+    "lossCents": 4300,
+    "source": "seed"
+  },
+  {
+    "id": "D8",
+    "buyerId": "B04",
+    "sku": "FK-BN-SET",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "subtype": "F1",
+    "status": "closed",
+    "lossCents": 0,
+    "source": "seed"
+  },
+  {
+    "id": "D9",
+    "buyerId": "B11",
+    "sku": "FK-CT-GR",
+    "reason": "UNAUTHORISED",
+    "subtype": "E1",
+    "status": "closed",
+    "lossCents": 19700,
+    "source": "seed"
+  }
+]

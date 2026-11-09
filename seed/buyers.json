@@ -1,0 +1,98 @@
+[
+  {
+    "id": "B01",
+    "name": "김서연 Seo-yeon Kim",
+    "country": "KR",
+    "language": "KO",
+    "sandbox": true,
+    "role": "대표 시나리오: 통관 보류 + \"카드사에 이의제기\" (SC4)"
+  },
+  {
+    "id": "B02",
+    "name": "박지호 Ji-ho Park",
+    "country": "KR",
+    "language": "KO",
+    "sandbox": true,
+    "role": "색상 분쟁, 오토파일럿이 승인 대기로 올림 (SC5)"
+  },
+  {
+    "id": "B03",
+    "name": "Yuki T.",
+    "country": "JP",
+    "language": "JA",
+    "sandbox": true,
+    "role": "사이즈 문의 → 오토파일럿 자동 답변 (SC5)"
+  },
+  {
+    "id": "B04",
+    "name": "buyer_m***",
+    "country": "US",
+    "language": "EN",
+    "sandbox": true,
+    "role": "반복 미수령 주장, 자동 처리 제외 (SC5)"
+  },
+  {
+    "id": "B05",
+    "name": "Lena K.",
+    "country": "DE",
+    "language": "DE",
+    "sandbox": true,
+    "role": "환불 약속 4일 경과 (SC3, P1)"
+  },
+  {
+    "id": "B06",
+    "name": "정다은 Da-eun Jung",
+    "country": "KR",
+    "language": "KO",
+    "sandbox": false,
+    "role": "개인통관고유부호 문의 (통관 신호)"
+  },
+  {
+    "id": "B07",
+    "name": "이수민 Su-min Lee",
+    "country": "KR",
+    "language": "KO",
+    "sandbox": false,
+    "role": "색상 불만, 다투다 패소"
+  },
+  {
+    "id": "B08",
+    "name": "Olivia R.",
+    "country": "US",
+    "language": "EN",
+    "sandbox": false,
+    "role": "색상 불만, 전액 환불"
+  },
+  {
+    "id": "B09",
+    "name": "Mia L.",
+    "country": "US",
+    "language": "EN",
+    "sandbox": false,
+    "role": "추적번호 없이 미발송 주장"
+  },
+  {
+    "id": "B10",
+    "name": "Chris D.",
+    "country": "US",
+    "language": "EN",
+    "sandbox": false,
+    "role": "코트 첫 구매, 배송지 변경 요청 (사기 신호)"
+  },
+  {
+    "id": "B11",
+    "name": "Alex W.",
+    "country": "US",
+    "language": "EN",
+    "sandbox": false,
+    "role": "코트 도용 결제"
+  },
+  {
+    "id": "B12",
+    "name": "Sophie B.",
+    "country": "GB",
+    "language": "EN",
+    "sandbox": false,
+    "role": "우수 고객 (비교용)"
+  }
+]
