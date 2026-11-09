@@ -1,0 +1,135 @@
+{
+  "dispute_id": "PP-R-XWI-10197379",
+  "create_time": "2026-11-09T06:09:25.608Z",
+  "update_time": "2026-11-09T06:13:03.876Z",
+  "disputed_transactions": [
+    {
+      "buyer_transaction_id": "BUYERTXN000000001",
+      "seller_transaction_id": "0YA47116M6947443E",
+      "create_time": "2026-11-09T06:02:28.000Z",
+      "transaction_status": "HELD",
+      "gross_amount": {
+        "currency_code": "USD",
+        "value": "48.00"
+      },
+      "buyer": {
+        "email": "buyer@example.com",
+        "payer_id": "BUYERPAYERID01",
+        "name": "Test Buyer"
+      },
+      "seller": {
+        "email": "seller@example.com",
+        "merchant_id": "SELLERMERCHID01",
+        "name": "Test Seller"
+      },
+      "items": [
+        {
+          "item_name": "Wool Cardigan",
+          "item_description": "Wool Cardigan",
+          "item_quantity": "1",
+          "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+          "notes": "Color and size differ from listing\nColor and size differ from listing\nColor and size differ from listing\nColor and size differ from listing",
+          "item_type": "PRODUCT"
+        }
+      ],
+      "seller_protection_eligible": true,
+      "seller_protection_type": "EXPANDED_SELLER_PROTECTION"
+    }
+  ],
+  "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+  "status": "WAITING_FOR_SELLER_RESPONSE",
+  "dispute_amount": {
+    "currency_code": "USD",
+    "value": "48.00"
+  },
+  "dispute_state": "REQUIRED_ACTION",
+  "fund_movements": [
+    {
+      "party": "RECEIVER",
+      "amount": {
+        "currency_code": "USD",
+        "value": "45.83"
+      },
+      "initiated_time": "2026-11-09T06:13:04.000Z",
+      "type": "DEBIT",
+      "reason": "HOLD_PLACED"
+    }
+  ],
+  "dispute_life_cycle_stage": "INQUIRY",
+  "dispute_channel": "INTERNAL",
+  "messages": [
+    {
+      "posted_by": "BUYER",
+      "time_posted": "2026-11-09T06:09:25.608Z",
+      "content": "Color and size differ from listing"
+    }
+  ],
+  "extensions": {
+    "merchant_contacted": false,
+    "buyer_contacted_time": "2026-11-09T06:09:24.839Z"
+  },
+  "evidences": [
+    {
+      "evidence_type": "CREATE",
+      "notes": "Color and size differ from listing",
+      "source": "SUBMITTED_BY_BUYER",
+      "date": "2026-11-09T06:09:25.608Z",
+      "dispute_life_cycle_stage": "INQUIRY"
+    }
+  ],
+  "seller_response_due_date": "2026-11-29T06:09:25.608Z",
+  "offer": {
+    "buyer_requested_amount": {
+      "currency_code": "USD",
+      "value": "48.00"
+    }
+  },
+  "refund_details": {
+    "allowed_refund_amount": {
+      "currency_code": "USD",
+      "value": "48.00"
+    }
+  },
+  "allowed_response_options": {
+    "accept_claim": {
+      "accept_claim_types": [
+        "PARTIAL_REFUND",
+        "REFUND_WITH_RETURN",
+        "REFUND"
+      ]
+    },
+    "make_offer": {
+      "offer_types": [
+        "REFUND",
+        "REFUND_WITH_RETURN"
+      ]
+    }
+  },
+  "links": [
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-XWI-10197379",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-XWI-10197379/make-offer",
+      "rel": "make_offer",
+      "method": "POST"
+    },
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-XWI-10197379/send-message",
+      "rel": "send_message",
+      "method": "POST"
+    },
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-XWI-10197379/accept-claim",
+      "rel": "accept_claim",
+      "method": "POST"
+    },
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-XWI-10197379/escalate",
+      "rel": "escalate",
+      "method": "POST"
+    }
+  ]
+}

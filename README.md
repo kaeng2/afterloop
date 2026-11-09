@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AfterLoop
 
-## Getting Started
+판매자에게 들어온 PayPal 분쟁 1건을 바둑판처럼 놓고, 허용된 대응마다 기대 손실을 계산해 가장 손실이 적은 수를 추천한다. 판매자가 승인하면 그 수를 PayPal API(샌드박스)로 실행한다. PayPal AI Hackathon 제출작 (마감 KST 2026-11-13 05:00).
 
-First, run the development server:
+- 기준 문서: [SPEC.md](SPEC.md) · 계약: [src/types.ts](src/types.ts) · 결정 기록: [DECISIONS.md](DECISIONS.md) · 작업 보드: [TASKS.md](TASKS.md) · 세션 규칙: [CLAUDE.md](CLAUDE.md)
+
+## 빠른 시작
 
 ```bash
+npm ci
+npm run test:acceptance   # 인수 테스트 (잠금)
+npm test                  # 단위 + 통합
+RUN_SANDBOX=1 npm run test:sandbox   # 실제 샌드박스 호출 (수동)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 폴더
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| 경로 | 내용 | 수정 |
+|---|---|---|
+| `SPEC.md`, `DECISIONS.md`, `TASKS.md`, `tasks/` | 사양, 결정, 작업 보드, 작업 지시서 | 컨트롤 타워 |
+| `src/types.ts`, `tests/acceptance/` | 계약과 인수 테스트 (잠금) | 컨트롤 타워 + 사람 승인 |
+| `config/` | 가정값, 정책 기준값, 화면 문구 | engine / ui 레인 |
+| `src/engine/`, `src/paypal/`, `src/exec/`, `src/ai/`, `src/app/`, `seed/` | 레인별 구현 | 해당 레인 (SPEC 8장) |
+| `inbox/` | 기획 변경 붙여넣기 | 사람 |
+| `reports/` | 작업 보고 | 작업 세션 |
+| `docs/VERIFY.md` | 검증 세션 프롬프트 | 컨트롤 타워 |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 레인별 브랜치와 worktree
 
-## Learn More
+브랜치는 레인마다 하나: `lane/engine`, `lane/paypal`, `lane/ai`, `lane/ui`, `lane/data` (이미 만들어 둠). worktree는 작업을 배정할 때 만든다.
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# 1) worktree 만들기 (afterloop/ 에서)
+git worktree add ../afterloop-wt/engine lane/engine
+cd ../afterloop-wt/engine && npm ci
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 2) (선택) 다른 레인 폴더도 막기: 이 worktree에만 적용되는 로컬 설정
+cat > .claude/settings.local.json <<'EOF'
+{ "permissions": { "deny": [
+  "Edit(/src/paypal/**)", "Edit(/src/exec/**)", "Edit(/src/ai/**)", "Edit(/src/app/**)", "Edit(/seed/**)", "Edit(/config/copy.*.json)"
+] } }
+EOF
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 3) 작업 세션 시작: 반드시 worktree 안에서 시작해야 잠금 설정이 적용된다
+claude   # 첫 메시지: "tasks/T004.md 를 읽고 작업해줘"
+```
 
-## Deploy on Vercel
+- 레인 작업이 끝나면 컨트롤 타워가 `main`에 합친다 ("T0xx 병합해줘").
+  ```bash
+  git switch main && git merge --no-ff lane/engine && npm run test:acceptance
+  ```
+- 다른 레인은 합쳐진 `main`을 받아서 이어 간다: `git -C ../afterloop-wt/paypal merge main`
+- 다 쓴 worktree 정리: `git worktree remove ../afterloop-wt/engine`
+- 브랜치만 쓰고 싶으면 worktree 대신 `git switch lane/<레인>`도 된다. 단, 한 폴더에서는 한 번에 한 세션만 작업한다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 운영 (컨트롤 타워)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+컨트롤 타워는 상위 폴더 `paypal-hackathon/`에서 시작한 세션이다 ([CLAUDE.md](CLAUDE.md)). 기능 코드는 쓰지 않는다. 아래 요청을 받으면 이렇게 한다.
+
+### "inbox 반영해줘"
+1. `inbox/`의 새 파일을 읽는다.
+2. SPEC에 미치는 변경을 정리하고 `SPEC.md` 버전을 올린다 (v1 → v2, 날짜·시각).
+3. `DECISIONS.md`에 결정·이유·영향받은 작업을 기록한다.
+4. 영향받는 작업을 표로 보고한다 (작업 ID, 지금 상태, 바뀌는 점, 진행 중이면 멈춰야 하는지).
+5. 필요한 작업 지시서를 수정·추가하고 `TASKS.md`의 기준 SPEC 열을 갱신한다.
+6. 인수 테스트 기대값이나 계약(`src/types.ts`)이 바뀌어야 하면 **바꾸기 전에** 사람에게 승인을 요청한다.
+7. 반영한 inbox 파일을 `inbox/done/`으로 옮긴다.
+
+### "작업 쪼개줘 (기능명)"
+1. 기능을 2시간 이내 단위로 나눈다. 레인 하나, 수정 가능 폴더가 겹치지 않게.
+2. 작업마다 `tasks/T0xx.md`를 `tasks/_TEMPLATE.md` 형식으로 만든다 (기준 SPEC, 완료 기준 AC ID 포함).
+3. `TASKS.md`에 추가하고 의존 관계를 적는다. 완료 기준 AC가 없으면 새 AC를 작성해 승인 요청한다.
+
+### "T0xx 병합해줘"
+1. `reports/T0xx-*.md`를 읽는다. 기준 SPEC이 현재와 같은지, 바뀐 파일이 지시서의 수정 가능 폴더 안인지 확인한다.
+2. `git diff main..lane/<레인> -- src/types.ts tests/acceptance/ SPEC.md`가 비어 있는지 확인한다.
+3. `main`에 병합한다 (`--no-ff`).
+4. `npm run test:acceptance`, `npm test`, `npx tsc --noEmit`을 실행한다.
+5. 결과에 따라 `TASKS.md` 상태를 완료/검토로 바꾸고, 실패하면 되돌리거나 후속 작업을 만든다.
+
+### "상태 보고"
+- `TASKS.md` 상태별 개수와 진행 중 작업
+- 막힌 작업과 이유 (의존, 승인 대기, SPEC 불일치)
+- 새로 들어온 `reports/`와 `inbox/`
+- 오늘 남은 순서 (의존 관계 기준으로 다음에 시작할 작업)
+
+## 정직성 표
+
+발표와 제출물에서 무엇이 실제 PayPal 샌드박스이고 무엇이 시드·가정인지 구분한다. (내용은 기능이 완성되면 채운다)
+
+| 기능 | 실제 PayPal 샌드박스 | 시드 데이터 | 가정값 |
+|---|---|---|---|
+| OAuth 토큰 발급 | | | |
+| 분쟁 목록·상세 조회 | | | |
+| BoardState 변환 (허용 대응) | | | |
+| 원인 분류 (LLM) | | | |
+| 기대 손실 계산 | | | |
+| 정책 규칙 R1~R5 | | | |
+| 메시지 초안·번역 | | | |
+| send-message | | | |
+| make-offer | | | |
+| accept-claim / provide-evidence | | | |
+| 분쟁 종결 (구매자 수락 / adjudicate) | | | |
+| 추적번호 일괄 등록 | | | |
+| 분쟁함 | | | |
+| 상품 진단 리허설 | | | |
+| 원인 리포트 | | | |
+| 분류 정확도 평가 | | | |
+
+### 가정값과 근거
+현재 값의 정본은 [config/params.json](config/params.json)이다. 여기에는 근거만 적는다.
+
+| 가정값 | config 키 | source | 근거 출처 |
+|---|---|---|---|
+| 승소 확률 p_win | `pWinBase` | | |
+| 패소 수수료 f | `feeCents` | | |
+| 대응 시간 비용 (증빙 / 제안) | `tFightCents`, `tOfferCents` | | |
+| 재구매 가치 V | `repurchaseValueCents` | | |
+| 이탈 확률 (싸움 / 수락 / 환불) | `cFight`, `cAccept`, `cRefund` | | |
+| 제안 비율 x | `offerRate` | | |
+| 수락률 곡선 (기본률 / 배수 / 상한) | `pAcceptBase`, `pAcceptSlope`, `pAcceptCap` | | |

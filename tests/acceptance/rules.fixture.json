@@ -1,0 +1,20 @@
+{
+  "version": "rules-2026-11-09.1",
+  "note": "정책 규칙 (PRD S7). 엔진(src/engine/)은 읽기만 한다. 값을 바꾸면 정책 변경이므로 DECISIONS.md에 기록하고, 인수 테스트 AC4~AC8 기대값이 바뀌는지 컨트롤 타워가 확인한다.",
+  "R1": { "maxAmountCents": 5000, "cause": "B_EXPECTATION", "maxOfferRate": 0.20, "note": "금액 이하이고 원인 B → 제안 비율 상한" },
+  "R2": { "minAmountCents": 15000, "refundType": "REFUND_WITH_RETURN", "note": "금액 이상 → 환불은 반품 조건" },
+  "R3": { "cause": "A_DELIVERY", "requiresDeliveredTracking": true, "note": "배송 완료 추적이 있으면 증빙 + 안내 메시지로 고정" },
+  "R4": { "causes": ["F_ABUSE"], "minBuyerDisputes90d": 2, "note": "원인 F 또는 90일 내 분쟁 n회 이상 → 제안 금지" },
+  "R5": { "channels": ["EXTERNAL"], "note": "외부 채널 → 협상 없이 증빙" },
+  "approval": {
+    "autoExecute": false,
+    "alwaysRequireCauses": ["E_FRAUD", "F_ABUSE"],
+    "alwaysRequireMoves": ["accept_claim"],
+    "note": "MVP는 자동 처리 없음. 모든 수는 판매자 승인 후 실행"
+  },
+  "classification": { "minConfidence": 0.7, "note": "미만이면 needsReview = true" },
+  "excludedReasons": {
+    "values": [],
+    "note": "엔진 추천에서 빼고 '직접 처리'로 보낼 분쟁 사유 (PayPal reason 값). PRD 반영 후 채운다"
+  }
+}

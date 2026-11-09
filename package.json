@@ -6,20 +6,28 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run tests/unit tests/integration",
+    "test:acceptance": "vitest run tests/acceptance",
+    "test:watch":"vitest tests/unit tests/integration",
+    "test:sandbox": "node -e \"if(process.env.RUN_SANDBOX!=='1'){console.log('RUN_SANDBOX=1 일 때만 실행합니다.');process.exit(0)}\" && vitest run tests/sandbox",
+    "eval:classifier": "tsx scripts/eval-classifier.ts"
   },
   "dependencies": {
+    "next": "15.5.29",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.29"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.29",
-    "@eslint/eslintrc": "^3"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

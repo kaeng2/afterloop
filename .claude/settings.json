@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(/tests/acceptance/**)",
+      "Edit(/src/types.ts)",
+      "Edit(/SPEC.md)",
+      "Edit(/DECISIONS.md)",
+      "Edit(/TASKS.md)",
+      "Edit(/tasks/**)",
+      "Edit(/CLAUDE.md)",
+      "Edit(/README.md)",
+      "Edit(/docs/**)",
+      "Edit(/inbox/**)",
+      "Edit(/.claude/**)"
+    ]
+  }
+}

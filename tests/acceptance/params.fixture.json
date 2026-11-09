@@ -1,0 +1,18 @@
+{
+  "version": "params-2026-11-09.1",
+  "note": "기대 손실 계산 가정값. 엔진(src/engine/)은 읽기만 한다. source: \"가정\" | \"공개 통계: <출처>\" | \"PayPal 데이터\". 값을 바꾸면 DECISIONS.md에 기록한다.",
+  "params": {
+    "pWinBase":             { "value": 0.40, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 싸웠을 때 이길 확률 p_win" },
+    "feeCents":             { "value": 1500, "unit": "cents", "source": "가정", "note": "PRD 6-3. 패소 수수료 f" },
+    "tFightCents":          { "value": 1000, "unit": "cents", "source": "가정", "note": "PRD 6-3. 증빙 대응 시간 비용 t_fight" },
+    "tOfferCents":          { "value": 500,  "unit": "cents", "source": "가정", "note": "PRD 6-3. 제안 대응 시간 비용 t_offer" },
+    "repurchaseValueCents": { "value": 6000, "unit": "cents", "source": "가정", "note": "PRD 6-3. 재구매 가치 V (원인 F이면 엔진이 0으로 둔다)" },
+    "cFight":               { "value": 0.50, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 싸운 뒤 이탈 확률" },
+    "cAccept":              { "value": 0.20, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 제안 수락 후 이탈 확률" },
+    "cRefund":              { "value": 0.15, "unit": "prob",  "source": "가정", "note": "PRD 6-3. 환불 후 이탈 확률" },
+    "offerRate":            { "value": 0.15, "unit": "ratio", "source": "가정", "note": "PRD 6-3. 제안 비율 x (판매자 설정 고정값, 최적화하지 않음)" },
+    "pAcceptBase":          { "value": 0.35, "unit": "prob",  "source": "가정", "note": "PRD 6-2. p_acc(x) = min(cap, base + slope·x)의 기본률" },
+    "pAcceptSlope":         { "value": 2.5,  "unit": "ratio", "source": "가정", "note": "PRD 6-2. p_acc 배수" },
+    "pAcceptCap":           { "value": 0.90, "unit": "prob",  "source": "가정", "note": "PRD 6-2. p_acc 상한" }
+  }
+}

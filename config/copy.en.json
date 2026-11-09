@@ -1,0 +1,18 @@
+{
+  "version": "copy-en-2026-11-09.1",
+  "note": "UI copy (ui lane). Never hard-code numbers; use {{placeholders}}.",
+  "move.fight": "Respond with evidence",
+  "move.offer": "Offer a partial refund",
+  "move.refund": "Full refund",
+  "board.expectedLoss": "Expected loss {{amount}}",
+  "board.recommended": "Recommended",
+  "board.directHandling": "Handle manually",
+  "board.needsReview": "Seller review needed",
+  "board.requiresApproval": "Runs only after you approve",
+  "blocked.R1": "Offer rate capped",
+  "blocked.R3": "Delivery proof on file: evidence response only",
+  "blocked.R4": "Offers blocked: repeat or abusive disputes",
+  "blocked.R5": "Offers unavailable for external-channel disputes",
+  "approve.button": "Approve and run",
+  "badge.demo": "Demo data"
+}
