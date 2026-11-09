@@ -447,6 +447,46 @@ describe('클라이언트: 비밀값 비노출 (계약 밖 입력)', () => {
     expect(text).not.toContain('buyer=');
   });
 
+  // T002 재검증 보고 문제 1: 가리기보다 제어문자 지우기가 먼저여야 한다.
+  it.each([
+    ['줄바꿈', '\n'],
+    ['캐리지 리턴', '\r'],
+    ['탭', '\t'],
+    ['NUL', '\u0000'],
+    ['DEL', '\u007f'],
+    ['여러 제어문자', '\r\n\t'],
+  ])('제어문자(%s)로 쪼갠 Secret이 거부된 path의 에러·로그에서 다시 이어 붙지 않는다', async (_label, splitter) => {
+    const half = Math.floor(ENV.clientSecret.length / 2);
+    const split = `${ENV.clientSecret.slice(0, half)}${splitter}${ENV.clientSecret.slice(half)}`;
+    const h = harness();
+    // 제어문자가 든 path는 거부된다 (여기서 보는 것은 거부 에러의 문구다)
+    const err = await caught(createPayPalClient(ENV, h.deps).get(`/v1/customer/disputes/${split}`));
+
+    const text = surfaces(err, h.logs);
+    for (const secret of SECRETS) expect(text).not.toContain(secret);
+    expect(err.path).toContain('[redacted]');
+    expect(h.fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('제어문자로 쪼갠 액세스 토큰도 에러·로그에서 다시 이어 붙지 않는다', async () => {
+    const h = harness([{ status: 200, body: '{"ok":true}' }]);
+    const client = createPayPalClient(ENV, h.deps);
+    await client.get('/v1/customer/disputes'); // 토큰을 먼저 받아 둔다
+    const split = `${TOKEN.slice(0, 8)}\n${TOKEN.slice(8)}`;
+    const err = await caught(client.get(`/v1/customer/disputes/${split}`));
+
+    const text = surfaces(err, h.logs);
+    for (const secret of SECRETS) expect(text).not.toContain(secret);
+    expect(h.api).toHaveLength(1); // 거부된 호출은 나가지 않는다
+  });
+
+  it('제어문자 지우기를 먼저 해도 정상 경로의 로그는 그대로다', async () => {
+    const h = harness([{ status: 404, body: '{}' }]);
+    await createPayPalClient(ENV, h.deps).get('/v1/customer/disputes/PP-R-XWI-10197379?page_size=10');
+
+    expect(h.logs).toContain('GET /v1/customer/disputes/PP-R-XWI-10197379 → 404');
+  });
+
   it('requestId가 빈 POST의 에러 문구에도 경로의 쿼리·비밀값이 없다', async () => {
     const h = harness();
     const err = await caught(
