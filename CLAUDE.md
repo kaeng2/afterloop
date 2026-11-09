@@ -19,7 +19,7 @@
 - 자기 지시서의 **"수정 가능 폴더" 밖은 수정하지 않는다.**
 - 다음은 수정하지 않는다: `SPEC.md`, `DECISIONS.md`, `TASKS.md`, `tasks/`, `src/types.ts`, `tests/acceptance/`, `CLAUDE.md`, `README.md`, `docs/`, `inbox/`, `.claude/`. (대부분 `.claude/settings.json`에서 편집이 막혀 있다.)
 - 계약(타입, 인수 테스트, SPEC)이 바뀌어야 한다고 판단되면 고치지 말고 보고서의 "컨트롤 타워에 요청할 결정"에 적는다.
-- 자기 레인 브랜치(`lane/<레인>`)에만 커밋한다. `main`에 직접 커밋하거나 병합하지 않는다.
+- 자기 지시서의 "브랜치 / worktree"에 적힌 브랜치(`lane/...`)에만 커밋한다. `main`에 직접 커밋하거나 병합하지 않는다.
 - 끝나면 `reports/T0xx-<YYYYMMDD-HHMM>.md`에 `reports/README.md` 형식으로 보고하고 **멈춘다.** 다음 작업을 스스로 시작하지 않는다.
 
 ## 컨트롤 타워
