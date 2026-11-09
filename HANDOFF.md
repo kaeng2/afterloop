@@ -53,7 +53,7 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 `https://github.com/kaeng2/afterloop` (비공개)에 모든 브랜치를 push했다 (2026-11-09). 새 컴퓨터에서 `gh auth login`으로 kaeng2 계정에 로그인해야 clone할 수 있다.
 
 ### 2단계: 도구
-- Node **20.x** (이 컴퓨터는 v20.20.0), npm, git, GitHub CLI(`gh auth login`)
+- Node **20 이상** (`package.json` engines `>=20`, `.nvmrc`는 22. 예전 컴퓨터와 경희 노트북은 v20.20.0), npm, git, GitHub CLI(`gh auth login`)
 - Claude Code (이 컴퓨터는 2.1.318) 로그인
 
 ### 3단계: clone과 브랜치
@@ -83,8 +83,14 @@ worktree마다 다른 레인 폴더를 막는 로컬 설정 `.claude/settings.lo
 | `paypal` (T001) | `Edit(/src/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/scripts/eval-classifier.ts)` |
 | `paypal-client` (T002) | `Edit(/src/exec/**)`, `Edit(/src/engine/**)`, `Edit(/src/ai/**)`, `Edit(/src/app/**)`, `Edit(/scripts/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/package.json)`, `Edit(/.gitignore)` |
 | `paypal-exec` (T008) | `Edit(/src/paypal/**)`, `Edit(/src/engine/**)`, `Edit(/src/ai/**)`, `Edit(/src/app/**)`, `Edit(/scripts/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/package.json)`, `Edit(/.gitignore)` |
+| `ai` (T006 이후) | `Edit(/src/engine/**)`, `Edit(/src/paypal/**)`, `Edit(/src/exec/**)`, `Edit(/src/app/**)`, `Edit(/seed/**)`, `Edit(/config/**)`, `Edit(/scripts/sandbox/**)`, `Edit(/tests/sandbox/**)`, `Edit(/tests/fixtures/**)`, `Edit(/public/**)`, `Edit(/package.json)`, `Edit(/package-lock.json)`, `Edit(/.gitignore)`, `Edit(/.nvmrc)`, `Edit(/tsconfig.json)`, `Edit(/vitest.config.ts)`, `Edit(/next.config.ts)`, `Edit(/eslint.config.mjs)` |
+| `ui` (T009 이후) | `Edit(/src/engine/**)`, `Edit(/src/paypal/**)`, `Edit(/src/exec/**)`, `Edit(/src/ai/**)`, `Edit(/seed/**)`, `Edit(/scripts/**)`, `Edit(/config/params.json)`, `Edit(/config/rules.json)`, `Edit(/tests/sandbox/**)`, `Edit(/tests/fixtures/**)`, `Edit(/package.json)`, `Edit(/package-lock.json)`, `Edit(/.gitignore)`, `Edit(/.nvmrc)`, `Edit(/tsconfig.json)`, `Edit(/vitest.config.ts)`, `Edit(/next.config.ts)`, `Edit(/eslint.config.mjs)` |
 
 형식: `{ "permissions": { "deny": [ ...위 목록... ] } }`
+
+- `ai`는 `src/ai/`와 `scripts/eval-classifier.ts`만, `ui`는 `src/app/`과 `config/copy.*.json`만 고친다 (2026-11-09 결정). deny는 예외를 둘 수 없어서 "그 밖의 알려진 경로"를 하나씩 막는 방식이다. 자기 모듈 테스트(`tests/unit/`, `tests/integration/`)와 `reports/`는 열려 있고, `ui`는 `public/`도 열려 있다.
+- 두 레인 모두 `package.json`과 루트 설정 파일(`tsconfig.json`, `next.config.ts` 등)이 막혀 있다. 의존성 추가(AG Grid, LLM SDK 등)나 설정 변경이 필요하면 작업 세션이 고치지 말고 보고한다.
+- 경희 노트북(2026-11-09)에는 worktree 7개(`engine`, `data`, `paypal`, `paypal-client`, `paypal-exec`, `ai`, `ui`)를 모두 만들고 위 표대로 잠갔다. 상위 폴더는 `~/repositories/paypal-hackathon` (이 문서의 `~/paypal-hackathon` 자리).
 
 ### 5단계: `.env` (값은 새로 받는다. 이 문서와 git에 값을 쓰지 않는다)
 | 변수 | 필요한 곳 | 받는 곳 |
