@@ -165,6 +165,13 @@ export function formatFact(kind: FactToken['kind'], raw: string, locale: FactLoc
 /** 반각·전각 숫자. */
 const D = '[0-9０-９]';
 /**
+ * 천 단위 묶음(`,000`)의 반복. **상한을 둔다** — `000,000,000,…`처럼 쉼표가 길게 이어지는 입력에서는
+ * 쉼표 뒤마다 수 모양이 다시 시작하고(앞 글자가 쉼표라 `NUM_HEAD`가 막지 못한다) 그때마다 사슬 끝까지
+ * 읽어 시간이 길이의 제곱으로 늘었다 (5만 자 1.3초. T031 재시도 2). 상한을 두면 한 자리에서 보는 양이
+ * 일정해 전체가 길이에 선형이 된다. 7묶음 = 22자리이므로 사람이 쓰는 금액 표기는 그대로 다 받는다
+ */
+const NUM_GROUPS = `(?:[,，]${D}{3}){0,7}`;
+/**
  * 천 단위 구분과 소수 둘째 자리까지 허용한 수. 소수점은 점과 쉼표 둘 다 받는다
  * (독일어는 `24,00`처럼 쉼표를 쓴다). `24,-`도 금액 표기다.
  *
@@ -172,7 +179,7 @@ const D = '[0-9０-９]';
  * (앞자리를 포함한 더 긴 자리에서 이미 보므로 잡는 것은 그대로다), 숫자가 수만 자 이어지는 입력에서
  * 자리마다 역추적을 다시 하지 않게 하는 것이 목적이다 (T031 재시도).
  */
-const NUM = `${D}+(?:[,，]${D}{3})*(?:[.．,，]${D}{1,2}|[,，]-)?`;
+const NUM = `${D}+${NUM_GROUPS}(?:[.．,，]${D}{1,2}|[,，]-)?`;
 const NUM_HEAD = `(?<!${D})`;
 /**
  * 모양 안의 공백. 상한을 둬서 공백이 수만 자 이어지는 입력에서 보는 경우의 수를 묶는다 (T031 재시도).
@@ -351,7 +358,11 @@ const LITERAL_SHAPES: { shape: string; pattern: RegExp; keep?: (text: string) =>
     pattern: new RegExp(`(?<![가-힣])(?:${KO_NUMERAL}{2,4}${SP}|${KO_UNIT}${SP1})원${KO_TAIL_SPACED}`, 'g'),
   },
   // 금액: 천 단위 구분이 있는 소수 (`1,234.56`). 위 모양보다 아래 `amountDecimal`보다 먼저 받아 전체를 보고한다
-  { shape: 'amountGrouped', pattern: new RegExp(`(?<!${D})${D}{1,3}(?:[,，]${D}{3})+[.．]${D}{1,2}(?!${D})`, 'g') },
+  // 묶음 반복에 상한을 둔 것은 `NUM`과 같은 이유다 (쉼표 사슬에서 한 자리가 사슬 끝까지 읽지 않게. T031 재시도 2)
+  {
+    shape: 'amountGrouped',
+    pattern: new RegExp(`${NUM_HEAD}${D}{1,3}(?:[,，]${D}{3}){1,7}[.．]${D}{1,2}(?!${D})`, 'g'),
+  },
   // 금액: 통화 표기 없이 소수 둘째 자리까지 적힌 수 (`7.20`, `７.２０`). 실행 층과 같은 기준
   { shape: 'amountDecimal', pattern: new RegExp(`(?<!${D})${D}+[.．]${D}{2}(?!${D})`, 'g') },
   // 금액: 쉼표 소수 (`7,20`, `24,00` — 독일어 표기). 뒤에 길이·무게 단위가 오면 치수 안내이므로 금액이 아니다
@@ -542,9 +553,9 @@ const PERCENT = /(?:100|１００)\s*[%％]/g;
 
 /**
  * 재료·성분 낱말. `100% 울`·`100% wool`·`zu 100 % aus Wolle`는 상품 설명이지 약속이 아니다.
- * 한글 재료는 **낱말 단위로** 본다 — 앞뒤가 모두 한글이 아니어야 한다. `서울에 계신 … 100%`의 `울`,
- * `원하시면 … 100%`의 `면`을 재료로 읽지 않으려는 것이고(T031 재시도), `울 100%`·`100% 울`처럼
- * 독립된 낱말로 있을 때만 재료다. `울소재`처럼 붙여 쓴 꼴은 그 낱말을 목록에 넣어야 걸린다.
+ * 한글 재료는 **낱말 단위로** 본다 — 앞은 한글이 아니어야 하고(`서울에 계신 … 100%`의 `울`,
+ * `원하시면 … 100%`의 `면`은 재료가 아니다. T031 재시도), 뒤는 한글이 아니거나 조사·종결이면 된다
+ * (`100% 울입니다`, `100% 캐시미어입니다`. T031 재시도 2).
  */
 const MATERIAL_LATIN = [
   'extra fine merino wool', 'lambswool', 'Schurwolle',
@@ -565,39 +576,67 @@ function longestFirst(words: readonly string[]): string {
     .join('|');
 }
 
-const MATERIAL = new RegExp(
-  [
-    // 라틴 문자는 낱말 앞 경계만 본다 (`Baumwollmischung`, `wools` 같은 합성·복수형도 재료다)
-    `(?<![A-Za-zÄÖÜäöüß])(?:${longestFirst(MATERIAL_LATIN)})`,
-    `(?<![가-힣])(?:${longestFirst(MATERIAL_KO)})(?![가-힣])`,
-    `(?:${longestFirst(MATERIAL_CJK)})`,
-  ].join('|'),
-  'gi',
-);
+/**
+ * 한글 재료 낱말 뒤에 붙을 수 있는 조사·종결. 재료 낱말과 한 낱말로 붙어 있어도 재료로 본다 —
+ * `100% 울입니다`, `100% 캐시미어입니다`, `100% 울이라 따뜻합니다`, `100% 면으로 만들었습니다`,
+ * `100% 메리노울이에요`는 상품 설명이다 (T031 재시도 2).
+ * 첫 글자만 적는다: `입`(입니다), `이`(이에요·이라·이며·이고·이지만), `으`(으로), `예`(예요), `라`(라서).
+ */
+const MATERIAL_TAIL_KO = '(?:입|이|가|은|는|을|를|과|와|도|로|으|예|라|만|의|에|소재|제품|혼방|혼용)';
 
-/** `100%` 둘레에서 재료 낱말을 찾을 범위 (앞 12자, 뒤 16자 ≒ 몇 낱말). */
-const MATERIAL_BEFORE = 12;
-const MATERIAL_AFTER = 16;
+/** 한글·일본어·중국어 재료 낱말. 한글은 앞이 한글이 아니어야 재료다 (`서울`의 `울`, `원하시면`의 `면`을 뺀다). */
+const MATERIAL_CJK_WORD = `(?<![가-힣])(?:${longestFirst([...MATERIAL_KO, ...MATERIAL_CJK])})`;
+/** 라틴 문자 재료 낱말. 낱말 앞 경계만 본다 (`Baumwollmischung`, `wools` 같은 합성·복수형도 재료다). */
+const MATERIAL_LATIN_WORD = `(?<![A-Za-zÄÖÜäöüß])(?:${longestFirst(MATERIAL_LATIN)})`;
 
 /**
- * 약속으로 볼 `100%`의 첫 자리. 둘레 몇 낱말 안에 재료 낱말이 있으면 상품 설명이므로 건너뛴다.
- * 그 밖의 `100%`(`100% 환불해 드립니다`, `I am 100% sure …`)는 약속 표현이다 (T031).
+ * `100%` 바로 뒤(사이에 공백만)에 오는 재료 낱말. 한글은 뒤가 한글이 아니거나 조사·종결이면 재료다.
+ * `100% 울`, `100% 울입니다`, `100%綿です`, `100% コットン`, `100% Wolle`.
+ */
+const MATERIAL_RIGHT = new RegExp(
+  `^\\s{0,16}(?:${MATERIAL_CJK_WORD}(?:(?![가-힣])|(?=${MATERIAL_TAIL_KO}))|${MATERIAL_LATIN_WORD})`,
+  'i',
+);
+/**
+ * `100%` 바로 앞(사이에 공백만)에 오는 재료 낱말. `울 100%`, `메리노울 100%입니다`, `ウール100%`.
+ * 앞쪽에서는 조사·종결을 받지 않는다 — `울이지만 100% 환불해 드립니다`는 상품 설명이 아니라 약속이다
+ * (재료 낱말이 `100%`와 떨어져 있으면 재료 문맥이 아니다. T031 재시도 2).
+ */
+const MATERIAL_LEFT = new RegExp(`(?:${MATERIAL_CJK_WORD}|${MATERIAL_LATIN_WORD})\\s{0,16}$`, 'i');
+/** 라틴 문자 재료 낱말 하나가 들어 있는 낱말 (`100% extra fine merino wool`의 `merino`). */
+const MATERIAL_LATIN_IN_WORD = new RegExp(MATERIAL_LATIN_WORD, 'i');
+
+/** `100%` 앞뒤로 볼 글자 수. 낱말 몇 개면 충분하고, 길이에 상관없이 일정하게 둔다. */
+const MATERIAL_WINDOW = 96;
+/** 라틴 문자는 `100%` 뒤 네 낱말까지 본다 (`100% extra fine merino wool`). */
+const MATERIAL_LATIN_WORDS_AFTER = 4;
+
+/**
+ * 이 `100%` 자리가 재료 문맥인지. 한글·일본어·중국어 재료 낱말은 `100%`에 **바로 붙어 있을 때만**,
+ * 라틴 문자 재료 낱말은 뒤 네 낱말 안에 있거나 바로 앞에 붙어 있을 때 상품 설명으로 본다 (T031 재시도 2).
  *
- * 재료 낱말은 **글 전체에서** 찾고 자리만 둘레와 견준다. 글을 먼저 자르고 조각에서 찾으면
- * 자른 자리가 낱말 앞 경계처럼 보여서, `서울에 계신 고객님께는 100% 도착합니다`의 `울`이
- * 재료로 읽혔다 (T031 재시도).
+ * 둘레만 잘라서 보므로 글이 길어도 자리마다 하는 일이 일정하다 (전에는 글 전체에서 재료 낱말을 찾아
+ * `100%`가 수천 번 나오는 글에서 시간이 제곱으로 늘었다).
+ */
+function isMaterialContext(text: string, start: number, end: number): boolean {
+  const before = text.slice(Math.max(0, start - MATERIAL_WINDOW), start);
+  if (MATERIAL_LEFT.test(before)) return true;
+  const after = text.slice(end, end + MATERIAL_WINDOW);
+  if (MATERIAL_RIGHT.test(after)) return true;
+  return after
+    .split(/\s+/)
+    .filter((word) => word !== '')
+    .slice(0, MATERIAL_LATIN_WORDS_AFTER)
+    .some((word) => MATERIAL_LATIN_IN_WORD.test(word));
+}
+
+/**
+ * 약속으로 볼 `100%`의 첫 자리. 바로 붙은 재료 낱말이 있으면 상품 설명이므로 건너뛴다.
+ * 그 밖의 `100%`(`100% 환불해 드립니다`, `I am 100% sure …`)는 약속 표현이다 (T031).
  */
 function firstPercentPromise(text: string): { at: number; text: string } | null {
-  const percents = [...text.matchAll(PERCENT)];
-  if (percents.length === 0) return null;
-  const materials = [...text.matchAll(MATERIAL)].map((match) => ({
-    start: match.index,
-    end: match.index + match[0].length,
-  }));
-  for (const match of percents) {
-    const from = match.index - MATERIAL_BEFORE;
-    const to = match.index + match[0].length + MATERIAL_AFTER;
-    if (materials.some((span) => span.start < to && from < span.end)) continue;
+  for (const match of text.matchAll(PERCENT)) {
+    if (isMaterialContext(text, match.index, match.index + match[0].length)) continue;
     return { at: match.index, text: match[0] };
   }
   return null;

@@ -1223,3 +1223,110 @@ describe('T031 재시도: 100% 재료 낱말은 낱말 단위로 본다', () => 
     expect(checkTokens('I am 100% sure it will arrive.', '내일 도착을 보장합니다.', []).newPromises).toEqual([]);
   });
 });
+
+describe('T031 재시도 2: 100% 재료 낱말 뒤의 조사·종결', () => {
+  /**
+   * 재료 문맥 — `100%`에 바로 붙은 재료 낱말 뒤에 조사·종결이 와도 상품 설명이다
+   * (재검증 보고서 문제 1. 영어 초안 ↔ 한국어 전송본 짝도 함께 본다).
+   */
+  const MATERIAL_WITH_PARTICLE: [string, string][] = [
+    ['It is 100% wool.', '이 스웨터는 100% 울입니다.'],
+    ['This sweater is 100% wool, so it may shrink a little after washing.', '이 스웨터는 100% 울이라 세탁 후 조금 줄어들 수 있습니다.'],
+    ['The coat is 100% cashmere.', '소재는 100% 캐시미어입니다.'],
+    ['The lining is 100% cotton.', '안감은 100% 면으로 되어 있습니다.'],
+    ['It is 100% wool.', '100% 울이에요.'],
+    ['It is 100% wool, not a blend.', '혼방이 아니라 100% 울입니다.'],
+    ['It is 100% merino wool.', '100% 메리노울이에요.'],
+    ['It is 100% cotton.', '100% 면으로 만들었습니다.'],
+    ['It is 100% wool.', '100% 울이며 안감은 없습니다.'],
+    ['It is 100% wool.', '100% 울로 만들었습니다.'],
+    ['It is 100% wool.', '100% 울이라서 손세탁을 권합니다.'],
+    ['It is 100% cashmere.', '100% 캐시미어라서 손세탁을 권합니다.'],
+    ['It is 100% lambswool.', '100% 램스울입니다.'],
+    ['It is 100% cotton.', '100% 코튼입니다.'],
+    ['It is 100% cotton.', '100% 순면이에요.'],
+    ['nothing here', '소재는 울 100%이고 안감은 면입니다.'],
+    ['nothing here', '겉감은 울 80%, 안감은 면 100%입니다.'],
+    ['nothing here', '메리노울 100%입니다.'],
+    ['nothing here', '100% 울 소재입니다.'],
+  ];
+
+  /** 재료 낱말이 `100%`와 떨어져 있거나 낱말 안에 든 글자면 약속이다. */
+  const PERCENT_PROMISE_PARTICLE = [
+    '이 스웨터는 울이지만 100% 환불해 드립니다.',
+    '울로 만든 제품이지만 100% 환불해 드립니다.',
+    '면이라 100% 환불됩니다.',
+    '서울에 계신 고객님께는 100% 도착합니다.',
+    '서울까지 100% 도착합니다.',
+    '울산까지 100% 도착합니다.',
+    '겨울 전에 100% 도착합니다.',
+    '거울처럼 100% 똑같습니다.',
+    '원하시면 제가 책임지고 꼭 100% 환불해 드립니다.',
+    '면세 한도 안이라 100% 통과합니다.',
+    '면목 없지만 100% 환불해 드립니다.',
+    '100% 환불해 드립니다. 캐시미어 제품입니다.',
+    'I am 100% sure it will arrive tomorrow',
+    '100% 내일 도착합니다.',
+  ];
+
+  it(`재료 낱말 + 조사·종결은 약속이 아니다 (${MATERIAL_WITH_PARTICLE.length}개)`, () => {
+    for (const [draft, outgoing] of MATERIAL_WITH_PARTICLE) {
+      const check = checkTokens(draft, outgoing, []);
+      expect(check.newPromises, outgoing).toEqual([]);
+      expect(check.ok, outgoing).toBe(true);
+    }
+  });
+
+  it(`재료 낱말이 떨어져 있으면 약속이다 (${PERCENT_PROMISE_PARTICLE.length}개)`, () => {
+    for (const text of PERCENT_PROMISE_PARTICLE) {
+      expect(checkTokens('nothing here', text, []).newPromises, text).toEqual(['100%']);
+    }
+  });
+
+  it('재료 문맥인 100%를 빼도 같은 문장의 다른 약속 낱말은 잡는다', () => {
+    expect(checkTokens('It is 100% lambswool.', '100% 램스울입니다. 내일 도착을 보장합니다.', []).newPromises).toEqual([
+      '보장',
+    ]);
+    expect(checkTokens('It is 100% wool.', '100% 울입니다. 반드시 내일 도착합니다.', []).newPromises).toEqual(['반드시']);
+  });
+
+  it('재료 낱말 앞이 한글이면 재료가 아니다', () => {
+    expect(checkTokens('nothing here', '서울 100% 도착합니다.', []).newPromises).toEqual(['100%']);
+    expect(checkTokens('nothing here', '100% 울입니다.', []).newPromises).toEqual([]);
+  });
+});
+
+describe('T031 재시도 2: 천 단위 쉼표 사슬도 선형이다', () => {
+  /** 쉼표 뒤마다 수 모양이 다시 시작해 길이의 제곱이 됐다 (5만 자 1.28초. 재검증 보고서 문제 2). */
+  const COMMA_CHAINS: [string, string][] = [
+    ['000, 사슬 5만 자', '000,'.repeat(12500)],
+    ['1,000 사슬 5만 자 + 소수', `1${',000'.repeat(12499)}.5`],
+    ['사람이 쓰는 금액 표기 5만 자', '1,234,567 '.repeat(5000)],
+  ];
+
+  for (const [name, text] of COMMA_CHAINS) {
+    it(`${name}: 200ms 안에 끝난다`, () => {
+      const started = performance.now();
+      const check = checkTokens(text, text, []);
+      const elapsed = performance.now() - started;
+      expect(typeof check.ok, name).toBe('boolean');
+      expect(elapsed, `${name}: ${elapsed.toFixed(1)}ms`).toBeLessThan(200);
+    });
+  }
+
+  it('천 단위 쉼표가 든 금액 표기는 그대로 막는다 (묶음 상한을 둔 뒤에도)', () => {
+    const blocked: [string, string][] = [
+      ['24,000원', '24,000원'],
+      ['1,234,567원', '1,234,567원'],
+      ['123,456,789,012원', '123,456,789,012원'],
+      ['12,345,678.90', '12,345,678.90'],
+      ['환불 금액은,24,000원입니다.', '24,000원'],
+      ['총액,1,234.56 USD', '1,234.56 USD'],
+      ['9,24,000원', '24,000원'],
+      ['24,0000원', '0000원'],
+    ];
+    for (const [text, reported] of blocked) {
+      expect(checkTokens('', text, []).literalFacts, text).toEqual([reported]);
+    }
+  });
+});
