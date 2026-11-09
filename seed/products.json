@@ -1,0 +1,46 @@
+[
+  {
+    "sku": "FK-CD-OAT",
+    "itemName": "Knit Cardigan, Oat",
+    "priceCents": 4800,
+    "stock": 120,
+    "orders90d": 62,
+    "disputes90d": 4,
+    "checklistGaps": [
+      "Natural-light photos",
+      "Color disclosure",
+      "Size chart in cm"
+    ]
+  },
+  {
+    "sku": "FK-SW-NV",
+    "itemName": "Wool Sweater, Navy",
+    "priceCents": 7200,
+    "stock": 80,
+    "orders90d": 48,
+    "disputes90d": 1,
+    "checklistGaps": [
+      "Korean customs notice"
+    ]
+  },
+  {
+    "sku": "FK-CT-GR",
+    "itemName": "Cashmere Coat, Grey",
+    "priceCents": 18900,
+    "stock": 25,
+    "orders90d": 33,
+    "disputes90d": 1,
+    "checklistGaps": [
+      "Signature on delivery"
+    ]
+  },
+  {
+    "sku": "FK-BN-SET",
+    "itemName": "Beanie + Scarf Set",
+    "priceCents": 3500,
+    "stock": 150,
+    "orders90d": 71,
+    "disputes90d": 3,
+    "checklistGaps": []
+  }
+]
