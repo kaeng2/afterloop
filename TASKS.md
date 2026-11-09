@@ -16,7 +16,7 @@
 | T002 | OAuth 클라이언트 | paypal | 완료 | v2.1 | — | AC14 통과 (14개), 단위 86. 병합 2026-11-09 22:02 (검증 통과 뒤 비밀값·경로 보강 재시도 → 재검증 통과). `reports/T002-impl.md`, `reports/T002-verify.md` |
 | T003 | 분쟁 목록·상세 + mapper → `BoardState` v2, `check.ts`를 클라이언트로 교체 | paypal | 대기 | v2.1 | T001, T002 | AC15 (작성 예정). fixture 갱신. T002 후속 포함: `client.ts`의 path 표기에서 제어문자를 가리기 **전에** 지움. 쿼리 값은 퍼센트 인코딩해서 넘김 |
 | T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 완료 | v2.1 | — | AC1~3·5·6·8~10 통과 (27개). 병합 2026-11-09 21:24. `reports/T004-impl.md`, `reports/T004-verify.md` |
-| T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 대기 | v2.1 | T004 | AC4, AC10. T004 검증에서 나온 로그 문구 수정 포함. `tasks/T005.md` |
+| T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 완료 | v2.1 | T004 | AC4, AC10 통과 (5개). 병합 2026-11-09 22:14. 후속(평가와 보드 대조)은 T018에서. `reports/T005-impl.md`, `reports/T005-verify.md` |
 | T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 대기 | v2.1 | — | AC16 (작성 예정). `tasks/T006.md` |
 | T007 | 시드 데이터 (원문 6장) | data | 완료 | v2.1 | — | 병합 2026-11-09 21:41 (1차 검증 실패 → 재시도 통과). 단위 38개. **AC17은 Q10 결정 뒤 작성·승인.** `reports/T007-impl.md`, `reports/T007-verify.md` |
 | T008 | 실행 `executeMove` | paypal | 완료 | v2.1 | — | AC11, AC12 통과 (10개). 병합 2026-11-09 21:57. `reports/T008-impl.md`, `reports/T008-verify.md` |
@@ -25,7 +25,7 @@
 | T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(브라우저 에이전트 승인 뒤 캡처) | paypal | 대기 | v2.1 | T002, T007 | 새 `.env`(Q6, 사람) 필요. Secret은 `.env`에서만 읽고 출력·로그 금지. T001의 `orders`·`capture` 단계를 대신함. `tasks/T026.md` |
 | T011 | 추적번호 일괄 등록: 주문 상세로 미등록 판정 → `/track` 주문별 반복, 건별 결과 | paypal | 대기 | v2.1 | T002 | AC21 (작성 예정). M3 |
 | T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 보류 | v2.1 | T004 | **sim.js 원본 대기 (Q4).** AC22는 원본 기준으로 작성. `tasks/T015.md` |
-| T018 | 확대 위험 점수 (원문 10-4 + M4) | engine | 대기 | v2.1 | — | AC7. Q2 미확정 (임시 7 → 4). `tasks/T018.md` |
+| T018 | 확대 위험 점수 (원문 10-4 + M4) + `planMove` 보강 | engine | 진행중 | v2.1 | T005 | AC7. Q2 미확정 (임시 7 → 4). T005 검증 후속 포함. `tasks/T018.md` |
 | T019 | Transaction Search 조회 + 캐시 ('cached' 배지) | paypal | 대기 | v2.1 | T002 | AC25 (작성 예정). 실호출 4종 중 하나 (M7) |
 | T020 | AI 색상 문구: 분쟁 메시지에서 공통 불만 → EN·KO·JA·DE + 역번역 | ai | 대기 | v2.1 | T010 | AC26 (작성 예정). F5 |
 | T021 | FAQ 자동 답변 (오토파일럿 `common_questions`, Yuki 사이즈 문의) | ai | 대기 | v2.1 | T010 | AC27 (작성 예정). 이메일은 시뮬레이션 |
