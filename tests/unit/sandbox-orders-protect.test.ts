@@ -234,6 +234,42 @@ describe('T030 보호 (가짜 클라이언트·임시 폴더)', () => {
       expect(cells.get('O02')).toBe(`${SANDBOX_APPROVE}NEW-1`);
       expect(bytes(linkFile)).toContain('승인 링크 12건 / 주문 12건');
     });
+
+    // T034 완료 기준 3: payment_source를 보내면 응답이 PAYER_ACTION_REQUIRED · payer-action일 수 있다.
+    it('응답이 PAYER_ACTION_REQUIRED · payer-action이어도 manifest·링크 파일에 12건이 정상 기록된다', async () => {
+      const { root, linkFile } = tempRoot({ orders: [], disputes: manifest12().disputes });
+      let n = 0;
+      const { client, seen } = fakeClient({
+        'POST /v2/checkout/orders': () => {
+          n += 1;
+          return {
+            status: 201,
+            body: {
+              id: `NEW-${n}`,
+              status: 'PAYER_ACTION_REQUIRED',
+              links: [{ href: `${SANDBOX_APPROVE}NEW-${n}`, rel: 'payer-action', method: 'GET' }],
+            },
+          };
+        },
+      });
+
+      const code = await runCreateMode({ client, root }, readSandboxOrderSpecs(), readManifest(root), SUFFIX_NOW);
+
+      expect(code).toBe(0);
+      expect(seen.filter((s) => s.method === 'POST')).toHaveLength(12);
+
+      const after = readManifest(root);
+      expect(after.orders).toHaveLength(12);
+      expect(after.orders.map((o) => o.orderId)).toEqual(Array.from({ length: 12 }, (_, i) => `NEW-${i + 1}`));
+      expect(after.disputes).toEqual(manifest12().disputes);
+
+      const cells = readApproveLinkCells(root);
+      expect(cells.size).toBe(12);
+      expect(cells.get('O01')).toBe(`${SANDBOX_APPROVE}NEW-1`);
+      expect(cells.get('O12')).toBe(`${SANDBOX_APPROVE}NEW-12`);
+      expect(bytes(linkFile)).toContain('승인 링크 12건 / 주문 12건');
+      expect(bytes(linkFile)).not.toContain('승인 링크 없음');
+    });
   });
 
   // ── 3. `--fresh`는 살아 있는 주문을 버리지 않는다 ─────────────────────────────
@@ -510,6 +546,26 @@ describe('T030 보호 (가짜 클라이언트·임시 폴더)', () => {
       expect(rows[0].result).toBe('captured_pending');
       expect(rows[0].label).toContain('캡처 상태');
       expect(problems).toHaveLength(1);
+    });
+
+    // T034 4번: payment_source를 보낸 뒤의 새 주문 상태도 "승인 전"으로 다뤄야 한다.
+    it('주문 상태 PAYER_ACTION_REQUIRED는 승인 전으로 보고 캡처하지 않는다', async () => {
+      const { client, seen } = fakeClient({
+        'GET /v2/checkout/orders/ORDER-O01': { status: 200, body: orderDetail('PAYER_ACTION_REQUIRED') },
+        'POST /v2/checkout/orders/ORDER-O01/capture': () => {
+          throw new Error('승인 전 주문을 캡처하면 안 된다');
+        },
+      });
+
+      const notes: string[] = [];
+      const { rows, orders, problems } = await runCapture(client, { orders: [one], disputes: [] }, (line) => notes.push(line));
+
+      expect(seen.filter((s) => s.method === 'POST')).toEqual([]);
+      expect(rows[0].result).toBe('not_approved');
+      expect(rows[0].note).toBe('not approved yet');
+      expect(notes[0]).toContain('PAYER_ACTION_REQUIRED');
+      expect(orders[0].captureId).toBeUndefined();
+      expect(problems).toEqual([]);
     });
 
     it('manifest에 captureId가 있는 주문은 조회·캡처를 하지 않는다', async () => {

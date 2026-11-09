@@ -18,17 +18,20 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   BUYER_DISPLAY_NAME,
+  CANCEL_URL,
   CAPTURED_CELL,
   EXPIRED_NOTE,
   KEPT_NOTE,
   NotSandboxLinkError,
   ORDERS_PER_BUYER,
+  RETURN_URL,
   TRACKED_COUNT,
   amountText,
   approveUrlFrom,
   approveUrlKind,
   buildOrderBody,
   buyerCell,
+  createLinkRows,
   freshLinkRows,
   freshSuffix,
   looksGone,
@@ -137,7 +140,8 @@ describe('readSandboxOrderSpecs (시드 읽기)', () => {
 });
 
 describe('buildOrderBody (요청 본문)', () => {
-  it('intent CAPTURE · 상품명 · 상품 가격(USD)을 담는다', () => {
+  // T034: `payment_source.paypal.experience_context`가 더해졌다 (그 밖의 본문은 T026 그대로).
+  it('intent CAPTURE · 상품명 · 상품 가격(USD) · 승인 뒤 돌아갈 주소를 담는다', () => {
     expect(buildOrderBody(specOf('O01', 'seoyeon', 'Wool Sweater, Navy', '72.00'))).toEqual({
       intent: 'CAPTURE',
       purchase_units: [
@@ -145,6 +149,54 @@ describe('buildOrderBody (요청 본문)', () => {
           reference_id: 'O01',
           amount: { currency_code: 'USD', value: '72.00', breakdown: { item_total: { currency_code: 'USD', value: '72.00' } } },
           items: [{ name: 'Wool Sweater, Navy', quantity: '1', unit_amount: { currency_code: 'USD', value: '72.00' } }],
+        },
+      ],
+      payment_source: {
+        paypal: {
+          experience_context: {
+            return_url: 'https://example.com/afterloop/return',
+            cancel_url: 'https://example.com/afterloop/cancel',
+            user_action: 'PAY_NOW',
+          },
+        },
+      },
+    });
+  });
+
+  // T034 완료 기준 1: 12건 모두에 같은 주소가 들어가고, 배송지 설정은 넣지 않는다.
+  it('12건 모두 같은 return_url·cancel_url·user_action을 담고 shipping_preference는 없다', () => {
+    const bodies = readSandboxOrderSpecs().map(buildOrderBody);
+
+    expect(bodies).toHaveLength(12);
+    for (const body of bodies) {
+      const context = (body as { payment_source: { paypal: { experience_context: Record<string, unknown> } } }).payment_source
+        .paypal.experience_context;
+      expect(context).toEqual({ return_url: RETURN_URL, cancel_url: CANCEL_URL, user_action: 'PAY_NOW' });
+      // 배송지는 PayPal 기본값 그대로 (배송 추적·미수령 분쟁에 배송지가 필요하다)
+      expect(context.shipping_preference).toBeUndefined();
+      expect(JSON.stringify(body)).not.toContain('shipping_preference');
+    }
+    expect(RETURN_URL).toBe('https://example.com/afterloop/return');
+    expect(CANCEL_URL).toBe('https://example.com/afterloop/cancel');
+  });
+
+  it('승인 뒤 돌아갈 주소는 이름 붙인 상수 하나를 쓴다 (건마다 다르지 않다)', () => {
+    const urls = readSandboxOrderSpecs()
+      .map(buildOrderBody)
+      .map((body) => JSON.stringify((body as { payment_source: unknown }).payment_source));
+    expect(new Set(urls).size).toBe(1);
+  });
+
+  it('그 밖의 본문(금액·상품명·reference_id)은 T026 그대로다', () => {
+    const rest: Record<string, unknown> = { ...buildOrderBody(specOf('O05', 'yuki', 'Beanie + Scarf Set', '35.00')) };
+    delete rest.payment_source;
+    expect(rest).toEqual({
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          reference_id: 'O05',
+          amount: { currency_code: 'USD', value: '35.00', breakdown: { item_total: { currency_code: 'USD', value: '35.00' } } },
+          items: [{ name: 'Beanie + Scarf Set', quantity: '1', unit_amount: { currency_code: 'USD', value: '35.00' } }],
         },
       ],
     });
@@ -293,14 +345,125 @@ describe('runCreateOrders (주문 생성)', () => {
     );
     await expect(runCreateOrders(client, [specs[0]], emptyManifest)).rejects.not.toThrow(/checkoutnow/);
   });
+
+  // ── T034: payment_source를 보낸 뒤의 응답 (PAYER_ACTION_REQUIRED · payer-action 링크) ──
+
+  /** `payment_source.paypal`을 보냈을 때 올 수 있는 응답: 상태가 `PAYER_ACTION_REQUIRED`, `rel`이 `payer-action`. */
+  const orderPayerAction = (orderId: string, approveHost = 'https://www.sandbox.paypal.com') => ({
+    id: orderId,
+    status: 'PAYER_ACTION_REQUIRED',
+    links: [
+      { href: `https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderId}`, rel: 'self', method: 'GET' },
+      { href: `${approveHost}/checkoutnow?token=${orderId}`, rel: 'payer-action', method: 'GET' },
+    ],
+  });
+
+  it('상태 PAYER_ACTION_REQUIRED · rel payer-action인 응답도 정상으로 보고 manifest에 적는다', async () => {
+    let n = 0;
+    const { client } = fakeClient({
+      'POST /v2/checkout/orders': () => {
+        n += 1;
+        return { status: 201, body: orderPayerAction(`ORDER-${n}`) };
+      },
+    });
+
+    const { rows, orders, problems } = await runCreateOrders(client, specs, emptyManifest);
+
+    expect(rows.every((r) => r.result === 'created' && r.note === 'ok')).toBe(true);
+    expect(rows.every((r) => r.orderStatus === 'PAYER_ACTION_REQUIRED')).toBe(true);
+    expect(rows.every((r) => r.approveUrl.startsWith(SANDBOX_APPROVE))).toBe(true);
+    expect(orders).toHaveLength(12);
+    expect(orders[0]).toEqual({ key: 'O01', orderId: 'ORDER-1', buyer: 'seoyeon', sku: 'FK-SW-NV', tracked: true });
+    expect(problems).toEqual([]);
+  });
+
+  it('PAYER_ACTION_REQUIRED 주문도 링크 파일에 평소처럼 적힌다', async () => {
+    let n = 0;
+    const { client } = fakeClient({
+      'POST /v2/checkout/orders': () => {
+        n += 1;
+        return { status: 201, body: orderPayerAction(`ORDER-${n}`) };
+      },
+    });
+
+    const { rows } = await runCreateOrders(client, specs, emptyManifest);
+    const text = renderApproveLinks(createLinkRows(rows, new Map()), new Date('2026-11-09T14:00:00Z'));
+
+    expect(text).toContain('승인 링크 12건 / 주문 12건');
+    expect(text).toContain(`| O01 | seoyeon = Seoyeon Kim | $72.00 | ${SANDBOX_APPROVE}ORDER-1 |`);
+    expect(text).not.toContain('승인 링크 없음');
+  });
+
+  // 검사 대상은 **응답의 승인 링크**다 — 우리가 보내는 example.com 주소 때문에 멈추면 안 된다.
+  it('본문의 return_url·cancel_url이 example.com이어도 멈추지 않는다 (검사 대상은 응답의 승인 링크다)', async () => {
+    const { client, seen } = fakeClient({ 'POST /v2/checkout/orders': { status: 201, body: orderPayerAction('ORDER-1') } });
+
+    const { rows, problems } = await runCreateOrders(client, specs, emptyManifest);
+
+    expect(seen).toHaveLength(12); // 12건을 끝까지 만들었다
+    expect(JSON.stringify(seen[0].body)).toContain('https://example.com/afterloop/return');
+    expect(approveUrlKind(RETURN_URL)).toBe('unknown'); // 승인 링크라면 멈출 주소지만, 검사 대상이 아니다
+    expect(approveUrlKind(CANCEL_URL)).toBe('unknown');
+    expect(rows.every((r) => r.result === 'created')).toBe(true);
+    expect(problems).toEqual([]);
+  });
+
+  it('payer-action 링크가 live 도메인이면 멈춘다 (rel이 바뀌어도 안전장치는 그대로)', async () => {
+    const { client, seen } = fakeClient({
+      'POST /v2/checkout/orders': { status: 201, body: orderPayerAction('ORDER-LIVE', 'https://www.paypal.com') },
+    });
+
+    await expect(runCreateOrders(client, specs, emptyManifest)).rejects.toThrow(NotSandboxLinkError);
+    expect(seen).toHaveLength(1);
+  });
+
+  it('승인 링크가 아예 없으면 주문은 적고 사유를 남긴다', async () => {
+    const { client } = fakeClient({
+      'POST /v2/checkout/orders': {
+        status: 201,
+        body: { id: 'ORDER-1', status: 'PAYER_ACTION_REQUIRED', links: [{ rel: 'self', href: 'https://api-m.sandbox.paypal.com/x' }] },
+      },
+    });
+
+    const { rows, orders, problems } = await runCreateOrders(client, [specs[0]], emptyManifest);
+
+    expect(rows[0].result).toBe('created');
+    expect(rows[0].approveUrl).toBe('');
+    expect(rows[0].note).toBe('응답에 승인 링크(approve·payer-action)가 없다');
+    expect(orders[0].orderId).toBe('ORDER-1');
+    expect(problems[0]).toContain('승인 링크가 응답에 없다');
+  });
 });
 
 describe('승인 링크 고르기', () => {
-  it('approve가 없으면 payer-action을 쓴다', () => {
-    expect(approveUrlFrom({ links: [{ rel: 'approve', href: 'https://a' }, { rel: 'payer-action', href: 'https://b' }] })).toBe('https://a');
-    expect(approveUrlFrom({ links: [{ rel: 'self', href: 'https://s' }, { rel: 'payer-action', href: 'https://b' }] })).toBe('https://b');
-    expect(approveUrlFrom({ links: [{ rel: 'self', href: 'https://s' }] })).toBe('');
+  // T034: `payment_source`를 보내면 `rel`이 `approve`가 아니라 `payer-action`일 수 있다 — 네 가지를 고정한다.
+  const SELF = { rel: 'self', href: 'https://api-m.sandbox.paypal.com/v2/checkout/orders/ORDER-1', method: 'GET' };
+  const APPROVE = { rel: 'approve', href: 'https://www.sandbox.paypal.com/checkoutnow?token=A', method: 'GET' };
+  const PAYER_ACTION = { rel: 'payer-action', href: 'https://www.sandbox.paypal.com/checkoutnow?token=P', method: 'GET' };
+
+  it('둘 다 있으면 approve를 쓴다', () => {
+    expect(approveUrlFrom({ links: [SELF, APPROVE, PAYER_ACTION] })).toBe(APPROVE.href);
+    expect(approveUrlFrom({ links: [SELF, PAYER_ACTION, APPROVE] })).toBe(APPROVE.href);
+  });
+
+  it('approve만 있으면 approve를 쓴다', () => {
+    expect(approveUrlFrom({ links: [SELF, APPROVE] })).toBe(APPROVE.href);
+  });
+
+  it('payer-action만 있으면 payer-action을 쓴다', () => {
+    expect(approveUrlFrom({ links: [SELF, PAYER_ACTION] })).toBe(PAYER_ACTION.href);
+  });
+
+  it('둘 다 없으면 빈 문자열이다 (만들어 내지 않는다)', () => {
+    expect(approveUrlFrom({ links: [SELF] })).toBe('');
+    expect(approveUrlFrom({ links: [] })).toBe('');
     expect(approveUrlFrom({})).toBe('');
+    expect(approveUrlFrom(null)).toBe('');
+  });
+
+  it('rel의 대소문자는 가리지 않는다', () => {
+    expect(approveUrlFrom({ links: [{ rel: 'PAYER-ACTION', href: 'https://b' }] })).toBe('https://b');
+    expect(approveUrlFrom({ links: [{ rel: 'Approve', href: 'https://a' }] })).toBe('https://a');
   });
 
   it('샌드박스 도메인만 sandbox로 본다', () => {
@@ -348,11 +511,27 @@ describe('reports/sandbox-approve-links.md', () => {
     expect(text).not.toContain('@');
   });
 
-  it('승인 URL 12개가 모두 sandbox.paypal.com이다', async () => {
+  // T034로 안내에 돌아갈 주소(`example.com`) 한 줄이 생겼으므로 **표의 링크 칸만** 본다.
+  it('표의 승인 URL 12개가 모두 sandbox.paypal.com이다', async () => {
     const text = renderApproveLinks(await rowsOf());
-    const urls = [...text.matchAll(/https?:\/\/[^\s|]+/g)].map((m) => m[0]);
+    const urls = text
+      .split('\n')
+      .filter((line) => /^\| O\d{2} \|/.test(line))
+      .map((line) => line.split('|')[4].trim());
+
     expect(urls).toHaveLength(12);
     for (const url of urls) expect(approveUrlKind(url)).toBe('sandbox');
+  });
+
+  // T034 5번: 승인이 끝났는지 사람·브라우저 에이전트가 알아볼 수 있게 안내에 한 줄.
+  it('안내에 승인 뒤 돌아갈 주소가 적힌다 (표 위, 링크 칸이 아니다)', async () => {
+    const text = renderApproveLinks(await rowsOf());
+    const header = text.split('\n').findIndex((l) => l.startsWith('| 주문번호 |'));
+    const guide = text.split('\n').slice(0, header).join('\n');
+
+    expect(guide).toContain(`승인하면 \`${RETURN_URL}?...\`으로 넘어간다. 그 화면이 뜨면 승인이 끝난 것이다.`);
+    // 표의 링크 칸에는 들어가지 않는다
+    expect(text.split('\n').slice(header).join('\n')).not.toContain('example.com');
   });
 
   it('비밀값·토큰 꼴은 들어가지 않는다', async () => {

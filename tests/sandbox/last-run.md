@@ -5,15 +5,41 @@
 <!-- afterloop:last-run:check -->
 ## 조회 (`npm run sandbox:check`)
 
-- 시각: 2026-11-09 23:01 KST
+- 시각: 2026-11-10 08:25 KST
 - 토큰 발급: 성공
 
 | 엔드포인트 | 상태 | 비고 |
 | --- | --- | --- |
 | GET /v1/customer/disputes | 200 | ok |
 | GET /v1/reporting/transactions | 200 | ok |
+| GET /v2/checkout/orders/{O01} | 200 | ok |
+| GET /v2/checkout/orders/{O02} | 200 | ok |
+| GET /v2/checkout/orders/{O03} | 200 | ok |
+| GET /v2/checkout/orders/{O04} | 200 | ok |
+| GET /v2/checkout/orders/{O05} | 200 | ok |
+| GET /v2/checkout/orders/{O06} | 200 | ok |
+| GET /v2/checkout/orders/{O07} | 200 | ok |
+| GET /v2/checkout/orders/{O08} | 200 | ok |
+| GET /v2/checkout/orders/{O09} | 200 | ok |
+| GET /v2/checkout/orders/{O10} | 200 | ok |
+| GET /v2/checkout/orders/{O11} | 200 | ok |
+| GET /v2/checkout/orders/{O12} | 200 | ok |
 
-manifest가 비어 있어 주문·분쟁 조회는 건너뛰었다 (1단계).
+### 주문
+| 키 | 주문 ID | 상태 | 캡처 ID | 추적 |
+| --- | --- | --- | --- | --- |
+| O01 | 18F52416PA5694135 | COMPLETED | 26293576ME0859205 | 등록 |
+| O02 | 87436118KN796644C | COMPLETED | 9KU39751DX242312R | 미등록 |
+| O03 | 0JN52716E5842762V | COMPLETED | 37J49051UW395951T | 미등록 |
+| O04 | 41X347446X091012H | COMPLETED | 6R443601WV1920918 | 미등록 |
+| O05 | 2C989125PP696130D | COMPLETED | 5XB31780D18665716 | 미등록 |
+| O06 | 0RY57472G86366311 | COMPLETED | 738093067J894224T | 등록 |
+| O07 | 2D396872WH366462F | COMPLETED | 7F134873EX1248734 | 미등록 |
+| O08 | 8NW11847PM518611D | COMPLETED | 8HD61398JA389940N | 등록 |
+| O09 | 228264493L078564R | COMPLETED | 3424812144307901H | 등록 |
+| O10 | 3Y154370758458431 | COMPLETED | 2B206465U2185293S | 등록 |
+| O11 | 8CW55649ER1719626 | COMPLETED | 1JM434082D896493B | 등록 |
+| O12 | 2AJ52151YM544454G | COMPLETED | 514617893J4519255 | 등록 |
 
 <!-- afterloop:last-run:probe -->
 ## 요청 ID 길이 확인 (`npm run sandbox:check -- --probe-request-id`)
