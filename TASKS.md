@@ -13,8 +13,8 @@
 |---|---|---|---|---|---|---|
 | T000 | 하네스: 계약·인수 테스트·잠금·운영 문서 | 컨트롤 타워 | 완료 | v2.1 | — | AC1~AC14 |
 | T001 | 샌드박스 세팅 (M8): US 비즈니스 + 개인 5, 주문 12·추적 7·분쟁 3, manifest, `sandbox:check` | paypal | 대기 | v2.1 | — | AC13. 사람 작업 포함 (US 비즈니스 계정·새 앱, 승인 12회, 분쟁 접수). `tasks/T001.md` |
-| T002 | OAuth 클라이언트 | paypal | 대기 | v2.1 | — | AC14. **2순위.** v2 변경 없음. 브랜치 `lane/paypal-client`. `tasks/T002.md` |
-| T003 | 분쟁 목록·상세 + mapper → `BoardState` v2, `check.ts`를 클라이언트로 교체 | paypal | 대기 | v2.1 | T001, T002 | AC15 (작성 예정). fixture 갱신 |
+| T002 | OAuth 클라이언트 | paypal | 완료 | v2.1 | — | AC14 통과 (14개), 단위 86. 병합 2026-11-09 22:02 (검증 통과 뒤 비밀값·경로 보강 재시도 → 재검증 통과). `reports/T002-impl.md`, `reports/T002-verify.md` |
+| T003 | 분쟁 목록·상세 + mapper → `BoardState` v2, `check.ts`를 클라이언트로 교체 | paypal | 대기 | v2.1 | T001, T002 | AC15 (작성 예정). fixture 갱신. T002 후속 포함: `client.ts`의 path 표기에서 제어문자를 가리기 **전에** 지움. 쿼리 값은 퍼센트 인코딩해서 넘김 |
 | T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 완료 | v2.1 | — | AC1~3·5·6·8~10 통과 (27개). 병합 2026-11-09 21:24. `reports/T004-impl.md`, `reports/T004-verify.md` |
 | T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 대기 | v2.1 | T004 | AC4, AC10. T004 검증에서 나온 로그 문구 수정 포함. `tasks/T005.md` |
 | T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 대기 | v2.1 | — | AC16 (작성 예정). `tasks/T006.md` |
