@@ -18,7 +18,7 @@
 | T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 완료 | v2.1 | — | AC1~3·5·6·8~10 통과 (27개). 병합 2026-11-09 21:24. `reports/T004-impl.md`, `reports/T004-verify.md` |
 | T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 완료 | v2.1 | T004 | AC4, AC10 통과 (5개). 병합 2026-11-09 22:14. 후속(평가와 보드 대조)은 T018에서. `reports/T005-impl.md`, `reports/T005-verify.md` |
 | T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 완료 | v2.2 | — | 병합 2026-11-10 00:53. 단위 57개 (가짜 응답만, 실제 LLM 호출 없음). AC16은 작성 예정. 다듬기는 T032. `reports/T006-impl.md`, `reports/T006-verify.md` |
-| T032 | 원인 분류 다듬기: 기본 모델 `claude-opus-5-5`, 개인통관고유부호 변형 표기 가림, LLM 제한 시간, 다시 묻지 않을 오류 | ai | 대기 | v2.2 | T006 | T006 검증 후속. `tasks/T032.md` |
+| T032 | 원인 분류 다듬기: 기본 모델 `claude-opus-5-5`, 개인통관고유부호 변형 표기 가림, LLM 제한 시간, 다시 묻지 않을 오류 | ai | 완료 | v2.2 | T006 | 병합 2026-11-10 02:10 (1차 검증 실패 → 재시도 → 재검증 통과). 단위 170개. `reports/T032-impl.md`, `reports/T032-verify.md` |
 | T007 | 시드 데이터 (원문 6장) | data | 완료 | v2.1 | — | 병합 2026-11-09 21:41 (1차 검증 실패 → 재시도 통과). 단위 38개. **AC17은 Q10 결정 뒤 작성·승인.** `reports/T007-impl.md`, `reports/T007-verify.md` |
 | T008 | 실행 `executeMove` | paypal | 완료 | v2.1 | — | AC11, AC12 통과 (10개). 병합 2026-11-09 21:57. `reports/T008-impl.md`, `reports/T008-verify.md` |
 | T027 | 실행 보강: 직접 쓴 금액·남은 토큰·빈 메시지 거부, 검증 순서, 영어 문구 | paypal | 완료 | v2.1 | T008 | AC11·AC12 유지 (10개), 단위 130. 병합 2026-11-09 22:26. 남은 다듬기는 P1 (DECISIONS). `reports/T027-impl.md`, `reports/T027-verify.md` |
