@@ -15,7 +15,7 @@
 | T001 | 샌드박스 세팅 (M8): US 비즈니스 + 개인 5, 주문 12·추적 7·분쟁 3, manifest, `sandbox:check` | paypal | 대기 | v2.1 | — | AC13. 사람 작업 포함 (US 비즈니스 계정·새 앱, 승인 12회, 분쟁 접수). `tasks/T001.md` |
 | T002 | OAuth 클라이언트 | paypal | 대기 | v2.1 | — | AC14. **2순위.** v2 변경 없음. 브랜치 `lane/paypal-client`. `tasks/T002.md` |
 | T003 | 분쟁 목록·상세 + mapper → `BoardState` v2, `check.ts`를 클라이언트로 교체 | paypal | 대기 | v2.1 | T001, T002 | AC15 (작성 예정). fixture 갱신 |
-| T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 대기 | v2.1 | — | AC1~3·5·6·8~10. **1순위.** 참고 `engine-v0-ref`. `tasks/T004.md` |
+| T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 완료 | v2.1 | — | AC1~3·5·6·8~10 통과 (27개). 병합 2026-11-09 21:24. `reports/T004-impl.md`, `reports/T004-verify.md` |
 | T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 대기 | v2.1 | T004 | AC4, AC10 |
 | T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 대기 | v2.1 | — | AC16 (작성 예정). `tasks/T006.md` |
 | T007 | 시드 데이터 (원문 6장) | data | 대기 | v2.1 | — | AC17 (작성 예정). **1순위.** `tasks/T007.md` |
