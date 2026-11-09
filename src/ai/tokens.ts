@@ -39,12 +39,19 @@ const WELL_FORMED_TOKEN = new RegExp(`^⟦(?:${KINDS.join('|')})_[1-9][0-9]*⟧$
 /** `⟦…⟧` 꼴 전부. 올바른 토큰인지는 `WELL_FORMED_TOKEN`으로 따로 가린다. */
 const BRACKETED = /⟦[^⟦⟧]*⟧/g;
 
-/** 실행 자리표시자. 이 자리는 사실값이 아니다 (실행 층이 채운다). 이름 양쪽 공백은 실행 층과 같이 무시한다. */
-const EXEC_PLACEHOLDER = /\{\{\s*([^{}]*?)\s*\}\}/g;
+/**
+ * 실행 자리표시자. 이 자리는 사실값이 아니다 (실행 층이 채운다).
+ * 이름 양쪽 공백은 실행 층과 같이 무시하지만, **정규식으로 깎지 않고** 아래에서 `trim`으로 깎는다 —
+ * `\s*([^{}]*?)\s*`처럼 겹치는 반복을 쓰면 `{{` 뒤에 공백이 길게 이어지는 입력에서 역추적이 폭발한다
+ * (T031 재시도. `{{` + 공백 2만 자에서 검사가 끝나지 않았다).
+ * 이름 길이에 상한을 둬서 한 자리에서 보는 경우의 수도 묶어 둔다. 이름이 상한보다 길면 자리표시자로
+ * 세지 않으므로, 그 안에 금액 글자가 있으면 `literalFacts`로 걸린다 (막는 쪽으로 틀린다).
+ */
+const EXEC_PLACEHOLDER = /\{\{([^{}]{0,200})\}\}/g;
 
 /** 전송본·초안의 실행 자리표시자 이름. `{{ offerAmount }}`도 `{{offerAmount}}`와 같은 이름으로 센다. */
 function execPlaceholders(text: string): string[] {
-  return [...text.matchAll(EXEC_PLACEHOLDER)].map((match) => `{{${match[1]}}}`);
+  return [...text.matchAll(EXEC_PLACEHOLDER)].map((match) => `{{${match[1].trim()}}}`);
 }
 
 /** 개인통관고유부호 `P` + 숫자 12자리 (SPEC 10장: 화면·로그에 남기지 않는다). */
@@ -160,8 +167,19 @@ const D = '[0-9０-９]';
 /**
  * 천 단위 구분과 소수 둘째 자리까지 허용한 수. 소수점은 점과 쉼표 둘 다 받는다
  * (독일어는 `24,00`처럼 쉼표를 쓴다). `24,-`도 금액 표기다.
+ *
+ * 수로 시작하는 모양은 모두 `NUM_HEAD`로 시작한다. 숫자 가운데에서 다시 시작하지 않게 막는 것이고
+ * (앞자리를 포함한 더 긴 자리에서 이미 보므로 잡는 것은 그대로다), 숫자가 수만 자 이어지는 입력에서
+ * 자리마다 역추적을 다시 하지 않게 하는 것이 목적이다 (T031 재시도).
  */
 const NUM = `${D}+(?:[,，]${D}{3})*(?:[.．,，]${D}{1,2}|[,，]-)?`;
+const NUM_HEAD = `(?<!${D})`;
+/**
+ * 모양 안의 공백. 상한을 둬서 공백이 수만 자 이어지는 입력에서 보는 경우의 수를 묶는다 (T031 재시도).
+ * 사람이 쓴 글의 금액·날짜 표기는 공백 한두 자다.
+ */
+const SP = '\\s{0,16}';
+const SP1 = '\\s{1,16}';
 /** 반각·전각 통화 기호. */
 const CURRENCY_SYMBOL = '[$＄¢₩￦€£¥￥￡]';
 /** 통화 코드. 낱말 경계를 둔다 (`USDA` 같은 낱말에 걸리지 않게). */
@@ -176,10 +194,17 @@ const LATIN_TAIL = '(?![A-Za-zÄÖÜäöüß])';
  * `KO_PARTICLE`은 숫자가 바로 붙은 금액(`24,000원만`, `24불이`)에만 쓴다. 수와 떨어져 있을 때는
  * `KO_PARTICLE_STRICT`를 써서 `만`·`이`·`과`를 뺀다 — `불만`·`불이익`·`원만히`·`불과` 같은 낱말이
  * 조사보다 훨씬 흔하고, 한국어 정상 문장이 막히면 데모의 핵심 장면이 멈춘다 (T031).
+ *
+ * `KO_PARTICLE_LOOSE`는 그 `만`·`이`·`과`를 **조사 바로 뒤가 한글이 아닐 때만** 되살린다
+ * (`삼만 원이 환불됩니다`, `24 불만 환불해 드립니다`, `만 원과 배송비`는 금액이고,
+ * `원만히`·`불만족`·`불이익`·`원이름`처럼 한글이 이어지면 낱말이다. T031 재시도)
  */
 const KO_PARTICLE = '[을를이은는의에와과도만로으부까짜입였예요]';
 const KO_PARTICLE_STRICT = '[을를은는의에와도로으부까짜입였예요]';
+const KO_PARTICLE_LOOSE = '[이만과](?![가-힣])';
 const koTail = (particles: string): string => `(?:(?![가-힣])|(?=${particles}))`;
+/** 수와 떨어진 꼴의 뒤 경계: 좁은 조사 목록 + 한글이 이어지지 않는 `이`·`만`·`과`. */
+const KO_TAIL_SPACED = koTail(`(?:${KO_PARTICLE_STRICT}|${KO_PARTICLE_LOOSE})`);
 
 /** 한글 자릿수 낱말. 아라비아 숫자와 섞어 쓴다 (`4천원`, `2만 원`). */
 const KO_UNIT = '[십백천만억]';
@@ -214,9 +239,9 @@ const SMALL_NUMBER_DE =
 // 한글 수는 통화 낱말 앞에 띄어쓰기를 둬야 통화로 본다 — `이불`·`사원`처럼 수 글자로 시작하는 낱말을 피한다.
 // 앞 글자가 한글이면 수로 보지 않는다 — `색상이 불…`의 `이`, `택배 기사 불…`의 `사`가 수로 읽히던 것을 막는다 (T031)
 const NUM_WORD = [
-  `(?<![A-Za-zÄÖÜäöüß])(?:${SMALL_NUMBER_EN}|${SMALL_NUMBER_DE})${LATIN_TAIL}\\s*`,
-  `(?<![가-힣])${KO_NUMERAL}{1,4}\\s+`,
-  '[〇一二三四五六七八九十百千万]{1,4}\\s*',
+  `(?<![A-Za-zÄÖÜäöüß])(?:${SMALL_NUMBER_EN}|${SMALL_NUMBER_DE})${LATIN_TAIL}${SP}`,
+  `(?<![가-힣])${KO_NUMERAL}{1,4}${SP1}`,
+  `[〇一二三四五六七八九十百千万]{1,4}${SP}`,
 ].join('|');
 
 /** 날짜의 일(1~31). 32 이상이나 0은 날짜로 보지 않는다 (`24/7`, `50/50`). */
@@ -254,12 +279,12 @@ const MONTH_CASED = monthAlternation(['May']);
 
 /** `November 17`, `Nov. 17`, `November 17th`, `November the 17th`. */
 function monthDayPattern(month: string, flags: string): RegExp {
-  return new RegExp(`${month}\\.?\\s*(?:the\\s+)?${DAY}(?:st|nd|rd|th)?(?!${D})`, flags);
+  return new RegExp(`${month}\\.?${SP}(?:the${SP1})?${DAY}(?:st|nd|rd|th)?(?!${D})`, flags);
 }
 
 /** `17 November`, `17. November`, `17th Nov`, `17th of November`, `17. Dez`. */
 function dayMonthPattern(month: string, flags: string): RegExp {
-  return new RegExp(`(?<!${D})${DAY}(?:st|nd|rd|th)?(?:\\.|\\s+of)?\\s*${month}`, flags);
+  return new RegExp(`${NUM_HEAD}${DAY}(?:st|nd|rd|th)?(?:\\.|${SP1}of)?${SP}${month}`, flags);
 }
 
 /**
@@ -287,29 +312,43 @@ function slashLooksLikeDate(text: string): boolean {
  */
 const LITERAL_SHAPES: { shape: string; pattern: RegExp; keep?: (text: string) => boolean }[] = [
   // 금액: `$24`, `$7.20`, `US$7`, `＄７`, `₩9,600`
-  { shape: 'amountSymbolBefore', pattern: new RegExp(`(?:US)?${CURRENCY_SYMBOL}\\s*${NUM}`, 'gi') },
+  { shape: 'amountSymbolBefore', pattern: new RegExp(`(?:US)?${CURRENCY_SYMBOL}${SP}${NUM}`, 'gi') },
   // 금액: 수 뒤에 기호 — `24 $`, `24$`, `7,20 $`, `24,00 $`, `24,- $`, `24 €`, `24€`, `24 US$` (독일어 표기)
-  { shape: 'amountSymbolAfter', pattern: new RegExp(`${NUM}\\s*(?:US)?${CURRENCY_SYMBOL}`, 'gi') },
+  { shape: 'amountSymbolAfter', pattern: new RegExp(`${NUM_HEAD}${NUM}${SP}(?:US)?${CURRENCY_SYMBOL}`, 'gi') },
   // 금액: `USD 7.20`, `usd7.20`, `USD 24,00`
-  { shape: 'amountCodeBefore', pattern: new RegExp(`${CURRENCY_CODE}\\s*${NUM}`, 'gi') },
+  { shape: 'amountCodeBefore', pattern: new RegExp(`${CURRENCY_CODE}${SP}${NUM}`, 'gi') },
   // 금액: `7.20 dollars`, `7달러`, `24ドル`, `24 Dollar`, `20 cents`, `24 US-Dollar`, `24米ドル`, `7USドル`
-  { shape: 'amountWordAfter', pattern: new RegExp(`${NUM}\\s*(?:${CURRENCY_CODE}|${CURRENCY_WORD})`, 'gi') },
+  {
+    shape: 'amountWordAfter',
+    pattern: new RegExp(`${NUM_HEAD}${NUM}${SP}(?:${CURRENCY_CODE}|${CURRENCY_WORD})`, 'gi'),
+  },
   // 금액: 숫자가 바로 붙은 `원`·`불` — `9600원`, `24,000원만`, `24불이`, `4천원`, `2만원`.
   // 숫자가 붙어 있으면 금액이라는 증거가 뚜렷하므로 조사까지 받는다
-  { shape: 'amountKoAttached', pattern: new RegExp(`${NUM}${KO_UNIT}*(?:원|불)${koTail(KO_PARTICLE)}`, 'g') },
+  {
+    shape: 'amountKoAttached',
+    pattern: new RegExp(`${NUM_HEAD}${NUM}${KO_UNIT}*(?:원|불)${koTail(KO_PARTICLE)}`, 'g'),
+  },
   // 금액: 숫자와 `원`·`불`이 떨어진 꼴 — `24 불`, `24000 원`, `2만 원`. 뒤 경계를 좁게 봐서
   // `주문 2 불만 사항`·`사이즈 1 원만하게`를 금액으로 읽지 않는다 (T031)
   {
     shape: 'amountKoSpaced',
-    pattern: new RegExp(`${NUM}${KO_UNIT}*\\s+(?:원|불)${koTail(KO_PARTICLE_STRICT)}`, 'g'),
+    pattern: new RegExp(`${NUM_HEAD}${NUM}${KO_UNIT}*${SP1}(?:원|불)${koTail(KO_PARTICLE_STRICT)}`, 'g'),
+  },
+  // 금액: 같은 꼴 + 조사 `이`·`만`·`과` — `24 불이 환불됩니다`, `24 불만`, `24,000 원과`.
+  // 조사 뒤에 한글이 이어지면(`불만족`, `원만히`) 낱말이므로 `KO_PARTICLE_LOOSE`가 걸러낸다.
+  // 수가 한 글자면(`주문 2 불만 사항`, `사이즈 1 원만하게`) 수량·목록 번호 쪽이 훨씬 흔해 금액으로 보지 않는다 (T031 재시도)
+  {
+    shape: 'amountKoSpacedParticle',
+    pattern: new RegExp(`${NUM_HEAD}${NUM}${KO_UNIT}*${SP1}(?:원|불)${KO_PARTICLE_LOOSE}`, 'g'),
+    keep: (text) => /^\S{2,}\s/.test(text),
   },
   // 금액: 글로 쓴 수 + 통화 낱말 — `seven dollars`, `twenty-four dollars`, `sieben Dollar`, `칠 달러`, `七ドル`
   { shape: 'amountNumberWord', pattern: new RegExp(`(?:${NUM_WORD})(?:${CURRENCY_CODE}|${CURRENCY_WORD})`, 'gi') },
-  // 금액: 글로 쓴 한글 수 + `원` — `이만 사천 원`, `만 원`. 한 글자 수사(`이`, `사`)는 조사·낱말과 겹쳐
+  // 금액: 글로 쓴 한글 수 + `원` — `이만 사천 원`, `만 원`, `삼만 원이`. 한 글자 수사(`이`, `사`)는 조사·낱말과 겹쳐
   // 오탐이 크므로 두 글자 이상 수 표현이거나 자릿수 낱말일 때만 본다 (`이 원단`, `사원이`는 통과)
   {
     shape: 'amountKoWordWon',
-    pattern: new RegExp(`(?<![가-힣])(?:${KO_NUMERAL}{2,4}\\s*|${KO_UNIT}\\s+)원${koTail(KO_PARTICLE_STRICT)}`, 'g'),
+    pattern: new RegExp(`(?<![가-힣])(?:${KO_NUMERAL}{2,4}${SP}|${KO_UNIT}${SP1})원${KO_TAIL_SPACED}`, 'g'),
   },
   // 금액: 천 단위 구분이 있는 소수 (`1,234.56`). 위 모양보다 아래 `amountDecimal`보다 먼저 받아 전체를 보고한다
   { shape: 'amountGrouped', pattern: new RegExp(`(?<!${D})${D}{1,3}(?:[,，]${D}{3})+[.．]${D}{1,2}(?!${D})`, 'g') },
@@ -319,14 +358,17 @@ const LITERAL_SHAPES: { shape: string; pattern: RegExp; keep?: (text: string) =>
   // (`1,50 m`, `0,45 kg`). 통화가 붙은 `24,00 $`·`24,00 USD`는 위 모양이 이미 전체로 받는다
   {
     shape: 'amountDecimalComma',
-    pattern: new RegExp(`(?<!${D})${D}+[,，]${D}{2}(?!${D})(?!\\s*${SIZE_UNIT})`, 'g'),
+    pattern: new RegExp(`(?<!${D})${D}+[,，]${D}{2}(?!${D})(?!${SP}${SIZE_UNIT})`, 'g'),
   },
   // 날짜: `11월 17일`
-  { shape: 'dateKo', pattern: new RegExp(`(?<!${D})${MON}\\s*월\\s*${DAY}\\s*일`, 'g') },
+  { shape: 'dateKo', pattern: new RegExp(`${NUM_HEAD}${MON}${SP}월${SP}${DAY}${SP}일`, 'g') },
   // 날짜: `11月17日`
-  { shape: 'dateJa', pattern: new RegExp(`(?<!${D})${MON}\\s*月\\s*${DAY}\\s*日`, 'g') },
+  { shape: 'dateJa', pattern: new RegExp(`${NUM_HEAD}${MON}${SP}月${SP}${DAY}${SP}日`, 'g') },
   // 날짜: `十一月十七日` (한자 숫자)
-  { shape: 'dateKanji', pattern: /[〇一二三四五六七八九十百]+\s*月\s*[〇一二三四五六七八九十百]+\s*日/g },
+  {
+    shape: 'dateKanji',
+    pattern: new RegExp(`[〇一二三四五六七八九十百]{1,8}${SP}月${SP}[〇一二三四五六七八九十百]{1,8}${SP}日`, 'g'),
+  },
   // 날짜: `November 17`, `Nov 17`, `Nov. 17`, `November 17th`, `November the 17th`
   { shape: 'dateMonthDay', pattern: monthDayPattern(MONTH_ANYCASE, 'gi') },
   // 날짜: `17 November`, `17. November`, `17th Nov`, `17th of November`, `17. Dez`
@@ -357,18 +399,36 @@ const LITERAL_SHAPES: { shape: string; pattern: RegExp; keep?: (text: string) =>
 
 type Span = { start: number; end: number; report: string | null };
 
-/** 겹치는 자리는 한 번만 센다. `report`가 `null`이면 "여기는 사실값이 아니다"는 표시다. */
+/**
+ * 겹치는 자리는 한 번만 센다. `report`가 `null`이면 "여기는 사실값이 아니다"는 표시다.
+ * 자리를 시작 위치 순으로 넣어 두고 이웃 둘만 본다 — 이미 넣은 자리끼리는 겹치지 않으므로
+ * 그 둘이 안 겹치면 어느 것과도 안 겹친다. 모양이 수천 번 맞는 긴 글에서 비교가 제곱으로 늘지 않게 하는 것이다
+ * (T031 재시도).
+ */
 function collector() {
   const spans: Span[] = [];
   return {
     add(start: number, end: number, report: string | null): void {
-      if (spans.some((span) => start < span.end && span.start < end)) return;
-      spans.push({ start, end, report });
+      let low = 0;
+      let high = spans.length;
+      while (low < high) {
+        const mid = (low + high) >> 1;
+        if (spans[mid].start < start) low = mid + 1;
+        else high = mid;
+      }
+      const before = spans[low - 1];
+      const after = spans[low];
+      if (before !== undefined && start < before.end) return;
+      if (after !== undefined && after.start < end) return;
+      spans.splice(low, 0, { start, end, report });
     },
     reported(): string[] {
+      const seen = new Set<string>();
       const out: string[] = [];
-      for (const span of [...spans].sort((a, b) => a.start - b.start)) {
-        if (span.report !== null && !out.includes(span.report)) out.push(span.report);
+      for (const span of spans) {
+        if (span.report === null || seen.has(span.report)) continue;
+        seen.add(span.report);
+        out.push(span.report);
       }
       return out;
     },
@@ -482,23 +542,37 @@ const PERCENT = /(?:100|１００)\s*[%％]/g;
 
 /**
  * 재료·성분 낱말. `100% 울`·`100% wool`·`zu 100 % aus Wolle`는 상품 설명이지 약속이 아니다.
- * 한글은 낱말 양쪽 경계를 본다 — `서울`의 `울`, `원하시면`의 `면`을 재료로 읽지 않는다 (T031).
+ * 한글 재료는 **낱말 단위로** 본다 — 앞뒤가 모두 한글이 아니어야 한다. `서울에 계신 … 100%`의 `울`,
+ * `원하시면 … 100%`의 `면`을 재료로 읽지 않으려는 것이고(T031 재시도), `울 100%`·`100% 울`처럼
+ * 독립된 낱말로 있을 때만 재료다. `울소재`처럼 붙여 쓴 꼴은 그 낱말을 목록에 넣어야 걸린다.
  */
 const MATERIAL_LATIN = [
+  'extra fine merino wool', 'lambswool', 'Schurwolle',
   'wool', 'cotton', 'cashmere', 'merino', 'silk', 'linen', 'polyester', 'acryl', 'alpaca', 'nylon', 'viscose',
   'Wolle', 'Baumwolle', 'Kaschmir', 'Seide', 'Leinen', 'Merinowolle', 'Viskose',
 ];
-const MATERIAL_KO = ['울', '면', '순면', '양모', '캐시미어', '메리노', '실크', '린넨', '아크릴', '나일론', '폴리에스터', '비스코스'];
+const MATERIAL_KO = [
+  '울', '면', '순면', '양모', '캐시미어', '메리노', '메리노울', '램스울', '코튼',
+  '실크', '린넨', '아크릴', '나일론', '폴리에스터', '비스코스',
+];
 const MATERIAL_CJK = ['ウール', 'コットン', 'カシミヤ', 'カシミア', 'シルク', 'リネン', 'ポリエステル', 'アクリル', 'ナイロン', '綿', '絹', '麻', '羊毛'];
+
+/** 긴 낱말을 먼저 둔다 (`메리노울`이 `메리노`보다, `lambswool`이 `wool`보다 먼저 맞는다). */
+function longestFirst(words: readonly string[]): string {
+  return [...new Set(words)]
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegExp)
+    .join('|');
+}
 
 const MATERIAL = new RegExp(
   [
     // 라틴 문자는 낱말 앞 경계만 본다 (`Baumwollmischung`, `wools` 같은 합성·복수형도 재료다)
-    `(?<![A-Za-zÄÖÜäöüß])(?:${MATERIAL_LATIN.map(escapeRegExp).join('|')})`,
-    `(?<![가-힣])(?:${[...MATERIAL_KO].sort((a, b) => b.length - a.length).join('|')})${koTail(KO_PARTICLE)}`,
-    `(?:${MATERIAL_CJK.join('|')})`,
+    `(?<![A-Za-zÄÖÜäöüß])(?:${longestFirst(MATERIAL_LATIN)})`,
+    `(?<![가-힣])(?:${longestFirst(MATERIAL_KO)})(?![가-힣])`,
+    `(?:${longestFirst(MATERIAL_CJK)})`,
   ].join('|'),
-  'i',
+  'gi',
 );
 
 /** `100%` 둘레에서 재료 낱말을 찾을 범위 (앞 12자, 뒤 16자 ≒ 몇 낱말). */
@@ -508,13 +582,22 @@ const MATERIAL_AFTER = 16;
 /**
  * 약속으로 볼 `100%`의 첫 자리. 둘레 몇 낱말 안에 재료 낱말이 있으면 상품 설명이므로 건너뛴다.
  * 그 밖의 `100%`(`100% 환불해 드립니다`, `I am 100% sure …`)는 약속 표현이다 (T031).
+ *
+ * 재료 낱말은 **글 전체에서** 찾고 자리만 둘레와 견준다. 글을 먼저 자르고 조각에서 찾으면
+ * 자른 자리가 낱말 앞 경계처럼 보여서, `서울에 계신 고객님께는 100% 도착합니다`의 `울`이
+ * 재료로 읽혔다 (T031 재시도).
  */
 function firstPercentPromise(text: string): { at: number; text: string } | null {
-  for (const match of text.matchAll(PERCENT)) {
-    const end = match.index + match[0].length;
-    const before = text.slice(Math.max(0, match.index - MATERIAL_BEFORE), match.index);
-    const after = text.slice(end, end + MATERIAL_AFTER);
-    if (MATERIAL.test(before) || MATERIAL.test(after)) continue;
+  const percents = [...text.matchAll(PERCENT)];
+  if (percents.length === 0) return null;
+  const materials = [...text.matchAll(MATERIAL)].map((match) => ({
+    start: match.index,
+    end: match.index + match[0].length,
+  }));
+  for (const match of percents) {
+    const from = match.index - MATERIAL_BEFORE;
+    const to = match.index + match[0].length + MATERIAL_AFTER;
+    if (materials.some((span) => span.start < to && from < span.end)) continue;
     return { at: match.index, text: match[0] };
   }
   return null;
