@@ -9,12 +9,13 @@
  * - 숫자 판정(기대 손실·확률·금액·제안 비율)은 하지 않는다. LLM이 그런 키를 보내와도 zod가 버린다.
  * - 기준값은 `config/rules.json`에서 읽는다 (`abuse.minPriorInrDisputes`, `classification.minConfidence`).
  * - 개인정보: 구매자 메시지·택배사 이벤트는 LLM에 보내기 전에 개인통관고유부호를 가린다
- *   (`src/ai/prompts/classify.ts`의 `maskPccc`). LLM이 돌려준 근거·설명도 같은 가림을 거친다 (SPEC 10장).
+ *   (`src/ai/prompts/classify.ts`의 `maskPersonal`. 이메일·전화번호도 함께 가린다 — T032).
+ *   LLM이 돌려준 근거·설명도 같은 가림을 한 번 더 거친다 (SPEC 3장·10장).
  * - LLM 출력은 신뢰하지 않는 입력이다. zod로 검증하고, 길이와 개수를 깎는다.
  */
 import { z } from 'zod';
 
-import { CLASSIFY_OUTPUT_SCHEMA, CLASSIFY_SYSTEM, buildClassifyUser, maskPccc } from '@/ai/prompts/classify';
+import { CLASSIFY_OUTPUT_SCHEMA, CLASSIFY_SYSTEM, buildClassifyUser, maskPersonal } from '@/ai/prompts/classify';
 import { SUBTYPES, rulesFromConfig } from '@/engine/params';
 import type { Cause, ClassifyFn, ClassifyInput, LlmCaller, PolicyConfig, Subtype } from '@/types';
 
@@ -53,8 +54,11 @@ const UNAVAILABLE_EVIDENCE = 'classifier_unavailable';
 /** 스키마 위반·오류일 때 다시 묻는 횟수를 더한 총 호출 상한 (T006: "1회만 다시 요청"). */
 const MAX_ATTEMPTS = 2;
 
-/** 근거·설명 한 조각의 길이 상한. LLM이 길게 써 보내도 화면 배지에 들어갈 만큼만 남긴다. */
+/** 근거 한 조각의 길이 상한. LLM이 길게 써 보내도 화면 배지에 들어갈 만큼만 남긴다. */
 const SNIPPET_MAX = 120;
+
+/** `causeNote`의 길이 상한. 화면 배지에 들어가는 한 줄 요약이다 (T032). */
+const CAUSE_NOTE_MAX = 80;
 
 /** 근거 개수 상한. */
 const EVIDENCE_MAX = 5;
@@ -88,10 +92,20 @@ function oneLine(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-/** 화면·보고에 남길 한 조각: 개인정보 가림 + 한 줄 + 길이 제한 (SPEC 10장). */
+/** 화면·보고에 남길 한 조각: 개인정보 가림 + 한 줄 + 길이 제한 (SPEC 3장·10장). */
+function clip(text: string, max: number): string {
+  const line = oneLine(maskPersonal(text));
+  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+}
+
+/** 근거 한 조각 (120자). */
 function snippet(text: string): string {
-  const line = oneLine(maskPccc(text));
-  return line.length > SNIPPET_MAX ? `${line.slice(0, SNIPPET_MAX - 1)}…` : line;
+  return clip(text, SNIPPET_MAX);
+}
+
+/** `causeNote` 한 줄 요약 (80자). 추적 이벤트 한 줄 전체가 그대로 가지 않게 깎는다 (T032). */
+function causeNoteOf(text: string): string {
+  return clip(text, CAUSE_NOTE_MAX);
 }
 
 /** 사유 코드 비교용 꼴 (앞뒤 공백·대소문자 차이를 없앤다). */
@@ -105,6 +119,23 @@ function normalizeReason(reason: string): string {
  */
 function isRefusal(error: unknown): boolean {
   return error instanceof Error && error.name === 'LlmRefusalError';
+}
+
+/**
+ * 다시 물을 값이 있는 오류인가 (T032).
+ *
+ * 다시 묻지 않는 것: 거절, 그리고 `src/ai/llm.ts`가 `retryable: false`로 표시한 오류
+ * (설정 오류 = 키 없음·값 틀림, 인증 401, 권한 403, 잘못된 요청 400). 같은 요청을 또 보내도
+ * 같은 결과이고, 키가 없을 때는 네트워크로 나가지도 않는다.
+ *
+ * 다시 묻는 것: 스키마 위반·깨진 JSON·`max_tokens` 잘림·일시적 오류(429, 5xx, 연결 오류, 제한 시간).
+ * 종류를 알 수 없는 예외도 일시적인 쪽으로 본다 (`retryable`이 없으면 다시 묻는다).
+ * 클래스가 아니라 속성으로 보는 이유는 분류기가 SDK를 끌어오지 않게 하기 위해서다.
+ */
+function canRetry(error: unknown): boolean {
+  if (isRefusal(error)) return false;
+  if (typeof error !== 'object' || error === null) return true;
+  return (error as { retryable?: unknown }).retryable !== false;
 }
 
 // ───────────────────────────── 규칙 (LLM 호출 0회) ─────────────────────────────
@@ -138,7 +169,7 @@ function byRule(input: ClassifyInput, minPriorInrDisputes: number): Cause | null
   // 4. 추적 이벤트에 통관 보류 → 통관 지연. `causeNote`에 그 이벤트를 한 줄로 남긴다.
   const held = input.trackingEvents.find((event) => event.toLowerCase().includes(CUSTOMS_HOLD));
   if (held !== undefined) {
-    return rule('A2', ['tracking_event:customs_hold'], snippet(held));
+    return rule('A2', ['tracking_event:customs_hold'], causeNoteOf(held));
   }
 
   return null;
@@ -175,7 +206,7 @@ function fromLlm(parsed: z.infer<typeof LlmCauseSchema>, minConfidence: number):
     .map(snippet)
     .filter((line) => line !== '')
     .slice(0, EVIDENCE_MAX);
-  const causeNote = parsed.cause === undefined ? '' : snippet(parsed.cause);
+  const causeNote = parsed.cause === undefined ? '' : causeNoteOf(parsed.cause);
 
   return {
     subtype: parsed.subtype,
@@ -188,8 +219,9 @@ function fromLlm(parsed: z.infer<typeof LlmCauseSchema>, minConfidence: number):
 }
 
 /**
- * LLM에 묻는다. 스키마 위반이나 오류면 한 번만 다시 묻고, 그래도 안 되면 null
- * (부른 쪽이 기본 유형으로 내려간다). 거절은 다시 묻지 않는다.
+ * LLM에 묻는다. 스키마 위반이나 일시적 오류면 한 번만 다시 묻고, 그래도 안 되면 null
+ * (부른 쪽이 기본 유형으로 내려간다). 거절·설정 오류·인증·권한·잘못된 요청은 다시 묻지 않는다
+ * (`canRetry`, T032).
  */
 async function askLlm(input: ClassifyInput, llm: LlmCaller, minConfidence: number): Promise<Cause | null> {
   const req = {
@@ -203,7 +235,7 @@ async function askLlm(input: ClassifyInput, llm: LlmCaller, minConfidence: numbe
     try {
       raw = await llm(req);
     } catch (error) {
-      if (isRefusal(error)) return null;
+      if (!canRetry(error)) return null;
       continue;
     }
 

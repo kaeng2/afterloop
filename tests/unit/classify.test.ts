@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { classifyDispute } from '@/ai/classify';
-import { LlmRefusalError } from '@/ai/llm';
+import { LlmApiError, LlmConfigError, LlmRefusalError, LlmResponseError } from '@/ai/llm';
 import { CLASSIFY_OUTPUT_SCHEMA, CLASSIFY_SYSTEM } from '@/ai/prompts/classify';
 import { rulesFromConfig } from '@/engine/params';
 import type { ClassifyInput, LlmCaller, PolicyConfig } from '@/types';
@@ -408,5 +408,197 @@ describe('프롬프트', () => {
     await classifyDispute(original, { llm });
 
     expect(original).toEqual(copy);
+  });
+});
+
+// ───────────────────────────── T032 ─────────────────────────────
+
+/** 같은 값의 변형 표기. 어느 꼴이어도 LLM에 보내거나 화면에 남기지 않는다 (SPEC 10장). */
+const PCCC_VARIANTS = [
+  'P123456789012',
+  'p123456789012',
+  'P 1234 5678 9012',
+  'P1234-5678-9012',
+  'P-123456789012',
+  'P.123.456.789.012',
+  'Ｐ１２３４５６７８９０１２',
+  'P1234 5678-9012',
+  'PCCC:P123456789012.',
+  '부호P123456789012입니다',
+];
+
+/** 부호가 아닌 것. 가려지면 안 된다 (전화번호는 `⟦PHONE⟧`으로 따로 가린다). */
+const NOT_PCCC = [
+  '1Z999AA10123456784',
+  'EE123456789KR',
+  'P1234567890123',
+  '123456789012',
+  'IDP123456789012',
+  '1234567890',
+];
+
+describe('T032: 개인통관고유부호 변형 표기', () => {
+  it(`변형 ${PCCC_VARIANTS.length}가지가 프롬프트에 원문으로 들어가지 않는다`, async () => {
+    for (const variant of PCCC_VARIANTS) {
+      const { calls, llm } = fakeLlm(llmAnswer());
+      await classifyDispute(
+        input({ buyerMessages: [`부호는 ${variant} 입니다`], trackingEvents: [`Customs: ${variant} required`] }),
+        { llm },
+      );
+
+      // 숫자 열이 어떤 꼴로도 남지 않는지 본다 (구분 글자를 뺀 숫자만 모아 비교)
+      const sent = `${calls[0].system}\n${calls[0].user}`;
+      expect(sent.replace(/[ \-.]/g, ''), variant).not.toContain('123456789012');
+      expect(sent, variant).not.toContain('１２３４５６７８９０１２');
+      expect(calls[0].user, variant).toContain('⟦PCCC⟧');
+    }
+  });
+
+  it('LLM이 근거·설명으로 되돌려 준 변형도 가린다 (evidence·causeNote)', async () => {
+    for (const variant of PCCC_VARIANTS) {
+      const { llm } = fakeLlm(llmAnswer({ evidence: [`buyer wrote ${variant}`], cause: `code ${variant} missing` }));
+      const cause = await classifyDispute(input(), { llm });
+
+      expect(JSON.stringify(cause), variant).not.toContain('123456789012');
+      expect(JSON.stringify(cause), variant).not.toContain('１２３４５６７８９０１２');
+      expect(cause.evidence[0], variant).toContain('⟦PCCC⟧');
+      expect(cause.causeNote, variant).toContain('⟦PCCC⟧');
+    }
+  });
+
+  it('규칙 4의 causeNote에서도 변형을 가린다', async () => {
+    const { llm } = fakeLlm(llmAnswer());
+    const cause = await classifyDispute(
+      input({ reason: INR, trackingEvents: ['Customs hold: P 1234 5678 9012 missing'] }),
+      { llm },
+    );
+
+    expect(cause.causeNote).toBe('Customs hold: ⟦PCCC⟧ missing');
+  });
+
+  it(`부호가 아닌 열 ${NOT_PCCC.length}개는 부호로 가리지 않는다 (전화번호·추적번호·13자리)`, async () => {
+    for (const text of NOT_PCCC) {
+      const { calls, llm } = fakeLlm(llmAnswer());
+      await classifyDispute(input({ buyerMessages: [`번호는 ${text} 입니다`] }), { llm });
+
+      expect(calls[0].user, text).not.toContain('⟦PCCC⟧');
+    }
+  });
+
+  it('추적번호·금액·날짜는 그대로 남는다', async () => {
+    const { calls, llm } = fakeLlm(llmAnswer());
+    await classifyDispute(
+      input({
+        buyerMessages: ['24,000원을 2026-11-17에 결제했어요'],
+        trackingEvents: ['Tracking EE123456789KR in transit'],
+      }),
+      { llm },
+    );
+
+    expect(calls[0].user).toContain('24,000원');
+    expect(calls[0].user).toContain('2026-11-17');
+    expect(calls[0].user).toContain('EE123456789KR');
+  });
+});
+
+describe('T032: 메시지 본문의 이메일·전화번호', () => {
+  it('이메일은 ⟦EMAIL⟧, 전화번호는 ⟦PHONE⟧으로 가린다', async () => {
+    const { calls, llm } = fakeLlm(llmAnswer());
+    await classifyDispute(
+      input({
+        buyerMessages: [
+          '연락은 seoyeon.kim@example.com 으로 주세요',
+          '전화는 010-1234-5678 입니다',
+          '해외에서는 +82 10 1234 5678 로 연락 주세요',
+          '01012345678 로도 됩니다',
+        ],
+      }),
+      { llm },
+    );
+
+    const user = calls[0].user;
+    expect(user).not.toContain('seoyeon.kim@example.com');
+    expect(user).not.toContain('010-1234-5678');
+    expect(user).not.toContain('+82 10 1234 5678');
+    expect(user).not.toContain('01012345678');
+    expect(user.match(/⟦EMAIL⟧/g)).toHaveLength(1);
+    expect(user.match(/⟦PHONE⟧/g)).toHaveLength(3);
+  });
+
+  it('근거·설명에 남은 이메일·전화번호도 가린다', async () => {
+    const { llm } = fakeLlm(
+      llmAnswer({ evidence: ['buyer email a.b@example.com'], cause: 'call 010-1234-5678' }),
+    );
+    const cause = await classifyDispute(input(), { llm });
+
+    expect(cause.evidence[0]).toBe('buyer email ⟦EMAIL⟧');
+    expect(cause.causeNote).toBe('call ⟦PHONE⟧');
+  });
+});
+
+describe('T032: causeNote는 80자 요약', () => {
+  it('추적 이벤트가 길면 80자로 자른다', async () => {
+    const event = `Customs hold at ICN: ${'detail '.repeat(20)}end`;
+    const { llm } = fakeLlm(llmAnswer());
+    const cause = await classifyDispute(input({ reason: INR, trackingEvents: [event] }), { llm });
+
+    expect(cause.causeNote).toHaveLength(80);
+    expect(cause.causeNote?.endsWith('…')).toBe(true);
+  });
+
+  it('LLM이 보낸 설명도 80자로 자른다 (근거는 120자 그대로)', async () => {
+    const { llm } = fakeLlm(llmAnswer({ cause: 'c'.repeat(200), evidence: ['e'.repeat(200)] }));
+    const cause = await classifyDispute(input(), { llm });
+
+    expect(cause.causeNote).toHaveLength(80);
+    expect(cause.evidence[0]).toHaveLength(120);
+  });
+
+  it('짧은 설명은 그대로 둔다', async () => {
+    const { llm } = fakeLlm(llmAnswer({ cause: 'stuck in customs' }));
+    const cause = await classifyDispute(input(), { llm });
+
+    expect(cause.causeNote).toBe('stuck in customs');
+  });
+});
+
+describe('T032: 오류 종류별 호출 횟수', () => {
+  /** 지시서의 표: 다시 물어도 같은 결과인 오류는 1회, 일시적 오류·스키마 위반은 2회. */
+  const CASES: [string, Reply, number][] = [
+    ['잘못된 요청 400', { fail: new LlmApiError('bad_request', 400) }, 1],
+    ['인증 401', { fail: new LlmApiError('auth', 401) }, 1],
+    ['권한 403', { fail: new LlmApiError('permission', 403) }, 1],
+    ['키 없음 (설정 오류)', { fail: new LlmConfigError('LLM_API_KEY is not set') }, 1],
+    ['거절', { fail: new LlmRefusalError('cyber') }, 1],
+    ['요청 한도 429', { fail: new LlmApiError('rate_limit', 429) }, 2],
+    ['서버 오류 500', { fail: new LlmApiError('server', 500) }, 2],
+    ['연결 오류', { fail: new LlmApiError('connection', undefined) }, 2],
+    ['제한 시간', { fail: new LlmApiError('timeout', undefined) }, 2],
+    ['응답을 읽지 못함 (깨진 JSON·길이 초과)', { fail: new LlmResponseError('not valid JSON') }, 2],
+    ['스키마 위반', { json: { subtype: 'ZZ' } }, 2],
+  ];
+
+  it.each(CASES)('%s → %i회, 예외 없이 기본 유형', async (_name, reply, times) => {
+    const { calls, llm } = fakeLlm(reply);
+    const cause = await classifyDispute(input({ reason: INR, hasTracking: true }), { llm });
+
+    expect(calls).toHaveLength(times);
+    expect(cause).toEqual({
+      subtype: 'A2',
+      confidence: 0,
+      evidence: ['classifier_unavailable'],
+      needsReview: true,
+      source: 'llm',
+    });
+  });
+
+  it('제한 시간이 지나도 예외를 던지지 않는다 (화면이 멈추지 않는다)', async () => {
+    const { llm } = fakeLlm({ fail: new LlmApiError('timeout', undefined) });
+
+    await expect(classifyDispute(input(), { llm })).resolves.toMatchObject({
+      subtype: 'B3',
+      needsReview: true,
+      confidence: 0,
+    });
   });
 });
