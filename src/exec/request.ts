@@ -3,10 +3,12 @@
  *
  * **한 계획에 호출은 1회다.** 제안할 때는 send-message를 부르지 않고 메시지를 make-offer의 `note`에 담는다.
  * 금액은 `plan.amountCents`를 옮기기만 한다 (계산 금지).
+ * 메시지는 `fillMessage`를 통과한 것만 들어온다 (토큰 없음, 비어 있지 않음). 빈 메시지는 여기서도 한 번 더 막는다.
  */
 import type { ActionPlan, ApiRequest, MoveType } from '@/types';
 
 import { centsToApiValue } from './amount';
+import { EXEC_COPY, format, type Rejection } from './copy';
 
 /** 분쟁 대응 엔드포인트 이름. `provide_evidence`는 아직 실행하지 않는다 (multipart 업로드, P1). */
 export const ENDPOINTS: Partial<Record<MoveType, string>> = {
@@ -17,7 +19,7 @@ export const ENDPOINTS: Partial<Record<MoveType, string>> = {
 
 export type BuildResult =
   | { ok: true; request: ApiRequest; endpoint: string }
-  | { ok: false; reason: string };
+  | ({ ok: false } & Rejection);
 
 /** 같은 계획을 다시 실행하면 같은 값이 나간다 (`<planId>:<엔드포인트 이름>`). */
 function requestIdFor(planId: string, endpoint: string): string {
@@ -25,16 +27,27 @@ function requestIdFor(planId: string, endpoint: string): string {
 }
 
 /** 돈이 움직이는 수는 금액과 환불 유형이 있어야 본문을 만들 수 있다 (계약: `ActionPlan`). */
-function moneyFields(plan: ActionPlan): { ok: true; value: string; refundType: string } | { ok: false; reason: string } {
-  if (plan.amountCents === null) return { ok: false, reason: `${plan.apiMove} 계획에 금액이 없습니다` };
-  if (plan.refundType === null) return { ok: false, reason: `${plan.apiMove} 계획에 환불 유형(refundType)이 없습니다` };
+function moneyFields(
+  plan: ActionPlan,
+): { ok: true; value: string; refundType: string } | ({ ok: false } & Rejection) {
+  if (plan.amountCents === null) {
+    return { ok: false, error: format(EXEC_COPY.amountMissing, { apiMove: plan.apiMove }), nextAction: EXEC_COPY.nextFixPlan };
+  }
+  if (plan.refundType === null) {
+    return { ok: false, error: format(EXEC_COPY.refundTypeMissing, { apiMove: plan.apiMove }), nextAction: EXEC_COPY.nextFixPlan };
+  }
   return { ok: true, value: centsToApiValue(plan.amountCents), refundType: plan.refundType };
 }
 
 /** 검증을 통과한 계획과 채운 메시지로 요청 1건을 만든다. */
 export function buildRequest(plan: ActionPlan, message: string): BuildResult {
   const endpoint = ENDPOINTS[plan.apiMove];
-  if (endpoint === undefined) return { ok: false, reason: `${plan.apiMove}는 아직 실행하지 않습니다` };
+  if (endpoint === undefined) {
+    return { ok: false, error: format(EXEC_COPY.moveUnsupported, { apiMove: plan.apiMove }), nextAction: EXEC_COPY.nextFixPlan };
+  }
+  if (message.trim() === '') {
+    return { ok: false, error: EXEC_COPY.messageEmpty, nextAction: EXEC_COPY.nextFixDraft };
+  }
 
   const base = {
     method: 'POST' as const,
@@ -43,26 +56,24 @@ export function buildRequest(plan: ActionPlan, message: string): BuildResult {
   };
 
   if (plan.apiMove === 'send_message') {
-    if (message.trim() === '') return { ok: false, reason: '보낼 메시지가 비어 있습니다' };
     return { ok: true, endpoint, request: { ...base, body: { message } } };
   }
 
   const money = moneyFields(plan);
   if (!money.ok) return money;
   const amount = { currency_code: plan.currency, value: money.value };
-  const note = message.trim() === '' ? {} : { note: message };
 
   if (plan.apiMove === 'make_offer') {
     return {
       ok: true,
       endpoint,
-      request: { ...base, body: { ...note, offer_amount: amount, offer_type: money.refundType } },
+      request: { ...base, body: { note: message, offer_amount: amount, offer_type: money.refundType } },
     };
   }
 
   return {
     ok: true,
     endpoint,
-    request: { ...base, body: { ...note, accept_claim_type: money.refundType, refund_amount: amount } },
+    request: { ...base, body: { note: message, accept_claim_type: money.refundType, refund_amount: amount } },
   };
 }
