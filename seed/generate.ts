@@ -8,6 +8,7 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { buildSeed } from './data';
 import {
+  disputeOrderProblems,
   seedBuyersSchema,
   seedDisputesSchema,
   seedInquiriesSchema,
@@ -38,11 +39,16 @@ function main(): void {
   const disputes = writeChecked('disputes.json', seed.disputes, seedDisputesSchema);
   const orders = writeChecked('orders.json', seed.orders, seedOrdersSchema);
 
+  const problems = disputeOrderProblems(disputes, orders);
+  if (problems.length > 0) throw new Error(`분쟁 → 주문 연결이 어긋났다:\n  ${problems.join('\n  ')}`);
+
   const closedLossCents = disputes.reduce((sum, d) => sum + (d.lossCents ?? 0), 0);
   const tracked = orders.filter((o) => o.tracked).length;
+  const orderDates = orders.map((o) => o.date).sort();
+  const byMonth = countBy(orders, (o) => o.date.slice(0, 7));
 
   const lines = [
-    'seed 다시 생성 완료 (원문 6장, SPEC v2.1)',
+    'seed 다시 생성 완료 (원문 6장, SPEC v2.2)',
     `  products.json   ${products.length}건  ${products.map((p) => `${p.sku} ${asMoney(p.priceCents)}`).join(' · ')}`,
     `  buyers.json     ${buyers.length}건  샌드박스 ${buyers.filter((b) => b.sandbox).length}명`,
     `  inquiries.json  ${inquiries.length}건  (표 8 + 자동 생성 ${inquiries.length - 8})`,
@@ -51,6 +57,8 @@ function main(): void {
     `  주문 상품별      ${Object.entries(countBy(orders, (o) => o.sku)).map(([k, v]) => `${k} ${v}`).join(' · ')}`,
     `  주문 국가별      ${Object.entries(countBy(orders, (o) => o.country)).map(([k, v]) => `${k} ${v}`).join(' · ')}`,
     `  추적 등록        ${tracked} / ${orders.length} (${((tracked / orders.length) * 100).toFixed(1)}%)`,
+    `  주문일           ${orderDates[0]} ~ ${orderDates[orderDates.length - 1]}  월별 ${Object.entries(byMonth).sort().map(([k, v]) => `${k} ${v}`).join(' · ')}`,
+    `  분쟁 → 주문      ${disputes.map((d) => `${d.id} ${d.orderId}`).join(' · ')}`,
   ];
   console.log(lines.join('\n'));
 }

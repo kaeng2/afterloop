@@ -6,7 +6,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-17"
   },
   {
     "id": "O02",
@@ -15,7 +16,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-15"
   },
   {
     "id": "O03",
@@ -24,7 +26,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": false,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-09-18"
   },
   {
     "id": "O04",
@@ -33,7 +36,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": false,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-09"
   },
   {
     "id": "O05",
@@ -42,7 +46,8 @@
     "amountCents": 3500,
     "country": "JP",
     "tracked": false,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-25"
   },
   {
     "id": "O06",
@@ -51,7 +56,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": true,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-09-26"
   },
   {
     "id": "O07",
@@ -60,7 +66,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": false,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-12"
   },
   {
     "id": "O08",
@@ -69,7 +76,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-16"
   },
   {
     "id": "O09",
@@ -78,7 +86,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-08-20"
   },
   {
     "id": "O10",
@@ -87,7 +96,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-09-14"
   },
   {
     "id": "O11",
@@ -96,7 +106,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-20"
   },
   {
     "id": "O12",
@@ -105,7 +116,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "sandbox"
+    "source": "sandbox",
+    "date": "2026-10-31"
   },
   {
     "id": "SO001",
@@ -114,7 +126,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-22"
   },
   {
     "id": "SO002",
@@ -123,7 +136,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-25"
   },
   {
     "id": "SO003",
@@ -132,7 +146,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-02"
   },
   {
     "id": "SO004",
@@ -141,7 +156,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-10"
   },
   {
     "id": "SO005",
@@ -150,7 +166,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-05"
   },
   {
     "id": "SO006",
@@ -159,7 +176,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-18"
   },
   {
     "id": "SO007",
@@ -168,7 +186,8 @@
     "amountCents": 4800,
     "country": "GB",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-18"
   },
   {
     "id": "SO008",
@@ -177,7 +196,8 @@
     "amountCents": 7200,
     "country": "GB",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-09"
   },
   {
     "id": "SO009",
@@ -186,7 +206,8 @@
     "amountCents": 18900,
     "country": "GB",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-06"
   },
   {
     "id": "SO010",
@@ -195,7 +216,8 @@
     "amountCents": 3500,
     "country": "GB",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-29"
   },
   {
     "id": "SO011",
@@ -204,7 +226,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-12"
   },
   {
     "id": "SO012",
@@ -213,7 +236,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-14"
   },
   {
     "id": "SO013",
@@ -222,7 +246,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-17"
   },
   {
     "id": "SO014",
@@ -231,7 +256,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-20"
   },
   {
     "id": "SO015",
@@ -240,7 +266,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-22"
   },
   {
     "id": "SO016",
@@ -249,7 +276,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-14"
   },
   {
     "id": "SO017",
@@ -258,7 +286,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-28"
   },
   {
     "id": "SO018",
@@ -267,7 +296,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-30"
   },
   {
     "id": "SO019",
@@ -276,7 +306,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-02"
   },
   {
     "id": "SO020",
@@ -285,7 +316,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-05"
   },
   {
     "id": "SO021",
@@ -294,7 +326,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-08"
   },
   {
     "id": "SO022",
@@ -303,7 +336,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-07"
   },
   {
     "id": "SO023",
@@ -312,7 +346,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-13"
   },
   {
     "id": "SO024",
@@ -321,7 +356,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-16"
   },
   {
     "id": "SO025",
@@ -330,7 +366,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-19"
   },
   {
     "id": "SO026",
@@ -339,7 +376,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-21"
   },
   {
     "id": "SO027",
@@ -348,7 +386,8 @@
     "amountCents": 3500,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-24"
   },
   {
     "id": "SO028",
@@ -357,7 +396,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-27"
   },
   {
     "id": "SO029",
@@ -366,7 +406,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-29"
   },
   {
     "id": "SO030",
@@ -375,7 +416,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-01"
   },
   {
     "id": "SO031",
@@ -384,7 +426,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-04"
   },
   {
     "id": "SO032",
@@ -393,7 +436,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-07"
   },
   {
     "id": "SO033",
@@ -402,7 +446,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-09"
   },
   {
     "id": "SO034",
@@ -411,7 +456,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-12"
   },
   {
     "id": "SO035",
@@ -420,7 +466,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-15"
   },
   {
     "id": "SO036",
@@ -429,7 +476,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-18"
   },
   {
     "id": "SO037",
@@ -438,7 +486,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-20"
   },
   {
     "id": "SO038",
@@ -447,7 +496,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-23"
   },
   {
     "id": "SO039",
@@ -456,7 +506,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-26"
   },
   {
     "id": "SO040",
@@ -465,7 +516,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-28"
   },
   {
     "id": "SO041",
@@ -474,7 +526,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-31"
   },
   {
     "id": "SO042",
@@ -483,7 +536,8 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-03"
   },
   {
     "id": "SO043",
@@ -492,7 +546,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-06"
   },
   {
     "id": "SO044",
@@ -501,7 +556,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-08"
   },
   {
     "id": "SO045",
@@ -510,7 +566,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-11"
   },
   {
     "id": "SO046",
@@ -519,7 +576,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-14"
   },
   {
     "id": "SO047",
@@ -528,7 +586,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-17"
   },
   {
     "id": "SO048",
@@ -537,7 +596,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-19"
   },
   {
     "id": "SO049",
@@ -546,7 +606,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-22"
   },
   {
     "id": "SO050",
@@ -555,7 +616,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-25"
   },
   {
     "id": "SO051",
@@ -564,7 +626,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-27"
   },
   {
     "id": "SO052",
@@ -573,7 +636,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-30"
   },
   {
     "id": "SO053",
@@ -582,7 +646,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-02"
   },
   {
     "id": "SO054",
@@ -591,7 +656,8 @@
     "amountCents": 3500,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-05"
   },
   {
     "id": "SO055",
@@ -600,7 +666,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-07"
   },
   {
     "id": "SO056",
@@ -609,7 +676,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-10"
   },
   {
     "id": "SO057",
@@ -618,7 +686,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-13"
   },
   {
     "id": "SO058",
@@ -627,7 +696,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-16"
   },
   {
     "id": "SO059",
@@ -636,7 +706,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-18"
   },
   {
     "id": "SO060",
@@ -645,7 +716,8 @@
     "amountCents": 3500,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-21"
   },
   {
     "id": "SO061",
@@ -654,7 +726,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-24"
   },
   {
     "id": "SO062",
@@ -663,7 +736,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-26"
   },
   {
     "id": "SO063",
@@ -672,7 +746,8 @@
     "amountCents": 18900,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-29"
   },
   {
     "id": "SO064",
@@ -681,7 +756,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-01"
   },
   {
     "id": "SO065",
@@ -690,7 +766,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-04"
   },
   {
     "id": "SO066",
@@ -699,7 +776,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-06"
   },
   {
     "id": "SO067",
@@ -708,7 +786,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-09"
   },
   {
     "id": "SO068",
@@ -717,7 +796,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-12"
   },
   {
     "id": "SO069",
@@ -726,7 +806,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-15"
   },
   {
     "id": "SO070",
@@ -735,7 +816,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-17"
   },
   {
     "id": "SO071",
@@ -744,7 +826,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-20"
   },
   {
     "id": "SO072",
@@ -753,7 +836,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-23"
   },
   {
     "id": "SO073",
@@ -762,7 +846,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-25"
   },
   {
     "id": "SO074",
@@ -771,7 +856,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-28"
   },
   {
     "id": "SO075",
@@ -780,7 +866,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-31"
   },
   {
     "id": "SO076",
@@ -789,7 +876,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-03"
   },
   {
     "id": "SO077",
@@ -798,7 +886,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-05"
   },
   {
     "id": "SO078",
@@ -807,7 +896,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-08"
   },
   {
     "id": "SO079",
@@ -816,7 +906,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-11"
   },
   {
     "id": "SO080",
@@ -825,7 +916,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-14"
   },
   {
     "id": "SO081",
@@ -834,7 +926,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-16"
   },
   {
     "id": "SO082",
@@ -843,7 +936,8 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-19"
   },
   {
     "id": "SO083",
@@ -852,7 +946,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-22"
   },
   {
     "id": "SO084",
@@ -861,7 +956,8 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-24"
   },
   {
     "id": "SO085",
@@ -870,7 +966,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-27"
   },
   {
     "id": "SO086",
@@ -879,7 +976,8 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-30"
   },
   {
     "id": "SO087",
@@ -888,7 +986,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-02"
   },
   {
     "id": "SO088",
@@ -897,7 +996,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-04"
   },
   {
     "id": "SO089",
@@ -906,7 +1006,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-07"
   },
   {
     "id": "SO090",
@@ -915,7 +1016,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-10"
   },
   {
     "id": "SO091",
@@ -924,7 +1026,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-13"
   },
   {
     "id": "SO092",
@@ -933,7 +1036,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-15"
   },
   {
     "id": "SO093",
@@ -942,7 +1046,8 @@
     "amountCents": 18900,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-18"
   },
   {
     "id": "SO094",
@@ -951,7 +1056,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-21"
   },
   {
     "id": "SO095",
@@ -960,7 +1066,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-23"
   },
   {
     "id": "SO096",
@@ -969,7 +1076,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-26"
   },
   {
     "id": "SO097",
@@ -978,7 +1086,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-29"
   },
   {
     "id": "SO098",
@@ -987,7 +1096,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-01"
   },
   {
     "id": "SO099",
@@ -996,7 +1106,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-03"
   },
   {
     "id": "SO100",
@@ -1005,7 +1116,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-06"
   },
   {
     "id": "SO101",
@@ -1014,7 +1126,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-09"
   },
   {
     "id": "SO102",
@@ -1023,7 +1136,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-12"
   },
   {
     "id": "SO103",
@@ -1032,7 +1146,8 @@
     "amountCents": 18900,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-14"
   },
   {
     "id": "SO104",
@@ -1041,7 +1156,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-17"
   },
   {
     "id": "SO105",
@@ -1050,7 +1166,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-20"
   },
   {
     "id": "SO106",
@@ -1059,7 +1176,8 @@
     "amountCents": 18900,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-22"
   },
   {
     "id": "SO107",
@@ -1068,7 +1186,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-25"
   },
   {
     "id": "SO108",
@@ -1077,7 +1196,8 @@
     "amountCents": 4800,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-28"
   },
   {
     "id": "SO109",
@@ -1086,7 +1206,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-30"
   },
   {
     "id": "SO110",
@@ -1095,7 +1216,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-02"
   },
   {
     "id": "SO111",
@@ -1104,7 +1226,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-05"
   },
   {
     "id": "SO112",
@@ -1113,7 +1236,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-08"
   },
   {
     "id": "SO113",
@@ -1122,7 +1246,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-10"
   },
   {
     "id": "SO114",
@@ -1131,7 +1256,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-13"
   },
   {
     "id": "SO115",
@@ -1140,7 +1266,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-16"
   },
   {
     "id": "SO116",
@@ -1149,7 +1276,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-19"
   },
   {
     "id": "SO117",
@@ -1158,7 +1286,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-21"
   },
   {
     "id": "SO118",
@@ -1167,7 +1296,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-24"
   },
   {
     "id": "SO119",
@@ -1176,7 +1306,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-27"
   },
   {
     "id": "SO120",
@@ -1185,7 +1316,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-29"
   },
   {
     "id": "SO121",
@@ -1194,7 +1326,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-01"
   },
   {
     "id": "SO122",
@@ -1203,7 +1336,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-04"
   },
   {
     "id": "SO123",
@@ -1212,7 +1346,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-07"
   },
   {
     "id": "SO124",
@@ -1221,7 +1356,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-09"
   },
   {
     "id": "SO125",
@@ -1230,7 +1366,8 @@
     "amountCents": 18900,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-12"
   },
   {
     "id": "SO126",
@@ -1239,7 +1376,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-15"
   },
   {
     "id": "SO127",
@@ -1248,7 +1386,8 @@
     "amountCents": 18900,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-18"
   },
   {
     "id": "SO128",
@@ -1257,7 +1396,8 @@
     "amountCents": 18900,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-20"
   },
   {
     "id": "SO129",
@@ -1266,7 +1406,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-23"
   },
   {
     "id": "SO130",
@@ -1275,7 +1416,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-26"
   },
   {
     "id": "SO131",
@@ -1284,7 +1426,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-28"
   },
   {
     "id": "SO132",
@@ -1293,7 +1436,8 @@
     "amountCents": 18900,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-31"
   },
   {
     "id": "SO133",
@@ -1302,7 +1446,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-03"
   },
   {
     "id": "SO134",
@@ -1311,7 +1456,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-06"
   },
   {
     "id": "SO135",
@@ -1320,7 +1466,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-08"
   },
   {
     "id": "SO136",
@@ -1329,7 +1476,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-11"
   },
   {
     "id": "SO137",
@@ -1338,7 +1486,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-14"
   },
   {
     "id": "SO138",
@@ -1347,7 +1496,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-17"
   },
   {
     "id": "SO139",
@@ -1356,7 +1506,8 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-19"
   },
   {
     "id": "SO140",
@@ -1365,7 +1516,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-22"
   },
   {
     "id": "SO141",
@@ -1374,7 +1526,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-25"
   },
   {
     "id": "SO142",
@@ -1383,7 +1536,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-27"
   },
   {
     "id": "SO143",
@@ -1392,7 +1546,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-30"
   },
   {
     "id": "SO144",
@@ -1401,7 +1556,8 @@
     "amountCents": 18900,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-02"
   },
   {
     "id": "SO145",
@@ -1410,7 +1566,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-05"
   },
   {
     "id": "SO146",
@@ -1419,7 +1576,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-07"
   },
   {
     "id": "SO147",
@@ -1428,7 +1586,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-10"
   },
   {
     "id": "SO148",
@@ -1437,7 +1596,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-13"
   },
   {
     "id": "SO149",
@@ -1446,7 +1606,8 @@
     "amountCents": 3500,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-16"
   },
   {
     "id": "SO150",
@@ -1455,7 +1616,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-18"
   },
   {
     "id": "SO151",
@@ -1464,7 +1626,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-21"
   },
   {
     "id": "SO152",
@@ -1473,7 +1636,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-24"
   },
   {
     "id": "SO153",
@@ -1482,7 +1646,8 @@
     "amountCents": 18900,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-26"
   },
   {
     "id": "SO154",
@@ -1491,7 +1656,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-29"
   },
   {
     "id": "SO155",
@@ -1500,7 +1666,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-01"
   },
   {
     "id": "SO156",
@@ -1509,7 +1676,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-04"
   },
   {
     "id": "SO157",
@@ -1518,7 +1686,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-06"
   },
   {
     "id": "SO158",
@@ -1527,7 +1696,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-09"
   },
   {
     "id": "SO159",
@@ -1536,7 +1706,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-12"
   },
   {
     "id": "SO160",
@@ -1545,7 +1716,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-15"
   },
   {
     "id": "SO161",
@@ -1554,7 +1726,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-17"
   },
   {
     "id": "SO162",
@@ -1563,7 +1736,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-20"
   },
   {
     "id": "SO163",
@@ -1572,7 +1746,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-23"
   },
   {
     "id": "SO164",
@@ -1581,7 +1756,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-25"
   },
   {
     "id": "SO165",
@@ -1590,7 +1766,8 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-28"
   },
   {
     "id": "SO166",
@@ -1599,7 +1776,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-31"
   },
   {
     "id": "SO167",
@@ -1608,7 +1786,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-03"
   },
   {
     "id": "SO168",
@@ -1617,7 +1796,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-05"
   },
   {
     "id": "SO169",
@@ -1626,7 +1806,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-08"
   },
   {
     "id": "SO170",
@@ -1635,7 +1816,8 @@
     "amountCents": 3500,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-11"
   },
   {
     "id": "SO171",
@@ -1644,7 +1826,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-14"
   },
   {
     "id": "SO172",
@@ -1653,7 +1836,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-16"
   },
   {
     "id": "SO173",
@@ -1662,7 +1846,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-19"
   },
   {
     "id": "SO174",
@@ -1671,7 +1856,8 @@
     "amountCents": 18900,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-22"
   },
   {
     "id": "SO175",
@@ -1680,7 +1866,8 @@
     "amountCents": 18900,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-24"
   },
   {
     "id": "SO176",
@@ -1689,7 +1876,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-27"
   },
   {
     "id": "SO177",
@@ -1698,7 +1886,8 @@
     "amountCents": 18900,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-30"
   },
   {
     "id": "SO178",
@@ -1707,7 +1896,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-02"
   },
   {
     "id": "SO179",
@@ -1716,7 +1906,8 @@
     "amountCents": 4800,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-04"
   },
   {
     "id": "SO180",
@@ -1725,7 +1916,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-07"
   },
   {
     "id": "SO181",
@@ -1734,7 +1926,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-10"
   },
   {
     "id": "SO182",
@@ -1743,7 +1936,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-13"
   },
   {
     "id": "SO183",
@@ -1752,7 +1946,8 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-15"
   },
   {
     "id": "SO184",
@@ -1761,7 +1956,8 @@
     "amountCents": 7200,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-18"
   },
   {
     "id": "SO185",
@@ -1770,7 +1966,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-21"
   },
   {
     "id": "SO186",
@@ -1779,7 +1976,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-23"
   },
   {
     "id": "SO187",
@@ -1788,7 +1986,8 @@
     "amountCents": 4800,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-26"
   },
   {
     "id": "SO188",
@@ -1797,7 +1996,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-29"
   },
   {
     "id": "SO189",
@@ -1806,7 +2006,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-01"
   },
   {
     "id": "SO190",
@@ -1815,7 +2016,8 @@
     "amountCents": 3500,
     "country": "JP",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-03"
   },
   {
     "id": "SO191",
@@ -1824,7 +2026,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-06"
   },
   {
     "id": "SO192",
@@ -1833,7 +2036,8 @@
     "amountCents": 7200,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-09"
   },
   {
     "id": "SO193",
@@ -1842,7 +2046,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-12"
   },
   {
     "id": "SO194",
@@ -1851,7 +2056,8 @@
     "amountCents": 18900,
     "country": "US",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-14"
   },
   {
     "id": "SO195",
@@ -1860,7 +2066,8 @@
     "amountCents": 3500,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-17"
   },
   {
     "id": "SO196",
@@ -1869,7 +2076,8 @@
     "amountCents": 3500,
     "country": "US",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-20"
   },
   {
     "id": "SO197",
@@ -1878,7 +2086,8 @@
     "amountCents": 18900,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-22"
   },
   {
     "id": "SO198",
@@ -1887,7 +2096,8 @@
     "amountCents": 3500,
     "country": "JP",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-10-25"
   },
   {
     "id": "SO199",
@@ -1896,7 +2106,8 @@
     "amountCents": 18900,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-08-28"
   },
   {
     "id": "SO200",
@@ -1905,7 +2116,8 @@
     "amountCents": 7200,
     "country": "KR",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-30"
   },
   {
     "id": "SO201",
@@ -1914,7 +2126,8 @@
     "amountCents": 4800,
     "country": "KR",
     "tracked": false,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-11-02"
   },
   {
     "id": "SO202",
@@ -1923,6 +2136,7 @@
     "amountCents": 7200,
     "country": "DE",
     "tracked": true,
-    "source": "seed"
+    "source": "seed",
+    "date": "2026-09-05"
   }
 ]

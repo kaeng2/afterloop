@@ -145,6 +145,14 @@ export function rulesFromConfig(): PolicyConfig {
 }
 
 /**
+ * `config/params.json` 원본 (검증 전). `sim.ts`가 처방 배수·지금 습관·상품별 분쟁 확률을 읽는다
+ * (`paramsFromConfig`는 기대 손실 가정값만 꺼내므로 그 세 가지가 빠진다).
+ */
+export function paramsConfigFromFile(): ParamsConfig {
+  return paramsConfig;
+}
+
+/**
  * 보드·가정값·규칙을 검증한다. params·rules를 안 넘기면 config 파일에서 읽는다.
  * 어기면 ZodError를 던진다.
  */

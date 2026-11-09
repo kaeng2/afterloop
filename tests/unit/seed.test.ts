@@ -1,20 +1,24 @@
 /**
- * T007 단위 테스트: 시드 데이터가 원문 6장과 같은지.
+ * T007·T028 단위 테스트: 시드 데이터가 원문 6장과 기획자 결정과 같은지.
  *
- * 기대값 출처: PRD v2 (inbox/2026-11-09-prd-v2.md) 4-1, 6-1 ~ 6-5. SPEC v2.1 9-5·13장 Q8.
+ * 기대값 출처: PRD v2 (inbox/2026-11-09-prd-v2.md) 4-1, 6-1 ~ 6-5. SPEC v2.2 9-5·13장 Q8·Q10.
  * 아래 표는 원문에서 따로 옮겨 적은 것이다. `seed/data.ts`를 가져다 쓰지 않고 값을 그대로 비교한다.
  * 국가는 원문의 한글 표기를 ISO 코드로 옮긴다 (한국 KR · 미국 US · 일본 JP · 독일 DE · 영국 GB).
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import paramsConfig from '../../config/params.json';
 import {
+  FEE_CENTS,
   GENERATED_INQUIRY_TYPE_TOTALS,
   buildSeed,
   generatedInquirySpecs,
   type InquiryType,
 } from '../../seed/data';
 import {
+  ORDER_DATE_WINDOW,
+  disputeOrderProblems,
   seedBuyersSchema,
   seedDisputesSchema,
   seedInquiriesSchema,
@@ -135,20 +139,31 @@ const INR = 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED';
 const SNAD = 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED';
 
 /**
- * 원문 6-4. 손실은 원문 값 그대로 (SPEC 13장 Q8: "원문 그대로, 합 40800¢").
+ * 원문 6-4 + 기획자 결정 2026-11-09 Q8·Q10 (tasks/T028.md 표에서 따로 옮겨 적음).
+ * 손실: 전액 환불 = 상품 가격, 패소 = 상품 가격 + f(1500¢), 승소 = 0. 수수료는 **질 때만** (SPEC 5장).
+ * 합 41300¢ ($413). `orderId`가 null인 줄은 그 구매자의 같은 상품 시드 주문이면 된다 (ID를 못 박지 않음).
  * 사유 코드는 PayPal reason 값 (SNAD / INR / UNAUTHORISED).
  */
 const TABLE_6_4 = [
-  { id: 'D1', buyer: '박지호', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'open', lossCents: null, source: 'sandbox' },
-  { id: 'D2', buyer: '김서연', sku: 'FK-SW-NV', reason: INR, subtype: 'A2', status: 'open', lossCents: null, source: 'sandbox' },
-  { id: 'D3', buyer: 'buyer_m***', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'open', lossCents: null, source: 'sandbox' },
-  { id: 'D4', buyer: 'Olivia R.', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'closed', lossCents: 5600, source: 'seed' },
-  { id: 'D5', buyer: '이수민', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'closed', lossCents: 5600, source: 'seed' },
-  { id: 'D6', buyer: 'Mia L.', sku: 'FK-CD-OAT', reason: INR, subtype: 'A1', status: 'closed', lossCents: 5600, source: 'seed' },
-  { id: 'D7', buyer: 'buyer_m***', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'closed', lossCents: 4300, source: 'seed' },
-  { id: 'D8', buyer: 'buyer_m***', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'closed', lossCents: 0, source: 'seed' },
-  { id: 'D9', buyer: 'Alex W.', sku: 'FK-CT-GR', reason: 'UNAUTHORISED', subtype: 'E1', status: 'closed', lossCents: 19700, source: 'seed' },
+  { id: 'D1', buyer: '박지호', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'open', lossCents: null, source: 'sandbox', outcome: null, orderId: 'O02' },
+  { id: 'D2', buyer: '김서연', sku: 'FK-SW-NV', reason: INR, subtype: 'A2', status: 'open', lossCents: null, source: 'sandbox', outcome: null, orderId: 'O01' },
+  { id: 'D3', buyer: 'buyer_m***', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'open', lossCents: null, source: 'sandbox', outcome: null, orderId: 'O08' },
+  { id: 'D4', buyer: 'Olivia R.', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'closed', lossCents: 4800, source: 'seed', outcome: 'full_refund', orderId: null },
+  { id: 'D5', buyer: '이수민', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'closed', lossCents: 6300, source: 'seed', outcome: 'lost', orderId: null },
+  { id: 'D6', buyer: 'Mia L.', sku: 'FK-CD-OAT', reason: INR, subtype: 'A1', status: 'closed', lossCents: 6300, source: 'seed', outcome: 'lost', orderId: null },
+  { id: 'D7', buyer: 'buyer_m***', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'closed', lossCents: 3500, source: 'seed', outcome: 'full_refund', orderId: 'O09' },
+  { id: 'D8', buyer: 'buyer_m***', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'closed', lossCents: 0, source: 'seed', outcome: 'won', orderId: 'O10' },
+  { id: 'D9', buyer: 'Alex W.', sku: 'FK-CT-GR', reason: 'UNAUTHORISED', subtype: 'E1', status: 'closed', lossCents: 20400, source: 'seed', outcome: 'lost', orderId: null },
 ];
+
+/** 기획자 결정 Q8: 분쟁 수수료 f = $15 (config/params.json의 params.feeCents) */
+const TABLE_FEE_CENTS = 1500;
+
+/** 주문일 창 (기획자 결정 Q10: 시연 시점 2026-11-10 기준 90일, 양끝 포함) */
+const TABLE_WINDOW = { from: '2026-08-12', to: '2026-11-10' };
+
+/** 진행 중 분쟁이 걸린 주문은 최근 4주 안 (2026-10-14 ~ 2026-11-10) */
+const RECENT_4W_FROM = '2026-10-14';
 
 /** 원문 6-4의 구매자 칸 → ID (6-3에 없는 이름만 더함) */
 const DISPUTE_BUYER_ID: Record<string, string> = {
@@ -350,7 +365,10 @@ describe('T007 문의 (원문 6-3)', () => {
 
 // ───────────────────────────── 6-4 분쟁 ─────────────────────────────
 
-describe('T007 분쟁 (원문 6-4, SPEC 13장 Q8)', () => {
+describe('T007·T028 분쟁 (원문 6-4, SPEC 13장 Q8·Q10)', () => {
+  const priceOf = (sku: string) => products.find((p) => p.sku === sku)!.priceCents;
+  const orderById = (id: string) => orders.find((o) => o.id === id);
+
   it('9건의 ID·구매자·상품·사유·세부 유형·상태·손실·출처가 표와 같다', () => {
     expect(disputes.map((d) => d.id)).toEqual(TABLE_6_4.map((r) => r.id));
     for (const row of TABLE_6_4) {
@@ -365,10 +383,30 @@ describe('T007 분쟁 (원문 6-4, SPEC 13장 Q8)', () => {
     }
   });
 
-  it('종결 6건 손실 합이 40800¢ ($408)다', () => {
+  it('종결 6건 손실 합이 41300¢ ($413)다 (Q8: 수수료는 질 때만)', () => {
     const closed = disputes.filter((d) => d.status === 'closed');
     expect(closed).toHaveLength(6);
-    expect(closed.reduce((s, d) => s + (d.lossCents ?? 0), 0)).toBe(40800);
+    expect(closed.reduce((s, d) => s + (d.lossCents ?? 0), 0)).toBe(41300);
+  });
+
+  it('종결 손실이 결과 종류 · 상품 가격 · f에서 나온 값이다 (전액 환불 = 가격, 패소 = 가격 + f, 승소 = 0)', () => {
+    for (const row of TABLE_6_4.filter((r) => r.status === 'closed')) {
+      const expected =
+        row.outcome === 'won' ? 0 : priceOf(row.sku) + (row.outcome === 'lost' ? TABLE_FEE_CENTS : 0);
+      expect(expected, `${row.id} 표 값`).toBe(row.lossCents);
+      expect(disputes.find((d) => d.id === row.id)!.lossCents, row.id).toBe(expected);
+    }
+  });
+
+  it('f를 config/params.json에서 읽는다 (코드에 적지 않는다)', () => {
+    expect(FEE_CENTS).toBe(paramsConfig.params.feeCents.value);
+    expect(FEE_CENTS).toBe(TABLE_FEE_CENTS);
+  });
+
+  it('종결 손실은 세 가지 값 중 하나뿐이다 (대응 시간 비용 t는 더하지 않는다 — 원문 6-4 식에 없다)', () => {
+    for (const d of disputes.filter((x) => x.status === 'closed')) {
+      expect([0, priceOf(d.sku), priceOf(d.sku) + TABLE_FEE_CENTS], d.id).toContain(d.lossCents);
+    }
   });
 
   it('진행 중 3건은 D1~D3이고 lossCents가 null, source가 sandbox다', () => {
@@ -386,6 +424,52 @@ describe('T007 분쟁 (원문 6-4, SPEC 13장 Q8)', () => {
       expect(matching.length, `${d.id} (${d.buyerId} ${d.sku})`).toBeGreaterThanOrEqual(
         disputes.filter((x) => x.buyerId === d.buyerId && x.sku === d.sku).length,
       );
+    }
+  });
+
+  // ── v2.2 (Q10): orderId ──
+
+  it('못 박은 주문 연결이 표와 같다 (D1 O02 · D2 O01 · D3 O08 · D7 O09 · D8 O10)', () => {
+    for (const row of TABLE_6_4.filter((r) => r.orderId)) {
+      expect(disputes.find((d) => d.id === row.id)!.orderId, row.id).toBe(row.orderId);
+    }
+  });
+
+  it('ID를 못 박지 않은 4건(D4·D5·D6·D9)도 그 구매자의 같은 상품 시드 주문을 가리킨다', () => {
+    for (const row of TABLE_6_4.filter((r) => !r.orderId)) {
+      const o = orderById(disputes.find((d) => d.id === row.id)!.orderId)!;
+      expect(o, row.id).toBeDefined();
+      expect(o.buyerId, row.id).toBe(DISPUTE_BUYER_ID[row.buyer]);
+      expect(o.sku, row.id).toBe(row.sku);
+      expect(o.source, row.id).toBe('seed');
+    }
+  });
+
+  it('참조 무결성 검사(schemas.disputeOrderProblems)가 깨끗하다 — 한 주문에 분쟁 하나', () => {
+    expect(disputeOrderProblems(disputes, orders)).toEqual([]);
+    expect(new Set(disputes.map((d) => d.orderId)).size).toBe(9);
+  });
+
+  it('미발송 주장(D6)의 주문은 추적 미등록, 배송 증빙으로 이긴 D8·반복 주장 D3의 주문은 추적 등록', () => {
+    const trackedOf = (id: string) => orderById(disputes.find((d) => d.id === id)!.orderId)!.tracked;
+    expect(trackedOf('D6')).toBe(false);
+    expect(trackedOf('D8')).toBe(true);
+    expect(trackedOf('D3')).toBe(true);
+  });
+
+  it('buyer_m의 주장 순서가 D7(O09) → D8(O10) → D3(O08)이다 (세 번째 주장이 진행 중 건)', () => {
+    const dateOf = (id: string) => orderById(disputes.find((d) => d.id === id)!.orderId)!.date;
+    expect(dateOf('D7') < dateOf('D8')).toBe(true);
+    expect(dateOf('D8') < dateOf('D3')).toBe(true);
+  });
+
+  it('종결 분쟁의 주문은 창의 앞쪽·중간, 진행 중 분쟁의 주문은 최근 4주 안이다', () => {
+    const middle = '2026-09-26'; // 창(91일)의 가운데
+    for (const d of disputes.filter((x) => x.status === 'closed')) {
+      expect(orderById(d.orderId)!.date <= middle, `${d.id} ${orderById(d.orderId)!.date}`).toBe(true);
+    }
+    for (const d of disputes.filter((x) => x.status === 'open')) {
+      expect(orderById(d.orderId)!.date >= RECENT_4W_FROM, `${d.id} ${orderById(d.orderId)!.date}`).toBe(true);
     }
   });
 });
@@ -435,6 +519,43 @@ describe('T007 주문 (원문 6-5, 4-1)', () => {
     for (const o of orders) expect(o.amountCents, o.id).toBe(priceOf.get(o.sku));
   });
 
+  // ── v2.2 (Q10): date ──
+
+  it('모든 주문에 주문일(YYYY-MM-DD)이 있고 90일 창 안이다', () => {
+    expect(ORDER_DATE_WINDOW).toEqual(TABLE_WINDOW);
+    for (const o of orders) {
+      expect(o.date, o.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(o.date >= TABLE_WINDOW.from && o.date <= TABLE_WINDOW.to, `${o.id} ${o.date}`).toBe(true);
+    }
+  });
+
+  it('서연의 O01은 11/09 문의 "벌써 3주째"보다 3주 이상 앞이다', () => {
+    expect(orders.find((o) => o.id === 'O01')!.date <= '2026-10-19').toBe(true);
+  });
+
+  it('"배송이 안 온다"는 문의를 한 구매자는 그 문의보다 먼저 주문했다', () => {
+    const DELIVERY = ['A1', 'A2', 'A3', 'A4', 'F1'];
+    const complaints = inquiries.filter((q) => q.signal && DELIVERY.includes(q.signal));
+    expect(complaints.length).toBeGreaterThan(0);
+    for (const q of complaints) {
+      const own = orders.filter((o) => o.buyerId === q.buyerId).map((o) => o.date).sort();
+      expect(own.length, q.buyerId).toBeGreaterThan(0);
+      expect(own[0] < q.date, `${q.buyerId} 첫 주문 ${own[0]} vs 문의 ${q.date}`).toBe(true);
+    }
+  });
+
+  it('주문일이 창 전체에 퍼져 있다 (한 날짜에 몰리지 않는다)', () => {
+    const byDay = countBy(orders, (o) => o.date);
+    expect(Object.keys(byDay).length).toBeGreaterThanOrEqual(80); // 창 91일 중 80일 이상에 주문이 있다
+    expect(Math.max(...Object.values(byDay))).toBeLessThanOrEqual(8);
+    const byMonth = countBy(orders, (o) => o.date.slice(0, 7));
+    expect(Object.keys(byMonth).sort()).toEqual(['2026-08', '2026-09', '2026-10', '2026-11']);
+  });
+
+  it('주문일에 Date.now·Math.random을 쓰지 않는다 (buildSeed를 다시 불러도 같다)', () => {
+    expect(buildSeed().orders.map((o) => o.date)).toEqual(orders.map((o) => o.date));
+  });
+
   it('원문 6-2 구매자(B01~B12)의 주문 22건 외에는 자동 생성 구매자다', () => {
     const named = orders.filter((o) => /^B\d{2}$/.test(o.buyerId));
     expect(named).toHaveLength(22);
@@ -467,13 +588,14 @@ describe('T007 샌드박스 12건이 tasks/T001.md 배정 표와 행마다 같�
     expect(TABLE_T001_UNTRACKED_KEYS).toHaveLength(5);
   });
 
-  it('표의 분쟁 칸(O01 D2 · O02 D1 · O08 D3)이 그 주문의 구매자·상품과 맞는다', () => {
+  it('표의 분쟁 칸(O01 D2 · O02 D1 · O08 D3)이 그 주문의 구매자·상품과 맞고, 분쟁의 orderId가 그 주문이다', () => {
     for (const row of TABLE_T001_SANDBOX_ORDERS.filter((r) => r.dispute)) {
       const d = disputes.find((x) => x.id === row.dispute)!;
       expect(d, row.dispute!).toBeDefined();
       expect(d.buyerId, `${row.dispute} 구매자`).toBe(BUYER_ID_BY_MANIFEST_KEY[row.buyer]);
       expect(d.sku, `${row.dispute} 상품`).toBe(skuByItemName.get(row.itemName));
       expect(d.source, `${row.dispute} 출처`).toBe('sandbox');
+      expect(d.orderId, `${row.dispute} 주문`).toBe(row.key); // v2.2 (Q10)
     }
   });
 });

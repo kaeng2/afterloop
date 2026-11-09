@@ -1,5 +1,5 @@
 /**
- * 시드 데이터 zod 스키마 (T007, SPEC v2.1 / 원문 6장)
+ * 시드 데이터 zod 스키마 (T007·T028, SPEC v2.2 / 원문 6장)
  *
  * `src/types.ts` 8부의 타입과 1:1로 맞춘다. 아래 Assert 줄이 컴파일 단계에서 불일치를 잡는다.
  * 모든 객체는 strict: 계약에 없는 필드가 파일에 들어가면 검증에서 떨어진다.
@@ -9,6 +9,20 @@ import type { SeedBuyer, SeedDispute, SeedInquiry, SeedOrder, SeedProduct } from
 
 /** 시드에 등장하는 국가 (원문 4-1 US·KR·JP·DE + 6-2 B12 영국) */
 export const countrySchema = z.enum(['US', 'KR', 'JP', 'DE', 'GB']);
+
+/**
+ * 주문일·문의일이 들어가는 창: 시연 시점 2026-11-10 (SPEC 7장) 기준 90일, 양끝 포함 (v2.2).
+ * `data.ts`가 날짜를 만들 때도 이 값을 쓴다.
+ */
+export const ORDER_DATE_WINDOW = { from: '2026-08-12', to: '2026-11-10' } as const;
+
+const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 형식이어야 한다');
+
+/** 창 안의 날짜 (문자열 비교로 본다 — ISO 날짜는 사전순 = 시간순) */
+const windowedDateSchema = isoDateSchema.refine(
+  (d) => d >= ORDER_DATE_WINDOW.from && d <= ORDER_DATE_WINDOW.to,
+  { message: `주문일은 ${ORDER_DATE_WINDOW.from} ~ ${ORDER_DATE_WINDOW.to} 안이어야 한다` },
+);
 
 /** `src/types.ts` 1부 Subtype 16개 */
 export const subtypeSchema = z.enum([
@@ -45,7 +59,7 @@ export const seedBuyerSchema = z
 
 export const seedInquirySchema = z
   .object({
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    date: isoDateSchema,
     buyerId: z.string().min(1),
     original: z.string().min(1),
     english: z.string().min(1),
@@ -64,6 +78,7 @@ export const seedDisputeSchema = z
     status: z.enum(['open', 'closed']),
     lossCents: z.number().int().nonnegative().nullable(),
     source: z.enum(['sandbox', 'seed']),
+    orderId: z.string().min(1),
   })
   .strict();
 
@@ -76,6 +91,7 @@ export const seedOrderSchema = z
     country: countrySchema,
     tracked: z.boolean(),
     source: z.enum(['sandbox', 'seed']),
+    date: windowedDateSchema,
   })
   .strict();
 
@@ -92,6 +108,33 @@ export const seedDisputesSchema = z
     message: 'open 분쟁은 lossCents가 null, closed 분쟁은 숫자여야 한다',
   });
 export const seedOrdersSchema = z.array(seedOrderSchema);
+
+/**
+ * 분쟁 → 주문 참조 무결성 (v2.2, Q10). 파일 2개를 같이 봐야 해서 스키마 밖에 둔다.
+ * 어긋난 줄마다 사람이 읽을 메시지를 돌려준다 (빈 배열이면 통과).
+ */
+export function disputeOrderProblems(
+  disputes: readonly SeedDispute[],
+  orders: readonly SeedOrder[],
+): string[] {
+  const byId = new Map(orders.map((o) => [o.id, o]));
+  const problems: string[] = [];
+  const seen = new Map<string, string>();
+
+  for (const d of disputes) {
+    const o = byId.get(d.orderId);
+    if (!o) {
+      problems.push(`${d.id}: 주문 ${d.orderId}이 orders에 없다`);
+      continue;
+    }
+    if (o.buyerId !== d.buyerId) problems.push(`${d.id} → ${d.orderId}: 구매자가 다르다 (${o.buyerId} ≠ ${d.buyerId})`);
+    if (o.sku !== d.sku) problems.push(`${d.id} → ${d.orderId}: 상품이 다르다 (${o.sku} ≠ ${d.sku})`);
+    const other = seen.get(d.orderId);
+    if (other) problems.push(`주문 ${d.orderId}에 분쟁이 둘이다 (${other}, ${d.id})`);
+    else seen.set(d.orderId, d.id);
+  }
+  return problems;
+}
 
 // ── 계약(`src/types.ts` 8부)과 스키마가 같은 모양인지 컴파일 단계에서 확인한다 ──
 type Assert<T extends true> = T;
