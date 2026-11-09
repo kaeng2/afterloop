@@ -1049,3 +1049,177 @@ describe('T031: 100%만 있는 약속', () => {
     expect(check.ok).toBe(false);
   });
 });
+
+// ───────────────────── T031 재시도 (검증 보고서 2026-11-10 00:40 KST의 문제 1·2·3) ─────────────────────
+
+/** 검증 보고서가 "자리표시자는 그대로 둔 채 금액 문장을 덧붙이면 통과한다"고 적은 운반 문장. */
+const CARRIER_DRAFT = 'I refunded {{refundAmount}} to you today. It usually shows up within 3 to 5 business days.';
+const CARRIER_BODY = '지호 님, 오늘 {{refundAmount}}을 환불해 드렸습니다. 보통 영업일 기준 3~5일 안에 표시됩니다.';
+
+/** 덧붙인 문장만 바꿔 검사한다 (자리표시자 개수는 그대로이므로 `missing`·`extra`가 비어 있다). */
+function appended(sentence: string) {
+  return checkTokens(CARRIER_DRAFT, `${CARRIER_BODY} ${sentence}`, []);
+}
+
+/**
+ * **문제 1: 띄어 쓴 금액 + 조사 `이`·`만`·`과`.** 검증 보고서의 12문장 그대로.
+ * 기준 코드(`d9f626f`)는 모두 막았고 T031 1차에서 통과하게 됐다.
+ */
+const SPACED_AMOUNT_BLOCKED = [
+  '오늘 삼만 원이 환불됩니다.',
+  '이만 사천 원이 환불될 예정입니다.',
+  '이번에는 삼만 원만 환불해 드립니다.',
+  '삼만 원과 배송비를 함께 돌려 드립니다.',
+  '24 불이 환불됩니다.',
+  '24 불만 환불해 드립니다.',
+  '24 불과 배송비를 돌려 드립니다.',
+  '24,000 원이 환불됩니다.',
+  '24000 원만 환불해 드립니다.',
+  '2만 원이 환불됩니다.',
+  '만 원이 환불됩니다.',
+  '2만 4천 원이 환불됩니다.',
+  // 지시서가 더 든 꼴
+  '24,000 원과 배송비를 돌려 드립니다.',
+  '2만 원만 환불해 드립니다.',
+  '만 원과 배송비를 돌려 드립니다.',
+  '이만 사천 원이 들어갑니다.',
+];
+
+/**
+ * **조사 뒤에 한글이 이어지면 낱말이다.** 검증 보고서가 통과로 확인한 문장과 지시서가 든 낱말
+ * (`원만히`·`불만족`·`원이름`). 한 글자 수사 + `불`(`칠 불`)은 지시서 1항대로 계속 통과한다.
+ */
+const SPACED_WORD_ALLOWED = [
+  '이번 일이 원만히 해결되기를 바랍니다.',
+  '색상이 불만족스러우셨다면 정말 죄송합니다.',
+  '이 제품의 원이름은 그대로 두었습니다.',
+  '고객님이 불이익을 받지 않도록 하겠습니다.',
+  '문의하신 사항이 원만하게 해결되도록 돕겠습니다.',
+  '배송이 불과 3일 만에 끝났습니다.',
+  '택배 기사 불만 접수는 택배사에서 처리합니다.',
+  '혹시 이 불만 사항이 해결되지 않으면 알려 주세요.',
+  '주문 2 불만 사항을 확인했습니다.',
+  '사이즈 1 원만하게 교환해 드리겠습니다.',
+  '만약 원하신다면 반품도 가능합니다.',
+  '교환 만 원하시면 알려 주세요.',
+  '천천히 원하시는 대로 알려 주세요.',
+  '담당 사원이 확인했습니다.',
+  '포근한 이불을 함께 보내드립니다.',
+  '이 원단은 메리노 울 혼방입니다.',
+  '백 퍼센트 울 제품입니다.',
+  '이만 줄이겠습니다. 좋은 하루 보내세요.',
+  // 지시서 1항·4항대로 그대로 두는 꼴 (한 글자 수사 + `불`)
+  '칠 불 정도 차이가 납니다.',
+  '오 불 정도입니다.',
+];
+
+describe('T031 재시도: 띄어 쓴 금액 뒤의 조사 이·만·과', () => {
+  it(`막아야 하는 문장 ${SPACED_AMOUNT_BLOCKED.length}개`, () => {
+    for (const sentence of SPACED_AMOUNT_BLOCKED) {
+      const check = appended(sentence);
+      expect(check.literalFacts, sentence).not.toEqual([]);
+      expect(check.ok, sentence).toBe(false);
+      // 자리표시자를 건드리지 않았으므로 막는 이유는 금액 글자뿐이다
+      expect(check.missing, sentence).toEqual([]);
+      expect(check.extra, sentence).toEqual([]);
+    }
+  });
+
+  it(`통과해야 하는 문장 ${SPACED_WORD_ALLOWED.length}개`, () => {
+    for (const sentence of SPACED_WORD_ALLOWED) {
+      expect(literalsOf(sentence), sentence).toEqual([]);
+      expect(appended(sentence).ok, sentence).toBe(true);
+    }
+  });
+
+  it('조사 바로 뒤가 한글이 아닐 때만 통화의 조사로 본다', () => {
+    expect(literalsOf('오늘 삼만 원이 환불됩니다.')).toEqual(['삼만 원']);
+    expect(literalsOf('이 상품 원이름이 더 깁니다.')).toEqual([]);
+    expect(literalsOf('24 불만 환불해 드립니다.')).toEqual(['24 불만']);
+    expect(literalsOf('색상이 불만족스러우셨다면')).toEqual([]);
+    expect(literalsOf('만 원과 배송비를 돌려 드립니다.')).toEqual(['만 원']);
+  });
+
+  it('한 글자 수 + 띄어쓰기 + 조사는 수량·목록 번호로 본다 (기존 경계 그대로)', () => {
+    expect(literalsOf('주문 2 불만 사항')).toEqual([]);
+    expect(literalsOf('사이즈 1 원만하게')).toEqual([]);
+    expect(literalsOf('24 불만 환불')).toEqual(['24 불만']);
+    expect(literalsOf('2만 원만 환불')).toEqual(['2만 원만']);
+  });
+});
+
+describe('T031 재시도: 긴 입력에서도 검사가 끝난다', () => {
+  /** 정규식 역추적이 터지면 끝나지 않던 입력들 (`{{` + 공백 2만 자에서 멈췄다). */
+  const LONG_INPUTS: [string, string][] = [
+    ['{{ + 공백 5만 자', `{{${' '.repeat(50000)}`],
+    ['⟦ + 글자 5만 자', `⟦${'가'.repeat(50000)}`],
+    ['숫자 5만 자', '1'.repeat(50000)],
+    ['한글 5만 자', '이만 원이 '.repeat(10000)],
+    ['$ + 공백 5만 자', `$${' '.repeat(50000)}`],
+    ['보통 문장 5만 자', '안녕하세요. 주문하신 상품은 통관을 마쳤습니다. 배송은 3~5 영업일 걸립니다. '.repeat(1250)],
+  ];
+
+  for (const [name, text] of LONG_INPUTS) {
+    it(`${name}: 200ms 안에 끝난다`, () => {
+      const started = performance.now();
+      const check = checkTokens(text, text, []);
+      const elapsed = performance.now() - started;
+      expect(typeof check.ok, name).toBe('boolean');
+      expect(elapsed, `${name}: ${elapsed.toFixed(1)}ms`).toBeLessThan(200);
+    });
+  }
+
+  it('자리표시자 이름 양쪽 공백은 길어도 같은 이름으로 센다', () => {
+    const check = checkTokens('{{offerAmount}}', `{{${' '.repeat(50)}offerAmount${' '.repeat(50)}}}`, []);
+    expect(check.missing).toEqual([]);
+    expect(check.extra).toEqual([]);
+  });
+});
+
+describe('T031 재시도: 100% 재료 낱말은 낱말 단위로 본다', () => {
+  /** 낱말 안에 든 `울`·`면`을 재료로 읽으면 약속을 놓친다 (검증 보고서 문제 3). */
+  const PERCENT_PROMISE_MORE = [
+    '서울에 계신 고객님께는 100% 도착합니다.',
+    '원하시면 제가 책임지고 꼭 100% 환불해 드립니다.',
+    '서울까지 100% 도착합니다.',
+    '이 스웨터는 울이지만 100% 환불해 드립니다.',
+  ];
+
+  /** 재료 목록에 더한 낱말 (검증 보고서 문제 2). */
+  const PERCENT_MATERIAL_MORE = [
+    '메리노울 100%입니다.',
+    '램스울 100% 제품입니다.',
+    '코튼 100% 제품입니다.',
+    '100% lambswool',
+    '100 % Schurwolle',
+    'Er besteht zu 100 % aus Schurwolle.',
+    '100% extra fine merino wool',
+    '메리노 울 100%입니다.',
+    '울 100% 소재입니다.',
+  ];
+
+  it(`낱말 안에 든 글자는 재료가 아니다 (${PERCENT_PROMISE_MORE.length}개)`, () => {
+    for (const text of PERCENT_PROMISE_MORE) {
+      expect(checkTokens('nothing here', text, []).newPromises, text).toEqual(['100%']);
+    }
+  });
+
+  it(`재료 목록에 더한 낱말은 약속이 아니다 (${PERCENT_MATERIAL_MORE.length}개)`, () => {
+    for (const text of PERCENT_MATERIAL_MORE) {
+      expect(checkTokens('nothing here', text, []).newPromises, text).toEqual([]);
+    }
+  });
+
+  it('초안의 재료 설명 100%는 전송본의 새 약속을 통과시키지 않는다', () => {
+    expect(checkTokens('It is 100% lambswool.', '램스울 제품입니다. 내일 도착을 보장합니다.', []).newPromises).toEqual([
+      '보장',
+    ]);
+    expect(
+      checkTokens('It is 100% lambswool.', 'Es ist Lammwolle. Wir garantieren die Lieferung morgen.', []).newPromises,
+    ).toEqual(['garantier']);
+  });
+
+  it('초안에 약속으로 쓴 100%가 있으면 전송본의 보장은 그대로 통과한다', () => {
+    expect(checkTokens('I am 100% sure it will arrive.', '내일 도착을 보장합니다.', []).newPromises).toEqual([]);
+  });
+});
