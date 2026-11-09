@@ -163,6 +163,28 @@ describe('추천 고르기', () => {
     expect(rec.best?.move).toBe('fight');
   });
 
+  // T004 검증 "빠진 경계": fight = offer, offer = refund 동점에서도 순서가 지켜지는지 본다.
+  it('fight = offer 동점이면 fight (920¢)', () => {
+    // (1 − p_win)(4800 + 1500) = x·A = 720 → p_win = 1 − 720/6300.
+    // L_fight = 720 + 200 = 920, L_offer = 0.72 × 720 + 0.28 × 720 + 200 = 920
+    const params: Params = { ...P, pWin: { ...P.pWin, B1: 1 - 720 / 6300 } };
+    const rec = recommend(board(), params, R);
+    expect(byMove(rec.all, 'fight')?.expectedLossCents).toBe(920);
+    expect(byMove(rec.all, 'offer')?.expectedLossCents).toBe(920);
+    expect(byMove(rec.all, 'refund')?.expectedLossCents).toBe(5000);
+    expect(rec.best?.move).toBe('fight');
+  });
+
+  it('offer = refund 동점이면 offer (3700¢)', () => {
+    // A = 3500, f = 7650, p_win = 0: L_offer = 0.72 × 525 + 0.28 × 11150 + 200 = 3700 = L_refund
+    const params: Params = { ...P, feeCents: 7650, pWin: { ...P.pWin, B1: 0 } };
+    const rec = recommend(board({ amountCents: 3500 }), params, R);
+    expect(byMove(rec.all, 'offer')?.expectedLossCents).toBe(3700);
+    expect(byMove(rec.all, 'refund')?.expectedLossCents).toBe(3700);
+    expect(byMove(rec.all, 'fight')?.expectedLossCents).toBe(11350);
+    expect(rec.best?.move).toBe('offer');
+  });
+
   it('허용된 수가 없으면 best = null', () => {
     const rec = recommend(board({ allowedMoves: [] }), P, R);
     expect(rec.all).toEqual([]);
