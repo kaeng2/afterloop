@@ -12,9 +12,9 @@
 | ID | 작업 | 레인 | 상태 | 기준 SPEC | 의존 | 완료 기준 · 비고 |
 |---|---|---|---|---|---|---|
 | T000 | 하네스: 계약·인수 테스트·잠금·운영 문서 | 컨트롤 타워 | 완료 | v2.1 | — | AC1~AC14 |
-| T001 | 샌드박스 세팅 (M8): US 비즈니스 + 개인 5, 주문 12·추적 7·분쟁 3, manifest, `sandbox:check` | paypal | 대기 | v2.2 | — | AC13. **1단계**(`.env.example`, check, 요청 ID 61자 확인)는 지금, **2단계**(track, disputes, RUN_SANDBOX=1)는 주문 캡처·분쟁 접수 뒤. `.env` 입력됨 (2026-11-09). `tasks/T001.md` |
+| T001 | 샌드박스 세팅 (M8): US 비즈니스 + 개인 5, 주문 12·추적 7·분쟁 3, manifest, `sandbox:check` | paypal | 보류 | v2.2 | — | **1단계 완료** (병합 2026-11-09 23:15): AC13 오프라인 2개 통과, PayPal 연결 정상, 요청 ID 61자 통과. **2단계**(track, disputes, RUN_SANDBOX=1 AC13 9개)는 주문 12건 결제 승인·캡처와 분쟁 3건 접수 뒤 (사람·브라우저). `reports/T001-impl.md`, `reports/T001-verify.md` |
 | T002 | OAuth 클라이언트 | paypal | 완료 | v2.1 | — | AC14 통과 (14개), 단위 86. 병합 2026-11-09 22:02 (검증 통과 뒤 비밀값·경로 보강 재시도 → 재검증 통과). `reports/T002-impl.md`, `reports/T002-verify.md` |
-| T003 | 분쟁 읽기: 목록·상세 조회 + mapper → `BoardState` | paypal | 대기 | v2.2 | T002 | AC15 (작성 예정). 브랜치 `lane/paypal-client` (`.env` 없이 fixture로). T002 후속 포함 (`client.ts` 제어문자). `check.ts`는 T001이 처음부터 클라이언트로 만든다. `tasks/T003.md` |
+| T003 | 분쟁 읽기: 목록·상세 조회 + mapper → `BoardState` | paypal | 완료 | v2.2 | T002 | 병합 2026-11-09 23:09. 단위 85개 (fixture 기준). 실제 분쟁 3건으로의 확인은 분쟁 접수 뒤. AC15는 작성 예정. `reports/T003-impl.md`, `reports/T003-verify.md` |
 | T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 완료 | v2.1 | — | AC1~3·5·6·8~10 통과 (27개). 병합 2026-11-09 21:24. `reports/T004-impl.md`, `reports/T004-verify.md` |
 | T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 완료 | v2.1 | T004 | AC4, AC10 통과 (5개). 병합 2026-11-09 22:14. 후속(평가와 보드 대조)은 T018에서. `reports/T005-impl.md`, `reports/T005-verify.md` |
 | T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 대기 | v2.2 | — | AC16 (작성 예정). `tasks/T006.md` |
@@ -23,6 +23,7 @@
 | T027 | 실행 보강: 직접 쓴 금액·남은 토큰·빈 메시지 거부, 검증 순서, 영어 문구 | paypal | 완료 | v2.1 | T008 | AC11·AC12 유지 (10개), 단위 130. 병합 2026-11-09 22:26. 남은 다듬기는 P1 (DECISIONS). `reports/T027-impl.md`, `reports/T027-verify.md` |
 | T010 | 사실값 토큰 + 번역 검사 (모든 AI 초안에 적용, 결정 4) | ai | 대기 | v2.2 | — | AC20 (작성 예정). `CheckTokensFn`. `tasks/T010.md` |
 | T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(브라우저 에이전트 승인 뒤 캡처) | paypal | 대기 | v2.2 | T002, T007 | 새 `.env`(Q6, 사람) 필요. Secret은 `.env`에서만 읽고 출력·로그 금지. T001의 `orders`·`capture` 단계를 대신함. `tasks/T026.md` |
+| T029 | 샌드박스 보조: 실제 분쟁 목록 읽기 확인(빈 목록), 주문 12건 상태 확인, 링크 다시 만들기(`--fresh`), `disputes` 단계 수정 | paypal | 진행중 | v2.2 | T001, T003, T026 | 실호출은 조회만. `tasks/T029.md` |
 | T011 | 추적번호 일괄 등록: 주문 상세로 미등록 판정 → `/track` 주문별 반복, 건별 결과 | paypal | 대기 | v2.2 | T002 | AC21 (작성 예정). M3 |
 | T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 완료 | v2.2 | T004 | 병합 2026-11-09 23:00. 가디건 $216 → $44, 합계 $718 → $254 (기획자 공유 필요). **AC22는 Q12 결정 뒤 작성·승인.** `reports/T015-impl.md`, `reports/T015-verify.md` |
 | T028 | 시드 v2.2: 종결 손실 재계산 (합 40800 → 41300¢), `SeedDispute.orderId`, `SeedOrder.date` | data | 완료 | v2.2 | T007 | AC17 통과 (56개). 병합 2026-11-09 22:52. `reports/T028-impl.md`, `reports/T028-verify.md` |
