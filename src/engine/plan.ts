@@ -24,6 +24,8 @@ const ERROR = {
     `planMove: ${move} 평가는 차단되어 있어 계획을 만들 수 없습니다 (${blockedBy})`,
   noApiMove: (move: Evaluation['move']) =>
     `planMove: ${move} 평가에 실행 API가 없어 계획을 만들 수 없습니다 (apiMove: null)`,
+  noExpectedLoss: (move: Evaluation['move']) =>
+    `planMove: ${move} 평가에 기대 손실이 없어 계획을 만들 수 없습니다 (expectedLossCents: null)`,
   apiMoveMismatch: (move: Evaluation['move'], apiMove: string) =>
     `planMove: ${move}는 ${apiMove}로 실행할 수 없습니다 (SPEC 5장 "수 → API")`,
   notThisBoard: (move: Evaluation['move'], apiMove: string, why: string) =>
@@ -124,7 +126,8 @@ function assertEvaluationFromBoard(input: EngineInput, evaluation: Evaluation, a
 
 /**
  * 승인용 실행 계획 1건. params·rules를 넘기지 않으면 config/params.json·config/rules.json을 읽는다.
- * 차단된 평가(`blockedBy`)나 실행 API가 없는 평가(`apiMove: null`), 이 보드의 것이 아닌 평가면 예외를 던진다.
+ * 차단된 평가(`blockedBy`)나 실행 API가 없는 평가(`apiMove: null`), 기대 손실이 없는 평가
+ * (`expectedLossCents: null`), 이 보드의 것이 아닌 평가면 예외를 던진다.
  */
 export const planMove: PlanMoveFn = (board, evaluation, params, rules) => {
   const input = resolveEngineInput(board, params, rules);
@@ -132,6 +135,9 @@ export const planMove: PlanMoveFn = (board, evaluation, params, rules) => {
 
   if (checked.blockedBy !== undefined) throw new Error(ERROR.blocked(checked.move, checked.blockedBy));
   if (checked.apiMove === null) throw new Error(ERROR.noApiMove(checked.move));
+  // 계산되지 않은 수(`expectedLossCents: null`)는 `blockedBy`가 없어도 계획을 만들지 않는다
+  // (T018 검증 보고 "발견한 문제" 1. 값의 크기는 대조하지 않는다 — 그 이유는 위 함수 주석).
+  if (checked.expectedLossCents === null) throw new Error(ERROR.noExpectedLoss(checked.move));
   assertEvaluationFromBoard(input, checked, checked.apiMove);
 
   const parts = {

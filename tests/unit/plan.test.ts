@@ -170,6 +170,22 @@ describe('평가가 이 보드의 것인지 확인한다 (T018)', () => {
     }
   });
 
+  it('기대 손실이 없는 평가(expectedLossCents: null)는 blockedBy가 없어도 예외 (T018 검증 1)', () => {
+    const b = board();
+    const noLoss: Evaluation = { ...handMadeOffer, expectedLossCents: null };
+    expect(noLoss.blockedBy).toBeUndefined();
+    expect(() => planMove(b, noLoss, P, R)).toThrow(/expectedLossCents: null/);
+    // 수가 바뀌어도 같다 (refund·fight도 계획이 나오지 않는다)
+    expect(() => planMove(b, { ...evaluationFor(b, 'refund'), expectedLossCents: null }, P, R)).toThrow(/기대 손실/);
+    expect(() => planMove(b, { ...evaluationFor(b, 'fight'), expectedLossCents: null }, P, R)).toThrow(/기대 손실/);
+  });
+
+  it('기대 손실이 0인 평가는 막지 않는다 (null만 막는다)', () => {
+    const b = board();
+    const zeroLoss: Evaluation = { ...evaluationFor(b, 'refund'), expectedLossCents: 0 };
+    expect(planMove(b, zeroLoss, P, R).amountCents).toBe(4800);
+  });
+
   it('가정값만 다른 평가(낡은 평가)는 막지 않는다 — 금액은 지금 가정값 기준 (AC4)', () => {
     const b = board();
     const atPolicyRate = evaluationFor(b, 'offer');
