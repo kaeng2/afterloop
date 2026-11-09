@@ -128,6 +128,79 @@ describe('계획을 만들 수 없는 평가는 예외', () => {
   });
 });
 
+describe('평가가 이 보드의 것인지 확인한다 (T018)', () => {
+  /** 보드와 상관없이 손으로 만든 "정상" offer 평가 (화면이 직접 만들어 넘기는 경우) */
+  const handMadeOffer: Evaluation = {
+    move: 'offer',
+    apiMove: 'make_offer',
+    expectedLossCents: 1953,
+    branches: [],
+  };
+
+  it('제안 대상이 아닌 유형(A1)에 다른 보드의 offer 평가를 넘기면 예외', () => {
+    const a1 = board({ cause: { subtype: 'A1', confidence: 0.9, evidence: [], needsReview: false, source: 'llm' } });
+    const fromB1 = evaluationFor(board(), 'offer');
+    expect(() => planMove(a1, fromB1, P, R)).toThrow(/OFFER_SCOPE/);
+    expect(() => planMove(a1, handMadeOffer, P, R)).toThrow(/보드의 것이 아님/);
+  });
+
+  it('원인이 없는 보드에 손으로 만든 평가를 넘기면 예외 (NO_CAUSE)', () => {
+    const noCause = board({ cause: undefined });
+    expect(() => planMove(noCause, handMadeOffer, P, R)).toThrow(/NO_CAUSE/);
+  });
+
+  it('allowedMoves에 없는 수의 평가를 넘기면 예외', () => {
+    const noOffer = board({ allowedMoves: ['send_message', 'accept_claim'] });
+    expect(() => planMove(noOffer, handMadeOffer, P, R)).toThrow(/보드의 것이 아님/);
+    const none = board({ allowedMoves: [] });
+    expect(() => planMove(none, evaluationFor(board(), 'refund'), P, R)).toThrow(/보드의 것이 아님/);
+  });
+
+  it('이 보드의 실행 API와 다른 평가를 넘기면 예외 (provide_evidence vs send_message)', () => {
+    const evidence = board({ allowedMoves: ['provide_evidence', 'send_message'] });
+    const fight = evaluationFor(evidence, 'fight');
+    expect(fight.apiMove).toBe('provide_evidence');
+    expect(() => planMove(board(), fight, P, R)).toThrow(/send_message/);
+  });
+
+  it('같은 보드에서 recommend가 만든 평가는 그대로 계획이 된다', () => {
+    const b = board();
+    for (const move of ['fight', 'offer', 'refund'] as const) {
+      expect(() => planMove(b, evaluationFor(b, move), P, R)).not.toThrow();
+    }
+  });
+
+  it('가정값만 다른 평가(낡은 평가)는 막지 않는다 — 금액은 지금 가정값 기준 (AC4)', () => {
+    const b = board();
+    const atPolicyRate = evaluationFor(b, 'offer');
+    const raised: Params = { ...P, offerRate: 0.2 };
+    // 기대 손실은 가정값에 따라 달라지지만(1953 ≠ 2126), 계획 금액은 지금 가정값으로 다시 계산한다.
+    expect(atPolicyRate.expectedLossCents).not.toBe(evaluationFor(b, 'offer', raised).expectedLossCents);
+    expect(planMove(b, atPolicyRate, raised, R).amountCents).toBe(960);
+  });
+});
+
+describe('0¢ 제안 계획은 만들지 않는다 (T018)', () => {
+  it('제안률이 0이면 예외', () => {
+    const b = board();
+    const params: Params = { ...P, offerRate: 0 };
+    expect(() => planMove(b, evaluationFor(b, 'offer', params), params, R)).toThrow(/0¢/);
+  });
+
+  it('분쟁 금액이 너무 작아 x·A가 0¢로 사사오입되면 예외', () => {
+    const tiny = board({ amountCents: 3 }); // 3 × 0.15 = 0.45¢ → 0¢
+    expect(() => planMove(tiny, evaluationFor(tiny, 'offer'), P, R)).toThrow(/0¢/);
+    const justEnough = board({ amountCents: 4 }); // 0.6¢ → 1¢
+    expect(planMove(justEnough, evaluationFor(justEnough, 'offer'), P, R).amountCents).toBe(1);
+  });
+
+  it('금액이 0인 보드의 환불·다투기 계획은 막지 않는다 (제안만 본다)', () => {
+    const zero = board({ amountCents: 0 });
+    expect(planMove(zero, evaluationFor(zero, 'refund'), P, R).amountCents).toBe(0);
+    expect(planMove(zero, evaluationFor(zero, 'fight'), P, R).amountCents).toBeNull();
+  });
+});
+
 describe('입력 검증 (recommend와 같은 zod)', () => {
   it('제안률이 한도(0.20)를 넘으면 ZodError', () => {
     const b = board();
