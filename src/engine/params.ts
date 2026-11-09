@@ -47,8 +47,9 @@ const subtypeSchema = z.enum(SUBTYPES);
 const categorySchema = z.enum(['A', 'B', 'C', 'D', 'E', 'F']);
 const channelSchema = z.enum(['INTERNAL', 'EXTERNAL']);
 const stageSchema = z.enum(['INQUIRY', 'CHARGEBACK', 'PRE_ARBITRATION', 'ARBITRATION']);
-const apiMoveSchema = z.enum(['send_message', 'make_offer', 'provide_evidence', 'accept_claim']);
-const moveSchema = z.enum(['fight', 'offer', 'refund']);
+/** 실행 API와 수 (`plan.ts`의 평가 검증도 같은 스키마를 쓴다). */
+export const apiMoveSchema = z.enum(['send_message', 'make_offer', 'provide_evidence', 'accept_claim']);
+export const moveSchema = z.enum(['fight', 'offer', 'refund']);
 
 /** 기대 손실 가정값 (SPEC 5장). pWin은 16개 유형 전부, pWinWithTracking은 일부만 있어도 된다. */
 export const ParamsSchema = z.object({

@@ -28,11 +28,28 @@ function ordinal(n: number): string {
   return `${n}${suffix}`;
 }
 
-/** 악용 의심 로그에 붙는 근거 (반복 미수령 주장 + 배송 완료 기록). */
+/** 미수령(INR) 분쟁인지. PayPal reason 문자열로 본다 (MERCHANDISE_OR_SERVICE_NOT_RECEIVED). */
+function isNotReceived(board: BoardState): boolean {
+  return board.reason.includes('NOT_RECEIVED');
+}
+
+/**
+ * 악용 의심 로그에 붙는 근거. 보드에 있는 사실만 적는다 (T004 검증 2번).
+ * - F1(반복 미수령 주장): 이번 분쟁도 미수령이면 "몇 번째 주장"으로, 아니면 이전 분쟁 수로 적는다.
+ *   배송 완료 기록이 있을 때만 "with delivery proof"를 붙인다.
+ * - F2(부분 환불 노림): 미수령 주장과 무관하므로 유형에 맞는 문구를 쓴다.
+ * - 그 밖의 유형(규칙 설정으로 F 외 대분류를 건너뛰게 한 경우): 근거를 붙이지 않는다.
+ */
 function abuseDetail(board: BoardState, rules: PolicyConfig): string {
-  const repeated = board.buyerPriorInrDisputes >= rules.abuse.minPriorInrDisputes;
-  if (!repeated || !board.hasDeliveredTracking) return '';
-  return ` (${ordinal(board.buyerPriorInrDisputes + 1)} "not received" claim with delivery proof)`;
+  const subtype = board.cause?.subtype;
+  if (subtype === 'F2') return ' (the cause check flagged a partial-refund pattern)';
+  if (subtype !== 'F1') return '';
+
+  if (board.buyerPriorInrDisputes < rules.abuse.minPriorInrDisputes) return '';
+  const proof = board.hasDeliveredTracking ? ' with delivery proof' : '';
+  return isNotReceived(board)
+    ? ` (${ordinal(board.buyerPriorInrDisputes + 1)} "not received" claim${proof})`
+    : ` (${board.buyerPriorInrDisputes} earlier "not received" disputes from this buyer${proof})`;
 }
 
 /** 분쟁 1건의 오토파일럿 판정. `best`는 추천 수 (없으면 null). */

@@ -33,6 +33,14 @@ export function pWinFor(board: BoardState, params: Params): number | null {
   return params.pWin[subtype];
 }
 
+/**
+ * 부분 환불 제안 금액 x·A (센트 정수). 화면의 기대 손실(`offerLoss`)과 실제로 PayPal에 보내는
+ * 계획(`planMove`의 `amountCents`)이 같은 금액을 쓰도록, 금액 계산은 이 함수 하나로만 한다.
+ */
+export function offerAmountCents(board: BoardState, params: Params): number {
+  return roundCents(params.offerRate * board.amountCents);
+}
+
 /** 수 하나의 기대 손실과 트리 분기 (SPEC 5장). */
 export type MoveLoss = { expectedLossCents: number; branches: Branches };
 
@@ -62,7 +70,7 @@ export function offerLoss(board: BoardState, params: Params, pWin: number): Move
   const f = params.feeCents;
   const t = params.timeCostCents;
   const pAcc = params.pAccept;
-  const offerCents = roundCents(params.offerRate * a);
+  const offerCents = offerAmountCents(board, params);
   return {
     expectedLossCents: roundCents(pAcc * offerCents + (1 - pAcc) * (1 - pWin) * (a + f) + t),
     branches: [

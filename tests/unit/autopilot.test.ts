@@ -119,6 +119,12 @@ describe('로그 문구 (영어 한 문장, 숫자는 코드가 채운다)', () 
     board({ cause: undefined }),
     board({ cause: { subtype: 'B1', confidence: 0.69, evidence: [], needsReview: true, source: 'llm' } }),
     board({ allowedMoves: [] }),
+    board({
+      hasDeliveredTracking: true,
+      buyerPriorInrDisputes: 2,
+      cause: { subtype: 'F2', confidence: 0.9, evidence: [], needsReview: false, source: 'llm' },
+    }),
+    { ...F1_BOARD, reason: 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED' },
   ];
 
   it('모두 영어 한 문장으로 끝난다', () => {
@@ -143,6 +149,66 @@ describe('로그 문구 (영어 한 문장, 숫자는 코드가 채운다)', () 
 
   it('반복 미수령 주장은 몇 번째인지와 배송 기록을 적는다 (이전 2건 → 3rd)', () => {
     expect(recommend(F1_BOARD, P, R).autopilot.reason).toContain('3rd "not received" claim with delivery proof');
+  });
+
+  // T004 검증 2번: F1·미수령 분쟁이 아닌 건에 "3번째 미수령 주장"이라고 쓰면 사실과 다르다.
+  it('F2는 미수령 주장 문구를 쓰지 않고 유형에 맞는 문구를 쓴다', () => {
+    const b = board({
+      hasTracking: true,
+      hasDeliveredTracking: true,
+      buyerPriorInrDisputes: 2,
+      cause: { subtype: 'F2', confidence: 0.9, evidence: [], needsReview: false, source: 'llm' },
+    });
+    const { reason, rule, verdict } = recommend(b, P, R).autopilot;
+    expect(rule).toBe('suspected_abuse');
+    expect(verdict).toBe('skipped');
+    expect(reason).toContain('F2');
+    expect(reason).toContain('partial-refund');
+    expect(reason).not.toContain('not received');
+    expect(reason).not.toContain('3rd');
+  });
+
+  it('F1이지만 미수령 분쟁이 아니면 "몇 번째 주장" 대신 이전 분쟁 수를 적는다', () => {
+    const b = board({
+      reason: 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED',
+      hasTracking: true,
+      hasDeliveredTracking: true,
+      buyerPriorInrDisputes: 2,
+      cause: { subtype: 'F1', confidence: 1, evidence: [], needsReview: false, source: 'rule' },
+    });
+    const { reason, rule } = recommend(b, P, R).autopilot;
+    expect(rule).toBe('suspected_abuse');
+    expect(reason).toContain('2 earlier "not received" disputes from this buyer with delivery proof');
+    expect(reason).not.toContain('3rd');
+  });
+
+  it('F1인데 이전 미수령 분쟁이 기준 미만이면 근거를 붙이지 않는다', () => {
+    const b = board({
+      reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED',
+      cause: { subtype: 'F1', confidence: 1, evidence: [], needsReview: false, source: 'rule' },
+    });
+    const { reason, rule } = recommend(b, P, R).autopilot;
+    expect(rule).toBe('suspected_abuse');
+    expect(reason).toBe('Skipped: cause F1 is suspected abuse, so autopilot never acts on this dispute.');
+  });
+
+  it('배송 완료 기록이 없으면 배송 기록을 근거로 적지 않는다', () => {
+    const b = board({
+      reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED',
+      buyerPriorInrDisputes: 3,
+      cause: { subtype: 'F1', confidence: 1, evidence: [], needsReview: false, source: 'rule' },
+    });
+    const { reason } = recommend(b, P, R).autopilot;
+    expect(reason).toContain('4th "not received" claim)');
+    expect(reason).not.toContain('delivery proof');
+  });
+
+  it('F 외 대분류를 건너뛰게 설정해도 악용 근거 문구를 붙이지 않는다', () => {
+    const rules: PolicyConfig = { ...R, autopilot: { ...R.autopilot, skipCategories: ['B'] } };
+    const b = board({ hasDeliveredTracking: true, buyerPriorInrDisputes: 2 });
+    const { reason, rule } = recommend(b, P, rules).autopilot;
+    expect(rule).toBe('suspected_abuse');
+    expect(reason).toBe('Skipped: cause B1 is suspected abuse, so autopilot never acts on this dispute.');
   });
 
   it('원인이 없으면 유형 확인을 요청한다', () => {
