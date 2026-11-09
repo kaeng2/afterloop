@@ -22,7 +22,7 @@
 | T008 | 실행 `executeMove` | paypal | 완료 | v2.1 | — | AC11, AC12 통과 (10개). 병합 2026-11-09 21:57. `reports/T008-impl.md`, `reports/T008-verify.md` |
 | T027 | 실행 보강: 직접 쓴 금액·남은 토큰·빈 메시지 거부, 검증 순서, 영어 문구 | paypal | 완료 | v2.1 | T008 | AC11·AC12 유지 (10개), 단위 130. 병합 2026-11-09 22:26. 남은 다듬기는 P1 (DECISIONS). `reports/T027-impl.md`, `reports/T027-verify.md` |
 | T010 | 사실값 토큰 + 번역 검사 (모든 AI 초안에 적용, 결정 4) | ai | 대기 | v2.2 | — | AC20 (작성 예정). `CheckTokensFn`. `tasks/T010.md` |
-| T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(브라우저 에이전트 승인 뒤 캡처) | paypal | 대기 | v2.2 | T002, T007 | 새 `.env`(Q6, 사람) 필요. Secret은 `.env`에서만 읽고 출력·로그 금지. T001의 `orders`·`capture` 단계를 대신함. `tasks/T026.md` |
+| T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(승인 뒤 캡처) | paypal | 완료 | v2.2 | T002, T007 | 병합 2026-11-09 23:33. 주문 12건 생성(201 × 12), 링크 12개 모두 sandbox. **캡처는 아직 실행 안 함** (사람 승인 뒤). 주문은 만든 지 3시간쯤 지나면 만료될 수 있어 아침에 링크를 다시 만들어야 할 수 있음. `reports/T026-impl.md`, `reports/T026-verify.md` |
 | T029 | 샌드박스 보조: 실제 분쟁 목록 읽기 확인(빈 목록), 주문 12건 상태 확인, 링크 다시 만들기(`--fresh`), `disputes` 단계 수정 | paypal | 진행중 | v2.2 | T001, T003, T026 | 실호출은 조회만. `tasks/T029.md` |
 | T011 | 추적번호 일괄 등록: 주문 상세로 미등록 판정 → `/track` 주문별 반복, 건별 결과 | paypal | 대기 | v2.2 | T002 | AC21 (작성 예정). M3 |
 | T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 완료 | v2.2 | T004 | 병합 2026-11-09 23:00. 가디건 $216 → $44, 합계 $718 → $254 (기획자 공유 필요). **AC22는 Q12 결정 뒤 작성·승인.** `reports/T015-impl.md`, `reports/T015-verify.md` |
