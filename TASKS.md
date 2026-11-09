@@ -25,7 +25,7 @@
 | T031 | 토큰 검사 다듬기: 한국어 정상 문장이 금액으로 잡히는 오탐, 자리표시자 속 개인통관고유부호 가림, `100%` 약속 기준 | ai | 진행중 | v2.2 | T010 | T010 재검증 후속. `tasks/T031.md` |
 | T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(승인 뒤 캡처) | paypal | 완료 | v2.2 | T002, T007 | 병합 2026-11-09 23:33. 주문 12건 생성(201 × 12), 링크 12개 모두 sandbox. **캡처는 아직 실행 안 함** (사람 승인 뒤). 주문은 만든 지 3시간쯤 지나면 만료될 수 있어 아침에 링크를 다시 만들어야 할 수 있음. `reports/T026-impl.md`, `reports/T026-verify.md` |
 | T029 | 샌드박스 보조: 실제 분쟁 목록 읽기 확인(빈 목록), 주문 12건 상태 확인, 링크 다시 만들기(`--fresh`), `disputes` 단계 수정 | paypal | 완료 | v2.2 | T001, T003, T026 | 병합 2026-11-09 23:51. 실제 샌드박스에서 분쟁 0건(빈 목록) 확인, 주문 12건 모두 CREATED (만든 지 20분 뒤). `reports/T029-impl.md`, `reports/T029-verify.md` |
-| T030 | 주문 스크립트 보호: 캡처·승인된 주문을 덮어쓰지 않게, `--` 빠진 실행 막기, 캡처 결과 구분 | paypal | 진행중 | v2.2 | T026, T029 | 실호출 없음 (단위 테스트만). `tasks/T030.md` |
+| T030 | 주문 스크립트 보호: 캡처·승인된 주문을 덮어쓰지 않게, `--` 빠진 실행 막기, 캡처 결과 구분 | paypal | 완료 | v2.2 | T026, T029 | 병합 2026-11-10 00:28. 실호출 0회. 실제 manifest 사본 + 가짜 PayPal 확인 369개. 아침 실행 순서는 `reports/T030-verify.md`. `reports/T030-impl.md` |
 | T011 | 추적번호 일괄 등록: 주문 상세로 미등록 판정 → `/track` 주문별 반복, 건별 결과 | paypal | 대기 | v2.2 | T002 | AC21 (작성 예정). M3 |
 | T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 완료 | v2.2 | T004 | 병합 2026-11-09 23:00. 가디건 $216 → $44, 합계 $718 → $254 (기획자 공유 필요). **AC22는 Q12 결정 뒤 작성·승인.** `reports/T015-impl.md`, `reports/T015-verify.md` |
 | T028 | 시드 v2.2: 종결 손실 재계산 (합 40800 → 41300¢), `SeedDispute.orderId`, `SeedOrder.date` | data | 완료 | v2.2 | T007 | AC17 통과 (56개). 병합 2026-11-09 22:52. `reports/T028-impl.md`, `reports/T028-verify.md` |
