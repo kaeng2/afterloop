@@ -18,7 +18,7 @@
 | T004 | 엔진: 기대 손실·추천·오토파일럿 판정 | engine | 완료 | v2.1 | — | AC1~3·5·6·8~10 통과 (27개). 병합 2026-11-09 21:24. `reports/T004-impl.md`, `reports/T004-verify.md` |
 | T005 | 엔진: 실행 계획 `planMove` + 제안률 정책 검증 | engine | 대기 | v2.1 | T004 | AC4, AC10. T004 검증에서 나온 로그 문구 수정 포함. `tasks/T005.md` |
 | T006 | 원인 분류: 규칙 우선 + LLM (16개 세부 유형) | ai | 대기 | v2.1 | — | AC16 (작성 예정). `tasks/T006.md` |
-| T007 | 시드 데이터 (원문 6장) | data | 대기 | v2.1 | — | AC17 (작성 예정). **1순위.** `tasks/T007.md` |
+| T007 | 시드 데이터 (원문 6장) | data | 완료 | v2.1 | — | 병합 2026-11-09 21:41 (1차 검증 실패 → 재시도 통과). 단위 38개. **AC17은 Q10 결정 뒤 작성·승인.** `reports/T007-impl.md`, `reports/T007-verify.md` |
 | T008 | 실행 `executeMove` | paypal | 대기 | v2.1 | — | AC11, AC12. **2순위.** v2 변경 없음. 브랜치 `lane/paypal-exec`. `tasks/T008.md` |
 | T010 | 사실값 토큰 + 번역 검사 (모든 AI 초안에 적용, 결정 4) | ai | 대기 | v2.1 | — | AC20 (작성 예정). `CheckTokensFn` |
 | T026 | 샌드박스 주문 생성·캡처 스크립트: `scripts/create-sandbox-orders.ts`(시드 주문 12건 → Orders v2 create, 승인 링크를 `reports/sandbox-approve-links.md`에) + `scripts/capture-sandbox-orders.ts`(브라우저 에이전트 승인 뒤 캡처) | paypal | 대기 | v2.1 | T002, T007 | 새 `.env`(Q6, 사람) 필요. Secret은 `.env`에서만 읽고 출력·로그 금지. T001의 `orders`·`capture` 단계를 대신함. `tasks/T026.md` |
