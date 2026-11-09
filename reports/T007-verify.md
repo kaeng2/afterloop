@@ -134,3 +134,118 @@
 5. **분쟁 ↔ 주문 연결과 주문 날짜** (문제 2): `SeedDispute`에 `orderId`, `SeedOrder`에 `date`를 넣을지. 둘 다 계약 변경이다. S3·S5가 필요로 하는지에 따라.
 6. **원문 안의 숫자 불일치 (구현 선택 아님, 알림)**: 4-1 "객단가 약 $52"인데 6-1의 가격 × 주문 수(62·48·33·71)로는 합 $15,154, 주문당 평균 $70.81이다. 시드는 6-1을 따랐다. 화면이나 대본에 객단가를 쓴다면 어느 쪽 숫자인지 정해야 한다.
 7. (구현 보고서에서 넘어온 것) `seed/index.ts`를 화면·테스트의 공식 입구로 둘지. 지시서에 없던 파일이지만 `seed/` 안이라 범위 위반은 아니다. 읽기 + zod 검증만 하고 계산은 없다.
+
+## 재검증 (2026-11-09 21:39 KST)
+- 판정: **통과**   (기준: 1차 차단 문제 해소 + 완료 기준 충족 + 회귀 없음. 결정 대기 2~7번과 AC17은 제외)
+- 검증 대상: lane/data `42fc68a` (재시도 커밋 `bc6ec7d` 시드·테스트, `42fc68a` 구현 보고서. 범위 `19a42c2..HEAD`. main `83a159b`, 병합 기준 `c3af7e7`) · 기준 SPEC v2.1 (`SPEC.md` 첫 줄 `# SPEC v2.1 (2026-11-09 21:02 KST)` 확인)
+- 검증 방법: 구현의 테스트를 믿지 않고, `tasks/T001.md` 배정 표와 원문 `inbox/2026-11-09-prd-v2.md` 6-1~6-4 표를 **파일에서 직접 파싱**해 `seed/*.json`과 비교하는 스크립트를 worktree 밖에 따로 만들어 돌렸다 (구매자는 ID를 손으로 적지 않고 `buyers.json`의 이름으로 찾았다). 구현 보고서 "재시도" 절은 마지막에 대조했다.
+
+### 실행한 명령과 결과
+| 명령 | 통과 | 실패 | 비고 |
+|---|---|---|---|
+| `git diff --name-only main...HEAD` | — | — | 14개 파일: `package.json`, `reports/T007-impl.md`, `reports/T007-verify.md`, `seed/` 10개, `tests/unit/seed.test.ts`. 모두 지시서 "수정 가능 폴더" + 보고서 2개 안 |
+| `git diff --name-only main...HEAD -- src tests/acceptance SPEC.md config tasks TASKS.md DECISIONS.md CLAUDE.md README.md docs inbox` | — | — | 0줄. 계약·지시서 변경 없음 |
+| `git diff main...HEAD -- package.json` | — | — | `"seed": "tsx seed/generate.ts"` 한 줄 추가뿐 (1차와 같음) |
+| `git diff --stat 19a42c2..HEAD` | — | — | 6개 파일: `seed/data.ts`, `seed/orders.json`, `seed/inquiries.json`, `seed/README.md`, `tests/unit/seed.test.ts`, `reports/T007-impl.md`. `buyers.json`·`disputes.json`·`products.json`·`schemas.ts`·`generate.ts`·`index.ts`는 재시도에서 바뀌지 않음 |
+| `npm test` | 104 | 0 | `seed.test.ts` 38 (1차 33 → 38) + 병합으로 들어온 다른 레인 66 (oracle 26 · recommend 23 · autopilot 17) |
+| `npx tsc --noEmit` | — | 4줄 (모두 다른 레인) | `tests/acceptance/*`의 TS2307 (`@/engine/plan`, `@/engine/escalation`, `@/exec/execute`, `@/paypal/client`). `seed/`, `tests/unit/` 오류 0 |
+| `npm run seed` 1회차 · 2회차 | 종료 코드 0 · 0 | — | 요약: 4 · 12 · 31 · 9 · 214, 종결 손실 합 40800¢, 추적 128 / 214 (59.8%). 두 번 출력 같음 |
+| `shasum -a 256 seed/*.json` (실행 전 · 1회 뒤 · 2회 뒤) | 동일 | — | 5개 파일 해시가 세 시점 모두 같다 |
+| `git status -s`, `git diff --stat` (seed 2회 뒤) | 빈 출력 | — | 추적 파일 변경 없음. 되돌리기 필요 없었음 |
+| `grep -nE 'Math\.random\|Date\.now\|new Date\(\)\|fetch\(\|anthropic\|openai\|LLM\|process\.env\|crypto' seed/*.ts` | — | — | 2줄, 둘 다 주석 ("`Math.random`을 쓰지 않고…", "LLM을 쓰지 않는다"). import는 `node:fs`, `node:path`, `zod`, `@/types`(타입만), 자기 폴더 파일뿐 |
+| 개인정보 grep (`seed/*.json`) | — | — | `@` 0건, `P`+숫자 12자리 0건, 9자리 이상 숫자 0건, 전화 형태 0건. 5자리 숫자는 금액 `18900`·`19700`뿐. "통관고유부호"·"address"는 원문 6-2 역할 칸과 6-3 문의 문장 속 낱말로만 나온다 (1차와 같음) |
+| `npx eslint seed tests/unit` (참고) | 오류 0 | — | |
+| `npm run test:acceptance` (참고) | 27 (+9 건너뜀) | 2 + 파일 4개 수집 실패 | 수집 실패 4개는 다른 레인 모듈 없음, 실패 2건은 AC13의 `.env.example` (T001 몫). `seed/`를 읽는 인수 테스트 없음. AC17 없음 |
+| 변형 사본으로 새 테스트 확인 (worktree 밖 사본, `node_modules`만 심볼릭 링크) | — | — | 사본의 `orders.json`에서 건수는 그대로 두고 O06·O07 상품을 맞바꾸고 O02 등록 · O09 미등록으로 바꾸면(1차 문제와 같은 종류) 38건 중 3건 실패: 새 "12행 … 표와 같다", 새 "추적 등록 7건 … 목록과 같다", 기존 "파일이 buildSeed() 결과와 같다". 1차의 건수 테스트는 그대로 통과 → 새 테스트가 행별 차이를 실제로 잡는다. worktree는 건드리지 않았다 |
+
+### T001 표 대조 (12행)
+표 값은 `tasks/T001.md` "주문 12건 배정" 표에서 파싱, 시드 값은 `seed/orders.json`의 `source: 'sandbox'` 12건. 구매자 ID는 `seed/buyers.json`에서 이름으로 찾았다 (seoyeon → 김서연 B01, jiho → 박지호 B02, yuki → Yuki T. B03, lena → Lena K. B05, buyer_m → buyer_m*** B04. 5명 모두 `sandbox: true`).
+
+| 키 | T001 표: 구매자 / 상품 / 추적 | 시드: 구매자 / SKU / 금액(¢) / 추적 | 일치 |
+|---|---|---|---|
+| O01 | seoyeon / Wool Sweater, Navy $72 / 등록 | B01 김서연 / FK-SW-NV / 7200 / 등록 | ✅ |
+| O02 | jiho / Knit Cardigan, Oat $48 / 미등록 | B02 박지호 / FK-CD-OAT / 4800 / 미등록 | ✅ |
+| O03 | yuki / Knit Cardigan, Oat $48 / 미등록 | B03 Yuki T. / FK-CD-OAT / 4800 / 미등록 | ✅ |
+| O04 | yuki / Wool Sweater, Navy $72 / 미등록 | B03 Yuki T. / FK-SW-NV / 7200 / 미등록 | ✅ |
+| O05 | yuki / Beanie + Scarf Set $35 / 미등록 | B03 Yuki T. / FK-BN-SET / 3500 / 미등록 | ✅ |
+| O06 | lena / Beanie + Scarf Set $35 / 등록 | B05 Lena K. / FK-BN-SET / 3500 / 등록 | ✅ |
+| O07 | lena / Knit Cardigan, Oat $48 / 미등록 | B05 Lena K. / FK-CD-OAT / 4800 / 미등록 | ✅ |
+| O08 | buyer_m / Beanie + Scarf Set $35 / 등록 | B04 buyer_m*** / FK-BN-SET / 3500 / 등록 | ✅ |
+| O09 | buyer_m / Beanie + Scarf Set $35 / 등록 | B04 buyer_m*** / FK-BN-SET / 3500 / 등록 | ✅ |
+| O10 | buyer_m / Beanie + Scarf Set $35 / 등록 | B04 buyer_m*** / FK-BN-SET / 3500 / 등록 | ✅ |
+| O11 | buyer_m / Beanie + Scarf Set $35 / 등록 | B04 buyer_m*** / FK-BN-SET / 3500 / 등록 | ✅ |
+| O12 | buyer_m / Knit Cardigan, Oat $48 / 등록 | B04 buyer_m*** / FK-CD-OAT / 4800 / 등록 | ✅ |
+
+- 12행 모두 일치 (1차 불일치 8행 O02·O03·O05·O06·O07·O09·O11·O12 해소). 파일 안 순서도 O01~O12로 표와 같다. 주문 국가는 구매자 국가와 같다 (KR·KR·JP×3·DE×2·US×5).
+- 추적 목록: 표 "등록 7 (O01, O06, O08~O12) · 미등록 5 (O02~O05, O07)" = 시드 등록 O01·O06·O08·O09·O10·O11·O12, 미등록 O02·O03·O04·O05·O07.
+- 분쟁 칸: D2(O01) = `disputes.json` D2 B01 · FK-SW-NV · `MERCHANDISE_OR_SERVICE_NOT_RECEIVED` / D1(O02) = D1 B02 · FK-CD-OAT · `MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED` / D3(O08) = D3 B04 · FK-BN-SET · `MERCHANDISE_OR_SERVICE_NOT_RECEIVED`. 셋 다 `sandbox` · `open` · `lossCents: null`. 모순 없음.
+- `seed/README.md` "T001과 맞물리는 부분" 표도 12행이 T001 표와 같다 (1차에서 사실과 달랐던 문장은 "배정의 정본은 `tasks/T001.md`"로 바뀜).
+
+### 회귀 확인
+직접 센 값이다.
+
+| 항목 | 기대 | 실제 | 일치 |
+|---|---|---|---|
+| 건수 | 상품 4 · 구매자 12 · 문의 31 · 분쟁 9 · 주문 214 | 4 · 12 · 31 · 9 · 214 | ✅ |
+| 주문 상품별 | 62 · 48 · 33 · 71 | FK-CD-OAT 62 · FK-SW-NV 48 · FK-CT-GR 33 · FK-BN-SET 71 | ✅ |
+| 주문 출처 | 샌드박스 12 + 시드 202 | 12 + 202. ID 중복 없음. 금액 214건 모두 상품 가격 | ✅ |
+| 추적 등록 | 약 60% | 128 / 214 = 59.81% (샌드박스 7 + 6-2 시드 구매자 7 + `X…` 114) | ✅ |
+| 국가 (결정 2 대기, 참고) | — | US 95 · KR 53 · JP 31 · DE 31 · GB 4 (1차와 같음) | — |
+| 종결 손실 | 5600 · 5600 · 5600 · 4300 · 0 · 19700 = 40800 | D4~D9 같음, 합 40800. 모두 `seed` · `closed` | ✅ |
+| 진행 중 3건 | D1~D3 sandbox / open / null | 같음 | ✅ |
+| 원문 6-1 (4행) | SKU · 이름 · 가격 · 재고 · 90일 주문 · 분쟁 · 빈 항목 수 | 4행 일치 (빈 항목 3·1·1·0) | ✅ |
+| 원문 6-2 (12행) | ID · 이름 · 국가(ISO 대응) · 언어 · 샌드박스 · 역할 · 주문 수 · 문의 수 · 분쟁 | 12행 문자열 일치. 주문 1·1·3·5·2·1·1·1·1·1·1·4, 문의 2·1·1·4·1·1·0·0·2·1·0·0, 분쟁 배정 같음 | ✅ |
+| 원문 6-3 (8행) | 날짜 · 구매자 · 원문 · 영어 · 해석 첫 유형 | 앞 8건 문자열 일치 (`signal` A2·A2·E1·A2·C1·B1·F1·B2) | ✅ |
+| 원문 6-4 (9행) | 구매자 · 상품 · 금액 · 사유 · 세부 유형 · 상태 · 손실 · 출처 | 9행 일치. 분쟁마다 같은 구매자·상품 주문 있음 (buyer_m 비니 주문 4건 ≥ 분쟁 3건). 상품별 분쟁 4·1·1·3 = `disputes90d` | ✅ |
+| 자동 생성 문의 유형 | 12 · 6 · 3 · 2 | 문장을 읽어 분류: 9~20번째 배송 12, 21~26번째 사이즈 6, 27~29번째 색상 3, 30~31번째 기타 2 | ✅ |
+| 한국어 비율 | 50% ± 1건 | 한국어 12 · 영어 11 | ✅ |
+| 문의 합계·날짜 | 31건, 90일 안 | 8 + 23. 2026-08-16 ~ 2026-11-09. 중복 문장 없음. 전부 `isDemo: true` | ✅ |
+| 참조 무결성: 상품 | 모든 SKU가 `products.json`에 있음 | 주문 214 · 분쟁 9 모두 있음 | ✅ |
+| 참조 무결성: 분쟁 → 구매자 | `buyers.json`에 있음 | 9건 모두 있음 | ✅ |
+| 참조 무결성: 주문·문의 → 구매자 | 이름 있는 구매자만 판정 (`X…`는 결정 3 대기) | 주문 22건 B01~B12 (주문 국가 = 구매자 국가) + `X001`~`X192` 192건. 문의 13건 B01~B12 + `X…` 18건 (18명 모두 주문 있음, 중복 없음) | ✅ (1차와 같음) |
+
+재시도로 바뀐 데이터 (`git diff 19a42c2..HEAD`):
+- `orders.json`: 샌드박스 8행(O02·O03·O05·O06·O07·O09·O11·O12) + 시드 2행의 상품(SO082 코트 → 스웨터, SO112 비니 → 코트). 그 밖의 시드 200행은 그대로.
+- `inquiries.json`: 자동 생성 23건 중 문장 3개(아래)와 `X…` 구매자 배정 15건. 표 8건과 B04·B09에 붙인 5건은 그대로.
+
+**재시도에서 바뀐 문의 (확인 3)**
+- 다듬은 한국어 2문장: "운송장 번호를 알려주실 수 있나요?", "스웨터 소매 길이를 알려주실 수 있나요?" — 둘 다 자연스러운 해요체 존댓말이고 단독 문의로 읽힌다. 영어 칸도 뜻이 맞다 ("Could you give me the tracking number?", "Could you tell me the sleeve length of the sweater?").
+- 1차에서 어긋난다고 적은 8행 (문장 → 지금 붙은 구매자의 주문):
+
+| 문장 | 1차 | 지금 | 맞음 |
+|---|---|---|---|
+| 오트 색상이 사진보다 더 회색빛인가요? | X036 비니 | X043 · SO053 Knit Cardigan, Oat | ✅ |
+| Does the oat shade read more beige or more grey in daylight? | X010 코트 | X009 · SO019 Knit Cardigan, Oat | ✅ |
+| 사이즈표가 인치로만 있어서요. cm로도 알려주실 수 있나요? | X020 비니 | X014 · SO024 Wool Sweater, Navy | ✅ (의견 2) |
+| Is the cardigan true to size, or should I size up? | X008 스웨터 | X007 · SO017 Knit Cardigan, Oat | ✅ |
+| 운송장 번호를 알려주실 수 있나요? (옛 "배송 조회 번호…") | X006 추적 등록 | X003 · SO013 미등록 | ✅ |
+| I still have no shipping confirmation. When does my order go out? | X007 추적 등록 | X015 · SO025 미등록 | ✅ |
+| 통관 중이라고 나오는데 며칠 더 걸릴까요? | X003 미등록 | X006 · SO016 등록 | ✅ |
+| Will you restock the beanie and scarf set? (재고 150) | X011 | 문장을 "Will you restock the cashmere coat in grey?"로 바꿈. X010 · SO020 Cashmere Coat, Grey (재고 25) | ✅ (의견 2) |
+
+- 나머지 자동 생성 15건도 한 줄씩 다시 읽었다. 새로 어긋나는 행은 없다: "통관에서 멈춘 것 같아요…" X012 등록 / "My tracking hasn't updated…" X004 등록 / "발송 안내를 아직 못 받았는데…" X001 미등록 / "스웨터 소매 길이…" X025 스웨터 / 어깨 너비·키 165cm X005·X013 가디건 / "chest measurement for size L" X008 스웨터 / B09 "no tracking number" 2건 → SO004 미등록 / buyer_m 3건 → 주문 5건 모두 등록 (원문 10/11 "Package says delivered"와 같은 방향). 상품·추적을 가리키지 않는 3건(X020 미도착, X026 화면 색, X036 선물 포장)은 어긋날 내용이 없다.
+
+**새 테스트의 질 (확인 4)**
+- `tests/unit/seed.test.ts`가 `seed/data`에서 가져오는 것은 `GENERATED_INQUIRY_TYPE_TOTALS`, `buildSeed`, `generatedInquirySpecs`, 타입 `InquiryType`뿐이다. `sandboxOrderDrafts`는 import하지 않는다.
+- 새 describe "샌드박스 12건이 tasks/T001.md 배정 표와 행마다 같다"의 3건은 디스크의 `orders.json`·`disputes.json`(zod 파싱)을 테스트 파일에 손으로 옮겨 적은 `TABLE_T001_SANDBOX_ORDERS`(키 · 구매자 키 · 상품 이름 · 금액 · 추적 · 분쟁)·`TABLE_T001_TRACKED_KEYS`·`TABLE_T001_UNTRACKED_KEYS`·`BUYER_ID_BY_MANIFEST_KEY`와 비교한다. **순환 검증이 아니다.** 테스트의 12행을 `tasks/T001.md` 표와 기계로 비교했고 12행 모두 같다.
+- SKU는 표의 상품 이름으로 `products.json`에서 찾는다 (구현 데이터 한 단계 경유). 금액은 표 값과 직접 비교하고 `products.json` 자체는 `TABLE_6_1` 테스트가 따로 묶고 있어 구멍은 아니다.
+- 위 "변형 사본" 실행으로 1차와 같은 종류의 어긋남(건수 유지, 행만 다름)을 잡는 것을 확인했다.
+
+### 발견한 문제
+병합 차단: 없음. 병합 후 수정: 없음. 아래는 모두 의견이다.
+
+1. [의견] 문의 맞물림 테스트 2건은 조건을 구현에서 가져온다. "상품을 가리키는 문장은…", "추적 상태를 가리키는 문장은…" 테스트는 `seed/data.ts`의 `generatedInquirySpecs[].requireSkus`·`requireTracked`를 그대로 읽어 `inquiries.json`과 비교한다. 생성 결과가 구현이 정한 조건을 지키는지는 잡지만, 조건 자체가 문장과 맞는지(예: 어떤 문장에 조건을 안 붙임)는 못 잡는다. T001 표 테스트와 달리 반쯤 순환이다. 완료 기준에 없는 권장 항목이고, 이번에는 23문장을 직접 읽어 맞는 것을 확인했다.
+2. [의견] 문장과 상품 정보의 잔여 어긋남 2곳 (화면에 문의–상품이 같이 나올 때만 보인다).
+   - X014 "사이즈표가 인치로만 있어서요…" → 주문은 Wool Sweater, Navy. `products.json`에서 "Size chart in cm" 빈 항목은 가디건에만 있고 스웨터에는 없다. `requireSkus`를 의류 3종 대신 `FK-CD-OAT`로 좁히면 6-1과 맞는다.
+   - X010 "Will you restock the cashmere coat in grey?" → 코트 재고 25. 비니(150)보다는 낫지만 재고가 남아 있는 상품의 재입고 문의다.
+3. [의견] D7("전액 환불 −$43")을 뒷받침하던 buyer_m의 미등록 비니 주문이 없어졌다. T001 표대로 O08~O11이 모두 추적 등록이라 생긴 결과이고 시드 잘못은 아니다. 분쟁 → 주문을 고정하지 않는다는 README 설명과 일치하며, 1차 결정 5(`SeedDispute.orderId`)에 묶여 있다.
+4. [의견] 구현 보고서 "재시도" 절과 다른 곳 (모두 사소함).
+   - "자동 생성 주문의 `sku`·`tracked` 일부 … 가 바뀌었다" → 실제로 바뀐 시드 주문은 SO082·SO112 2행의 상품뿐이고 `tracked`가 바뀐 시드 주문은 없다 (샌드박스 등록 수가 7로 같아서).
+   - "`git diff --stat`에 위 5개만 있다" → `bc6ec7d` 기준으로는 맞다. 재시도 범위 전체(`19a42c2..HEAD`)는 `reports/T007-impl.md`까지 6개.
+   - "마지막 커밋 `bc6ec7d`" → 브랜치 끝은 보고서 커밋 `42fc68a`.
+   - "O09를 바꾸면 3건 실패" 확인은 그대로 재현하지 않았다 (코드를 고칠 수 없어서). 대신 worktree 밖 사본으로 같은 종류의 변형을 돌려 3건 실패를 확인했다.
+   - 그 밖의 주장(바뀐 8행, 테스트 104 · seed 38, tsc 4줄, 해시 동일, 합계 62·48·33·71 / 국가 / 128건, 문장 2개, 문의 재배정, 인수 테스트 27 통과 · 2 실패 · 수집 실패 4)은 직접 확인한 값과 같다.
+5. [의견, 1차에서 그대로] buyer_m의 9/20·10/2 문의 `signal`이 `A1`인 점, 분쟁 ↔ 주문 연결 필드 없음은 재시도에서 손대지 않았다 (구현 보고서도 그렇게 적음).
+
+### 컨트롤 타워가 결정할 것
+없음. (1차의 결정 1은 `tasks/T001.md` 표를 정본으로 하는 (가)로 닫혔고 시드·테스트가 그대로 따른다. 2~7번은 그대로 대기 중이다. 알아 둘 것 하나: `TABLE_T001_SANDBOX_ORDERS`는 손으로 옮겨 적은 값이라, 앞으로 `tasks/T001.md` 표를 고치면 시드와 이 테스트 표를 같이 고쳐야 한다.)
