@@ -140,7 +140,9 @@ describe('checkTokens: newPromises', () => {
       ['I promise', 'Ich versprechen es'],
       ['definitely', '必ず届きます'],
       ['without fail', 'auf jeden Fall'],
-      ['100% safe', '무조건 괜찮습니다'],
+      // 재시도: 원래 초안은 `100% safe`였다. `100%`는 뒤에 보장류 낱말이 올 때만 약속이므로
+      // (`100% wool` 같은 상품 설명이 약속 표현의 면죄부가 되지 않게) 같은 뜻 묶음은 `definitely`로 본다
+      ['definitely delivered', '무조건 괜찮습니다'],
     ];
     for (const [draft, outgoing] of pairs) {
       expect(checkTokens(draft, outgoing, []).newPromises, `${draft} / ${outgoing}`).toEqual([]);
@@ -536,5 +538,285 @@ describe('같은 입력 같은 결과, 입력 불변', () => {
   it('fillTokens를 100회 불러도 결과가 같다', () => {
     const first = fillTokens(SC4_OUTGOING, SC4_FACTS);
     for (let i = 0; i < 100; i += 1) expect(fillTokens(SC4_OUTGOING, SC4_FACTS)).toBe(first);
+  });
+});
+
+// ───────────────────────────── 재시도 (검증 보고서 2026-11-09 23:24 KST) ─────────────────────────────
+
+/** 문제 1: 수 뒤에 통화 기호·낱말을 적은 표기, 쉼표 소수, 글로 쓴 수 + 통화 낱말. */
+const AMOUNT_AFTER_BLOCKED = [
+  '24 $',
+  '24$',
+  '7 $',
+  '7,20 $',
+  '24,00 $',
+  '24,- $',
+  '24 US$',
+  '24 €',
+  '24€',
+  '24,00 €',
+  '24 US-Dollar',
+  '24,00 US-Dollar',
+  '24米ドル',
+  '7USドル',
+  '24불',
+  '24 US달러',
+  '24 미국 달러',
+  '7,20',
+  'seven dollars',
+  'twenty-four dollars',
+  '칠 달러',
+  '七ドル',
+  'sieben Dollar',
+];
+
+/** 문제 1의 모양을 더해도 막지 않을 것 (문제 3의 통화 낱말 오탐과 같은 자리). */
+const AMOUNT_AFTER_ALLOWED = [
+  '60 centimeters',
+  '96 centimeters',
+  '30 centimeter',
+  '2 europäische Länder',
+  '사이즈 2 원하시면',
+  '3 원단',
+  '3 円形',
+  '5 bucket',
+  '이불을 보내드립니다',
+  '사원이 확인했습니다',
+  '14 Tage',
+  '3 bis 5 Werktage',
+  '7〜10日',
+  '1サイズ大きめ',
+  '15% off',
+  '100%',
+];
+
+/** 문제 3: 날짜·추적번호 모양의 오탐 (보내지 못하는 쪽). */
+const SHAPE_FALSE_POSITIVES = [
+  '24/7',
+  '3/4 sleeve',
+  '1/2',
+  '50/50',
+  'Size 8 may run small',
+  'Item 2 may arrive later',
+  'you may 1) return it',
+  'Your order of 2 may arrive later',
+  'We are available 24/7 for you',
+  'The 3/4 sleeve version is in stock',
+  'FERNWOOD15',
+  'Use code FERNWOOD15 at checkout',
+  'WELCOME10',
+  'the 2nd order',
+  'March 2026',
+  'May 2026',
+];
+
+/** 문제 2(권장): 이번에 더 잡는 날짜 표기. */
+const DATE_MORE_BLOCKED = ['17th of November', 'November the 17th', 'the 17th', '17. Dez', '9. Okt', '十一月十七日', '2026/11/17'];
+
+/** 문제 2에서 일부러 남긴 것: 기간 표현과 모양이 같아 오탐 없이 가릴 수 없다. */
+const DATE_STILL_ALLOWED = ['17일', '17日', '11-17', '영업일 3일 안에', '30일 이내', '10-15 days', '3주', '2 days'];
+
+describe('재시도: literalFacts 모양 표', () => {
+  const tables: [string, string[], string[]][] = [
+    ['수 뒤 통화 표기', AMOUNT_AFTER_BLOCKED, AMOUNT_AFTER_ALLOWED],
+    ['날짜 표기', DATE_MORE_BLOCKED, DATE_STILL_ALLOWED],
+    ['모양 오탐', [], SHAPE_FALSE_POSITIVES],
+  ];
+
+  for (const [name, blocked, allowed] of tables) {
+    if (blocked.length > 0) {
+      it(`${name}: 막을 것 ${blocked.length}개`, () => {
+        for (const text of blocked) {
+          expect(literalsOf(`환불 ${text} 처리했습니다`), text).not.toEqual([]);
+        }
+      });
+    }
+
+    it(`${name}: 막지 않을 것 ${allowed.length}개`, () => {
+      for (const text of allowed) {
+        expect(literalsOf(`안내드립니다 ${text} 참고해 주세요`), text).toEqual([]);
+      }
+    });
+  }
+
+  it('수 뒤 기호·쉼표 소수는 값 전체를 보고한다', () => {
+    expect(literalsOf('환불 24,00 $ 처리')).toEqual(['24,00 $']);
+    expect(literalsOf('환불 24,00 USD 처리')).toEqual(['24,00 USD']);
+    expect(literalsOf('환불 1,234.56 처리')).toEqual(['1,234.56']);
+  });
+
+  it('추적번호는 숫자가 6자 이상인 열만 본다', () => {
+    expect(literalsOf('쿠폰 FERNWOOD15 를 쓰세요')).toEqual([]);
+    expect(literalsOf('추적번호 EE123456789KR 입니다')).toEqual(['EE123456789KR']);
+  });
+
+  it('소수 둘째 자리 수는 그대로 막는다 (실행 층도 같은 기준으로 막는다)', () => {
+    // 일부러 남긴 오탐이다. 고치면 `7.20`·`24,00` 같은 금액이 함께 빠져나간다
+    expect(literalsOf('무게는 0.45 kg 입니다')).not.toEqual([]);
+    expect(literalsOf('1인치는 2.54 cm 입니다')).not.toEqual([]);
+  });
+});
+
+describe('재시도: newPromises', () => {
+  it('100%는 뒤에 보장류 낱말이 올 때만 약속이다', () => {
+    expect(checkTokens('nothing', 'It is 100% guaranteed.', []).newPromises).toContain('100%');
+    expect(checkTokens('nothing', '100% 보장합니다.', []).newPromises).toContain('100%');
+    expect(checkTokens('pure wool', 'It is 100% wool.', []).newPromises).toEqual([]);
+    expect(checkTokens('nothing', '울 100% 제품입니다.', []).newPromises).toEqual([]);
+  });
+
+  it('초안의 상품 설명 100%가 새 약속을 통과시키지 않는다', () => {
+    const check = checkTokens('It is 100% wool.', '울 100% 제품입니다. 반드시 내일 도착합니다.', []);
+    expect(check.newPromises).toEqual(['반드시']);
+    expect(check.ok).toBe(false);
+  });
+
+  it('초안에 보장 표현이 있으면 100% 보장은 통과한다', () => {
+    expect(checkTokens('We guarantee it.', '100% 보장합니다.', []).newPromises).toEqual([]);
+  });
+
+  it('영어·독일어는 낱말 안에 든 약속 표현을 잡지 않는다', () => {
+    expect(checkTokens('nothing', 'Let us find a compromise.', []).newPromises).toEqual([]);
+    expect(checkTokens('nothing', 'It is delayed indefinitely.', []).newPromises).toEqual([]);
+    expect(checkTokens('Let us find a compromise.', '약속드립니다.', []).newPromises).toEqual(['약속드']);
+  });
+
+  it('활용형은 그대로 잡는다', () => {
+    expect(checkTokens('nothing', 'It is guaranteed.', []).newPromises).toEqual(['guarantee']);
+    expect(checkTokens('nothing', 'He promises a refund.', []).newPromises).toEqual(['promise']);
+    expect(checkTokens('nothing', 'Das ist garantiert.', []).newPromises).toEqual(['garantier']);
+  });
+
+  it('보고 문자열이 밀리지 않는다 (소문자로 바꾸면 길이가 달라지는 글자 뒤)', () => {
+    expect(checkTokens('nothing', 'İİİ guarantee', []).newPromises).toEqual(['guarantee']);
+  });
+
+  it('일부러 남긴 것: 낱말 경계가 없는 언어는 부분 문자열로 잡는다', () => {
+    // 일본어·한국어는 낱말 경계를 쓸 수 없다. `必ずしも`(부분 부정)는 사람이 보고 판단한다
+    expect(checkTokens('nothing', '必ずしも届くとは限りません。', []).newPromises).toEqual(['必ず']);
+  });
+});
+
+describe('재시도: 실행 자리표시자 개수', () => {
+  const slots = (draft: string, outgoing: string) => checkTokens(draft, outgoing, []);
+
+  it('초안의 자리표시자가 전송본에서 사라지면 missing', () => {
+    const check = slots('I can offer {{offerAmount}} today.', '오늘 제안드립니다.');
+    expect(check.missing).toEqual(['{{offerAmount}}']);
+    expect(check.ok).toBe(false);
+  });
+
+  it('자리표시자가 금액 글자로 바뀌면 missing + literalFacts', () => {
+    const check = slots('I can offer {{offerAmount}} today.', 'Ich kann Ihnen heute 24,00 $ anbieten.');
+    expect(check.missing).toEqual(['{{offerAmount}}']);
+    expect(check.literalFacts).toEqual(['24,00 $']);
+    expect(check.ok).toBe(false);
+  });
+
+  it('초안에 없던 자리표시자는 extra', () => {
+    const check = slots('오늘 제안드립니다.', 'I can offer {{offerAmount}} today.');
+    expect(check.extra).toEqual(['{{offerAmount}}']);
+    expect(check.ok).toBe(false);
+  });
+
+  it('개수까지 비교한다', () => {
+    expect(slots('{{offerAmount}} {{offerAmount}}', '{{offerAmount}}').missing).toEqual(['{{offerAmount}}']);
+    expect(slots('{{offerAmount}}', '{{offerAmount}} {{offerAmount}}').extra).toEqual(['{{offerAmount}}']);
+  });
+
+  it('이름이 바뀌면 missing과 extra에 함께 들어간다', () => {
+    const check = slots('Refund {{refundAmount}}.', '{{disputeAmount}}을 환불합니다.');
+    expect(check.missing).toEqual(['{{refundAmount}}']);
+    expect(check.extra).toEqual(['{{disputeAmount}}']);
+  });
+
+  it('이름 양쪽 공백은 실행 층과 같이 무시한다', () => {
+    expect(slots('Refund {{refundAmount}} now.', '{{ refundAmount }}을 환불합니다.').ok).toBe(true);
+  });
+
+  it('fillTokens는 여전히 자리표시자를 건드리지 않는다', () => {
+    const text = '{{offerAmount}}을 ⟦DATE_1⟧에 보냅니다. {{ refundAmount }}';
+    const filled = fillTokens(text, [{ token: '⟦DATE_1⟧', kind: 'DATE', value: '11월 17일' }]);
+    expect(filled).toBe('{{offerAmount}}을 11월 17일에 보냅니다. {{ refundAmount }}');
+  });
+});
+
+describe('재시도: 데모 정상 문장은 ok: true', () => {
+  const DEMO_FACTS: FactToken[] = [
+    { token: '⟦DATE_1⟧', kind: 'DATE', value: '2026-11-17' },
+    { token: '⟦TRACKING_1⟧', kind: 'TRACKING', value: 'EE123456789KR' },
+    { token: '⟦CUSTOMS_STATUS_1⟧', kind: 'CUSTOMS_STATUS', value: '통관 완료' },
+  ];
+
+  /** 초안(판매자가 본 영어) ↔ 전송본(구매자 언어). 사실값은 토큰·실행 자리표시자로만 들어 있다. */
+  const demos: [string, string, string][] = [
+    [
+      '서연 ko 통관 안내',
+      'Your parcel cleared customs on ⟦DATE_1⟧ and is on the way. Tracking: ⟦TRACKING_1⟧. Status: ⟦CUSTOMS_STATUS_1⟧. Delivery usually takes 2 to 3 business days after customs.',
+      '고객님의 소포는 ⟦DATE_1⟧에 통관을 마치고 배송 중입니다. 추적번호는 ⟦TRACKING_1⟧입니다. 현재 상태는 ⟦CUSTOMS_STATUS_1⟧입니다. 통관 후 보통 2~3 영업일 안에 받으실 수 있습니다.',
+    ],
+    [
+      '서연 ko 통관 안내 (개인통관고유부호 설명)',
+      'For customs you need a personal clearance code: the letter P followed by 12 digits. You can get it from the customs website.',
+      '통관을 위해 개인통관고유부호가 필요합니다. P로 시작하는 13자리이고, 관세청 홈페이지에서 발급받으실 수 있습니다.',
+    ],
+    [
+      '지호 ko 제안 메시지',
+      'I am sorry the color looks different. I can offer a partial refund of {{offerAmount}} and you keep the cardigan.',
+      '색상이 달라 보여 불편을 드려 죄송합니다. {{offerAmount}}을 부분 환불로 드리고 가디건은 그대로 사용하시면 어떨까요?',
+    ],
+    [
+      '지호 ko 사이즈 교환 안내',
+      'If you want a different size we will send it again. Please tell us the size you want.',
+      '원하시는 사이즈로 다시 보내드리겠습니다. 사이즈 2 원하시면 알려 주세요.',
+    ],
+    [
+      'Yuki ja 사이즈 안내',
+      'The Oatmeal Cardigan runs small, so one size up is a good idea. The body width is 52 cm and the length is 64 cm.',
+      'オートミールカーディガンは小さめなので、1サイズ大きめをおすすめします。身幅は52cm、着丈は64cmです。',
+    ],
+    [
+      'Yuki ja 발송 안내',
+      'Your order shipped on ⟦DATE_1⟧. Tracking: ⟦TRACKING_1⟧. International delivery takes 7 to 10 days.',
+      'ご注文は⟦DATE_1⟧に発送しました。追跡番号は⟦TRACKING_1⟧です。国際配送には7〜10日かかります。',
+    ],
+    [
+      'Lena de 환불 안내',
+      'I have issued a refund of {{refundAmount}} today. It takes 3 to 5 business days to appear on your statement.',
+      'Ich habe heute eine Rückerstattung von {{refundAmount}} veranlasst. Es dauert 3 bis 5 Werktage, bis sie auf Ihrer Abrechnung erscheint.',
+    ],
+    [
+      'Lena de 반품 도착 + 환불',
+      'Your return arrived on ⟦DATE_1⟧. I am sending the refund of {{refundAmount}} right away.',
+      'Ihre Rücksendung ist am ⟦DATE_1⟧ angekommen. Ich veranlasse die Rückerstattung von {{refundAmount}} sofort.',
+    ],
+  ];
+
+  for (const [name, draft, outgoing] of demos) {
+    it(`통과: ${name}`, () => {
+      expect(checkTokens(draft, outgoing, DEMO_FACTS)).toEqual({
+        ok: true,
+        missing: [],
+        extra: [],
+        literalFacts: [],
+        newPromises: [],
+      });
+    });
+  }
+
+  it('같은 문장에 값을 직접 적으면 막는다', () => {
+    const [, draft, outgoing] = demos[0];
+    const literal = outgoing.replace('⟦DATE_1⟧', '11월 17일').replace('⟦TRACKING_1⟧', 'EE123456789KR');
+    const check = checkTokens(draft, literal, DEMO_FACTS);
+    expect(check.missing).toEqual(['⟦DATE_1⟧', '⟦TRACKING_1⟧']);
+    expect(check.literalFacts).toEqual(['11월 17일', 'EE123456789KR']);
+    expect(check.ok).toBe(false);
+  });
+
+  it('제안 금액을 독일어식으로 직접 적으면 막는다', () => {
+    const check = checkTokens(demos[6][1], demos[6][2].replace('{{refundAmount}}', '24,00 $'), DEMO_FACTS);
+    expect(check.missing).toEqual(['{{refundAmount}}']);
+    expect(check.literalFacts).toEqual(['24,00 $']);
+    expect(check.ok).toBe(false);
   });
 });
