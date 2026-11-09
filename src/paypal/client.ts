@@ -164,13 +164,18 @@ export function createPayPalClient(env: PayPalEnv, deps: ClientDeps): PayPalClie
 
   /**
    * 로그·에러에 싣는 경로.
-   * 비밀값을 가리고 → 쿼리·프래그먼트를 떼고(구매자 식별값이 들어갈 수 있다) → 제어문자를 지우고 → 자른다.
+   * 제어문자를 지우고 → 비밀값을 가리고 → 쿼리·프래그먼트를 떼고(구매자 식별값이 들어갈 수 있다) → 자른다.
+   *
+   * 지우기가 가리기보다 **먼저**다: 제어문자(`\n`, `\r`, `\t`, NUL, DEL)로 쪼개 넣은 비밀값은
+   * 글자 그대로 일치하지 않아 가리기를 지나가고, 그다음 제어문자가 지워지면서 다시 이어 붙는다
+   * (T002 재검증 보고 문제 1). 비밀값 자체에 제어문자가 섞인 경우까지 보려고 지우기 전에도 한 번 가린다.
    */
   function labelPath(path: string): string {
-    const safe = redact(typeof path === 'string' ? path : String(path));
+    const raw = typeof path === 'string' ? path : String(path);
+    const cleaned = redact(raw).replace(/[\u0000-\u001f\u007f]/g, '');
+    const safe = redact(cleaned);
     const withoutQuery = safe.replace(/[?#][\s\S]*$/, '');
-    const cleaned = withoutQuery.replace(/[\u0000-\u001f\u007f]/g, '');
-    return cleaned.length > LABEL_PATH_MAX ? `${cleaned.slice(0, LABEL_PATH_MAX)}…` : cleaned;
+    return withoutQuery.length > LABEL_PATH_MAX ? `${withoutQuery.slice(0, LABEL_PATH_MAX)}…` : withoutQuery;
   }
 
   function log(line: string): void {
