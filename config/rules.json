@@ -59,6 +59,19 @@
         ]
       }
     ],
-    "note": "SPEC v2.5 3장. 답장 후 확인 기한(일). 날짜는 코드가 만든다 (src/engine/followup.ts). 분쟁 응답 기한보다 늦으면 기한 하루 전 / SPEC v2.7 3장: 날짜의 뜻과 허용한 약속. 여기 없는 돈이 드는 약속은 AI 초안에 쓸 수 없다 (src/ai/reply.ts가 읽는다)"
+    "note": "SPEC v2.5 3장. 답장 후 확인 기한(일). 날짜는 코드가 만든다 (src/engine/followup.ts). 분쟁 응답 기한보다 늦으면 기한 하루 전 / SPEC v2.7 3장: 날짜의 뜻과 허용한 약속. 여기 없는 돈이 드는 약속은 AI 초안에 쓸 수 없다 (src/ai/reply.ts가 읽는다) / SPEC v2.9 3장: 인사말·서명의 이름 `names` (타입 ReplyNames). AI에는 이름 값을 보내지 않고 ⟦BUYER_NAME_1⟧·⟦SELLER_NAME_1⟧ 토큰으로만 넘긴다",
+    "names": {
+      "sellerSignature": "Hannah, Fernwood Knits",
+      "buyers": {
+        "B01": {
+          "en": "Seo-yeon",
+          "ko": "서연 님"
+        },
+        "B02": {
+          "en": "Ji-ho",
+          "ko": "지호 님"
+        }
+      }
+    }
   }
 }
