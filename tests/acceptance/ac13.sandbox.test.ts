@@ -176,10 +176,11 @@ describe.skipIf(!RUN_SANDBOX)('AC13 샌드박스 세팅: 실제 샌드박스 (RU
     expect(allPayers.size).toBe(5);
   });
 
-  it('추적번호: 7건 등록, 6건 미등록이고 manifest와 일치한다 (주문 상세 기준)', () => {
+  // SPEC v2.8 (사람 승인 2026-11-10): O03 실제 등록 시험 뒤 8건 등록 · 5건 미등록
+  it('추적번호: 8건 등록, 5건 미등록이고 manifest와 일치한다 (주문 상세 기준)', () => {
     const byKey = new Map(report.orders.map((o) => [o.key, o]));
-    expect(report.orders.filter((o) => o.tracked)).toHaveLength(7);
-    expect(report.orders.filter((o) => !o.tracked)).toHaveLength(6);
+    expect(report.orders.filter((o) => o.tracked)).toHaveLength(8);
+    expect(report.orders.filter((o) => !o.tracked)).toHaveLength(5);
     for (const m of manifest.orders) expect(byKey.get(m.key)?.tracked, m.key).toBe(m.tracked);
   });
 

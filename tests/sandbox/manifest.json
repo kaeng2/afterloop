@@ -27,7 +27,7 @@
       "orderId": "0JN52716E5842762V",
       "buyer": "yuki",
       "sku": "FK-CD-OAT",
-      "tracked": false,
+      "tracked": true,
       "captureId": "37J49051UW395951T",
       "previousOrderIds": [
         "4BC01975WG886551L"
