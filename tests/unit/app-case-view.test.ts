@@ -20,6 +20,7 @@ import { CompareCard } from '@/app/_shared/compare-card';
 import { toDollarsRounded } from '@/app/_shared/money';
 import { actionKeyFor, buildCaseView, caseMessages, segmentsOf, type CaseViewInput } from '@/app/cases/model';
 import { CaseView } from '@/app/cases/view/case-view';
+import { Conversation } from '@/app/cases/view/conversation';
 import { escalationRisk } from '@/engine/escalation';
 import { recommend } from '@/engine/recommend';
 import type { BoardState, Cause, ClassifyInput, EscalationSignals, LlmCaller, Params } from '@/types';
@@ -485,6 +486,42 @@ describe('비교 카드 다듬기 (부품)', () => {
     expect(css).toMatch(/\.cc-arrow\s*\{[^}]*grid-row:\s*2[^}]*align-self:\s*center/);
     expect(css).toMatch(/\.cc-previous\s*\{[^}]*color:\s*var\(--color-muted\)[^}]*text-decoration:\s*line-through/);
     expect(css).not.toMatch(/display:\s*none/);
+  });
+
+  it('넓은 폭: 세 요소의 열이 명시돼 있다 (왼쪽 1 · 화살표 2 · 오른쪽 3). 자동 배치로 "→ $X $Y"가 되지 않게', () => {
+    const css = readFileSync(path.join(ROOT, 'src/app/_shared/compare-card.css'), 'utf8');
+    const media = css.indexOf('@media');
+    const wide = css.slice(0, media);
+    const narrow = css.slice(media);
+    expect(wide).toMatch(/\.cc-before\s*\{[^}]*grid-column:\s*1\s*;/);
+    expect(wide).toMatch(/\.cc-arrow\s*\{[^}]*grid-column:\s*2\s*;/);
+    expect(wide).toMatch(/\.cc-after\s*\{[^}]*grid-column:\s*3\s*;/);
+    // 좁은 폭: 한 열로 쌓는다 (순서는 DOM 순서 = 왼쪽 → 화살표 → 오른쪽)
+    expect(narrow).toMatch(/\.cc-before,\s*\.cc-after\s*\{[^}]*grid-column:\s*1\s*;/);
+    expect(narrow).toMatch(/\.cc-arrow\s*\{[^}]*grid-column:\s*1\s*;[^}]*grid-row:\s*auto/);
+  });
+
+  it('globals.css에 옛 .compare* 규칙이 남아 있지 않다', () => {
+    const globals = readFileSync(path.join(ROOT, 'src/app/globals.css'), 'utf8');
+    expect(globals).not.toMatch(/\.compare[\w-]*\s*[{,]/);
+  });
+});
+
+describe('대화: 같은 배지는 한 번만', () => {
+  it('시연용 문의(글도 시드, 번역도 시드)에는 Demo data 배지가 하나다', () => {
+    const messages = caseMessages({
+      buyerMessages: [REAL_TEXT],
+      buyerMessageEn: 'If I do not hear back this week, I will go to my card company.',
+      buyerId: 'B01',
+      inquiries: [DEMO_INQUIRY],
+      includeInquiries: true,
+    });
+    const v = buildCaseView(input({ messages }), P, R);
+    const html = renderToStaticMarkup(createElement(Conversation, { messages: v.messages }));
+    const demoItem = html.slice(html.indexOf('case-message-demo'));
+    const demoOnly = demoItem.slice(0, demoItem.indexOf('</li>'));
+    const demoLabel = copyTables.en['badge.demo'] ?? 'Demo data';
+    expect(demoOnly.split(demoLabel).length - 1).toBe(1);
   });
 });
 

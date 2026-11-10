@@ -4,6 +4,10 @@
  * 줄 3개짜리 격자: 1줄 칸 이름 · 2줄 숫자 · 3줄 칸 아래 한 줄. 두 칸은 subgrid로 같은 줄을 나눠 쓰므로
  * 두 숫자가 한 줄에 놓이고 화살표(2줄)가 숫자 줄 가운데에 맞는다. 두 칸은 같은 폭(1fr)이고
  * 카드 폭은 내용에 맞춘다 (`fit-content`).
+ *
+ * 세 요소의 열은 반드시 명시한다 (왼쪽 1열 · 화살표 2열 · 오른쪽 3열). 화살표만 줄(grid-row: 2)이
+ * 정해져 있으면 격자 자동 배치가 화살표를 1열에 먼저 놓고 두 칸을 오른쪽으로 밀어
+ * "→ $74 $37" 순서가 되고 카드 왼쪽에 빈칸이 생긴다 (T009 1부 재시도, 1440 스크린샷).
  */
 
 .cc-card {
@@ -22,6 +26,14 @@
 
 .cc-single {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.cc-before {
+  grid-column: 1;
+}
+
+.cc-after {
+  grid-column: 3;
 }
 
 .cc-side {
@@ -60,6 +72,7 @@
 }
 
 .cc-arrow {
+  grid-column: 2;
   grid-row: 2;
   align-self: center;
   justify-self: center;
@@ -97,12 +110,18 @@
     row-gap: var(--space-2);
   }
 
+  .cc-before,
+  .cc-after {
+    grid-column: 1;
+  }
+
   .cc-side {
     grid-row: auto;
     grid-template-rows: none;
   }
 
   .cc-arrow {
+    grid-column: 1;
     grid-row: auto;
     justify-self: start;
     transform: rotate(90deg);

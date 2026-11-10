@@ -87,3 +87,54 @@
 
 ## 컨트롤 타워에 요청할 결정
 - 없음 (계약·인수 테스트·SPEC 변경 필요 없음). 위 "남은 문제"의 새 파일 두 개 위치만 승인 바람.
+
+---
+
+# 재시도 — 1부 화면 버그 (2026-11-10 13:20 KST)
+
+계기: 코드 검증(`reports/T009-verify.md`)은 통과. 컨트롤 타워가 배포용 빌드로 찍은 스크린샷(`reports/screens/T009-r1/case-1440-light.png`, `case-jiho-1440-light.png`)에서 화면 버그 3건.
+
+## 결과
+- 3건 모두 고침. 단위 테스트로 고정. `npm run build` 성공. 화면은 다시 띄워 보지 않았다 (개발 서버·`npm run start` 금지) — 빌드 CSS에서 배치 규칙을 확인했다.
+
+## 바뀐 파일
+| 파일 | 내용 |
+|---|---|
+| `src/app/_shared/compare-card.css` | (1) `.cc-before { grid-column: 1 }`, `.cc-arrow { grid-column: 2; grid-row: 2 }`, `.cc-after { grid-column: 3 }`. 좁은 폭(30rem 아래)에서는 세 요소 모두 `grid-column: 1` (+ 화살표 `grid-row: auto`) → DOM 순서대로 `$74 → ↓ → $37`. 머리 주석에 원인 기록 |
+| `src/app/cases/view/conversation.tsx` | (2) 영어 배지 중 글 배지에 이미 있는 것은 빼고 그린다 → 시연용 문의는 'Demo data' 하나. 실제 글의 'AI suggests'는 그대로 |
+| `src/app/globals.css` | (3) 안 쓰는 `.compare`, `.compare-side`, `.compare-value`, `.compare-arrow`, `.compare-hero` 및 해당 `@media` 블록 삭제 (한 줄 안내 주석만 남김). 다른 규칙은 건드리지 않음 |
+| `tests/unit/app-case-view.test.ts` | 테스트 3개 추가 (아래) |
+
+## 원인 (1)
+`.cc-arrow`만 `grid-row: 2`로 줄이 정해져 있고 열은 없었다. CSS 격자 자동 배치는 위치가 정해진 항목을 먼저 놓으므로 화살표가 (2줄, 1열)을 차지하고, `.cc-before`(span 3줄)는 1열에 들어갈 수 없어 2열로, `.cc-after`는 3열로 밀렸다. 그래서 `→ $74 $37` 순서 + 1열(화살표만 있는 넓은 1fr 칸)이 카드 왼쪽 빈 공간이 됐다. 세 열을 명시하자 빈 열이 없어지고, 카드는 `fit-content`라 두 칸 + 화살표 폭으로 줄어든다.
+
+## 빌드 결과에서 확인한 규칙 (`.next/static`)
+```
+.cc-before{grid-column:1}
+.cc-after{grid-column:3}
+.cc-arrow{…;grid-area:2/2;place-self:center}
+@media: .cc-before,.cc-after{grid-column:1}  .cc-arrow{grid-area:auto/1;…;transform:rotate(90deg)}
+```
+빌드 CSS에 `.compare-*` 규칙 없음.
+
+## 테스트 결과
+- `npx vitest run tests/unit/app-case-view.test.ts`: 43 통과 (추가 3개)
+  - 넓은 폭: `.cc-before` 1열 · `.cc-arrow` 2열 · `.cc-after` 3열이 CSS(`@media` 앞)에 있다 / 좁은 폭: 세 요소 1열
+  - `globals.css`에 `.compare*` 선택자가 없다
+  - 시연용 문의를 `Conversation`으로 그렸을 때 그 줄에 'Demo data'가 정확히 1번
+- `npm test`: 33 파일, 1610 통과
+- `npm run test:acceptance`: 155 통과, 9 건너뜀 (기존과 같음)
+- `npx tsc --noEmit`: 오류 없음
+- `npm run build`: 성공
+
+## 사람 확인용
+- 1440: 비교 카드가 `PayPal data only · Full refund ~~$74~~ → With carrier data · Reply [Demo data] $37` 순서, 왼쪽 빈칸 없음.
+- 390: `$74` → ↓ → `$37` 세로 쌓기.
+- 대화의 2026-11-02(서연)·2026-10-20(지호) 줄에 'Demo data' 하나.
+
+## 남은 문제
+- 실제 화면 재촬영은 컨트롤 타워 몫 (이 세션은 서버를 띄우지 않음).
+- `.cc-single`(후 칸 없음, 지호 화면)은 `.cc-before`가 1열 그대로라 영향 없음.
+
+## 컨트롤 타워에 요청할 결정
+- 없음.

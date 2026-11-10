@@ -45,6 +45,8 @@ export function Conversation({ messages }: { messages: CaseMessageView[] }) {
       <ol className="case-messages">
         {messages.map((message, index) => {
           const showEnglish = english && message.english !== null;
+          // 같은 배지는 한 번만 (시연용 문의는 글 자체도, 시드 번역도 'Demo data'라 두 번 붙던 문제)
+          const englishOnly = message.englishBadges.filter((kind) => !message.badges.includes(kind));
           return (
             <li key={index} className={message.source === 'demo' ? 'case-message case-message-demo' : 'case-message'}>
               <div className="row small">
@@ -54,7 +56,7 @@ export function Conversation({ messages }: { messages: CaseMessageView[] }) {
                   <Badge key={kind} kind={kind} />
                 ))}
                 {showEnglish
-                  ? message.englishBadges.map((kind) => <Badge key={`en-${kind}`} kind={kind} />)
+                  ? englishOnly.map((kind) => <Badge key={`en-${kind}`} kind={kind} />)
                   : null}
               </div>
               <p className="case-message-text" lang={showEnglish ? 'en' : undefined}>
