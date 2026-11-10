@@ -4,7 +4,7 @@
  * 이 파일은 Claude Code 설정(.claude/settings.json permissions.deny)으로 편집이 막혀 있다.
  * 바꿔야 하면 SPEC.md·DECISIONS.md에 이유를 적고 사람 승인을 받은 뒤 컨트롤 타워가 고친다.
  *
- * 기준: SPEC v2.7 (v2 이후 바뀐 것: v2.2 8부 시드 필드 2개, v2.5 3부 `DemoLink`·`ReplyPolicy`, 8부 `SeedCarrierEvent`, 9부 `FollowUpDateFn`, v2.7 3부 `ReplyCommitment`·`ReplyDraftPolicy`). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
+ * 기준: SPEC v2.9 (v2 이후 바뀐 것: v2.2 8부 시드 필드 2개, v2.5 3부 `DemoLink`·`ReplyPolicy`, 8부 `SeedCarrierEvent`, 9부 `FollowUpDateFn`, v2.7 3부 `ReplyCommitment`·`ReplyDraftPolicy`, v2.9 3부 `ReplyNames`·6부 `FactToken` 이름 종류 2개). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
  * 1부: 분쟁 보드와 기대 손실 (v2: 16개 세부 유형, V·c·p_acc 곡선 삭제)
  * 2부: 실행 계약 (v1.1 그대로)
  * 3부: 설정 파일 (v2)
@@ -207,6 +207,15 @@ export type ReplyDraftPolicy = {
   allowedCommitments: ReplyCommitment[];
 };
 
+/**
+ * 답장 인사말·서명의 이름 (v2.9). 값은 config/rules.json의 `reply.names`.
+ * `buyers`의 키는 시드 구매자 ID(`B01`…). 언어별 꼴에는 호칭이 이미 들어 있다 ("서연 님"). 표에 없는 구매자는 이름 없이 인사한다.
+ */
+export type ReplyNames = {
+  sellerSignature: string; // "Hannah, Fernwood Knits"
+  buyers: Record<string, Partial<Record<'en' | 'ko' | 'ja' | 'de', string>>>;
+};
+
 // ───────────────────────────── 4부: PayPal 클라이언트 (v1.1 그대로) ─────────────────────────────
 
 /** 서버에서만 만든다. baseUrl은 https://api-m.sandbox.paypal.com만 허용 */
@@ -276,8 +285,16 @@ export type ClassifyInput = {
 /** LLM 호출 주입. 서버에서만. 응답은 JSON 스키마 검증 전의 원시 값 */
 export type LlmCaller = (req: { system: string; user: string; jsonSchema: Record<string, unknown> }) => Promise<unknown>;
 
-/** 사실값 토큰 (⟦DATE_1⟧, ⟦AMOUNT_1⟧, ⟦TRACKING_1⟧, ⟦CUSTOMS_STATUS_1⟧) */
-export type FactToken = { token: string; kind: 'DATE' | 'AMOUNT' | 'TRACKING' | 'CUSTOMS_STATUS'; value: string };
+/**
+ * 사실값 토큰 (⟦DATE_1⟧, ⟦AMOUNT_1⟧, ⟦TRACKING_1⟧, ⟦CUSTOMS_STATUS_1⟧).
+ * v2.9: 이름도 토큰으로만 넘긴다 — ⟦BUYER_NAME_1⟧(그 언어의 호칭까지 포함한 구매자 이름), ⟦SELLER_NAME_1⟧(판매자 서명).
+ * 값은 `ReplyNames`에서 코드가 채운다. AI에는 이름 값을 보내지 않는다.
+ */
+export type FactToken = {
+  token: string;
+  kind: 'DATE' | 'AMOUNT' | 'TRACKING' | 'CUSTOMS_STATUS' | 'BUYER_NAME' | 'SELLER_NAME';
+  value: string;
+};
 
 /** 토큰 검사 결과. ok가 false면 전송 버튼 비활성 */
 export type TokenCheck = {
