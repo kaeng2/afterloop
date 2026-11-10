@@ -11,6 +11,7 @@ import { BADGES, BADGE_ORDER, RISK_ORDER } from '../../_shared/badge-keys';
 import { AssumptionBadge, Badge, DemoBadge, RiskLevel } from '../../_shared/badges';
 import { CompareCard } from '../../_shared/compare-card';
 import { t } from '../../_shared/copy';
+import { actionKeyFor } from '../../cases/model';
 import { compareSample } from './sample';
 
 export const metadata: Metadata = {
@@ -48,15 +49,24 @@ export default function StyleguidePage() {
 
       <CompareCard
         label={t('common.preview.expectedLoss')}
-        badges={
-          <>
-            <AssumptionBadge />
-            <DemoBadge />
-          </>
-        }
-        before={{ caption: t('common.preview.paypalOnly'), display: sample.before.display ?? noValue }}
-        after={{ caption: t('common.preview.withCarrier'), display: sample.after.display ?? noValue }}
+        badges={<AssumptionBadge />}
+        before={{
+          caption: t('case.view.sideCaption', {
+            source: t('common.preview.paypalOnly'),
+            action: t(actionKeyFor(sample.before.move)),
+          }),
+          display: sample.before.display ?? noValue,
+        }}
+        after={{
+          caption: t('case.view.sideCaption', {
+            source: t('common.preview.withCarrier'),
+            action: t(actionKeyFor(sample.after.move)),
+          }),
+          display: sample.after.display ?? noValue,
+          badge: <DemoBadge />,
+        }}
         arrowLabel={t('common.preview.arrow')}
+        previousLabel={t('case.view.previous')}
         footer={t('common.preview.compareNote')}
       />
 
