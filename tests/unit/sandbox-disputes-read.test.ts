@@ -446,6 +446,9 @@ describe('last-run.md "분쟁 읽기" 절', () => {
     expect(text.match(/## 분쟁 읽기/g)).toHaveLength(1);
   });
 
+  /** 파일에 적힌 절 이름 (적힌 순서대로). */
+  const markersIn = (text: string) => [...text.matchAll(/<!-- afterloop:last-run:([a-z]+) -->/g)].map((m) => m[1]);
+
   it('커밋된 `tests/sandbox/last-run.md`의 기존 절을 읽어도 모양이 깨지지 않는다', async () => {
     const root = mkdtempSync(path.join(tmpdir(), 'afterloop-lastrun2-'));
     mkdirSync(path.join(root, 'tests/sandbox'), { recursive: true });
@@ -455,7 +458,9 @@ describe('last-run.md "분쟁 읽기" 절', () => {
     writeLastRunSection('disputes', disputesSection({ listed: 0, rows: [], problems: [] }), root);
 
     const text = readFileSync(path.join(root, 'tests/sandbox/last-run.md'), 'utf8');
-    expect(text.split('<!-- afterloop:last-run:')).toHaveLength(4); // 머리글 + 절 3개
+    // 절 수를 고정하지 않는다 (T051): 커밋된 파일에 있던 절이 그대로 있고, 절마다 머리글이 하나씩이다.
+    expect(new Set(markersIn(text))).toEqual(new Set([...markersIn(committed), 'disputes']));
+    expect(markersIn(text)).toHaveLength(new Set(markersIn(text)).size);
     expect(text).toContain('| GET /v1/customer/disputes | 200 | ok |'); // 기존 조회 절
     expect(text).toContain('| 61자 (1회차) | 61 | 201 |'); // 기존 요청 ID 절
   });
