@@ -42,6 +42,23 @@
   },
   "reply": {
     "followUpDays": 7,
-    "note": "SPEC v2.5 3장. 답장 후 확인 기한(일). 날짜는 코드가 만든다 (src/engine/followup.ts). 분쟁 응답 기한보다 늦으면 기한 하루 전"
+    "followUpDateMeaning": "the date the seller will check the status and contact the buyer again. Not a delivery date.",
+    "allowedCommitments": [
+      {
+        "id": "forward_customs_code",
+        "text": "pass the personal customs clearance code to the carrier as soon as the buyer sends it",
+        "subtypes": [
+          "A2"
+        ]
+      },
+      {
+        "id": "check_with_carrier",
+        "text": "check the status directly with the carrier",
+        "subtypes": [
+          "A2"
+        ]
+      }
+    ],
+    "note": "SPEC v2.5 3장. 답장 후 확인 기한(일). 날짜는 코드가 만든다 (src/engine/followup.ts). 분쟁 응답 기한보다 늦으면 기한 하루 전 / SPEC v2.7 3장: 날짜의 뜻과 허용한 약속. 여기 없는 돈이 드는 약속은 AI 초안에 쓸 수 없다 (src/ai/reply.ts가 읽는다)"
   }
 }

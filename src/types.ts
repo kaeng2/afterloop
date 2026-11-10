@@ -4,7 +4,7 @@
  * 이 파일은 Claude Code 설정(.claude/settings.json permissions.deny)으로 편집이 막혀 있다.
  * 바꿔야 하면 SPEC.md·DECISIONS.md에 이유를 적고 사람 승인을 받은 뒤 컨트롤 타워가 고친다.
  *
- * 기준: SPEC v2.5 (v2 이후 바뀐 것: v2.2 8부 시드 필드 2개, v2.5 3부 `DemoLink`·`ReplyPolicy`, 8부 `SeedCarrierEvent`, 9부 `FollowUpDateFn`). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
+ * 기준: SPEC v2.7 (v2 이후 바뀐 것: v2.2 8부 시드 필드 2개, v2.5 3부 `DemoLink`·`ReplyPolicy`, 8부 `SeedCarrierEvent`, 9부 `FollowUpDateFn`, v2.7 3부 `ReplyCommitment`·`ReplyDraftPolicy`). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
  * 1부: 분쟁 보드와 기대 손실 (v2: 16개 세부 유형, V·c·p_acc 곡선 삭제)
  * 2부: 실행 계약 (v1.1 그대로)
  * 3부: 설정 파일 (v2)
@@ -190,6 +190,22 @@ export type DemoLinksConfig = { version: string; links: DemoLink[] };
 
 /** 답장 정책 (v2.5). 값은 config/rules.json의 `reply` */
 export type ReplyPolicy = { followUpDays: number }; // 답장 후 확인 기한 (일). 7
+
+/**
+ * 답장에서 판매자가 할 수 있는 약속 (v2.7). 값은 config/rules.json의 `reply.allowedCommitments`.
+ * 여기 없는 돈이 드는 약속(재발송·환불·할인·무료 배송·보상 등)은 AI 초안이 스스로 만들 수 없다.
+ */
+export type ReplyCommitment = {
+  id: string; // 예: 'forward_customs_code'
+  text: string; // 프롬프트에 넘기는 영어 한 줄. 날짜·금액을 넣지 않는다
+  subtypes: Subtype[]; // 이 약속을 쓸 수 있는 원인 세부 유형
+};
+
+/** 답장 초안 정책 (v2.7). `ReplyPolicy`와 같은 설정 덩어리(`reply`)의 다른 칸 */
+export type ReplyDraftPolicy = {
+  followUpDateMeaning: string; // ⟦DATE_1⟧의 뜻 한 줄. "판매자가 확인해서 다시 연락하는 날. 도착 예상일이 아니다"
+  allowedCommitments: ReplyCommitment[];
+};
 
 // ───────────────────────────── 4부: PayPal 클라이언트 (v1.1 그대로) ─────────────────────────────
 
