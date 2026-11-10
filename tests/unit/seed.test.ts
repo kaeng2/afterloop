@@ -58,7 +58,7 @@ const TABLE_6_2 = [
   { id: 'B01', name: '김서연 Seo-yeon Kim', country: 'KR', language: 'KO', sandbox: true, role: '대표 시나리오: 통관 보류 + "카드사에 이의제기" (SC4)', orders: 1, inquiries: 2, disputes: 1 },
   { id: 'B02', name: '박지호 Ji-ho Park', country: 'KR', language: 'KO', sandbox: true, role: '색상 분쟁, 오토파일럿이 승인 대기로 올림 (SC5)', orders: 1, inquiries: 1, disputes: 1 },
   { id: 'B03', name: 'Yuki T.', country: 'JP', language: 'JA', sandbox: true, role: '사이즈 문의 → 오토파일럿 자동 답변 (SC5)', orders: 3, inquiries: 1, disputes: 0 },
-  { id: 'B04', name: 'buyer_m***', country: 'US', language: 'EN', sandbox: true, role: '반복 미수령 주장, 자동 처리 제외 (SC5)', orders: 5, inquiries: 4, disputes: 3 },
+  { id: 'B04', name: 'Mike Morgan', country: 'US', language: 'EN', sandbox: true, role: '반복 미수령 주장, 자동 처리 제외 (SC5)', orders: 5, inquiries: 4, disputes: 3 },
   { id: 'B05', name: 'Lena K.', country: 'DE', language: 'DE', sandbox: true, role: '환불 약속 4일 경과 (SC3, P1)', orders: 2, inquiries: 1, disputes: 0 },
   { id: 'B06', name: '정다은 Da-eun Jung', country: 'KR', language: 'KO', sandbox: false, role: '개인통관고유부호 문의 (통관 신호)', orders: 1, inquiries: 1, disputes: 0 },
   { id: 'B07', name: '이수민 Su-min Lee', country: 'KR', language: 'KO', sandbox: false, role: '색상 불만, 다투다 패소', orders: 1, inquiries: 0, disputes: 1 },
