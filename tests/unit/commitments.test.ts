@@ -88,6 +88,114 @@ const NOT_FOUND: { locale: FactLocale; text: string }[] = [
   { locale: 'de', text: 'Ich frage beim Versanddienstleister nach und melde mich wieder.' },
 ];
 
+/** T054: 돌려 쓴 약속 (검증이 찾아낸 표현 포함) */
+const FOUND_T054: { category: CommitmentCategory; locale: FactLocale; text: string }[] = [
+  { category: 'refund', locale: 'en', text: 'I will pay you back.' },
+  { category: 'refund', locale: 'en', text: 'We can give you your money back.' },
+  { category: 'refund', locale: 'en', text: 'I will return your money.' },
+  { category: 'refund', locale: 'ko', text: '돈을 돌려 드릴게요.' },
+  { category: 'refund', locale: 'ko', text: '결제하신 금액을 돌려 드리겠습니다.' },
+  { category: 'refund', locale: 'ja', text: 'お返しします。' },
+  { category: 'refund', locale: 'de', text: 'Wir werden den Betrag zurückzahlen.' },
+  { category: 'refund', locale: 'de', text: 'Sie bekommen Ihr Geld zurück.' },
+  { category: 'reship', locale: 'en', text: 'I will send you a new sweater.' },
+  { category: 'reship', locale: 'en', text: 'I will send it out again.' },
+  { category: 'reship', locale: 'en', text: 'I will ship you another.' },
+  { category: 'reship', locale: 'en', text: 'I can send another one.' },
+  { category: 'reship', locale: 'ko', text: '새 제품을 보내 드릴게요.' },
+  { category: 'reship', locale: 'ko', text: '새로 보내 드려요.' },
+  { category: 'reship', locale: 'ko', text: '한 번 더 보내 드릴게요.' },
+  { category: 'reship', locale: 'ja', text: 'もう一度送ります。' },
+  { category: 'reship', locale: 'ja', text: '新しい商品を送ります。' },
+  { category: 'reship', locale: 'de', text: 'Wir werden es noch einmal schicken.' },
+  { category: 'reship', locale: 'de', text: 'Wir werden es neu schicken.' },
+  { category: 'replacement', locale: 'en', text: 'I can swap it for you.' },
+  { category: 'replacement', locale: 'en', text: 'I can exchange the item.' },
+  { category: 'replacement', locale: 'ko', text: '바꿔 드릴게요.' },
+  { category: 'replacement', locale: 'ja', text: '取り替えます。' },
+  { category: 'replacement', locale: 'de', text: 'Wir können es austauschen.' },
+  { category: 'discount', locale: 'en', text: 'You get 10 percent off.' },
+  { category: 'discount', locale: 'en', text: 'Everything is 10% off.' },
+  { category: 'discount', locale: 'en', text: 'It is half price now.' },
+  { category: 'discount', locale: 'en', text: 'Here is a voucher.' },
+  { category: 'discount', locale: 'en', text: 'Use this promo code.' },
+  { category: 'discount', locale: 'ko', text: '가격을 깎아 드릴게요.' },
+  { category: 'discount', locale: 'ja', text: '割り引きます。' },
+  { category: 'discount', locale: 'de', text: 'Wir gewähren einen Nachlass.' },
+  { category: 'free_shipping', locale: 'en', text: 'We will cover the shipping.' },
+  { category: 'free_shipping', locale: 'en', text: 'I will pay for the shipping.' },
+  { category: 'free_shipping', locale: 'en', text: 'The shipping is on us.' },
+  { category: 'free_shipping', locale: 'en', text: 'It comes at no extra cost.' },
+  { category: 'free_shipping', locale: 'en', text: 'It is free of charge.' },
+  { category: 'free_shipping', locale: 'ko', text: '배송비를 저희가 낼게요.' },
+  { category: 'free_shipping', locale: 'ko', text: '배송비는 받지 않을게요.' },
+  { category: 'free_shipping', locale: 'ko', text: '무료로 보내 드려요.' },
+  { category: 'free_shipping', locale: 'ja', text: '送料は当店が負担します。' },
+  { category: 'free_shipping', locale: 'de', text: 'Wir werden den Versand übernehmen.' },
+  { category: 'compensation', locale: 'en', text: 'I will make it up to you.' },
+  { category: 'compensation', locale: 'en', text: 'Here is a gift as an apology.' },
+  { category: 'compensation', locale: 'en', text: 'You get a gift card.' },
+  { category: 'compensation', locale: 'ko', text: '사은품을 드릴게요.' },
+  { category: 'compensation', locale: 'ja', text: 'お詫びの品をお送りします。' },
+  { category: 'compensation', locale: 'de', text: 'Als Wiedergutmachung erhalten Sie etwas.' },
+];
+
+/** T054: 서연 건 실제 AI 답장 3개와 정상 문장들. 모두 빈 배열이어야 한다. */
+const NOT_FOUND_T054: { locale: FactLocale; text: string }[] = [
+  {
+    locale: 'en',
+    text: 'Could you please send me your personal customs clearance code? I will pass it to the carrier as soon as I receive it, and I will check with the carrier and contact you again by ⟦DATE_1⟧.',
+  },
+  { locale: 'ko', text: '받는 대로 바로 배송업체에 전달하고, 배송업체에 확인한 후 ⟦DATE_1⟧까지 다시 연락드릴게요.' },
+  {
+    locale: 'ko',
+    text: '개인통관고유부호를 답장으로 보내주실 수 있을까요? 받는 대로 바로 택배사에 전달할게요. 또한 택배사에 직접 상황을 확인하고 ⟦DATE_1⟧까지 다시 연락드릴게요.',
+  },
+  { locale: 'en', text: 'Please send me your code.' },
+  { locale: 'en', text: 'I will send you a message.' },
+  { locale: 'en', text: 'I will contact you again.' },
+  { locale: 'en', text: 'Please reply again.' },
+  { locale: 'ko', text: '다시 연락드릴게요.' },
+  { locale: 'ko', text: '보내 주실 수 있을까요?' },
+  { locale: 'en', text: 'You paid by credit card.' },
+  { locale: 'en', text: 'Your card company opened it.' },
+  { locale: 'en', text: 'The shipping status is unchanged.' },
+  { locale: 'en', text: 'Please check the shipping label.' },
+  { locale: 'en', text: 'The exchange rate is not involved.' },
+  { locale: 'en', text: 'There are no extra steps.' },
+  { locale: 'ko', text: '결정되면 알려 드리겠습니다.' },
+  { locale: 'en', text: 'Is there another one?' },
+];
+
+describe('findCommitments: T054 돌려 쓴 약속', () => {
+  for (const { category, locale, text } of FOUND_T054) {
+    it(`${category} (${locale}): ${text}`, () => {
+      expect(findCommitments(text, locale)).toContain(category);
+    });
+  }
+  for (const { locale, text } of NOT_FOUND_T054) {
+    it(`잡히지 않는다 (${locale}): ${text.slice(0, 40)}`, () => {
+      expect(findCommitments(text, locale)).toEqual([]);
+    });
+  }
+  it('2만 자 입력도 100ms 안에 끝난다', () => {
+    const inputs = [
+      'send '.repeat(4000),
+      'pay '.repeat(5000),
+      ' '.repeat(20000),
+      '새로 '.repeat(6000),
+      'at no ' + ' '.repeat(20000),
+      'shipping is on' + ' '.repeat(20000),
+    ];
+    for (const text of inputs) {
+      const start = performance.now();
+      findCommitments(text, 'en');
+      findCommitments(text, 'ko');
+      expect(performance.now() - start).toBeLessThan(100);
+    }
+  });
+});
+
 describe('findCommitments: 범주별 낱말 (네 언어)', () => {
   for (const { category, locale, text } of FOUND) {
     it(`${category} (${locale}): ${text}`, () => {

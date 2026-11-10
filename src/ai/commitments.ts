@@ -41,10 +41,10 @@ export const COMMITMENT_CATEGORIES: readonly CommitmentCategory[] = [
 // 독일어는 어미가 붙으므로 어간으로 적는다 (`erstatt` → `erstatten`·`erstattet`·`Erstattung`).
 
 /** 환불: `refund`, `money back`, `reimburse` / `환불`, `환급` / `返金` / `Rückerstattung`, `erstatten` */
-const REFUND_EN = ['refund', 'money back', 'reimburse'];
-const REFUND_KO = ['환불', '환급'];
-const REFUND_JA = ['返金'];
-const REFUND_DE = ['Rückerstatt', 'erstatt'];
+const REFUND_EN = ['refund', 'money back', 'reimburse', 'pay you back', 'return your money'];
+const REFUND_KO = ['환불', '환급', '돈을 돌려'];
+const REFUND_JA = ['返金', 'お返し'];
+const REFUND_DE = ['Rückerstatt', 'erstatt', 'zurückzahl', 'Geld zurück'];
 
 /** 재발송: `reship`, `resend`, `send again` … / `재발송`, `재배송`, `다시 보내` / `再送` / `erneut senden` */
 // "send it again"·"ship another"처럼 사이에 한 낱말이 끼는 꼴도 적어 둔다. 사이를 정규식으로 열어 두지
@@ -63,37 +63,67 @@ const RESHIP_EN = [
   'ship it again',
   'ship another',
   'ship a new',
+  'send you another',
 ];
-const RESHIP_KO = ['재발송', '재배송', '다시 보내', '다시 발송', '다시 배송'];
-const RESHIP_JA = ['再送', '再発送'];
-const RESHIP_DE = ['erneut senden', 'erneut versenden', 'neu versenden', 'neu senden'];
+const RESHIP_KO = ['재발송', '재배송', '다시 보내', '다시 발송', '다시 배송', '새 제품을 보내', '새로 보내', '한 번 더 보내'];
+const RESHIP_JA = ['再送', '再発送', 'もう一度送'];
+const RESHIP_DE = [
+  'erneut senden',
+  'erneut versenden',
+  'neu versenden',
+  'neu senden',
+  'noch einmal schicken',
+  'neu schicken',
+];
 
 /** 교환·대체품: `replacement`, `replace` / `교환`, `대체품` / `交換` / `Ersatz`, `umtauschen` */
-const REPLACEMENT_EN = ['replacement', 'replace'];
-const REPLACEMENT_KO = ['교환', '대체품'];
-const REPLACEMENT_JA = ['交換'];
-const REPLACEMENT_DE = ['Ersatz', 'umtausch', 'Umtausch'];
+const REPLACEMENT_EN = ['replacement', 'replace', 'swap', 'exchange it', 'exchange the item'];
+const REPLACEMENT_KO = ['교환', '대체품', '바꿔 드리', '바꿔 드릴'];
+const REPLACEMENT_JA = ['交換', '取り替え'];
+const REPLACEMENT_DE = ['Ersatz', 'umtausch', 'Umtausch', 'austausch'];
 
 /** 할인·쿠폰: `discount`, `coupon`, `% off` / `할인`, `쿠폰` / `割引`, `クーポン` / `Rabatt`, `Gutschein` */
-const DISCOUNT_EN = ['discount', 'coupon', '% off', '%off'];
-const DISCOUNT_KO = ['할인', '쿠폰'];
-const DISCOUNT_JA = ['割引', 'クーポン'];
-const DISCOUNT_DE = ['Rabatt', 'Gutschein'];
+const DISCOUNT_EN = [
+  'discount',
+  'coupon',
+  '% off',
+  '%off',
+  'percent off',
+  'half price',
+  'money off',
+  'voucher',
+  'promo code',
+];
+const DISCOUNT_KO = ['할인', '쿠폰', '깎아'];
+const DISCOUNT_JA = ['割引', 'クーポン', '割り引'];
+const DISCOUNT_DE = ['Rabatt', 'Gutschein', 'Nachlass'];
 
 /** 무료 배송: `free shipping`, `shipping on us` / `무료 배송`, `배송비는 저희가` / `送料無料` */
-const FREE_SHIPPING_EN = ['free shipping', 'free delivery', 'shipping on us'];
-const FREE_SHIPPING_KO = ['무료 배송', '무료배송', '배송비는 저희가', '배송비를 저희가'];
-const FREE_SHIPPING_JA = ['送料無料', '送料は無料'];
-const FREE_SHIPPING_DE = ['kostenloser Versand', 'kostenlosen Versand', 'kostenlose Lieferung'];
+const FREE_SHIPPING_EN = [
+  'free shipping',
+  'free delivery',
+  'shipping on us',
+  'cover the shipping',
+  'pay the shipping',
+  'pay for the shipping',
+  'shipping is on us',
+  'shipping is on me',
+  'at no cost',
+  'at no extra cost',
+  'free of charge',
+];
+const FREE_SHIPPING_KO = ['무료 배송', '무료배송', '배송비는 저희가', '배송비를 저희가', '배송비는 받지 않', '무료로 보내'];
+const FREE_SHIPPING_JA = ['送料無料', '送料は無料', '送料は当店'];
+const FREE_SHIPPING_DE = ['kostenloser Versand', 'kostenlosen Versand', 'kostenlose Lieferung', 'Versand übernehm'];
 
 /**
  * 보상·적립: `compensat`, `store credit`, `credit`(낱말 단위) / `보상`, `적립금` / `補償` / `Entschädigung`, `Gutschrift`.
  * `credit`만 낱말 단위로 보고 뒤에 `card`가 오면 약속이 아니다 (`credit card` = 구매자의 카드사 이야기).
  */
-const COMPENSATION_EN = ['compensat', 'store credit', 'credit'];
-const COMPENSATION_KO = ['보상', '적립금'];
-const COMPENSATION_JA = ['補償'];
-const COMPENSATION_DE = ['Entschädigung', 'entschädig', 'Gutschrift'];
+const COMPENSATION_EN = ['compensat', 'store credit', 'credit', 'make it up to you', 'as an apology', 'gift card'];
+const COMPENSATION_KO = ['보상', '적립금', '사은품'];
+const COMPENSATION_JA = ['補償', 'お詫びの品'];
+const COMPENSATION_DE = ['Entschädigung', 'entschädig', 'Gutschrift', 'Wiedergutmachung'];
 
 /** 범주 × 언어 낱말 표. 영어는 초안용이고 나머지는 전송본용이다. */
 const TERMS: Readonly<Record<CommitmentCategory, Readonly<Record<FactLocale, readonly string[]>>>> = {
@@ -104,6 +134,35 @@ const TERMS: Readonly<Record<CommitmentCategory, Readonly<Record<FactLocale, rea
   free_shipping: { en: FREE_SHIPPING_EN, ko: FREE_SHIPPING_KO, ja: FREE_SHIPPING_JA, de: FREE_SHIPPING_DE },
   compensation: { en: COMPENSATION_EN, ko: COMPENSATION_KO, ja: COMPENSATION_JA, de: COMPENSATION_DE },
 };
+
+/**
+ * 낱말 목록으로 못 쓰는 꼴(사이에 낱말이 끼는 것)은 정규식 원문으로 적는다 (T054).
+ * 상한 있는 반복(`{n,m}`)만 쓴다 — 입력 길이에 선형이다. 영어는 낱말 앞 경계를 붙여 쓴다.
+ */
+const PATTERNS: readonly { category: CommitmentCategory; locale: FactLocale; source: string }[] = [
+  { category: 'reship', locale: 'en', source: 'send(?:\\s{1,4}you)?\\s{1,4}(?:a|an)\\s{1,4}new(?![A-Za-z])' },
+  { category: 'reship', locale: 'en', source: 'send\\s{1,4}(?:it|one|another)(?:\\s{1,4}out)?\\s{1,4}again(?![A-Za-z])' },
+  { category: 'reship', locale: 'en', source: 'ship(?:\\s{1,4}you)?\\s{1,4}another(?![A-Za-z])' },
+  { category: 'reship', locale: 'ja', source: '新しい.{0,20}を送' },
+  { category: 'discount', locale: 'en', source: '\\d+(?:\\.\\d+)?\\s{0,2}percent\\s{1,4}off(?![A-Za-z])' },
+  { category: 'free_shipping', locale: 'en', source: 'pay\\s{1,4}(?:for\\s{1,4})?the\\s{1,4}shipping(?![A-Za-z])' },
+  { category: 'free_shipping', locale: 'en', source: 'shipping\\s{1,4}is\\s{1,4}on\\s{1,4}(?:us|me)(?![A-Za-z])' },
+  { category: 'free_shipping', locale: 'en', source: 'at\\s{1,4}no\\s{1,4}(?:extra\\s{1,4})?cost(?![A-Za-z])' },
+];
+
+/**
+ * 같은 문장에 두 낱말이 함께 있어야 약속으로 보는 꼴 (T054). 한 낱말만으로는 정상 문장에도 나온다:
+ * `돌려 드리`는 돈·결제 낱말과 함께일 때만, `another one`은 send·ship과 함께일 때만 약속이다.
+ */
+const SENTENCE_PAIRS: readonly { category: CommitmentCategory; locales: readonly FactLocale[]; all: readonly RegExp[] }[] = [
+  { category: 'refund', locales: ['ko'], all: [/돌려\s{0,2}드리/, /금액|돈|결제|대금/] },
+  { category: 'reship', locales: ['en', 'ko', 'ja', 'de'], all: [/(?<![A-Za-z])another\s{1,4}one(?![A-Za-z])/i, /(?<![A-Za-z])(?:send|ship)/i] },
+];
+
+/** 문장 나누기: 마침표·물음표·느낌표·줄바꿈 단위. */
+function splitSentences(text: string): string[] {
+  return text.split(/[.!?。！？\n]+/);
+}
 
 // ───────────────────────────── 맞추기 ─────────────────────────────
 
@@ -138,7 +197,8 @@ function escapeRegExp(text: string): string {
 function matcher(term: string): RegExp {
   const head = isLatin(term) ? LATIN_HEAD : '';
   const tail = WORD_UNIT_TAILS[term.toLowerCase()] ?? '';
-  return new RegExp(`${head}${escapeRegExp(term)}${tail}`, 'i');
+  // 낱말 사이 공백은 1~4칸의 공백·줄바꿈으로 본다 (두 칸 띄어 쓴 글을 놓치지 않게. 상한이 있어 선형이다)
+  return new RegExp(`${head}${escapeRegExp(term).replace(/ /g, '\\s{1,4}')}${tail}`, 'i');
 }
 
 /**
@@ -150,7 +210,10 @@ const MATCHERS = new Map<string, RegExp[]>();
 for (const category of COMMITMENT_CATEGORIES) {
   for (const locale of FACT_LOCALES) {
     const terms = locale === 'en' ? TERMS[category].en : [...TERMS[category][locale], ...TERMS[category].en];
-    MATCHERS.set(`${category}:${locale}`, [...new Set(terms)].map(matcher));
+    const extra = PATTERNS.filter((p) => p.category === category && (p.locale === locale || p.locale === 'en')).map(
+      (p) => new RegExp(isLatin(p.source) ? `${LATIN_HEAD}${p.source}` : p.source, 'i'),
+    );
+    MATCHERS.set(`${category}:${locale}`, [...new Set(terms)].map(matcher).concat(extra));
   }
 }
 
@@ -172,9 +235,16 @@ function withoutPlaceholders(text: string): string {
 export function findCommitments(text: string, locale: FactLocale): CommitmentCategory[] {
   const scanned = withoutPlaceholders(text);
   const found: CommitmentCategory[] = [];
+  const lines = splitSentences(scanned);
   for (const category of COMMITMENT_CATEGORIES) {
     const patterns = MATCHERS.get(`${category}:${locale}`) ?? [];
-    if (patterns.some((pattern) => pattern.test(scanned))) found.push(category);
+    const pairs = SENTENCE_PAIRS.filter((p) => p.category === category && p.locales.includes(locale));
+    if (
+      patterns.some((pattern) => pattern.test(scanned)) ||
+      pairs.some((pair) => lines.some((line) => pair.all.every((re) => re.test(line))))
+    ) {
+      found.push(category);
+    }
   }
   return found;
 }
