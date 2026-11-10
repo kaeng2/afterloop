@@ -1222,3 +1222,33 @@ describe('이름 토큰 (⟦BUYER_NAME_1⟧·⟦SELLER_NAME_1⟧)', () => {
     expect(translation.sendable).toBe(true);
   });
 });
+
+describe('T057 offer 수락 문장 꼴 (PayPal에서 수락)', () => {
+  const lineOf = (prefix: string): string => DRAFT_SYSTEM.split('\n').find((l) => l.startsWith(prefix)) ?? '';
+  const offerLine = lineOf('- offer:');
+
+  it('offer 줄에 PayPal 수락 규칙·예시 문장·답장 수락 금지가 있다', () => {
+    expect(offerLine).toContain('accept the offer in PayPal');
+    expect(offerLine).toContain(
+      'If you accept the offer in PayPal, the partial refund of {{offerAmount}} is sent right away and this case is closed.',
+    );
+    expect(offerLine).toContain('Never ask the buyer to accept by reply or message');
+  });
+
+  it('fight·refund 줄에는 수락 규칙이 없다', () => {
+    for (const line of [lineOf('- fight:'), lineOf('- refund:')]) {
+      expect(line).not.toBe('');
+      expect(line).not.toContain('accept');
+      expect(line).not.toContain('PayPal');
+    }
+  });
+
+  it('예시 문장에는 자리표시자만 있고 실제 금액·날짜가 없다', () => {
+    expect(offerLine.replace(/[{][{]\w+[}][}]/g, '')).not.toMatch(/\d/);
+  });
+
+  it('코칭 줄 규칙과 번역 프롬프트가 수락 위치를 지킨다', () => {
+    expect(DRAFT_SYSTEM).toContain('Explain how to accept the offer in PayPal');
+    expect(TRANSLATE_SYSTEM).toContain('Do not change where the buyer accepts an offer');
+  });
+});

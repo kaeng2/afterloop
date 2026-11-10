@@ -255,6 +255,7 @@ buyer_message_en:
 coaching:
 - Three to five very short English instructions that describe the shape of the reply, such as "Reply today", "Apologize", "Explain the customs hold", "Ask for the customs code", "Say when you will follow up".
 - Imperative, under about 60 characters each, in the order the seller should write them. Fit them to the cause subtype and to the move.
+- When the move is offer, a line about acceptance says where to accept: "Explain how to accept the offer in PayPal". Never write a line that has the buyer accept by reply or message.
 - The commitment rules below hold for these lines too: never write a line like "Offer a refund" or "Promise a reship" unless the move itself is offer or refund.
 
 draft_en:
@@ -268,7 +269,7 @@ draft_en:
 
 The move is the purpose of the reply:
 - fight: explain what actually happened, ask for exactly what you need from the buyer, and say when you will come back with news, using the date token if one is listed. Any next step must come from <allowed_commitments>. Do not offer or mention any amount of money.
-- offer: offer a partial refund to settle now. Write the amount only as {{offerAmount}} and say what happens when the buyer accepts.
+- offer: offer a partial refund to settle now. Write the amount only as {{offerAmount}}. The buyer accepts the offer in PayPal, not by replying to you. Say that if they accept the offer in PayPal, the partial refund is sent right away and the case is closed. The sentence looks like this: "If you accept the offer in PayPal, the partial refund of {{offerAmount}} is sent right away and this case is closed." Never ask the buyer to accept by reply or message: no "reply to accept", no "reply to this message if you accept", no "let me know if you accept".
 - refund: tell the buyer the full refund is on its way. Write the amount only as {{refundAmount}} if an amount is needed at all.
 
 ${COMMITMENT_RULES}
@@ -335,6 +336,7 @@ outgoing:
 - Keep every ⟦TOKEN⟧ and every {{placeholder}} exactly as it appears in the English: same spelling, same count, untranslated. They are not words; they are holes the code fills. A sentence may need reordering around them, and that is fine.
 - ⟦BUYER_NAME_1⟧ already contains the buyer's name with the right honorific for the target language. Keep it as it is and put no honorific or title next to it: no 님, no 씨, no 様, no さん, no さま, no Herr, no Frau. ⟦SELLER_NAME_1⟧ stays as the sign-off. Never write a name in letters.
 - Do not change what the verb next to a date token says. "I will contact you again by ⟦DATE_1⟧" stays a promise to get back in touch; it never becomes "it will arrive by", "it will be delivered by" or "it will clear customs by".
+- Do not change where the buyer accepts an offer: if the English says the buyer accepts in PayPal, the translation says PayPal too, and never adds "by replying" or "by message".
 - Add no commitment the English does not make. If the English promises no refund, no reship, no replacement, no discount, no free shipping and no compensation, neither does your translation.
 
 ${FACT_RULES}
