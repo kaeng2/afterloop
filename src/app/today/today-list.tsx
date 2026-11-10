@@ -1,12 +1,14 @@
 /**
- * Today 왼쪽 할 일 목록 (T060). 날짜 줄 · 제목 · 가게 전체 한 줄 링크 · 묶음 세 개(Needs you / Prevent / Routine).
+ * Today 왼쪽 할 일 목록 (T060 → T067). 날짜 줄 · 제목 · 가게 전체 한 줄 링크 · 묶음 세 개(Needs you / Prevent / Routine).
  *
  * **계산하지 않는다** — 모든 글자·숫자는 `buildToday`(엔진 결과를 옮긴 값)에서 온다. 항목은 링크라서 키보드로 고를 수
- * 있고, 고른 항목에는 `aria-current`가 붙는다. 고른 항목은 흰 카드(테두리)로, 나머지는 투명하게 보인다.
+ * 있고, 고른 항목에는 `aria-current`가 붙는다. 고른 항목은 흰 카드 + 그림자 하나(`--shadow-selected`), 나머지는 투명.
+ *
+ * 한 줄 (T067, 시안 v3): 왼쪽 **점 = 위험 등급 색**, 오른쪽 **알약 = 상태** (High · Watch · Waiting approval ·
+ * Prevent · Skipped). 점은 장식이라 읽히지 않고(`aria-hidden`), 상태는 알약 글자로 읽힌다.
  */
 import Link from 'next/link';
 
-import { RiskLevel } from '../_shared/badges';
 import { t } from '../_shared/copy';
 import type { TodayItem, TodayView } from './model';
 
@@ -19,18 +21,17 @@ function ItemRow({ item, selected }: { item: TodayItem; selected: boolean }) {
         aria-current={selected ? 'true' : undefined}
         scroll={item.kind === 'prevent'}
       >
-        <span className="today-item-top">
-          <span className="today-item-name">
-            {item.name}
-            {item.label === null ? null : <span className="today-item-label"> · {item.label}</span>}
+        <span className={`today-dot today-dot-${item.dot}`} aria-hidden="true" />
+        <span className="today-item-body">
+          <span className="today-item-top">
+            <span className="today-item-name">
+              {item.name}
+              {item.label === null ? null : <span className="today-item-label"> · {item.label}</span>}
+            </span>
+            <span className={`today-pill today-pill-${item.status.tone}`}>{t(item.status.key)}</span>
           </span>
-          {item.chipKey !== null ? (
-            <span className="today-chip">{t(item.chipKey)}</span>
-          ) : item.band === null ? null : (
-            <RiskLevel band={item.band} />
-          )}
+          {item.sub === null ? null : <span className="today-item-sub">{item.sub}</span>}
         </span>
-        {item.sub === null ? null : <span className="today-item-sub">{item.sub}</span>}
       </Link>
     </li>
   );

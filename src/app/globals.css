@@ -1,21 +1,29 @@
 /*
- * AfterLoop 디자인 기준 (T047 보완, 2026-11-10 사람 지시). 화면 5장이 모두 이 파일의 변수만 쓴다.
+ * AfterLoop 디자인 기준 (T047 보완 → T067 시안 v3 값, 2026-11-10 사람 결정). 화면이 모두 이 파일의 변수만 쓴다.
  *
  * - 색: 차분한 바탕 + 강조색 1개(보라 계열 남색). "PayPal과 잘 어울리는 별개의 제품" —
- *   PayPal 공식 파랑(#003087·#0070E0 계열)·PayPal 글꼴·로고·대시보드 배치를 쓰지 않는다.
- *   위험 단계(High/Watch/Low)·성공·실패 색은 강조색과 따로 둔다.
- * - 색 값(#…)은 아래 변수 정의 자리에만 쓴다. 화면 코드·다른 규칙은 var(--…)만 쓴다
+ *   PayPal 공식 파랑(#003087·#0070E0 계열)과 시안의 #0066F5 파랑·PayPal 글꼴·로고를 쓰지 않는다.
+ *   링크·로고 마크·주 버튼·포커스 색은 강조색 하나. 위험 단계·성공·실패 색은 강조색과 따로 둔다.
+ * - 색 값(#…)·그림자 값은 아래 변수 정의 자리에만 쓴다. 화면 코드·다른 규칙은 var(--…)만 쓴다
  *   (단위 테스트 `tests/unit/app-shared-design.test.ts`가 파일을 읽어 검사한다).
- * - 글자 크기 5단계, 간격 5단계, 카드 규칙 1개. 외부 글꼴을 내려받지 않는다 (시스템 글꼴).
+ * - 글꼴 (T067): Figtree + Noto Sans KR. `layout.tsx`가 Next 글꼴 도구로 빌드 때 받아 자체 제공한다
+ *   (`--font-figtree`·`--font-noto-kr`). 한국어(`:lang(ko)`)는 Noto Sans KR이 먼저.
+ * - 카드 (T067): 테두리 2px, 모서리 20px. 알약(탭·상태 배지·버튼)은 완전히 둥글게(`--radius-pill`).
+ * - 그림자는 `--shadow-selected` 하나만 (Today 목록의 고른 항목).
+ * - 글자 크기 5단계, 간격 5단계.
  */
 
 :root {
   /* 색 — 밝은 모드 */
   --color-bg: #f6f6f3;
   --color-surface: #ffffff;
-  --color-text: #1b1d21;
+  --color-text: #3f4144; /* 본문 (시안 값) */
+  --color-text-body: #3f4144; /* 본문 (시안 값. --color-text와 같은 값) */
+  --color-heading: #000000; /* 제목 (시안 값) */
   --color-muted: #5a5e66;
-  --color-border: #dedfdb;
+  --color-border: #e4e6e9; /* 카드 테두리 (시안 값) */
+  --color-divider: #e4e6e9; /* 위쪽 막대 아래 선 (시안 값) */
+  --color-list-bg: #f1efea; /* Today 목록 영역 (시안 값) */
   --color-accent: #5b3cc4;
 
   /* 뜻이 있는 색 (강조색과 따로) */
@@ -25,9 +33,26 @@
   --color-success: #12704a;
   --color-danger: #b3261e;
 
-  /* 글꼴 (시스템 글꼴 묶음. 내려받지 않는다) */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Apple SD Gothic Neo',
-    'Noto Sans KR', sans-serif;
+  /* 목록 점 = 위험 등급 (시안 값) */
+  --color-dot-high: #c4321f;
+  --color-dot-watch: #e0a100;
+  --color-dot-low: #0b6b3a;
+  --color-dot-neutral: #9aa0a6;
+
+  /* 상태 알약 = 상태 (시안 값. 연한 바탕 + 진한 글자) */
+  --color-pill-high-bg: #fbe7e4;
+  --color-pill-high-text: #9e2414;
+  --color-pill-watch-bg: #fff3d6;
+  --color-pill-watch-text: #6b4700;
+  --color-pill-neutral-bg: #eceef0;
+  --color-pill-neutral-text: #3f4144;
+
+  /* 그림자 (하나만: Today 목록의 고른 항목. 시안 값) */
+  --shadow-selected: rgba(0, 0, 0, 0.14) 4px 4px 28px 6px;
+
+  /* 글꼴 (Figtree + Noto Sans KR, 빌드 때 받아 자체 제공. 이름 변수는 layout.tsx가 붙인다) */
+  --font-sans: var(--font-figtree), var(--font-noto-kr), 'Apple SD Gothic Neo', Helvetica, Arial, sans-serif;
+  --font-ko: var(--font-noto-kr), var(--font-figtree), 'Apple SD Gothic Neo', sans-serif;
 
   /* 글자 크기 5단계 */
   --text-xs: 0.75rem; /* 배지·보조 글 */
@@ -43,25 +68,32 @@
   --space-4: 1rem;
   --space-5: 1.5rem;
 
-  /* 카드 규칙 (하나) */
+  /* 카드 규칙 (하나. 시안 값: 2px 테두리, 16~24px 모서리) */
   --card-padding: var(--space-4);
-  --card-radius: 8px;
-  --card-border: 1px solid var(--color-border);
+  --card-radius: 20px;
+  --card-border: 2px solid var(--color-border);
   --card-gap: var(--space-4);
 
-  /* 본문 폭 */
-  --content-max: 72rem;
-  --gutter: var(--space-4);
+  /* 알약 (탭·상태 배지·버튼): 완전히 둥글게 */
+  --radius-pill: 999px;
+
+  /* 본문 폭: 가운데 고정 폭 상자 없음 (T067, 시안 v3 전체 폭). 글 줄 길이는 화면별 상세 칸이 정한다 */
+  --content-max: none;
+  --gutter: var(--space-5);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* 색 — 어두운 모드 */
+    /* 색 — 어두운 모드 (시안에 없어 밝은 모드 역할에 맞춰 정했다) */
     --color-bg: #111214;
     --color-surface: #1a1c1f;
-    --color-text: #ecedef;
+    --color-text: #e3e5e8;
+    --color-text-body: #e3e5e8;
+    --color-heading: #ffffff;
     --color-muted: #a3a7ae;
     --color-border: #2e3136;
+    --color-divider: #2e3136;
+    --color-list-bg: #141517;
     --color-accent: #a996f0;
 
     --color-risk-high: #f97066;
@@ -69,6 +101,20 @@
     --color-risk-low: #47cd89;
     --color-success: #4fc38a;
     --color-danger: #ff7b72;
+
+    --color-dot-high: #f97066;
+    --color-dot-watch: #fdb022;
+    --color-dot-low: #47cd89;
+    --color-dot-neutral: #80868b;
+
+    --color-pill-high-bg: #45201c;
+    --color-pill-high-text: #ffb4a9;
+    --color-pill-watch-bg: #3d2f0d;
+    --color-pill-watch-text: #fdd47b;
+    --color-pill-neutral-bg: #2a2d31;
+    --color-pill-neutral-text: #d5d8dc;
+
+    --shadow-selected: rgba(0, 0, 0, 0.55) 4px 4px 28px 6px;
   }
 
   html {
@@ -88,7 +134,7 @@
 
 body {
   min-width: 0;
-  color: var(--color-text);
+  color: var(--color-text-body);
   background: var(--color-bg);
   font-family: var(--font-sans);
   font-size: var(--text-md);
@@ -101,6 +147,17 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--color-heading);
+}
+
+/* 한국어 글은 Noto Sans KR이 먼저 (lang="ko" 부분) */
+:lang(ko) {
+  font-family: var(--font-ko);
 }
 
 :focus-visible {
@@ -132,7 +189,7 @@ a {
 
 .header {
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .header-inner {

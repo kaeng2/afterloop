@@ -134,14 +134,24 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
 });
 
 describe('T047 보완 B-2: 글꼴과 글자 크기', () => {
-  it('글꼴 이름에 PayPal이 없고 외부 글꼴을 내려받지 않는다', () => {
+  // T067 (사람 결정 2026-11-10): "외부 글꼴 금지" → Figtree + Noto Sans KR을 `next/font/google`로 (빌드 때 받아 자체 제공).
+  // `next/font/google`은 layout.tsx 한 곳에서 이 두 글꼴만. 브라우저가 Google에 직접 요청하는 길(@import url, fonts.googleapis)은 여전히 금지.
+  it('글꼴 이름에 PayPal이 없고, 글꼴은 layout.tsx의 next/font/google Figtree·Noto Sans KR뿐이다 (@import url 없음)', () => {
     expect(/paypal/i.test(themeVars().light['--font-sans'])).toBe(false);
     for (const file of filesUnder(APP, ['.tsx', '.ts', '.css'])) {
       const text = readFileSync(file, 'utf8');
-      expect(/next\/font\/google/.test(text), file).toBe(false);
+      if (path.relative(APP, file) !== 'layout.tsx') expect(/next\/font\/google/.test(text), file).toBe(false);
       expect(/@import\s+url|fonts\.googleapis/.test(text), file).toBe(false);
       expect(/font-family\s*:[^;]*paypal/i.test(text), file).toBe(false);
     }
+    const layout = readFileSync(path.join(APP, 'layout.tsx'), 'utf8');
+    expect(layout).toMatch(/import\s*\{\s*Figtree,\s*Noto_Sans_KR\s*\}\s*from\s*'next\/font\/google'/);
+    expect(layout).toMatch(/variable:\s*'--font-figtree'/);
+    expect(layout).toMatch(/variable:\s*'--font-noto-kr'/);
+    const { light } = themeVars();
+    expect(light['--font-sans']).toMatch(/^var\(--font-figtree\),\s*var\(--font-noto-kr\)/);
+    expect(light['--font-ko']).toMatch(/^var\(--font-noto-kr\)/);
+    expect(stripComments(CSS)).toMatch(/:lang\(ko\)\s*\{[^}]*font-family:\s*var\(--font-ko\)/);
   });
 
   it('글자 크기 단계는 변수 5개이고, 다른 규칙은 font-size에 변수만 쓴다', () => {
@@ -159,11 +169,31 @@ describe('T047 보완 B-2: 글꼴과 글자 크기', () => {
 });
 
 describe('T047 보완 B-3: 카드 규칙 하나', () => {
-  it('카드 테두리·모서리·여백·간격이 변수 하나씩이고 그림자를 쓰지 않는다', () => {
+  // T067 (사람 결정 2026-11-10): 카드 1px·8px → 시안 값 2px #E4E6E9 · 모서리 16~24px. 그림자 금지 → `--shadow-selected` 하나만.
+  it('카드 테두리·모서리·여백·간격이 변수 하나씩이고, 테두리 2px #E4E6E9 · 모서리 16~24px · 알약은 완전히 둥글다', () => {
     const vars = themeVars().light;
     for (const name of ['--card-padding', '--card-radius', '--card-border', '--card-gap']) expect(vars[name], name).toBeDefined();
     expect(CSS).toMatch(/\.card\s*\{[^}]*padding:\s*var\(--card-padding\)[^}]*border:\s*var\(--card-border\)[^}]*border-radius:\s*var\(--card-radius\)/);
-    expect(/box-shadow/.test(stripComments(CSS))).toBe(false);
+    expect(vars['--card-border']).toBe('2px solid var(--color-border)');
+    expect(vars['--color-border'].toLowerCase()).toBe('#e4e6e9');
+    const radius = Number(/^(\d+)px$/.exec(vars['--card-radius'])?.[1]);
+    expect(radius).toBeGreaterThanOrEqual(16);
+    expect(radius).toBeLessThanOrEqual(24);
+    expect(vars['--radius-pill']).toBe('999px');
+  });
+
+  it('그림자는 `--shadow-selected` 변수 하나만 쓰고, 값은 시안의 rgba(0,0,0,0.14) 4px 4px 28px 6px다', () => {
+    const { light, dark } = themeVars();
+    expect(light['--shadow-selected']).toBe('rgba(0, 0, 0, 0.14) 4px 4px 28px 6px');
+    expect(dark['--shadow-selected']).toBeDefined();
+    for (const file of filesUnder(APP, ['.css'])) {
+      for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
+        expect(match[1].trim(), `${path.relative(ROOT, file)}: ${match[0]}`).toBe('var(--shadow-selected)');
+      }
+    }
+    for (const file of filesUnder(APP, ['.tsx'])) {
+      expect(/boxShadow/.test(readFileSync(file, 'utf8')), path.relative(ROOT, file)).toBe(false);
+    }
   });
 });
 

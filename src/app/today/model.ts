@@ -5,8 +5,9 @@
  * - 분쟁 항목: `loadDemoDisputes`가 연결 표(`showOnScreen`)로 걸러 낸 분쟁. 묶음은 엔진 `decideAutopilot` 판정
  *   (악용 의심으로 건너뜀 → Routine, 그 밖 → Needs you). 위험 배지는 엔진 `escalationRisk`.
  * - 추적 항목: `listUntracked`(조회만)에서 분쟁이 걸리지 않은 미등록 주문 수. 조회에 실패하면 항목이 없다.
- * - Prevent 항목: `simulateStore`(처방 4개 모두)의 상품별 결과에서 처방 전·후 평균 손실이 **줄어드는 비율**이
- *   가장 큰 상품 (컨트롤 타워 결정 2026-11-10, T060 재시도 1번). 같으면 처방 전 손실이 큰 쪽.
+ * - Prevent 항목: `simulateStore`(처방 4개 모두) 결과에 엔진 `pickPreventProduct`(T066)를 부른 상품
+ *   (줄어드는 비율이 가장 큰 상품. DECISIONS v2.10).
+ * - 목록 한 줄의 점 = 위험 등급, 알약 = 상태 (T067). 둘 다 엔진 판정·묶음에서 고른다.
  *
  * 금액 표시는 `toDollarsRounded` 한 곳. 글자는 `today.*`·`case.view.lang.*` 문구에서 읽는다.
  * 이 파일은 PayPal·LLM을 부르지 않는다 (서버 읽기는 `../_server/today.ts`).
@@ -16,7 +17,7 @@ import { escalationRisk } from '@/engine/escalation';
 import { paramsFromConfig, rulesFromConfig } from '@/engine/params';
 import { recommend } from '@/engine/recommend';
 import { FIX_ORDER } from '@/engine/sim';
-import { simulateStore } from '@/engine/storefront';
+import { pickPreventProduct, simulateStore, type PreventPick } from '@/engine/storefront';
 import type {
   AutopilotDecision,
   BoardState,
@@ -79,6 +80,12 @@ export function dateLine(now: Date): string {
 
 export type TodayGroupKey = 'needsYou' | 'prevent' | 'routine';
 
+/** 목록 왼쪽 점 색. */
+export type TodayDot = 'high' | 'watch' | 'low' | 'neutral';
+
+/** 목록 오른쪽 상태 알약. `tone`은 배경·글자 색 묶음 (high = 연분홍, watch = 연노랑, neutral = 회색). */
+export type TodayStatus = { key: string; tone: 'high' | 'watch' | 'neutral' };
+
 export type TodayItem = {
   /** 주소의 `item` 값 (분쟁 번호 · `tracking` · 상품 SKU). */
   id: string;
@@ -91,13 +98,12 @@ export type TodayItem = {
   label: string | null;
   /** 아래 줄. 없으면 `null`. */
   sub: string | null;
-  /** 작은 위험 배지. 없으면 `null`. */
+  /** 엔진 위험 단계 (`escalationRisk`. 추적 항목은 고정 Watch). 없으면 `null`. */
   band: RiskBand | null;
-  /**
-   * 위험 배지 대신 보이는 회색 표시 문구 키 (Routine = 엔진이 자동 처리하지 않기로 한 항목 → `today.skipped`).
-   * 있으면 목록은 위험 배지 대신 이것을 보인다. 없으면 `null`.
-   */
-  chipKey: string | null;
+  /** 왼쪽 점 = 위험 등급 색 (T067). Routine·Prevent·위험 없음은 `neutral`. */
+  dot: TodayDot;
+  /** 오른쪽 상태 알약 = 상태 (T067). 글자는 문구 키, 고르는 기준은 엔진 판정·묶음. */
+  status: TodayStatus;
   /** 정렬용 엔진 점수 (분쟁만). */
   score: number | null;
   /** 정렬용 응답 기한 (분쟁만, ISO 8601. 모르면 빈 글자). */
@@ -181,8 +187,34 @@ function subLine(loaded: LoadedDispute, decision: AutopilotDecision, best: Evalu
   return t(`today.sub.${decision.rule}`, { move: t(`today.move.${best.move}`) });
 }
 
-/** Routine 항목의 회색 표시 (엔진 `decideAutopilot`이 건너뛴 항목). */
-const SKIPPED_CHIP_KEY = 'today.skipped';
+// ── 점과 상태 알약 (T067: 점 = 위험 등급, 알약 = 상태) ───────────────────────
+
+const DOT_OF_BAND: Record<RiskBand, TodayDot> = { High: 'high', Watch: 'watch', Low: 'low' };
+
+/** 엔진이 건너뛴 항목 (Routine 등) → 회색 "Skipped". */
+export const STATUS_SKIPPED: TodayStatus = { key: 'today.skipped', tone: 'neutral' };
+/** 승인을 기다리는 판정 → 회색 "Waiting approval". */
+export const STATUS_WAITING_APPROVAL: TodayStatus = { key: 'today.status.waitingApproval', tone: 'neutral' };
+/** Prevent 묶음 → 회색 "Prevent". */
+export const STATUS_PREVENT: TodayStatus = { key: 'today.status.prevent', tone: 'neutral' };
+const STATUS_HIGH: TodayStatus = { key: 'badge.riskHigh', tone: 'high' };
+const STATUS_WATCH: TodayStatus = { key: 'badge.riskWatch', tone: 'watch' };
+
+/** 점: 위험 단계 색. 위험이 없으면 회색. */
+export function dotFor(band: RiskBand | null): TodayDot {
+  return band === null ? 'neutral' : DOT_OF_BAND[band];
+}
+
+/**
+ * 상태 알약 고르기 (화면이 판단을 지어내지 않는다 — 엔진 위험 단계·`decideAutopilot` 판정·묶음만 본다):
+ * Routine → Skipped · 위험 High → High · 위험 Watch → Watch · 승인 대기 판정 → Waiting approval · 그 밖 건너뜀 → Skipped.
+ */
+export function disputeStatus(band: RiskBand | null, decision: AutopilotDecision, routine: boolean): TodayStatus {
+  if (routine) return STATUS_SKIPPED;
+  if (band === 'High') return STATUS_HIGH;
+  if (band === 'Watch') return STATUS_WATCH;
+  return decision.verdict === 'awaiting_approval' ? STATUS_WAITING_APPROVAL : STATUS_SKIPPED;
+}
 
 /**
  * Routine(Mike) 상세의 한 줄 상태 문장 (T061 Today 목록 절). 엔진 판정·규칙 이름에서 문구 키를 고른다:
@@ -212,6 +244,7 @@ function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: Param
   const decision = decideFor(board, rules, params);
   const risk = loaded.signals === null ? null : escalationRisk(loaded.signals, rules);
   const routine = decision.verdict === 'skipped' && decision.rule === 'suspected_abuse';
+  const band = risk?.band ?? null;
 
   return {
     id: loaded.disputeId,
@@ -221,8 +254,10 @@ function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: Param
     name: loaded.buyer === null ? t('today.buyerUnknown') : buyerShortName(loaded.buyer.name),
     label: kindLabel(board.cause?.subtype, board.buyerPriorInrDisputes),
     sub: subLine(loaded, decision, best),
-    band: risk?.band ?? null,
-    chipKey: routine ? SKIPPED_CHIP_KEY : null,
+    band,
+    // Routine(엔진이 손대지 않기로 한 항목)은 순위를 매기지 않으므로 점도 회색
+    dot: routine ? 'neutral' : dotFor(band),
+    status: disputeStatus(band, decision, routine),
     score: risk?.score ?? null,
     dueDate: board.dueDate,
   };
@@ -240,7 +275,8 @@ function trackingItem(tracking: TrackingSummary): TodayItem | null {
     label: null,
     sub: null,
     band: UNTRACKED_FIXED_WATCH_BAND,
-    chipKey: null,
+    dot: dotFor(UNTRACKED_FIXED_WATCH_BAND),
+    status: STATUS_WATCH,
     score: null,
     dueDate: '',
   };
@@ -267,29 +303,8 @@ function compareNeedsYou(a: TodayItem, b: TodayItem): number {
 
 // ── Prevent ────────────────────────────────────────────────────────────────
 
-export type PreventPick = { sku: string; beforeCents: number; afterCents: number; cutPercent: number };
-
-/**
- * 처방 4개를 다 켰을 때 평균 손실이 줄어드는 비율이 가장 큰 상품 (`(before − after) / before`).
- * 처방 전 손실이 0인 상품은 뺀다. 비율이 같으면 처방 전 손실이 큰 쪽. 비교는 정수 곱셈으로 한다 (부동소수 비교 없음).
- */
-export function pickPrevent(rows: readonly { sku: string; beforeCents: number; afterCents: number }[]): PreventPick | null {
-  let best: { sku: string; beforeCents: number; afterCents: number } | null = null;
-  for (const row of rows) {
-    if (row.beforeCents <= 0) continue;
-    if (best === null) {
-      best = row;
-      continue;
-    }
-    // (b1 − a1) / b1  vs  (b2 − a2) / b2  →  (b1 − a1) × b2  vs  (b2 − a2) × b1
-    const mine = (row.beforeCents - row.afterCents) * best.beforeCents;
-    const theirs = (best.beforeCents - best.afterCents) * row.beforeCents;
-    if (mine > theirs || (mine === theirs && row.beforeCents > best.beforeCents)) best = row;
-  }
-  if (best === null) return null;
-  const cutPercent = Math.round(((best.beforeCents - best.afterCents) * 100) / best.beforeCents);
-  return { ...best, cutPercent };
-}
+// 고르기·비율은 엔진 `pickPreventProduct`(T066)가 한다. 화면은 옮기기만 한다.
+export type { PreventPick };
 
 function preventItem(pick: PreventPick, product: SeedProduct): TodayItem {
   return {
@@ -301,7 +316,8 @@ function preventItem(pick: PreventPick, product: SeedProduct): TodayItem {
     label: null,
     sub: t('today.prevent.sub', { stock: product.stock, percent: pick.cutPercent }),
     band: null,
-    chipKey: null,
+    dot: 'neutral',
+    status: STATUS_PREVENT,
     score: null,
     dueDate: '',
   };
@@ -322,13 +338,7 @@ export function buildToday(input: TodayInput): TodayView {
   if (tracking !== null) needsYou.push(tracking);
   needsYou.sort(compareNeedsYou);
 
-  const pick = pickPrevent(
-    store.products.map(({ sku, result }) => ({
-      sku,
-      beforeCents: result.before.meanLossCents,
-      afterCents: result.after.meanLossCents,
-    })),
-  );
+  const pick = pickPreventProduct(store);
   const pickedProduct = pick === null ? undefined : input.products.find((product) => product.sku === pick.sku);
   const prevent = pick === null || pickedProduct === undefined ? [] : [preventItem(pick, pickedProduct)];
 

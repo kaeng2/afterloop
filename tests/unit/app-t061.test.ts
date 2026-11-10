@@ -603,13 +603,15 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
   });
 
   it('Routine 항목은 위험 배지 대신 회색 "Skipped" (엔진 판정에서)', () => {
+    // T067: 회색 칩 → 회색 상태 알약 + 회색 점 (`status`·`dot`)
     const mike = view.groups[2].items[0];
-    expect(mike.chipKey).toBe('today.skipped');
+    expect(mike.status).toEqual({ key: 'today.skipped', tone: 'neutral' });
+    expect(mike.dot).toBe('neutral');
     const markup = html(createElement(TodayList, { view, selectedId: null, paypalNotice: null }));
     const row = markup.slice(markup.indexOf('Mike Morgan'));
-    expect(row.slice(0, row.indexOf('</li>'))).toContain('<span class="today-chip">Skipped</span>');
+    expect(row.slice(0, row.indexOf('</li>'))).toContain('<span class="today-pill today-pill-neutral">Skipped</span>');
     expect(row.slice(0, row.indexOf('</li>'))).not.toContain('risk-low');
-    for (const item of view.groups[0].items) expect(item.chipKey).toBeNull();
+    for (const item of view.groups[0].items) expect(item.status.key).not.toBe('today.skipped');
   });
 
   it('Mike 상태 문장: "3rd \'not received\' claim in 90 days with a delivery record — AfterLoop won\'t act on this."', () => {

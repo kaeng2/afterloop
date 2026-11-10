@@ -1,15 +1,17 @@
 /*
- * 위쪽 막대 + PayPal activity 서랍 (T060). 색·글자 크기·간격은 `globals.css`의 변수만 쓴다 (새 색 값 없음).
- * 시안(mockup v3)에서 따르는 것: 막대 높이 약 72px, 알약 모양 탭 묶음(고른 탭은 흰 바탕), 글자 14px 굵게,
- * 서랍 폭 약 400px. 그림자는 쓰지 않는다 (카드 규칙) — 테두리와 바탕색으로 구분한다.
+ * 위쪽 막대 + PayPal activity 서랍 (T060 → T067). 색·글자 크기·간격은 `globals.css`의 변수만 쓴다 (새 색 값 없음).
+ * 시안(mockup v3)에서 따르는 것: 화면 폭 전체, 흰 바탕 + 아래 1px 선(`--color-divider`), 막대 높이 약 72px,
+ * 28px 원형 로고 마크 + 굵은 이름, 알약 모양 탭 묶음(고른 탭은 흰 바탕), 글자 14px 굵게, 서랍 폭 약 400px.
+ * 그림자는 쓰지 않는다 (그림자는 Today 목록의 고른 항목 하나뿐) — 테두리와 바탕색으로 구분한다.
  */
 
 .shell-bar {
   position: sticky;
   top: 0;
   z-index: 5;
+  width: 100%;
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .shell-bar-inner {
@@ -24,21 +26,32 @@
 }
 
 .shell-logo {
+  display: inline-flex;
   flex: none;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--text-md);
-  font-weight: 750;
+  font-weight: 800;
   letter-spacing: -0.01em;
+  color: var(--color-heading);
 }
 
-.shell-logo::before {
-  content: '';
-  display: inline-block;
-  width: 0.6em;
-  height: 0.6em;
-  margin-right: var(--space-2);
-  border-radius: 3px;
-  background: var(--color-accent);
-  vertical-align: 0.05em;
+/* 로고 마크 (T067): 28px 원형, 강조색 원 + 카드 바탕색 고리 */
+.shell-logo-mark {
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+.shell-logo-disc {
+  fill: var(--color-accent);
+}
+
+.shell-logo-ring {
+  fill: none;
+  stroke: var(--color-surface);
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* 탭 묶음: 알약 하나 안에 탭 두 개 */
@@ -47,7 +60,7 @@
   padding: var(--space-1);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .shell-tab {
@@ -58,7 +71,7 @@
   color: var(--color-muted);
   white-space: nowrap;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .shell-tab:hover {
@@ -92,7 +105,7 @@
   color: var(--color-text);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
 }
 
@@ -112,7 +125,7 @@
   color: var(--color-muted);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 /* Autopilot 토글 (비활성) */
@@ -134,7 +147,7 @@
   padding: 0;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .shell-switch:disabled {
@@ -252,5 +265,5 @@
   font-size: var(--text-sm);
   text-align: center;
   background: var(--color-bg);
-  border-radius: 16px;
+  border-radius: var(--card-radius);
 }

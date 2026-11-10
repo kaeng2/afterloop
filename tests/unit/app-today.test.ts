@@ -26,7 +26,6 @@ import {
   dateLine,
   daysUntil,
   ordinal,
-  pickPrevent,
   selectItem,
   type TrackingSummary,
 } from '@/app/today/model';
@@ -34,7 +33,7 @@ import { summarizeTracking } from '@/app/today/tracking';
 import { TodayList } from '@/app/today/today-list';
 import { TrackingDetail } from '@/app/today/tracking-detail';
 import { FIX_ORDER } from '@/engine/sim';
-import { simulateStore } from '@/engine/storefront';
+import { pickPreventProduct, simulateStore } from '@/engine/storefront';
 import type { BoardState, Cause, EscalationSignals, PayPalClient, SeedBuyer, SeedProduct, Subtype } from '@/types';
 
 import manifestJson from '../sandbox/manifest.json';
@@ -342,7 +341,7 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
       beforeCents: result.before.meanLossCents,
       afterCents: result.after.meanLossCents,
     }));
-    const pick = pickPrevent(rows);
+    const pick = pickPreventProduct(store); // T067: 화면은 엔진(T066) 결과를 옮긴다
     expect(pick?.sku).toBe('FK-CD-OAT');
     // 정의 그대로 다시 세어 본다
     const ratios = rows.filter((r) => r.beforeCents > 0).map((r) => ({ sku: r.sku, ratio: (r.beforeCents - r.afterCents) / r.beforeCents }));
@@ -355,22 +354,75 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
     expect(prevent.sub).toBe('120 left · fixes cut likely loss by about 80%');
   });
 
-  it('비율이 같으면 처방 전 손실이 큰 쪽, 처방 전 손실 0은 뺀다', () => {
-    expect(
-      pickPrevent([
-        { sku: 'A', beforeCents: 100, afterCents: 50 },
-        { sku: 'B', beforeCents: 200, afterCents: 100 },
-        { sku: 'Z', beforeCents: 0, afterCents: 0 },
-      ])?.sku,
-    ).toBe('B');
-    expect(pickPrevent([{ sku: 'Z', beforeCents: 0, afterCents: 0 }])).toBeNull();
-    // 금액은 A가 더 줄지만 비율은 C가 크다
-    expect(
-      pickPrevent([
-        { sku: 'A', beforeCents: 25460, afterCents: 7078 },
-        { sku: 'C', beforeCents: 21619, afterCents: 4366 },
-      ])?.sku,
-    ).toBe('C');
+  it('Prevent 항목은 엔진 `pickPreventProduct` 값 그대로다 (화면에 고르기 함수가 없다, T067)', () => {
+    const pick = pickPreventProduct(store);
+    const prevent = today().groups[1].items[0];
+    expect(prevent.id).toBe(pick?.sku);
+    const code = readFileSync(path.join(ROOT, 'src/app/today/model.ts'), 'utf8');
+    expect(code).toMatch(/pickPreventProduct\(store\)/);
+    expect(code).not.toMatch(/function pickPrevent\b/);
+  });
+});
+
+// ───────────────────────────── T067: 점 = 위험 등급, 알약 = 상태 ─────────────────────────────
+
+describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
+  it('서연 High · 추적 Watch · 지호 Waiting approval · 가디건 Prevent · Mike Skipped', () => {
+    const [needsYou, prevent, routine] = today().groups;
+    const [seoyeon, tracking, jiho] = needsYou.items;
+    const statusText = (item: { status: { key: string } }) => t(item.status.key);
+
+    expect([seoyeon, tracking, jiho, prevent.items[0], routine.items[0]].map(statusText)).toEqual([
+      'High',
+      'Watch',
+      'Waiting approval',
+      'Prevent',
+      'Skipped',
+    ]);
+    expect([seoyeon, tracking, jiho, prevent.items[0], routine.items[0]].map((item) => item.status.tone)).toEqual([
+      'high',
+      'watch',
+      'neutral',
+      'neutral',
+      'neutral',
+    ]);
+    // 점: 서연 빨강 · 추적 노랑 · 지호는 엔진 위험 등급 색 · 가디건·Mike 회색
+    expect(seoyeon.dot).toBe('high');
+    expect(tracking.dot).toBe('watch');
+    expect(jiho.band).not.toBeNull();
+    expect(jiho.dot).toBe(({ High: 'high', Watch: 'watch', Low: 'low' } as const)[jiho.band as 'High' | 'Watch' | 'Low']);
+    expect(prevent.items[0].dot).toBe('neutral');
+    expect(routine.items[0].dot).toBe('neutral');
+  });
+
+  it('알약은 엔진 판정에서 고른다: 지호 위험이 오르면 알약도 위험 단계로 바뀐다', () => {
+    const disputes = demoDisputes().map((d) =>
+      d.disputeId === D1 ? { ...d, signals: { ...quiet, mentionsCardCompany: true, unansweredOver24h: true } } : d,
+    );
+    const jiho = items(buildToday({ disputes, tracking: TRACKING, products: seedProducts, now: NOW })).find((item) => item.id === D1);
+    expect(jiho?.band).toBe('High');
+    expect(jiho?.status).toEqual({ key: 'badge.riskHigh', tone: 'high' });
+    expect(jiho?.dot).toBe('high');
+  });
+
+  it('목록 마크업: 점(장식) + 알약 글자, 위험 기호 부품(RiskLevel)은 쓰지 않는다', () => {
+    const view = today();
+    const markup = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
+    expect(markup).toContain('<span class="today-dot today-dot-high" aria-hidden="true"></span>');
+    expect(markup).toContain('<span class="today-pill today-pill-high">High</span>');
+    expect(markup).toContain('<span class="today-pill today-pill-watch">Watch</span>');
+    expect(markup).toContain('<span class="today-pill today-pill-neutral">Waiting approval</span>');
+    expect(markup).toContain('<span class="today-pill today-pill-neutral">Prevent</span>');
+    expect(markup).toContain('<span class="today-pill today-pill-neutral">Skipped</span>');
+    expect(markup).not.toMatch(/class="risk /);
+    expect(markup.match(/aria-current="true"/g)?.length).toBe(1);
+  });
+
+  it('화면 코드에 상태 글자를 직접 쓰지 않는다 (문구 키)', () => {
+    for (const file of ['src/app/today/model.ts', 'src/app/today/today-list.tsx']) {
+      const code = strip(readFileSync(path.join(ROOT, file), 'utf8'));
+      expect(/['"](Waiting approval|Skipped)['"]|>(High|Watch|Prevent|Skipped|Waiting approval)</.test(code), file).toBe(false);
+    }
   });
 });
 
@@ -436,7 +488,7 @@ describe('T060 추적 항목 조회 (GET만)', () => {
     expect(await summarizeTracking(fakeOrders(), SEED, { orders: 'broken' })).toBeNull();
   });
 
-  it('추적 상세: 한 줄 설명 + 주문 목록, 분쟁 걸린 주문은 "In dispute — excluded", 등록 버튼 없음', () => {
+  it('추적 상세: 한 줄 설명 + 주문 목록, 분쟁 걸린 주문은 "In dispute — excluded", 서버 액션을 안 넘기면 버튼 없음', () => {
     const html = renderToStaticMarkup(createElement(TrackingDetail, { tracking: TRACKING }));
     expect(html).toContain('2 orders shipped 3+ days ago have no tracking in PayPal.');
     expect(html).toContain('In dispute — excluded');
@@ -570,9 +622,10 @@ describe('T060 옛 주소와 정적 검사', () => {
     }
   });
 
-  it('새 css는 변수 색만 쓰고 그림자·100vw·360px 넘는 고정 폭이 없다', () => {
+  it('새 css는 변수 색만 쓰고 그림자(--shadow-selected 하나 밖)·100vw·360px 넘는 고정 폭이 없다', () => {
     for (const file of ['src/app/_shared/shell.css', 'src/app/today/today.css', 'src/app/products/products.css']) {
-      const css = strip(readFileSync(path.join(ROOT, file), 'utf8'));
+      // T067: 그림자는 `box-shadow: var(--shadow-selected)` 하나만 허용 (사람 결정)
+      const css = strip(readFileSync(path.join(ROOT, file), 'utf8')).replace(/box-shadow:\s*var\(--shadow-selected\);/g, '');
       expect(css, file).not.toMatch(/box-shadow|100vw|#[0-9a-fA-F]{3,8}\b|rgba?\(/);
       // `@media (min-width: …)` 조건은 폭 지정이 아니므로 뺀다
       for (const match of css.matchAll(/(?<![-\w(])(min-)?width\s*:\s*([0-9.]+)(px|rem)/g)) {

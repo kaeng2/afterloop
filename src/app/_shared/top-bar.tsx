@@ -27,12 +27,27 @@ const SHOW_AUTOPILOT = false;
 /** 기록은 T064가 채운다. 지금은 빈 목록 (건수 = 길이 = 0). */
 const NO_RECORDS: readonly ActivityRecord[] = [];
 
+/**
+ * 로고 마크 (T067): 28px 원 + 고리 모양(돌아오는 화살표) 아이콘. 색은 css 변수(강조색 + 카드 바탕)만 쓴다 —
+ * 시안의 파랑 계열 색은 쓰지 않는다. 장식이라 읽히지 않는다 (이름은 옆 글자).
+ */
+function LogoMark() {
+  return (
+    <svg className="shell-logo-mark" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <circle className="shell-logo-disc" cx="16" cy="16" r="14" />
+      <path className="shell-logo-ring" d="M10 16a6 6 0 1 0 6-6" strokeWidth="3" />
+      <path className="shell-logo-ring" d="M16 6.5l3 3.5-3.6 2.6" strokeWidth="2.5" />
+    </svg>
+  );
+}
+
 export function TopBar({ todayCount, seller }: { todayCount: number; seller: { initial: string; shop: string } }) {
   const pathname = usePathname() ?? '/';
   return (
     <header className="shell-bar">
       <div className="shell-bar-inner">
         <Link href="/" className="shell-logo">
+          <LogoMark />
           {t('nav.appName')}
         </Link>
 
