@@ -1,9 +1,10 @@
 /**
- * 승인된 수 실행 (SPEC v2.1 9-1장, T008 + 보강 T027).
+ * 승인된 수 실행 (SPEC v2.5 9-1장, T008 + 보강 T027, T049).
  *
  * 판매자가 승인한 `ActionPlan`을 PayPal 요청 1건으로 바꿔 보낸다.
  * - 승인이 없거나 맞지 않으면 **네트워크 호출 전에** 거부한다 (호출 0회).
- * - 거부 검사를 모두 끝낸 **뒤에** 중복 승인 기억을 본다: 이미 성공한 계획이어도 지금 입력이 거부 대상이면 거부한다.
+ * - 거부 검사를 모두 끝낸 **뒤에** 중복 방지 기억을 본다: 이미 성공한 요청이어도 지금 입력이 거부 대상이면 거부한다.
+ * - 기억의 키는 **요청 번호**다 (T049): 같은 계획이라도 본문(메시지·금액)이 다르면 새 호출이 나간다.
  * - 메시지 안 금액과 API 본문 금액은 같은 센트 값에서 나온다 (`amount.ts`).
  * - 금액을 계산하지 않는다. 엔진이 `plan`에 넣어 준 값만 쓴다.
  * - 2xx 정수 상태 코드만 성공으로 보고, 성공만 기억한다.
@@ -24,15 +25,20 @@ function rejectWith({ error, nextAction }: Rejection): ExecuteResult {
 }
 
 /**
- * 이미 성공한 계획 (SPEC 9-1장 중복 승인). 프로세스 메모리 기준이고,
- * 주입된 `call`(= 클라이언트 1개)별로 기억한다. 서버 쪽 중복은 PayPal-Request-Id가 막는다.
+ * 이미 성공한 요청 (SPEC 9-1장 중복 방지). 프로세스 메모리 기준이고,
+ * 주입된 `call`(= 클라이언트 1개)별로 기억한다. 서버 쪽 중복은 같은 PayPal-Request-Id가 막는다.
+ *
+ * 키는 **요청 번호** = hash(계획 ID + 엔드포인트 + 보내는 본문) (`request.ts`).
+ * 계획 ID만으로 기억하면 `send_message` 계획이 분쟁마다 하나라서, 같은 분쟁에 보내는
+ * 두 번째 **다른 메시지**가 호출 없이 `ok: true`로 삼켜진다 (T049).
+ * 요청 번호를 키로 쓰면 이 메모리가 막는 범위와 PayPal이 막는 범위가 정확히 같아진다.
  */
 const succeeded = new WeakMap<PayPalCaller, Map<string, ExecuteResult>>();
 
-function remember(call: PayPalCaller, planId: string, result: ExecuteResult): void {
-  const byPlan = succeeded.get(call) ?? new Map<string, ExecuteResult>();
-  byPlan.set(planId, result);
-  succeeded.set(call, byPlan);
+function remember(call: PayPalCaller, requestId: string, result: ExecuteResult): void {
+  const byRequest = succeeded.get(call) ?? new Map<string, ExecuteResult>();
+  byRequest.set(requestId, result);
+  succeeded.set(call, byRequest);
 }
 
 /** 센트 정수가 아니면 표기를 만들 수 없다 (호출 전에 거부). */
@@ -73,8 +79,9 @@ export const executeMove: ExecuteMoveFn = async (input, deps) => {
   const built = buildRequest(plan, filled.message);
   if (!built.ok) return rejectWith(built);
 
-  // 5. 중복 승인: 거부 검사를 모두 통과한 뒤에만 이전 성공 결과를 돌려준다 (호출 0회)
-  const previous = succeeded.get(deps.call)?.get(plan.planId);
+  // 5. 중복 방지: 거부 검사를 모두 통과한 뒤에만 이전 성공 결과를 돌려준다 (호출 0회).
+  //    요청 번호가 같을 때 = 같은 계획 + 같은 엔드포인트 + 같은 본문일 때만 같은 요청으로 본다.
+  const previous = succeeded.get(deps.call)?.get(built.request.requestId);
   if (previous !== undefined) return previous;
 
   // 6. 호출 1회
@@ -97,6 +104,6 @@ export const executeMove: ExecuteMoveFn = async (input, deps) => {
   }
 
   const result: ExecuteResult = { ok: true, sent: [{ path: built.request.path, status }] };
-  remember(deps.call, plan.planId, result);
+  remember(deps.call, built.request.requestId, result);
   return result;
 };
