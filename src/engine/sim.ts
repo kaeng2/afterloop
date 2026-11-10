@@ -143,6 +143,11 @@ export type SimPass = {
   disputes: number[];
   /** 미래별로 분쟁이 난 주문 번호 (0부터, 오름차순). "같은 난수" 확인용 */
   disputeOrders: number[][];
+  /**
+   * 미래별로 분쟁이 난 주문의 세부 유형 (`disputeOrders`와 같은 모양·같은 순서).
+   * 주문마다 `SUBTYPES` 고정 순서에서 처음 걸린 유형이다. 점 그림용 (T048). `simulate` 결과에는 넣지 않는다.
+   */
+  disputeSubtypes: Subtype[][];
 };
 
 /**
@@ -304,10 +309,12 @@ function runPass(input: SimInput, ctx: SimContext, fixes: readonly FixId[]): Sim
   const lossCents: number[] = [];
   const disputes: number[] = [];
   const disputeOrders: number[][] = [];
+  const disputeSubtypes: Subtype[][] = [];
 
   for (let future = 0; future < input.futures; future += 1) {
     let futureLossCents = 0;
     const orders: number[] = [];
+    const subtypes: Subtype[] = [];
 
     for (let order = 0; order < input.stock; order += 1) {
       // ① 유형 판정: 고정 순서대로 유형 수만큼. 주문당 최대 1건(첫 번째로 걸린 유형)
@@ -323,6 +330,7 @@ function runPass(input: SimInput, ctx: SimContext, fixes: readonly FixId[]): Sim
       if (hit === null) continue;
 
       orders.push(order);
+      subtypes.push(hit.subtype);
       futureLossCents += settleFirst
         ? settleLossCents(hit, ctx, choiceDraw, winDraw)
         : habitLossCents(hit, ctx, choiceDraw, winDraw);
@@ -331,9 +339,10 @@ function runPass(input: SimInput, ctx: SimContext, fixes: readonly FixId[]): Sim
     lossCents.push(futureLossCents);
     disputes.push(orders.length);
     disputeOrders.push(orders);
+    disputeSubtypes.push(subtypes);
   }
 
-  return { lossCents, disputes, disputeOrders };
+  return { lossCents, disputes, disputeOrders, disputeSubtypes };
 }
 
 function sum(values: readonly number[]): number {
