@@ -8,13 +8,14 @@
  * 여기에는 진입점이 없다 (단위 테스트가 그대로 import한다). 명령줄 처리는 `disputes.ts`가 한다.
  * 분쟁 상태를 바꾸는 호출(send-message, make-offer, accept-claim 등)은 만들지 않는다.
  *
- * 출력에 들어가는 것: 분쟁 ID·reason·단계·채널·금액(센트)·기한·허용된 수.
+ * 출력에 들어가는 것: 분쟁 ID·reason·status·단계·채널·금액(센트)·기한·허용된 수·다른 링크(rel 이름)·
+ * 구매자 글 **개수**·이전 INR 분쟁 수.
  * 들어가지 않는 것: 구매자 이름·이메일·주소·메시지 원문, `payer_id`, Secret·토큰.
  */
 import { kstStamp } from './last-run';
 import { failureLine } from './paypal';
-import { getDispute, listDisputes, type DisputeSummary } from '@/paypal/disputes';
-import { buyerKeyOf, countPriorInrDisputes, toBoardState } from '@/paypal/mapper';
+import { getDispute, listDisputes, type DisputeLink, type DisputeSummary } from '@/paypal/disputes';
+import { buyerKeyOf, countPriorInrDisputes, toBoardState, toClassifyInput } from '@/paypal/mapper';
 import type { BoardState, PayPalClient } from '@/types';
 
 /** 목록을 한 번에 받는 건수 (PayPal 상한 50). 분쟁 3건짜리 데모라 한 쪽으로 끝난다. */
@@ -24,12 +25,18 @@ const PAGE_SIZE = 50;
 export type DisputeReadRow = {
   disputeId: string;
   reason: string;
+  /** 분쟁 상세의 `status` (예: `UNDER_REVIEW`). 응답에 없으면 빈 문자열 */
+  status: string;
   stage: BoardState['stage'];
   channel: BoardState['channel'];
   amountCents: number;
   /** `seller_response_due_date`(없으면 구매자 기한). 둘 다 없으면 빈 문자열 */
   dueDate: string;
   allowedMoves: BoardState['allowedMoves'];
+  /** `links[].rel` 중 `self`도 `MoveType`도 아닌 것 (응답 순서). 이 앱이 쓰지 않는 길이 뭔지 보여 준다 */
+  otherActions: string[];
+  /** 구매자가 쓴 글의 **개수**만 (`toClassifyInput`의 `buyerMessages.length`). 원문은 담지 않는다 */
+  buyerTextCount: number;
   /** 같은 구매자의 이전 미수령(INR) 분쟁 수 — 목록에서 센다 (구매자 식별자는 싣지 않는다) */
   buyerPriorInrDisputes: number;
 };
@@ -68,6 +75,27 @@ function priorInrDisputes(summaries: DisputeSummary[], current: DisputeSummary):
 }
 
 /**
+ * `allowedMoves`로 옮겨지는 rel 4개(`@/paypal/mapper`의 `MoveType` 순서)와 자기 링크.
+ * `otherActions`는 이 목록에 없는 rel만 모은다.
+ */
+const KNOWN_RELS: readonly string[] = ['self', 'send_message', 'make_offer', 'provide_evidence', 'accept_claim'];
+
+/**
+ * 응답에 온 링크 가운데 이 앱이 수로 다루지 않는 것의 rel 이름 (응답 순서 그대로).
+ * 같은 rel이 두 번 와도 한 번만 적는다. 주소(`href`)는 담지 않는다.
+ */
+function otherActionsOf(links: DisputeLink[]): string[] {
+  const out: string[] = [];
+  for (const link of links) {
+    const rel = link.rel.trim();
+    if (rel === '' || KNOWN_RELS.includes(rel)) continue;
+    if (out.includes(rel)) continue;
+    out.push(rel);
+  }
+  return out;
+}
+
+/**
  * 목록을 읽고 건별로 상세를 읽어 `BoardState`로 바꾼다.
  * 한 건이 변환되지 않아도 나머지는 계속 읽는다 (문제는 `problems`에 쌓인다).
  * 목록 조회 자체가 실패하면 던진다 (호출하는 쪽이 종료 코드를 정한다).
@@ -81,19 +109,22 @@ export async function runDisputesRead(client: PayPalClient): Promise<DisputeRead
   for (const summary of summaries) {
     try {
       const detail = await getDispute(client, summary.dispute_id);
-      const board = toBoardState(detail, {
-        ...TRACKING_UNKNOWN,
-        buyerPriorInrDisputes: priorInrDisputes(summaries, summary),
-        isDemo: false,
-      });
+      const buyerPriorInrDisputes = priorInrDisputes(summaries, summary);
+      const board = toBoardState(detail, { ...TRACKING_UNKNOWN, buyerPriorInrDisputes, isDemo: false });
+      // 구매자 글은 여기서 다시 모으지 않는다 — T003의 변환을 그대로 쓰고 **개수만** 꺼낸다.
+      // 추적 값은 `toBoardState`에 넘긴 것과 같은 가정(`TRACKING_UNKNOWN`)이고, 택배사 이벤트는 읽지 않는다.
+      const classify = toClassifyInput(detail, { ...TRACKING_UNKNOWN, buyerPriorInrDisputes, trackingEvents: [] });
       rows.push({
         disputeId: board.disputeId,
         reason: board.reason,
+        status: detail.status?.trim() ?? '',
         stage: board.stage,
         channel: board.channel,
         amountCents: board.amountCents,
         dueDate: board.dueDate,
         allowedMoves: board.allowedMoves,
+        otherActions: otherActionsOf(detail.links),
+        buyerTextCount: classify.buyerMessages.length,
         buyerPriorInrDisputes: board.buyerPriorInrDisputes,
       });
     } catch (error) {
@@ -110,16 +141,25 @@ export async function runDisputesRead(client: PayPalClient): Promise<DisputeRead
 /** 분쟁이 없을 때의 문구 (지시서 문장 그대로). */
 export const EMPTY_LINE = '0 disputes (empty list)';
 
-/** 한 건을 한 줄로. 금액은 센트 정수 그대로 적는다 (여기서 계산하지 않는다). */
+/** 빈 값·빈 목록은 `-`로 적는다 (칸을 비워 두지 않는다). */
+const dash = (value: string): string => (value === '' ? '-' : value);
+
+/**
+ * 한 건을 한 줄로. 금액은 센트 정수 그대로 적는다 (여기서 계산하지 않는다).
+ * 구매자 글은 **개수만** 적는다 (`buyerTexts=1`) — 원문은 어디에도 싣지 않는다.
+ */
 export function disputeLine(row: DisputeReadRow): string {
   return [
     row.disputeId,
     `reason=${row.reason}`,
+    `status=${dash(row.status)}`,
     `stage=${row.stage}`,
     `channel=${row.channel}`,
     `amountCents=${row.amountCents}`,
-    `dueDate=${row.dueDate === '' ? '-' : row.dueDate}`,
-    `allowedMoves=${row.allowedMoves.length === 0 ? '-' : row.allowedMoves.join(',')}`,
+    `dueDate=${dash(row.dueDate)}`,
+    `allowedMoves=${dash(row.allowedMoves.join(','))}`,
+    `otherActions=${dash(row.otherActions.join(','))}`,
+    `buyerTexts=${row.buyerTextCount}`,
     `buyerPriorInrDisputes=${row.buyerPriorInrDisputes}`,
   ].join(' · ');
 }
@@ -154,17 +194,20 @@ export function disputesSection(outcome: DisputeReadOutcome, now: Date = new Dat
 
   lines.push(
     '',
-    row(['분쟁 ID', 'reason', '단계', '채널', '금액(센트)', '기한', '허용된 수', '이전 INR']),
-    row(['---', '---', '---', '---', '---', '---', '---', '---']),
+    row(['분쟁 ID', 'reason', 'status', '단계', '채널', '금액(센트)', '기한', '허용된 수', '다른 링크', '구매자 글 수', '이전 INR']),
+    row(['---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---']),
     ...outcome.rows.map((r) =>
       row([
         r.disputeId,
         r.reason,
+        dash(r.status),
         r.stage,
         r.channel,
         r.amountCents,
-        r.dueDate === '' ? '-' : r.dueDate,
-        r.allowedMoves.join(',') || '-',
+        dash(r.dueDate),
+        dash(r.allowedMoves.join(',')),
+        dash(r.otherActions.join(',')),
+        r.buyerTextCount,
         r.buyerPriorInrDisputes,
       ]),
     ),

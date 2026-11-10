@@ -1,11 +1,14 @@
 /**
- * `npm run sandbox:setup -- <단계>` — 샌드박스 구성 중 추적 등록과 분쟁 ID 수집 (T001, SPEC v2.2 9-5장).
+ * `npm run sandbox:setup -- <단계>` — 샌드박스 구성 중 추적 등록과 분쟁 ID 수집 (T001·T039, SPEC v2.3 9-5장).
  *
  *   track    : manifest에서 `tracked: true`인 주문에 POST /v2/checkout/orders/{id}/track 1회씩
  *              (가상 추적번호, carrier OTHER). 이미 추적이 붙은 주문은 건너뛴다.
+ *              **manifest의 분쟁(시연 제외 포함)이 가리키는 주문은 호출 전에 뺀다** (SPEC 9-3) —
+ *              아직 등록 전이어도 조회조차 하지 않고 표에 "분쟁 진행 중이라 제외"로 적는다.
  *   disputes : 주문 캡처에 걸린 분쟁을 GET /v1/customer/disputes로 찾아 D1~D3 ID를 manifest에 적는다.
- *              이미 적힌 항목은 지우지 않고 찾은 것만 더하거나 갱신한다. D1~D3이 다 모이지 않으면
- *              모자란 키를 알리고 종료 코드 1 (T029).
+ *              이미 적힌 항목은 지우지 않고 찾은 것만 더하거나 갱신한다. 시연 제외 항목은 건드리지 않고
+ *              그 분쟁 ID를 다른 키로 다시 배정하지 않는다 (T039). 시연 제외를 뺀 D1~D3이 다 모이지
+ *              않으면 모자란 키를 알리고 종료 코드 1 (T029).
  *
  * `orders`·`capture` 단계는 T026(`scripts/create-sandbox-orders.ts`, `scripts/capture-sandbox-orders.ts`)이 한다.
  * 하는 일은 `setup-steps.ts`에 있다 (여기는 명령줄·출력·종료 코드만).
@@ -16,6 +19,7 @@ import { readManifest, writeManifest } from './manifest';
 import { createSandboxClient, failureLine } from './paypal';
 import {
   DISPUTE_ORDER_KEY,
+  TRACK_DISPUTED_NOTE,
   mergeDisputes,
   missingDisputeKeys,
   runDisputes,
@@ -34,7 +38,9 @@ function printTrack(outcomes: TrackOutcome[]): void {
     console.log(row([o.key, o.orderId, o.result, o.status ?? '호출 실패', o.trackingNumber ?? '-', o.note]));
   }
   const count = (result: TrackOutcome['result']) => outcomes.filter((o) => o.result === result).length;
-  console.log(`\n등록 ${count('added')} · 건너뜀 ${count('skipped')} · 실패 ${count('failed')}`);
+  console.log(
+    `\n등록 ${count('added')} · 건너뜀 ${count('skipped')} · ${TRACK_DISPUTED_NOTE} ${count('disputed')} · 실패 ${count('failed')}`,
+  );
 }
 
 function printDisputes(outcomes: DisputeOutcome[]): void {

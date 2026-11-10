@@ -27,6 +27,8 @@ const fixture = (name: string): Record<string, unknown> =>
 
 const LIST = fixture('dispute-list.json');
 const DETAIL = fixture('dispute-detail.inquiry-waiting-seller.json');
+/** 실제 분쟁 D2 꼴: `messages` 키가 없고 구매자 접수 글이 `evidences[].notes`에만 있다 (T037) */
+const CLAIM = fixture('dispute-detail.claim-under-review.json');
 
 type Reply = { status: number; body: unknown };
 
@@ -254,7 +256,7 @@ describe('parseDisputeDetail · nextPath', () => {
     expect(detail.dispute_life_cycle_stage).toBe('SOMETHING_NEW');
   });
 
-  it('links·disputed_transactions·messages가 없으면 빈 배열', () => {
+  it('links·disputed_transactions·messages·evidences가 없으면 빈 배열', () => {
     const detail = parseDisputeDetail({
       dispute_id: 'PP-X-1',
       reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED',
@@ -265,6 +267,62 @@ describe('parseDisputeDetail · nextPath', () => {
     expect(detail.links).toEqual([]);
     expect(detail.disputed_transactions).toEqual([]);
     expect(detail.messages).toEqual([]);
+    expect(detail.evidences).toEqual([]);
+  });
+
+  it('evidences 항목은 네 필드만 남기고 모르는 키는 떼낸다 (모두 선택이다)', () => {
+    const detail = parseDisputeDetail({
+      ...DETAIL,
+      evidences: [
+        {
+          evidence_type: 'CREATE',
+          notes: 'buyer wrote this',
+          source: 'SUBMITTED_BY_BUYER',
+          date: '2026-11-09T06:09:25.608Z',
+          dispute_life_cycle_stage: 'INQUIRY',
+          documents: [{ name: 'receipt.pdf' }],
+        },
+        {},
+      ],
+    });
+
+    expect(detail.evidences).toEqual([
+      {
+        evidence_type: 'CREATE',
+        notes: 'buyer wrote this',
+        source: 'SUBMITTED_BY_BUYER',
+        date: '2026-11-09T06:09:25.608Z',
+      },
+      {},
+    ]);
+  });
+
+  it('evidences가 빈 배열이거나 꼴이 다르면 (문자열) 어떤 필드인지 알 수 있는 예외', () => {
+    expect(parseDisputeDetail({ ...DETAIL, evidences: [] }).evidences).toEqual([]);
+
+    let message = '';
+    try {
+      parseDisputeDetail({ ...DETAIL, evidences: [{ notes: 42 }] });
+    } catch (e) {
+      message = (e as Error).message;
+    }
+    expect(message).toContain('evidences.0.notes');
+  });
+
+  it('messages 키가 없고 evidences에만 구매자 글이 있는 상세(D2 꼴)도 받는다', () => {
+    const detail = parseDisputeDetail(CLAIM);
+    const text = JSON.stringify(detail);
+
+    expect(detail.messages).toEqual([]);
+    expect(detail.evidences).toHaveLength(1);
+    expect(detail.evidences[0].source).toBe('SUBMITTED_BY_BUYER');
+    expect(detail.evidences[0].notes?.trim()).not.toBe('');
+    expect(detail.seller_response_due_date).toBeUndefined();
+    expect(detail.buyer_response_due_date).toBeUndefined();
+    // 구매자 이름·이메일은 여기서 걸러진다 (payer_id만 남는다, SPEC 10장)
+    expect(text).not.toContain('testbuyer2@example.com');
+    expect(text).not.toContain('Test Buyer Two');
+    expect(detail.disputed_transactions[0].buyer?.payer_id).toBe('TESTBUYER00001');
   });
 
   it('next가 없거나 href가 비면 null', () => {

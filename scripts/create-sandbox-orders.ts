@@ -3,7 +3,8 @@
  *
  *   입력   : `seed/orders.json`의 `source: 'sandbox'` 12건 + `seed/products.json`의 상품명·가격
  *            배정(키·구매자·상품·추적)의 정본은 `tasks/T001.md` "주문 12건 배정" 표다.
- *   호출   : 주문마다 `POST /v2/checkout/orders` (intent CAPTURE, USD, items[].name = 상품명)
+ *   호출   : 주문마다 `POST /v2/checkout/orders` (intent CAPTURE, USD, items[].name = 상품명,
+ *            승인 뒤 돌아갈 주소 `payment_source.paypal.experience_context` — T034)
  *            `PayPal-Request-Id`는 주문 키 기준(`afterloop-order-O01`)이라 다시 실행해도 중복 생성되지 않는다
  *            (PayPal이 같은 주문을 200으로 돌려준다 — T001 보고서의 멱등 확인).
  *   출력   : 승인 링크를 `reports/sandbox-approve-links.md`에, 주문 ID를 `tests/sandbox/manifest.json`에 적는다.
@@ -180,8 +181,32 @@ export function readSandboxOrderSpecs(orders: unknown = ordersJson, products: un
 // ── 요청 본문 ──────────────────────────────────────────────────────────────────
 
 /**
+ * 승인한 구매자가 돌아갈 주소 (T034). 승인 화면의 마지막 버튼("주문 검토로 계속")이 여기로 넘긴다 —
+ * 이 값이 없으면 버튼을 눌러도 같은 화면만 새로고침된다 (2026-11-10 사람 보고).
+ * 받아 줄 서버가 없어도 된다: 이 주소가 주소창에 뜨는 것으로 승인이 끝났음을 안다.
+ * **우리가 보내는 값이지 응답의 승인 링크가 아니다** — 샌드박스 도메인 검사(`approveUrlKind`)의 대상이 아니다.
+ */
+export const RETURN_URL = 'https://example.com/afterloop/return';
+/** 구매자가 승인을 취소했을 때 돌아갈 주소 (위와 같이 우리가 보내는 값이다). */
+export const CANCEL_URL = 'https://example.com/afterloop/cancel';
+
+/**
+ * 승인 화면 설정 (`payment_source.paypal.experience_context`, T034).
+ * `user_action: 'PAY_NOW'`는 마지막 버튼을 "지금 결제"로 만든다.
+ * `shipping_preference`는 **넣지 않는다** — 배송지를 PayPal 기본값(구매자 주소)대로 받아야
+ * 배송 추적 등록과 미수령 분쟁(SPEC 9-5장)이 성립한다.
+ */
+const EXPERIENCE_CONTEXT = {
+  return_url: RETURN_URL,
+  cancel_url: CANCEL_URL,
+  user_action: 'PAY_NOW',
+};
+
+/**
  * Orders v2 주문 1건. 금액은 상품 가격 그대로(USD), `items[].name`은 원문 6-1 상품명.
  * `reference_id`에 주문 키를 넣어 PayPal 쪽에서도 어느 주문인지 보이게 한다 (구매자 정보는 넣지 않는다).
+ * `payment_source.paypal`을 넣으므로 응답 상태가 `PAYER_ACTION_REQUIRED`이고 승인 링크의 `rel`이
+ * `payer-action`일 수 있다 (`approveUrlFrom`이 둘 다 고른다).
  */
 export function buildOrderBody(spec: OrderSpec): Record<string, unknown> {
   const amount = { currency_code: 'USD', value: spec.amount };
@@ -194,6 +219,7 @@ export function buildOrderBody(spec: OrderSpec): Record<string, unknown> {
         items: [{ name: spec.itemName, quantity: '1', unit_amount: amount }],
       },
     ],
+    payment_source: { paypal: { experience_context: { ...EXPERIENCE_CONTEXT } } },
   };
 }
 
@@ -202,7 +228,10 @@ export function buildOrderBody(spec: OrderSpec): Record<string, unknown> {
 /** 샌드박스 승인 화면의 도메인. 이 밖(특히 live `www.paypal.com`)이면 멈춘다. */
 const SANDBOX_HOST_SUFFIX = '.sandbox.paypal.com';
 
-/** 승인 링크가 샌드박스인지. `live`면 즉시 멈춰야 한다. */
+/**
+ * **응답의 승인 링크**가 샌드박스인지. `live`면 즉시 멈춰야 한다.
+ * 우리가 보내는 `return_url`·`cancel_url`(`example.com`)은 이 검사의 대상이 아니다 (T034).
+ */
 export function approveUrlKind(href: string): 'sandbox' | 'live' | 'unknown' {
   let host: string;
   try {
@@ -229,7 +258,10 @@ export class NotSandboxLinkError extends Error {
   }
 }
 
-/** 응답 `links[]`에서 승인 링크를 고른다 (`approve`, 없으면 `payer-action`). 없으면 빈 문자열. */
+/**
+ * 응답 `links[]`에서 승인 링크를 고른다 (`approve`, 없으면 `payer-action`). 없으면 빈 문자열.
+ * `payment_source.paypal`을 보내면 PayPal이 `approve` 대신 `payer-action`만 줄 수 있다 (T034).
+ */
 export function approveUrlFrom(body: unknown): string {
   const links = asArray(asRecord(body).links).map(asRecord);
   const byRel = (rel: string): string =>
@@ -774,6 +806,7 @@ export function renderApproveLinks(rows: ApproveRow[], now: Date = new Date(), n
     '',
     '**브라우저 에이전트**: 아래 링크를 한 건씩 열어 그 행의 샌드박스 구매자 계정으로 로그인해 결제를 승인한다 (계정 비밀번호는 사람이 넣는다).',
     '링크는 모두 `sandbox.paypal.com` 도메인이다 — 다른 도메인(특히 live `www.paypal.com`)이 나오면 즉시 멈추고 사람에게 알린다.',
+    `승인하면 \`${RETURN_URL}?...\`으로 넘어간다. 그 화면이 뜨면 승인이 끝난 것이다.`,
     '**12건을 모두 승인한 뒤** 컨트롤 타워가 `npm run sandbox:capture`로 캡처한다 (승인 전에는 캡처되지 않는다).',
     '',
     row(['주문번호', '구매자', '금액', 'approve URL']),

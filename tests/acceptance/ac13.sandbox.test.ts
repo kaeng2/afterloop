@@ -22,8 +22,8 @@ const SANDBOX_BASE = 'https://api-m.sandbox.paypal.com';
 /** 원문 6-1 상품명 (purchase_units[].items[].name) */
 const PRODUCT_NAMES = ['Knit Cardigan, Oat', 'Wool Sweater, Navy', 'Cashmere Coat, Grey', 'Beanie + Scarf Set'];
 
-/** 원문 6-2: 샌드박스 구매자별 주문 수 (합 12) */
-const ORDERS_PER_BUYER: Record<string, number> = { seoyeon: 1, jiho: 1, yuki: 3, lena: 2, buyer_m: 5 };
+/** 원문 6-2 + SPEC v2.3 9-5: 샌드박스 구매자별 주문 수 (합 13 — 원문 12건 + 서연의 추적 없는 주문 O13) */
+const ORDERS_PER_BUYER: Record<string, number> = { seoyeon: 2, jiho: 1, yuki: 3, lena: 2, buyer_m: 5 };
 
 /** 검토 M8: 결제자 국가. 한국 계정이 막히면 US 계정으로 대체 가능 */
 const BUYER_COUNTRY: Record<string, string[]> = {
@@ -34,17 +34,23 @@ const BUYER_COUNTRY: Record<string, string[]> = {
   buyer_m: ['US'],
 };
 
-/** 원문 6-4·6-5: 샌드박스 분쟁 3건 */
-const DISPUTES: Record<string, { buyer: string; reason: string }> = {
-  D1: { buyer: 'jiho', reason: 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED' },
-  D2: { buyer: 'seoyeon', reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED' },
-  D3: { buyer: 'buyer_m', reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED' },
+/**
+ * 원문 6-4·6-5 + SPEC v2.3 9-5: 샌드박스 분쟁 3건 (시연 제외 분쟁은 세지 않는다).
+ * D1·D2는 합의 단계. D3는 추적번호가 등록된 주문의 미수령 분쟁이라 PayPal 심사(`CHARGEBACK`, 채널 INTERNAL)로 넘어갈 수 있다.
+ */
+const DISPUTES: Record<string, { buyer: string; reason: string; stages: string[] }> = {
+  D1: { buyer: 'jiho', reason: 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED', stages: ['INQUIRY'] },
+  D2: { buyer: 'seoyeon', reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED', stages: ['INQUIRY'] },
+  D3: { buyer: 'buyer_m', reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED', stages: ['INQUIRY', 'CHARGEBACK'] },
 };
 
 type Manifest = {
   orders: { key: string; orderId: string; buyer: string; sku: string; tracked: boolean }[];
-  disputes: { key: string; disputeId: string; orderKey: string }[];
+  /** demoExcluded: 시연에서 뺀 분쟁 (SPEC v2.3 9-5). 기록으로만 남기고 아무 조치도 하지 않는다 */
+  disputes: { key: string; disputeId: string; orderKey: string; demoExcluded?: boolean }[];
 };
+
+const activeDisputes = (m: Manifest) => m.disputes.filter((d) => d.demoExcluded !== true);
 
 type CheckReport = {
   token: { ok: boolean };
@@ -140,14 +146,14 @@ describe.skipIf(!RUN_SANDBOX)('AC13 샌드박스 세팅: 실제 샌드박스 (RU
     expect(report.features.transactionSearch).toBe(200);
   });
 
-  it('manifest에 주문 12건(구매자별 서연 1·지호 1·Yuki 3·Lena 2·buyer_m 5)과 분쟁 3건이 있다', () => {
-    expect(manifest.orders).toHaveLength(12);
+  it('manifest에 주문 13건(구매자별 서연 2·지호 1·Yuki 3·Lena 2·buyer_m 5)과 시연 분쟁 3건이 있다', () => {
+    expect(manifest.orders).toHaveLength(13);
     expect(countBy(manifest.orders, (o) => o.buyer)).toEqual(ORDERS_PER_BUYER);
-    expect(manifest.disputes.map((d) => d.key).sort()).toEqual(['D1', 'D2', 'D3']);
+    expect(activeDisputes(manifest).map((d) => d.key).sort()).toEqual(['D1', 'D2', 'D3']);
   });
 
-  it('주문 12건이 모두 캡처 완료이고 상품명이 원문 4개 중 하나다', () => {
-    expect(report.orders).toHaveLength(12);
+  it('주문 13건이 모두 캡처 완료이고 상품명이 원문 4개 중 하나다', () => {
+    expect(report.orders).toHaveLength(13);
     for (const o of report.orders) {
       expect(o.status, o.key).toBe('COMPLETED');
       expect(o.captureId, o.key).toBeTruthy();
@@ -170,25 +176,28 @@ describe.skipIf(!RUN_SANDBOX)('AC13 샌드박스 세팅: 실제 샌드박스 (RU
     expect(allPayers.size).toBe(5);
   });
 
-  it('추적번호: 7건 등록, 5건 미등록이고 manifest와 일치한다 (주문 상세 기준)', () => {
+  it('추적번호: 7건 등록, 6건 미등록이고 manifest와 일치한다 (주문 상세 기준)', () => {
     const byKey = new Map(report.orders.map((o) => [o.key, o]));
     expect(report.orders.filter((o) => o.tracked)).toHaveLength(7);
-    expect(report.orders.filter((o) => !o.tracked)).toHaveLength(5);
+    expect(report.orders.filter((o) => !o.tracked)).toHaveLength(6);
     for (const m of manifest.orders) expect(byKey.get(m.key)?.tracked, m.key).toBe(m.tracked);
   });
 
-  it('합의 단계 분쟁 3건: D1 지호 SNAD, D2 서연 INR, D3 buyer_m INR이 해당 주문의 캡처에 걸려 있다', () => {
+  it('분쟁 3건: D1 지호 SNAD·D2 서연 INR은 합의 단계, D3 buyer_m INR은 합의 또는 PayPal 심사 단계이고 해당 주문의 캡처에 걸려 있다', () => {
     const orderByKey = new Map(report.orders.map((o) => [o.key, o]));
     const manifestOrder = new Map(manifest.orders.map((o) => [o.key, o]));
-    for (const md of manifest.disputes) {
+    for (const md of activeDisputes(manifest)) {
       const d = report.disputes.find((x) => x.key === md.key);
       expect(d, md.key).toBeDefined();
       expect(d!.disputeId).toBe(md.disputeId);
       expect(d!.reason, md.key).toBe(DISPUTES[md.key].reason);
-      expect(d!.stage, md.key).toBe('INQUIRY');
+      expect(DISPUTES[md.key].stages, `${md.key}: ${d!.stage}`).toContain(d!.stage);
       expect(manifestOrder.get(md.orderKey)?.buyer, md.key).toBe(DISPUTES[md.key].buyer);
       expect(d!.captureIds, md.key).toContain(orderByKey.get(md.orderKey)?.captureId);
     }
+    // 서연의 시연 분쟁은 추적번호가 없는 주문에 걸려 있다 (추적이 등록된 주문의 미수령 분쟁은 심사로 넘어갔다)
+    const d2 = activeDisputes(manifest).find((d) => d.key === 'D2');
+    expect(manifestOrder.get(d2!.orderKey)?.tracked, 'D2 주문').toBe(false);
   });
 
   it('출력과 last-run.md에 Client Secret, 토큰, Authorization 값이 없다', () => {

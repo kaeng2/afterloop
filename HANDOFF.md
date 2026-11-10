@@ -30,7 +30,7 @@ AfterLoop(PayPal AI Hackathon, 마감 KST 2026-11-13 05:00) 작업 환경을 새
 - **미완성 커밋(WIP)**: 브랜치 `engine-v0-ref` (커밋 `38a6f3b` "엔진 v0 참고용, 미완성"). SPEC v0 기준 엔진과 단위 테스트 63개. **main에 병합하지 않는다.** T004의 참고 자료로만 쓴다.
 - 레인 브랜치 `lane/engine`, `lane/paypal`, `lane/paypal-client`, `lane/paypal-exec`, `lane/ai`, `lane/ui`, `lane/data`는 모두 main과 같고 자기 커밋이 없다.
 
-### 다음 순서 (동시에 작업 세션 2개까지)
+### 다음 순서 (동시에 작업 세션 3개까지, 서로 다른 레인일 때만)
 | 순서 | 작업 | 레인 / 브랜치 | worktree | 지시서 |
 |---|---|---|---|---|
 | 1 | T004 엔진: 기대 손실·추천·오토파일럿 | engine / `lane/engine` | `../afterloop-wt/engine` | [tasks/T004.md](tasks/T004.md) |
@@ -125,7 +125,7 @@ worktree마다 다른 레인 폴더를 막는 로컬 설정 `.claude/settings.lo
 규칙은 [CLAUDE.md](CLAUDE.md) "운영 모드: 자동 배분". 사람은 작업 지시문을 붙여넣지 않는다.
 
 1. 컨트롤 타워 세션을 상위 폴더에서 시작하고 "자동 배분 시작"이라고 한다. 컨트롤 타워는 `TASKS.md`와 `reports/STATUS.md` 마지막 줄을 읽고 이어서 한다.
-2. 컨트롤 타워가 태스크마다 실행하는 것 (동시에 최대 2개):
+2. 컨트롤 타워가 태스크마다 실행하는 것 (동시에 최대 3개, 서로 다른 레인일 때만):
    ```bash
    # 구현: 레인 worktree 안에서 (잠금 적용). 허용 명령은 npm·npx·git 읽기/커밋 정도로 제한
    cd ../afterloop-wt/<레인> && git merge --ff-only main

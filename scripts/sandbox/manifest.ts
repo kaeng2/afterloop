@@ -1,5 +1,5 @@
 /**
- * `tests/sandbox/manifest.json` 읽기·쓰기 (T001, SPEC v2.2 9-5장).
+ * `tests/sandbox/manifest.json` 읽기·쓰기 (T001·T039, SPEC v2.3 9-5장).
  *
  * 주문·분쟁 ID와 지시서 표의 키만 담는다. 이메일·이름·토큰은 담지 않는다.
  * AC13이 이 파일을 읽으므로 모양을 바꿀 때는 컨트롤 타워에 먼저 알린다.
@@ -25,6 +25,14 @@ export const ManifestDisputeSchema = z.object({
   key: z.string().min(1),
   disputeId: z.string().min(1),
   orderKey: z.string().min(1),
+  /**
+   * 시연에서 뺀 분쟁 (SPEC v2.3 9-5). 기록으로만 남긴다 —
+   * 스크립트는 이 분쟁에 아무 조치도 하지 않고, 이 ID를 다른 키에 다시 배정하지 않는다.
+   * 다만 이 분쟁이 가리키는 주문도 "분쟁 진행 중"이므로 추적 등록 대상에서는 빠진다 (SPEC 9-3).
+   */
+  demoExcluded: z.boolean().optional(),
+  /** 사람이 적어 둔 메모 (왜 시연에서 뺐는지 등). 읽고 다시 써도 지워지지 않는다. */
+  note: z.string().min(1).optional(),
 });
 
 export const ManifestSchema = z.object({
