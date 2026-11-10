@@ -1,0 +1,73 @@
+/**
+ * Today 왼쪽 할 일 목록 (T060). 날짜 줄 · 제목 · 가게 전체 한 줄 링크 · 묶음 세 개(Needs you / Prevent / Routine).
+ *
+ * **계산하지 않는다** — 모든 글자·숫자는 `buildToday`(엔진 결과를 옮긴 값)에서 온다. 항목은 링크라서 키보드로 고를 수
+ * 있고, 고른 항목에는 `aria-current`가 붙는다. 고른 항목은 흰 카드(테두리)로, 나머지는 투명하게 보인다.
+ */
+import Link from 'next/link';
+
+import { RiskLevel } from '../_shared/badges';
+import { t } from '../_shared/copy';
+import type { TodayItem, TodayView } from './model';
+
+function ItemRow({ item, selected }: { item: TodayItem; selected: boolean }) {
+  return (
+    <li>
+      <Link
+        href={item.href}
+        className="today-item"
+        aria-current={selected ? 'true' : undefined}
+        scroll={item.kind === 'prevent'}
+      >
+        <span className="today-item-top">
+          <span className="today-item-name">
+            {item.name}
+            {item.label === null ? null : <span className="today-item-label"> · {item.label}</span>}
+          </span>
+          {item.band === null ? null : <RiskLevel band={item.band} />}
+        </span>
+        {item.sub === null ? null : <span className="today-item-sub">{item.sub}</span>}
+      </Link>
+    </li>
+  );
+}
+
+export function TodayList({
+  view,
+  selectedId,
+  paypalNotice,
+}: {
+  view: TodayView;
+  selectedId: string | null;
+  paypalNotice: string | null;
+}) {
+  return (
+    <div className="today-list">
+      <div className="today-head">
+        <p className="today-date">{view.dateLine}</p>
+        <h1 className="today-title">{t('today.title')}</h1>
+        <Link href="/products" className="today-store-link">
+          {view.storeLine.text}
+        </Link>
+      </div>
+
+      {paypalNotice === null ? null : <p className="notice">{paypalNotice}</p>}
+
+      <nav aria-label={t('today.listLabel')} className="today-groups">
+        {view.groups.length === 0 ? <p className="small muted">{t('today.empty')}</p> : null}
+        {view.groups.map((group) => (
+          <section key={group.key} className="today-group" aria-labelledby={`today-group-${group.key}`}>
+            <h2 className="today-group-title" id={`today-group-${group.key}`}>
+              {group.title}
+            </h2>
+            <ul className="today-items">
+              {group.items.map((item) => (
+                <ItemRow key={item.id} item={item} selected={item.id === selectedId} />
+              ))}
+            </ul>
+          </section>
+        ))}
+      </nav>
+    </div>
+  );
+}

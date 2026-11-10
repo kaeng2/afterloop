@@ -1,0 +1,184 @@
+/*
+ * Today 탭 (T060). 색·글자 크기·간격은 `globals.css`의 변수만 쓴다 (새 색 값 없음).
+ * 시안에서 따르는 것: 왼쪽 목록 칸 폭 약 340px + 옅은 따뜻한 회색 바탕(보조 바탕 `--color-bg`), 카드 둥근 16px,
+ * 제목 26px 굵게(1.625em), 본문 14–15px, 보조 12–13px. 고른 항목은 흰 카드 — 그림자 대신 테두리로 구분한다.
+ * 390 폭: 목록 위, 상세 아래 한 열.
+ */
+
+.today {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  min-width: 0;
+}
+
+@media (min-width: 56rem) {
+  .today {
+    grid-template-columns: minmax(0, 21.25rem) minmax(0, 1fr);
+  }
+
+  .today-list {
+    position: sticky;
+    top: 5.5rem;
+  }
+}
+
+/* ── 왼쪽 목록 ──────────────────────────────────────────────────────────── */
+
+.today-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+}
+
+.today-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+.today-date {
+  font-size: var(--text-xs);
+  font-weight: 650;
+  color: var(--color-muted);
+}
+
+.today-title {
+  font-size: 1.625em;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.today-store-link {
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-accent);
+}
+
+.today-store-link:hover {
+  text-decoration: underline;
+}
+
+.today-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.today-group-title {
+  padding: 0 var(--space-2) var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.today-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.today-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: 16px;
+}
+
+.today-item:hover {
+  background: var(--color-surface);
+}
+
+.today-item[aria-current='true'] {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.today-item-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.today-item-name {
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.today-item-label {
+  font-weight: 500;
+}
+
+.today-item-sub {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.today-item .risk {
+  font-size: var(--text-xs);
+}
+
+/* ── 오른쪽 상세 ────────────────────────────────────────────────────────── */
+
+.today-detail {
+  min-width: 0;
+}
+
+/* 지금의 사례 상세를 그대로 넣는다 — 오른쪽 칸 안에서는 답장 칸을 아래로 내린다 */
+.today-detail .case-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.today-detail .case-shell-reply {
+  position: static;
+}
+
+.today-detail-title {
+  font-size: 1.625em;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.tracking-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.tracking-row {
+  display: grid;
+  grid-template-columns: minmax(0, 4rem) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, max-content);
+  gap: var(--space-3);
+  align-items: baseline;
+  font-size: var(--text-sm);
+}
+
+.tracking-row-excluded {
+  color: var(--color-muted);
+}
+
+@media (max-width: 30rem) {
+  .tracking-row {
+    grid-template-columns: minmax(0, 3rem) minmax(0, 1fr);
+  }
+}
