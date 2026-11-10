@@ -11,6 +11,9 @@
  *  4. `setup -- disputes` 재실행: `D2-old` 보존, D2는 O13의 분쟁, 시연 제외 ID는 다시 배정되지 않는다
  *  5. 분쟁이 걸린 주문에는 추적 등록 호출이 나가지 않는다 (SPEC 9-3). `tracked: false`도 대상이 아니다
  *  6. 이 스크립트들에 실제 분쟁을 바꾸는 POST 경로가 없다
+ *
+ * T051에서 더한 것: 연습용 분쟁(`P…`)이 늘어도 위 성질이 그대로인지 (check 보고 · disputes 재실행 · track).
+ * 정본 manifest를 읽는 검사는 **수를 고정하지 않는다** — 연습용 분쟁은 사람이 시험할 때마다 늘어난다.
  */
 import { mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -141,6 +144,71 @@ function manifest13(): Manifest {
 const o13Of = (manifest: Manifest) => manifest.orders.find((order) => order.key === 'O13');
 const disputeOf = (disputes: ManifestDispute[], key: string) => disputes.find((dispute) => dispute.key === key);
 
+// ── manifest 키 규칙 (AC29와 같다, T051) ───────────────────────────────────────
+//
+//   `D1`~`D3` = 시연 분쟁 · `P` + 숫자 = 연습용 분쟁(시연 제외) · 그 밖(`D2-old` 등) = 시연 제외
+//
+// 연습용 분쟁은 사람이 녹화 전 실제 전송을 시험할 때마다 늘어난다. 그래서 **저장소의 정본 manifest를
+// 읽는 검사는 수를 고정하지 않는다** — 고정된 수가 필요한 검사는 이 파일에서 만든 가짜 manifest로 한다.
+
+/** 시연에 쓰는 분쟁 키 (이것만 `demoExcluded`가 아니다). */
+const DEMO_DISPUTE_KEYS = ['D1', 'D2', 'D3'];
+/** 연습용 분쟁 키 (`P1`, `P2`, …). AC29의 `isPractice`와 같은 규칙이다. */
+const isPracticeKey = (key: string) => /^P\d+$/.test(key);
+const demoDisputes = (disputes: ManifestDispute[]) => disputes.filter((dispute) => dispute.demoExcluded !== true);
+const excludedDisputes = (disputes: ManifestDispute[]) => disputes.filter((dispute) => dispute.demoExcluded === true);
+
+/** 연습용 분쟁을 거는 주문 (정본의 P1은 O04에 걸려 있다. O06은 `tracked: true`다). */
+const PRACTICE_ORDER_KEYS = ['O04', 'O05', 'O06'];
+
+/** 연습용 분쟁 `P1`~`P{count}` (모두 시연 제외). 정본의 P1과 같은 모양이다. */
+const practiceDisputes = (count: number): ManifestDispute[] =>
+  PRACTICE_ORDER_KEYS.slice(0, count).map((orderKey, index) => ({
+    key: `P${index + 1}`,
+    disputeId: `PP-R-PRC-1019776${index + 1}`,
+    orderKey,
+    demoExcluded: true,
+    note: `연습용, 시연 제외 (${orderKey}): 녹화 전 실제 전송 시험용.`,
+  }));
+
+/** 시드 12건 + O13 + 연습용 분쟁 `count`건을 넣은 가짜 manifest. */
+const manifestWithPractice = (count: number): Manifest => {
+  const base = manifest13();
+  return { ...base, disputes: [...base.disputes, ...practiceDisputes(count)] };
+};
+
+/** 연습용 분쟁을 0건·1건·3건 넣고 모두 돌려 본다 (T051 완료 기준). */
+const PRACTICE_COUNTS = [0, 1, 3];
+
+/** manifest에 적힌 주문·분쟁을 그대로 돌려주는 조회용 가짜 클라이언트 (POST는 실패로 표시한다). */
+const checkClient = (manifest: Manifest) =>
+  fakeClient((method, p) => {
+    if (method === 'POST') return { status: 500, body: { name: 'SHOULD_NOT_POST' } };
+    if (p.startsWith('/v1/reporting/transactions')) return { status: 200, body: {} };
+    if (p === '/v1/customer/disputes?page_size=1') return { status: 200, body: { items: [] } };
+    const order = manifest.orders.find((o) => p === `/v2/checkout/orders/${o.orderId}`);
+    if (order !== undefined) {
+      return { status: 200, body: orderDetail({ captureId: order.captureId, tracked: order.tracked }) };
+    }
+    const dispute = manifest.disputes.find((d) => p === `/v1/customer/disputes/${d.disputeId}`);
+    if (dispute !== undefined) {
+      return {
+        status: 200,
+        body: {
+          dispute_id: dispute.disputeId,
+          reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED',
+          dispute_life_cycle_stage: dispute.demoExcluded === true ? 'CHARGEBACK' : 'INQUIRY',
+          status: 'WAITING_FOR_SELLER_RESPONSE',
+          disputed_transactions: [{ seller_transaction_id: `CAP-${dispute.orderKey}` }],
+        },
+      };
+    }
+    return { status: 404, body: { name: 'RESOURCE_NOT_FOUND' } };
+  });
+
+const capOf = (orderKey: string) => `CAP-${orderKey}`;
+const listPath = (captureId: string) => `GET /v1/customer/disputes?disputed_transaction_id=${captureId}&page_size=10`;
+
 describe('T039 1. manifest 형식 (demoExcluded·note)', () => {
   it('저장소의 정본 manifest.json이 스키마를 통과하고, 다시 직렬화한 결과가 파일과 같다', () => {
     const file = manifestPath(ROOT);
@@ -152,14 +220,56 @@ describe('T039 1. manifest 형식 (demoExcluded·note)', () => {
     expect(`${JSON.stringify(parsed.data, null, 2)}\n`).toBe(text);
   });
 
-  it('정본 manifest는 주문 13건·분쟁 4건이고 시연 제외가 1건이다', () => {
+  /**
+   * 수를 고정하지 않는다 (T051): 연습용 분쟁(`P…`)은 사람이 실제 전송을 시험할 때마다 늘어난다.
+   * 변하지 않는 것만 본다 — 시연에 쓰는 분쟁은 `D1`·`D2`·`D3`뿐이고, 그 밖은 모두 시연 제외다.
+   */
+  it('정본 manifest: 시연 분쟁은 D1·D2·D3뿐이고 그 밖은 모두 시연 제외다 (수는 보지 않는다)', () => {
     const manifest = repoManifest();
 
-    expect(manifest.orders).toHaveLength(13);
-    expect(manifest.disputes).toHaveLength(4);
-    expect(manifest.disputes.filter((d) => d.demoExcluded === true).map((d) => d.disputeId)).toEqual([EXCLUDED_DISPUTE_ID]);
+    expect(demoDisputes(manifest.disputes).map((d) => d.key).sort()).toEqual(DEMO_DISPUTE_KEYS);
+    // D1~D3이 모두 있다 (스크립트의 마지막 확인과 같은 함수로 본다)
+    expect(missingDisputeKeys(manifest.disputes)).toEqual([]);
+    // 시연 제외가 아닌 분쟁의 키는 `D…`뿐이다 (연습용이 시연에 섞이지 않는다)
+    for (const dispute of demoDisputes(manifest.disputes)) {
+      expect(dispute.key.startsWith('D'), dispute.key).toBe(true);
+      expect(isPracticeKey(dispute.key), dispute.key).toBe(false);
+    }
+    // 연습용(`P…`)은 모두 시연 제외다
+    for (const dispute of manifest.disputes.filter((d) => isPracticeKey(d.key))) {
+      expect(dispute.demoExcluded, dispute.key).toBe(true);
+    }
+    // 분쟁 ID는 겹치지 않고, 가리키는 주문은 모두 manifest에 있다
+    const ids = manifest.disputes.map((d) => d.disputeId);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const dispute of manifest.disputes) {
+      expect(manifest.orders.some((o) => o.key === dispute.orderKey), dispute.key).toBe(true);
+    }
+  });
+
+  it('정본 manifest: 시연 제외로 적힌 D2-old가 있고, D2는 O13의 분쟁이다 (SPEC 9-5)', () => {
+    const manifest = repoManifest();
+
+    expect(disputeOf(manifest.disputes, 'D2-old')).toMatchObject({ disputeId: EXCLUDED_DISPUTE_ID, demoExcluded: true });
+    expect(excludedDisputes(manifest.disputes).map((d) => d.disputeId)).toContain(EXCLUDED_DISPUTE_ID);
     expect(disputeOf(manifest.disputes, 'D2')?.orderKey).toBe('O13');
     expect(o13Of(manifest)?.tracked).toBe(false);
+    // 시드 주문과 O13이 모두 적혀 있다 (주문 수는 고정하지 않는다)
+    for (const spec of readSandboxOrderSpecs()) {
+      expect(manifest.orders.some((o) => o.key === spec.key), spec.key).toBe(true);
+    }
+  });
+
+  it('가짜 manifest에서는 수를 본다 (연습용 0건·1건·3건)', () => {
+    for (const count of PRACTICE_COUNTS) {
+      const manifest = manifestWithPractice(count);
+
+      expect(manifest.orders, `연습용 ${count}건`).toHaveLength(13);
+      expect(manifest.disputes, `연습용 ${count}건`).toHaveLength(4 + count);
+      expect(demoDisputes(manifest.disputes).map((d) => d.key), `연습용 ${count}건`).toEqual(DEMO_DISPUTE_KEYS);
+      expect(excludedDisputes(manifest.disputes), `연습용 ${count}건`).toHaveLength(1 + count);
+      expect(ManifestSchema.safeParse(manifest).success, `연습용 ${count}건`).toBe(true);
+    }
   });
 
   it('임시 폴더에 쓰고 다시 읽어도 demoExcluded·note가 그대로다', () => {
@@ -280,31 +390,6 @@ describe('T039 2. 시드에 없는 주문(O13) 보존', () => {
 });
 
 describe('T039 3. sandbox:check 보고 (manifest 기준)', () => {
-  const checkClient = (manifest: Manifest) =>
-    fakeClient((method, p) => {
-      if (method === 'POST') return { status: 500, body: { name: 'SHOULD_NOT_POST' } };
-      if (p.startsWith('/v1/reporting/transactions')) return { status: 200, body: {} };
-      if (p === '/v1/customer/disputes?page_size=1') return { status: 200, body: { items: [] } };
-      const order = manifest.orders.find((o) => p === `/v2/checkout/orders/${o.orderId}`);
-      if (order !== undefined) {
-        return { status: 200, body: orderDetail({ captureId: order.captureId, tracked: order.tracked }) };
-      }
-      const dispute = manifest.disputes.find((d) => p === `/v1/customer/disputes/${d.disputeId}`);
-      if (dispute !== undefined) {
-        return {
-          status: 200,
-          body: {
-            dispute_id: dispute.disputeId,
-            reason: 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED',
-            dispute_life_cycle_stage: dispute.demoExcluded === true ? 'CHARGEBACK' : 'INQUIRY',
-            status: 'WAITING_FOR_SELLER_RESPONSE',
-            disputed_transactions: [{ seller_transaction_id: `CAP-${dispute.orderKey}` }],
-          },
-        };
-      }
-      return { status: 404, body: { name: 'RESOURCE_NOT_FOUND' } };
-    });
-
   it('주문 13건·분쟁 4건을 모두 조회하고 시연 제외 1건에 표시를 붙인다', async () => {
     const manifest = manifest13();
     const { client, seen } = checkClient(manifest);
@@ -358,9 +443,6 @@ describe('T039 3. sandbox:check 보고 (manifest 기준)', () => {
 });
 
 describe('T039 4. setup -- disputes 재실행', () => {
-  const capOf = (orderKey: string) => `CAP-${orderKey}`;
-  const listPath = (captureId: string) => `GET /v1/customer/disputes?disputed_transaction_id=${captureId}&page_size=10`;
-
   /** 캡처별 분쟁 목록. O13에는 새 분쟁과 **시연 제외 분쟁**이 같이 걸려 있다. */
   const listReplies = (o13: string[]) => ({
     [listPath(capOf('O02'))]: { status: 200, body: { items: [{ dispute_id: 'PP-R-MBJ-10197650' }] } },
@@ -642,5 +724,210 @@ describe('T039 7. 실제 분쟁을 바꾸는 POST 경로가 없다', () => {
     for (const { file, text } of sources()) {
       expect(text.includes(EXCLUDED_DISPUTE_ID), file).toBe(false);
     }
+  });
+});
+
+// ── T051: 연습용 분쟁(`P…`)이 늘어도 스크립트가 흔들리지 않는다 ─────────────────
+//
+// 사람이 녹화 전 실제 전송을 시험할 때마다 연습용 분쟁이 manifest에 쌓인다. 연습용은 `D2-old`와
+// 같은 취급(시연 제외)을 받아야 한다: 보고에는 나오고, D1~D3으로 다시 배정되지 않고,
+// 그 주문에는 추적 등록 호출이 나가지 않는다. 모두 가짜 클라이언트로만 확인한다 (실호출 0회).
+
+describe('T051 1. sandbox:check — 연습용 분쟁도 "시연 제외"로 보고한다', () => {
+  it.each(PRACTICE_COUNTS)('연습용 %i건: manifest의 분쟁 전부를 조회하고 시연 제외에만 표시를 붙인다', async (count) => {
+    const manifest = manifestWithPractice(count);
+    const { client, seen } = checkClient(manifest);
+
+    const { report, problems } = await runCheck(client, manifest, NOW);
+
+    expect(problems).toEqual([]);
+    expect(report.disputes).toHaveLength(manifest.disputes.length);
+    expect(report.disputes.filter((d) => d.demoExcluded === true).map((d) => d.key)).toEqual(
+      excludedDisputes(manifest.disputes).map((d) => d.key),
+    );
+    expect(report.disputes.filter((d) => d.demoExcluded !== true).map((d) => d.key)).toEqual(DEMO_DISPUTE_KEYS);
+    // 연습용 분쟁도 빠짐없이 조회된다
+    for (const dispute of practiceDisputes(count)) {
+      expect(report.disputes.find((d) => d.key === dispute.key)?.demoExcluded, dispute.key).toBe(true);
+    }
+    expect(seen.every((s) => s.method === 'GET')).toBe(true); // 조회만 한다
+  });
+
+  it.each(PRACTICE_COUNTS)('연습용 %i건: last-run.md에 D2-old와 같이 ID + "시연 제외"로 적힌다', async (count) => {
+    const manifest = manifestWithPractice(count);
+    const { client } = checkClient(manifest);
+
+    const outcome = await runCheck(client, manifest, NOW);
+    const section = checkSection(outcome, manifest, NOW);
+    const lineFor = (id: string) => section.split('\n').find((line) => line.startsWith('|') && line.includes(id));
+
+    for (const dispute of manifest.disputes) expect(section, dispute.key).toContain(dispute.disputeId);
+    for (const dispute of excludedDisputes(manifest.disputes)) {
+      // 표의 행과 아래 설명 줄 모두 D2-old와 같은 취급이다
+      expect(lineFor(dispute.disputeId), dispute.key).toContain(DEMO_EXCLUDED_CELL);
+      expect(section, dispute.key).toContain(`- ${dispute.key} (${dispute.disputeId}): ${DEMO_EXCLUDED_CELL}`);
+    }
+    // 시연 분쟁 행에는 붙지 않는다
+    for (const dispute of demoDisputes(manifest.disputes)) {
+      expect(lineFor(dispute.disputeId), dispute.key).not.toContain(DEMO_EXCLUDED_CELL);
+    }
+  });
+
+  it('조회가 모두 실패해도 연습용 분쟁의 ID와 "시연 제외"는 last-run.md에 남는다', async () => {
+    const manifest = manifestWithPractice(3);
+    const { client } = fakeClient(() => ({ status: 403, body: { name: 'NOT_AUTHORIZED' } }));
+
+    const section = checkSection(await runCheck(client, manifest, NOW), manifest, NOW);
+
+    for (const dispute of practiceDisputes(3)) {
+      expect(section, dispute.key).toContain(dispute.disputeId);
+      expect(section, dispute.key).toContain(`- ${dispute.key} (${dispute.disputeId}): ${DEMO_EXCLUDED_CELL}`);
+    }
+  });
+});
+
+describe('T051 2. setup -- disputes 재실행 — 연습용 분쟁이 보존된다', () => {
+  /** D1~D3이 걸린 캡처만 답한다. 연습용 주문의 캡처는 표에 없다 (물으면 404 = 실수가 드러난다). */
+  const listReplies = (o13: string[]) => ({
+    [listPath(capOf('O02'))]: { status: 200, body: { items: [{ dispute_id: 'PP-R-MBJ-10197650' }] } },
+    [listPath(capOf('O08'))]: { status: 200, body: { items: [{ dispute_id: 'PP-R-FYT-10197651' }] } },
+    [listPath(capOf('O13'))]: { status: 200, body: { items: o13.map((id) => ({ dispute_id: id })) } },
+  });
+
+  it.each(PRACTICE_COUNTS)('연습용 %i건: 재실행해도 그대로 남고, 마지막 확인(D1·D2·D3)이 통과한다', async (count) => {
+    const manifest = manifestWithPractice(count);
+    const { client, seen } = mapClient(listReplies(['PP-R-GMS-10197661']));
+
+    const { disputes } = await runDisputes(client, manifest);
+    const merged = mergeDisputes(manifest.disputes, disputes);
+
+    // 연습용 항목이 글자 하나 바뀌지 않고 남는다 (메모 포함)
+    for (const dispute of practiceDisputes(count)) {
+      expect(disputeOf(merged, dispute.key), dispute.key).toEqual(dispute);
+    }
+    expect(disputeOf(merged, 'D2-old')).toEqual(disputeOf(manifest.disputes, 'D2-old'));
+    expect(disputeOf(merged, 'D2')).toEqual({ key: 'D2', disputeId: 'PP-R-GMS-10197661', orderKey: 'O13' });
+    expect(merged.map((d) => d.key)).toEqual(['D1', 'D2', 'D2-old', 'D3', ...practiceDisputes(count).map((d) => d.key)]);
+    // 마지막 확인: 시연 제외를 뺀 D1·D2·D3이 모두 있다
+    expect(missingDisputeKeys(merged)).toEqual([]);
+    // 연습용 분쟁이 걸린 주문의 캡처로는 조회하지 않는다
+    for (const orderKey of PRACTICE_ORDER_KEYS.slice(0, count)) {
+      expect(seen.map((s) => s.path), orderKey).not.toContain(
+        `/v1/customer/disputes?disputed_transaction_id=${capOf(orderKey)}&page_size=10`,
+      );
+    }
+    expect(seen.every((s) => s.method === 'GET')).toBe(true);
+  });
+
+  it.each(PRACTICE_COUNTS)('연습용 %i건: 그 분쟁 ID가 목록에 나와도 D1~D3으로 배정하지 않는다', async (count) => {
+    const practice = practiceDisputes(count);
+    const manifest = manifestWithPractice(count);
+    // 연습용 분쟁 ID가 D2의 캡처 목록에 섞여 돌아온 경우
+    const { client } = mapClient(listReplies([...practice.map((d) => d.disputeId), 'PP-R-GMS-10197661']));
+
+    const { disputes, outcomes } = await runDisputes(client, manifest);
+    const merged = mergeDisputes(manifest.disputes, disputes);
+
+    expect(disputeOf(disputes, 'D2')?.disputeId).toBe('PP-R-GMS-10197661');
+    for (const dispute of practice) {
+      expect(disputes.map((d) => d.disputeId), dispute.key).not.toContain(dispute.disputeId);
+      // 연습용 ID는 원래 키에만 남는다 (D1~D3 어디에도 가지 않는다)
+      expect(merged.filter((d) => d.disputeId === dispute.disputeId).map((d) => d.key), dispute.key).toEqual([dispute.key]);
+    }
+    if (count > 0) expect(outcomes.find((o) => o.key === 'D2')?.note).toContain('시연 제외');
+    expect(missingDisputeKeys(merged)).toEqual([]);
+  });
+
+  it('연습용 분쟁만 걸려 있으면 D2를 비워 두고, 전에 적어 둔 D2가 지워지지 않는다', async () => {
+    const practice = practiceDisputes(1);
+    const manifest = manifestWithPractice(1);
+    const { client } = mapClient(listReplies(practice.map((d) => d.disputeId)));
+
+    const { disputes, outcomes } = await runDisputes(client, manifest);
+    const merged = mergeDisputes(manifest.disputes, disputes);
+
+    expect(disputeOf(disputes, 'D2')).toBeUndefined();
+    expect(outcomes.find((o) => o.key === 'D2')?.disputeId).toBeNull();
+    expect(outcomes.find((o) => o.key === 'D2')?.note).toContain('시연 제외');
+    expect(disputeOf(merged, 'D2')).toEqual(disputeOf(manifest.disputes, 'D2')); // 전에 적어 둔 값 그대로
+    expect(missingDisputeKeys(merged)).toEqual([]);
+  });
+
+  it.each(PRACTICE_COUNTS)('연습용 %i건: 두 번 돌려도 결과가 같다 (멱등)', async (count) => {
+    const manifest = manifestWithPractice(count);
+    const { client } = mapClient(listReplies(['PP-R-GMS-10197661']));
+
+    const first = mergeDisputes(manifest.disputes, (await runDisputes(client, manifest)).disputes);
+    const second = mergeDisputes(first, (await runDisputes(client, { ...manifest, disputes: first })).disputes);
+
+    expect(second).toEqual(first);
+  });
+});
+
+describe('T051 3. setup -- track — 연습용 분쟁이 걸린 주문에는 호출이 나가지 않는다 (SPEC 9-3)', () => {
+  const trackClient = () =>
+    fakeClient((method) =>
+      method === 'GET' ? { status: 200, body: orderDetail({ captureId: 'CAP-X' }) } : { status: 201, body: {} },
+    );
+
+  it.each(PRACTICE_COUNTS)('연습용 %i건: 그 주문은 추적 등록 대상이 아니다 (planTrack, 순수 함수)', (count) => {
+    const manifest = manifestWithPractice(count);
+
+    const { targets, blocked } = planTrack(manifest);
+
+    for (const orderKey of PRACTICE_ORDER_KEYS.slice(0, count)) {
+      expect(targets.map((o) => o.key), orderKey).not.toContain(orderKey);
+    }
+    // `tracked: true`인 연습용 주문(O06)은 `blocked`에 들어간다. `tracked: false`는 어느 쪽에도 없다.
+    const trackedPractice = PRACTICE_ORDER_KEYS.slice(0, count).filter(
+      (key) => manifest.orders.find((o) => o.key === key)?.tracked === true,
+    );
+    for (const orderKey of trackedPractice) {
+      expect(blocked.map((b) => b.order.key), orderKey).toContain(orderKey);
+    }
+  });
+
+  it.each(PRACTICE_COUNTS)('연습용 %i건: O04를 비롯한 연습용 주문에 호출 0회다 (runTrack)', async (count) => {
+    const manifest = manifestWithPractice(count);
+    const { client, seen } = trackClient();
+
+    const outcomes = await runTrack(client, manifest);
+
+    for (const orderKey of PRACTICE_ORDER_KEYS.slice(0, count)) {
+      const orderId = manifest.orders.find((o) => o.key === orderKey)?.orderId ?? '';
+      expect(seen.filter((s) => s.path.includes(orderId)), orderKey).toEqual([]);
+    }
+    // 등록은 분쟁 없는 `tracked: true` 주문에만 나간다 (연습용이 늘면 그만큼 줄어든다)
+    const expectedAdded = planTrack(manifest).targets.map((o) => o.key);
+    expect(outcomes.filter((o) => o.result === 'added').map((o) => o.key)).toEqual(expectedAdded);
+    expect(seen.filter((s) => s.method === 'POST').map((s) => s.path)).toEqual(
+      expectedAdded.map((key) => `/v2/checkout/orders/ORDER-${key}/track`),
+    );
+  });
+
+  it('연습용 분쟁의 주문이 tracked: true이면 "분쟁 진행 중이라 제외 · 시연 제외"로 적는다', async () => {
+    const manifest = manifestWithPractice(3); // P3 → O06 (tracked: true)
+    const { client, seen } = trackClient();
+
+    const outcomes = await runTrack(client, manifest);
+    const o06 = outcomes.find((o) => o.key === 'O06');
+
+    expect(o06?.result).toBe('disputed');
+    expect(o06?.note).toContain(TRACK_DISPUTED_NOTE);
+    expect(o06?.note).toContain('P3');
+    expect(o06?.note).toContain('시연 제외');
+    expect(o06?.status).toBeNull();
+    expect(o06?.trackingNumber).toBeNull();
+    expect(seen.filter((s) => s.path.includes('ORDER-O06'))).toEqual([]);
+  });
+
+  it('연습용 분쟁이 유일한 분쟁이어도 그 주문은 제외한다 (tracked: true)', () => {
+    const manifest: Manifest = {
+      orders: [{ key: 'O04', orderId: 'ORDER-O04', buyer: 'yuki', sku: 'FK-SW-NV', tracked: true, captureId: 'CAP-O04' }],
+      disputes: practiceDisputes(1), // P1 → O04
+    };
+
+    expect(planTrack(manifest).targets).toEqual([]);
+    expect(planTrack(manifest).blocked.map((b) => b.order.key)).toEqual(['O04']);
   });
 });
