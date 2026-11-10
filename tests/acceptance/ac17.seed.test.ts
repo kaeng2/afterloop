@@ -12,7 +12,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import type { ParamsConfig, SeedBuyer, SeedDispute, SeedInquiry, SeedOrder, SeedProduct } from '@/types';
+import type { ParamsConfig, SeedBuyer, SeedCarrierEvent, SeedDispute, SeedInquiry, SeedOrder, SeedProduct } from '@/types';
 
 import paramsFixture from './params.fixture.json';
 
@@ -251,5 +251,57 @@ describe('AC17 개인정보', () => {
 
   it('개인통관고유부호 값(P + 숫자 12자리)이 없다', () => {
     expect(allText).not.toMatch(/P\d{12}/);
+  });
+});
+
+// 기대값 출처: SPEC v2.5 12장 "시연용 배송사 데이터" + 원문 S5 화면 예시 / 사람 승인 2026-11-10
+// 파일은 이 묶음 안에서 읽는다 (T045가 만들기 전에는 이 묶음만 실패하고 위 검사는 그대로 돈다).
+describe('AC17 시연용 배송사 데이터 (v2.5)', () => {
+  const STATUSES = ['shipped', 'in_transit', 'customs_hold', 'out_for_delivery', 'delivered'];
+  const events = () => load<SeedCarrierEvent[]>('carrier-events.json');
+  const of = (orderId: string) => events().filter((e) => e.orderId === orderId);
+  const orderDate = (orderId: string) => orders.find((o) => o.id === orderId)!.date;
+
+  it('모든 이벤트가 계약 모양이고, 실제 시드 주문을 가리키며, 전부 시연용이다', () => {
+    expect(events().length).toBeGreaterThanOrEqual(5);
+    for (const e of events()) {
+      expect(orders.some((o) => o.id === e.orderId), e.orderId).toBe(true);
+      expect(e.date, `${e.orderId} ${e.status}`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(STATUSES, e.status).toContain(e.status);
+      expect(e.text.trim().length, `${e.orderId} ${e.status}`).toBeGreaterThan(0);
+      expect(e.isDemo).toBe(true);
+    }
+  });
+
+  it('이벤트 날짜는 주문일 이후이고 시연 시점(2026-11-10) 이전이며, 주문마다 날짜 순서대로 적혀 있다', () => {
+    for (const e of events()) {
+      expect(e.date >= orderDate(e.orderId), `${e.orderId} ${e.status} ${e.date}`).toBe(true);
+      expect(e.date <= WINDOW_TO, `${e.orderId} ${e.status} ${e.date}`).toBe(true);
+    }
+    for (const id of new Set(events().map((e) => e.orderId))) {
+      const dates = of(id).map((e) => e.date);
+      expect([...dates].sort(), id).toEqual(dates);
+    }
+  });
+
+  it('서연 주문 O01: 발송 → 이동 중 → 통관 보류(10/30). 통관 보류 글은 원문 예시 그대로이고 배송 완료는 없다', () => {
+    expect(of('O01').map((e) => e.status)).toEqual(['shipped', 'in_transit', 'customs_hold']);
+    const hold = of('O01').find((e) => e.status === 'customs_hold')!;
+    expect(hold.date).toBe('2026-10-30');
+    expect(hold.text).toBe('Customs hold – recipient customs ID missing');
+    expect(of('O01')[0].date >= '2026-10-17' && of('O01')[0].date <= '2026-10-19').toBe(true); // 주문 10/17 직후 발송
+  });
+
+  it('buyer_m 주문 O08 (D3): 발송 → 배송 완료', () => {
+    const statuses = of('O08').map((e) => e.status);
+    expect(statuses[0]).toBe('shipped');
+    expect(statuses[statuses.length - 1]).toBe('delivered');
+    expect(statuses).not.toContain('customs_hold');
+  });
+
+  it('배송사 글에 이메일·주소·개인통관고유부호 값이 없다', () => {
+    const text = events().map((e) => e.text).join('\n');
+    expect(text).not.toMatch(/P\d{12}/);
+    expect(text).not.toMatch(/@/);
   });
 });

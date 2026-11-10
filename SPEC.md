@@ -1,4 +1,4 @@
-# SPEC v2.4 (2026-11-10 10:44 KST)
+# SPEC v2.5 (2026-11-10 10:52 KST)
 
 > **계약 변경 규칙.** 이 문서, `src/types.ts`, `tests/acceptance/`는 계약이다. 바꿔야 하면 컨트롤 타워가 변경 내용·이유·영향받는 작업을 `DECISIONS.md`에 먼저 적고, 사람이 승인한 뒤에만 바꾼다. 바꿀 때마다 위 버전을 올린다. 작업 세션은 이 세 곳과 `DECISIONS.md`, `TASKS.md`, `tasks/`를 고치지 않는다 (`.claude/settings.json`에서 편집이 막혀 있다).
 
@@ -36,6 +36,7 @@
 | | 토큰 검사(사실값 일치), 새 약속 차단 |
 
 - **사실값은 LLM이 쓰지 않는다** (검토 결정 4): 날짜·금액·추적번호·통관 상태는 모든 AI 초안(코칭 답장, 색상 문구, 통관 안내, 자동 답변)에서 `⟦DATE_1⟧`·`{{offerAmount}}` 같은 토큰으로만 쓰고 코드가 채운다. 토큰 개수·값이 다르면 전송 불가.
+- **답장 속 확인 기한 날짜 (v2.5)**: 답장에 넣는 날짜(원문 예시 "by Nov 17")는 코드가 만든다 — 지금 시각의 날짜 + `config/rules.json`의 `reply.followUpDays`(7일). **그 날짜가 분쟁의 PayPal 응답 기한 날짜보다 늦으면 응답 기한 하루 전으로 당긴다** (오늘보다 앞서지는 않는다). 응답 기한이 없으면 당기지 않는다. 날짜는 UTC 기준 `YYYY-MM-DD`이고 `⟦DATE_1⟧` 토큰의 값으로 들어간다. AI는 날짜를 쓰지 않는다 (`src/engine/followup.ts`, `FollowUpDateFn`).
 - 모델 호출은 서버에서만. 프롬프트에 구매자 이메일·주소·개인통관고유부호를 넣지 않는다. 응답은 JSON 스키마로 받고, 실패하면 "AI unavailable — showing rules only".
 - 화면에는 `AI suggests`(보라)와 `Code decides`(회색) 배지를 나란히 둔다.
 
@@ -134,6 +135,16 @@
 - **안전 규칙 (v2.3)**: 서연(D2)·지호(D1) 분쟁에 대한 실제 전송(send-message, make-offer)은 시연 녹화 때 **한 번만** 한다. 개발 중 시험은 가짜 응답으로 한다.
 - **연습용 분쟁 (v2.4)**: 실제 전송 시험은 O04의 연습용 분쟁에서만 한다 — send-message 한국어·영어 각 1회, make-offer 1회 (제안은 보내기만 하고 수락하지 않는다). 이 분쟁은 manifest에 "연습용, 시연 제외"(`demoExcluded`)로 적고 화면에 내지 않는다.
 - 방금 접수된 분쟁은 목록 조회에 몇 분 늦게 나타날 수 있다 (사건 번호로 직접 조회하면 바로 나온다).
+- **연결 표 (v2.5, `config/demo-links.json`, 타입 `DemoLinksConfig`)**: 앱은 이 표로 실제 분쟁을 시드 분쟁·배송사 정보와 잇고, 무엇을 보여 주고 어디에 보낼 수 있는지 정한다.
+
+  | 분쟁 | 화면에 보임 | 실제 전송 허용 |
+  |---|---|---|
+  | 지호 D1, 서연 D2 | O | O (녹화 때 한 번) |
+  | buyer_m D3 (PayPal 심사 단계) | O | X |
+  | 연습용 분쟁 (O04, 걸리면 추가) | X | O (녹화 전 실제 전송 시험용) |
+  | 옛 서연 분쟁 `PP-R-GAH-10197649` | X | X |
+
+  표에 없는 분쟁은 화면에 내지 않고 전송도 하지 않는다. 앱 서버 코드는 `liveSendAllowed`가 참인 분쟁에만 실제 전송을 한다 (AC29).
 - Transaction Search (`GET /v1/reporting/transactions`): P0, 몇 시간 늦게 반영될 수 있어 캐시 ('cached' 배지).
 - 장면 3·5의 입력은 "웹훅(P1) 또는 분쟁 목록·상세 조회" (M7).
 - 앱 설정에서 'Customer disputes'와 'Transaction search'를 모두 켠다 (반영 최대 10분, M8).
@@ -171,11 +182,13 @@
 | `config/params.json` | f, t, x, p_acc, 유형별 p_win, 처방 배수, 상품별 기본 분쟁 확률. 값마다 `source` | engine |
 | `config/rules.json` | 제안 대상 유형·한도, 오토파일럿 규칙, F1 기준, 확대 위험 가중치, 확신도 기준 | engine |
 | `config/copy.en.json`, `config/copy.ko.json` | 화면 문구 (화면은 영어) | ui |
+| `config/demo-links.json` (v2.5) | 실제 샌드박스 분쟁 ↔ 시드 연결 표. 분쟁마다 `showOnScreen`(화면에 보임)·`liveSendAllowed`(실제 전송 허용). 비밀값 아님 | 컨트롤 타워 |
 
 인수 테스트는 라이브 설정을 읽지 않고 `tests/acceptance/*.fixture.json` 고정 사본을 넘긴다.
 
 ### 시드 데이터 (`seed/`, v2.2)
 - 타입은 `src/types.ts` 8부. 원문 6장 그대로: 상품 4, 구매자 12, 문의 31, 분쟁 9, 주문 214 (샌드박스 12건은 `tasks/T001.md` 배정 표가 정본).
+- **시연용 배송사 데이터 (v2.5)**: `seed/carrier-events.json` (타입 `SeedCarrierEvent`, `seed/index.ts`의 `seedCarrierEvents`). PayPal 데이터가 아니라 배송사 추적 이벤트이고 전부 `isDemo: true`다. 서연 주문 O01 = 발송 → 이동 중 → 통관 보류(10/30, "Customs hold – recipient customs ID missing"), buyer_m 주문 O08 = 발송 → 배송 완료. 이벤트의 `text`가 분류 입력의 `trackingEvents`로 들어간다. 기존 시드 5개 파일은 바꾸지 않는다.
 - `SeedDispute.orderId`: 분쟁이 걸린 주문. `SeedOrder.date`: 주문일 `YYYY-MM-DD`, 시연 시점(2026-11-10) 기준 90일 창 안 (v2.2, Q10).
 - 종결 분쟁 손실은 결과 종류 + 상품 가격 + f에서 만든다. **수수료는 질 때만**: 전액 환불 = 상품 가격, 패소 = 상품 가격 + f, 승소 = 0. 합 41300¢ ($413. 원문은 f = $8 기준 $408) (v2.2, Q8).
 - 국가 분포는 US 95 · KR 53 · JP 31 · DE 31 · GB 4 (원문 4-1 비율을 영국 구매자 4건을 뺀 210건에 적용). 원문 구매자 12명 밖의 주문·문의는 이름 없는 구매자 `X…`로 둔다 (Q10).

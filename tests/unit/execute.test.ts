@@ -163,8 +163,11 @@ describe('2xx가 아닌 응답', () => {
   });
 });
 
+// T041 (SPEC v2.4 9-1장): 요청 번호는 hash(계획 ID + 엔드포인트 + 본문)에서 만든 36자 이하 값이다.
+// 옛 형식(`<planId>:<엔드포인트>`)을 기대했던 두 단정을 새 규칙으로 바꿨다.
+// 해시 자체의 성질(길이·문자 집합·결정성·충돌)은 tests/unit/exec-request-id.test.ts가 본다.
 describe('요청 ID', () => {
-  it('같은 계획을 다시 실행하면 같은 requestId가 나간다 (<planId>:<엔드포인트>)', async () => {
+  it('같은 계획을 같은 메시지로 다시 실행하면 같은 requestId가 나간다', async () => {
     const plan: ActionPlan = { ...OFFER_PLAN, planId: 'unit-offer-id' };
     const a = mockCaller();
     const b = mockCaller();
@@ -172,18 +175,19 @@ describe('요청 ID', () => {
     await executeMove(input({ plan, approval: approve(plan) }), { call: a.call });
     await executeMove(input({ plan, approval: approve(plan) }), { call: b.call });
 
-    expect(a.requests[0].requestId).toBe('unit-offer-id:make-offer');
+    expect(a.requests[0].requestId).toMatch(/^al-[0-9a-f]{33}$/);
     expect(b.requests[0].requestId).toBe(a.requests[0].requestId);
   });
 
-  it('수마다 엔드포인트 이름이 붙는다', async () => {
+  it('수마다 엔드포인트가 경로에 붙고 요청 번호는 36자 이하다', async () => {
     const plan: ActionPlan = { ...ACCEPT_PLAN, planId: 'unit-accept-id' };
     const { call, requests } = mockCaller();
     await executeMove(
       { board: BOARD, plan, messageTemplate: '{{refundAmount}} 전액 환불', approval: approve(plan, { confirmAcceptClaim: true }) },
       { call },
     );
-    expect(requests[0].requestId).toBe('unit-accept-id:accept-claim');
+    expect(requests[0].requestId.length).toBeLessThanOrEqual(36);
+    expect(requests[0].requestId).toMatch(/^[A-Za-z0-9-]+$/);
     expect(requests[0].path).toBe(`/v1/customer/disputes/${BOARD.disputeId}/accept-claim`);
   });
 });
