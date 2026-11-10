@@ -5,7 +5,7 @@
  * 모든 객체는 strict: 계약에 없는 필드가 파일에 들어가면 검증에서 떨어진다.
  */
 import { z } from 'zod';
-import type { SeedBuyer, SeedDispute, SeedInquiry, SeedOrder, SeedProduct } from '@/types';
+import type { SeedBuyer, SeedCarrierEvent, SeedDispute, SeedInquiry, SeedOrder, SeedProduct } from '@/types';
 
 /** 시드에 등장하는 국가 (원문 4-1 US·KR·JP·DE + 6-2 B12 영국) */
 export const countrySchema = z.enum(['US', 'KR', 'JP', 'DE', 'GB']);
@@ -19,10 +19,10 @@ export const ORDER_DATE_WINDOW = { from: '2026-08-12', to: '2026-11-10' } as con
 const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 형식이어야 한다');
 
 /** 창 안의 날짜 (문자열 비교로 본다 — ISO 날짜는 사전순 = 시간순) */
-const windowedDateSchema = isoDateSchema.refine(
-  (d) => d >= ORDER_DATE_WINDOW.from && d <= ORDER_DATE_WINDOW.to,
-  { message: `주문일은 ${ORDER_DATE_WINDOW.from} ~ ${ORDER_DATE_WINDOW.to} 안이어야 한다` },
-);
+const windowedDateSchema = (label: string) =>
+  isoDateSchema.refine((d) => d >= ORDER_DATE_WINDOW.from && d <= ORDER_DATE_WINDOW.to, {
+    message: `${label}은 ${ORDER_DATE_WINDOW.from} ~ ${ORDER_DATE_WINDOW.to} 안이어야 한다`,
+  });
 
 /** `src/types.ts` 1부 Subtype 16개 */
 export const subtypeSchema = z.enum([
@@ -91,7 +91,22 @@ export const seedOrderSchema = z
     country: countrySchema,
     tracked: z.boolean(),
     source: z.enum(['sandbox', 'seed']),
-    date: windowedDateSchema,
+    date: windowedDateSchema('주문일'),
+  })
+  .strict();
+
+/**
+ * 시연용 배송사 이벤트 (v2.5, SPEC 12장). PayPal 데이터가 아니라 배송사 추적 이벤트이고
+ * 전부 `isDemo: true`다. 주문과의 맞물림(주문일 이후, 날짜 오름차순)은 파일 2개를 같이 봐야 해서
+ * 아래 `carrierEventProblems`가 본다.
+ */
+export const seedCarrierEventSchema = z
+  .object({
+    orderId: z.string().min(1),
+    date: windowedDateSchema('배송사 이벤트 날짜'),
+    status: z.enum(['shipped', 'in_transit', 'customs_hold', 'out_for_delivery', 'delivered']),
+    text: z.string().min(1),
+    isDemo: z.literal(true),
   })
   .strict();
 
@@ -108,6 +123,7 @@ export const seedDisputesSchema = z
     message: 'open 분쟁은 lossCents가 null, closed 분쟁은 숫자여야 한다',
   });
 export const seedOrdersSchema = z.array(seedOrderSchema);
+export const seedCarrierEventsSchema = z.array(seedCarrierEventSchema);
 
 /**
  * 분쟁 → 주문 참조 무결성 (v2.2, Q10). 파일 2개를 같이 봐야 해서 스키마 밖에 둔다.
@@ -136,6 +152,34 @@ export function disputeOrderProblems(
   return problems;
 }
 
+/**
+ * 배송사 이벤트 → 주문 맞물림 (v2.5). 파일 2개를 같이 봐야 해서 스키마 밖에 둔다.
+ * ① 가리키는 주문이 있다 ② 이벤트 날짜가 주문일 이후다 ③ 주문마다 날짜 오름차순이다.
+ * 어긋난 줄마다 사람이 읽을 메시지를 돌려준다 (빈 배열이면 통과).
+ */
+export function carrierEventProblems(
+  events: readonly SeedCarrierEvent[],
+  orders: readonly SeedOrder[],
+): string[] {
+  const byId = new Map(orders.map((o) => [o.id, o]));
+  const problems: string[] = [];
+  const lastDate = new Map<string, string>();
+
+  for (const e of events) {
+    const label = `${e.orderId} ${e.status} ${e.date}`;
+    const o = byId.get(e.orderId);
+    if (!o) {
+      problems.push(`${label}: 주문 ${e.orderId}이 orders에 없다`);
+      continue;
+    }
+    if (e.date < o.date) problems.push(`${label}: 주문일 ${o.date}보다 앞이다`);
+    const previous = lastDate.get(e.orderId);
+    if (previous && e.date < previous) problems.push(`${label}: 앞 이벤트 ${previous}보다 앞이다 (날짜 오름차순)`);
+    lastDate.set(e.orderId, e.date);
+  }
+  return problems;
+}
+
 // ── 계약(`src/types.ts` 8부)과 스키마가 같은 모양인지 컴파일 단계에서 확인한다 ──
 type Assert<T extends true> = T;
 type Assignable<A, B> = A extends B ? true : false;
@@ -147,6 +191,8 @@ type _i1 = Assert<Assignable<z.infer<typeof seedInquirySchema>, SeedInquiry>>;
 type _i2 = Assert<Assignable<SeedInquiry, z.infer<typeof seedInquirySchema>>>;
 type _d1 = Assert<Assignable<z.infer<typeof seedDisputeSchema>, SeedDispute>>;
 type _d2 = Assert<Assignable<SeedDispute, z.infer<typeof seedDisputeSchema>>>;
+type _e1 = Assert<Assignable<z.infer<typeof seedCarrierEventSchema>, SeedCarrierEvent>>;
+type _e2 = Assert<Assignable<SeedCarrierEvent, z.infer<typeof seedCarrierEventSchema>>>;
 
 // 구매자·주문의 `country`는 계약이 `string`이고 스키마는 시드에 쓰는 5개로 좁힌다.
 // 그래서 한쪽 방향(스키마 → 계약)만 성립한다.
@@ -155,4 +201,4 @@ type _o1 = Assert<Assignable<z.infer<typeof seedOrderSchema>, SeedOrder>>;
 type _c1 = Assert<Assignable<z.infer<typeof countrySchema>, SeedBuyer['country']>>;
 type _c2 = Assert<Assignable<z.infer<typeof countrySchema>, SeedOrder['country']>>;
 
-export type SchemaMatchesContract = [_p1, _p2, _i1, _i2, _d1, _d2, _b1, _o1, _c1, _c2];
+export type SchemaMatchesContract = [_p1, _p2, _i1, _i2, _d1, _d2, _e1, _e2, _b1, _o1, _c1, _c2];

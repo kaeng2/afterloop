@@ -11,7 +11,7 @@
  * - 원문 6-2·6-3·6-4의 이름·국가·문장은 한 글자도 바꾸지 않는다.
  */
 import paramsConfig from '../config/params.json';
-import type { SeedBuyer, SeedDispute, SeedInquiry, SeedOrder, SeedProduct, Subtype } from '@/types';
+import type { SeedBuyer, SeedCarrierEvent, SeedDispute, SeedInquiry, SeedOrder, SeedProduct, Subtype } from '@/types';
 import { ORDER_DATE_WINDOW } from './schemas';
 
 // ───────────────────────────── 공통 도구 ─────────────────────────────
@@ -620,11 +620,39 @@ export function buildInquiries(orders: readonly UndatedOrder[]): SeedInquiry[] {
   return [...tableInquiries, ...generated];
 }
 
+// ─────────────── 시연용 배송사 데이터 (v2.5, SPEC 12장 / 원문 S5) ───────────────
+
+/**
+ * 배송사 추적 이벤트. **PayPal 데이터가 아니라 시연용**이고 화면에는 늘 'Demo data' 배지가
+ * 붙는다 (SPEC 10장). 이벤트의 `text`가 분류 입력(`ClassifyInput.trackingEvents`)으로 들어간다.
+ *
+ * 글은 배송사가 쓸 법한 짧은 영어 한 줄뿐이다 — 이름·이메일·주소·개인통관고유부호 값은 넣지
+ * 않는다. 주문 2건만 넣는다 (필요한 최소):
+ *
+ * - **O01 서연** (주문일 10-17, D2 INR): 발송 → 이동 중 → **통관 보류**. 배송 완료는 없다.
+ *   통관 보류 글은 원문 S5 화면 예시 그대로다 (가운데 줄표는 en dash `–`). 서연 화면이
+ *   "배송사 정보 반영 후"로 A2(통관 보류)를 보여 주는 근거가 이 줄이다 (SPEC 2·4장).
+ * - **O08 buyer_m** (주문일 10-16, D3 INR): 발송 → 배송 완료. 배송 완료(10-22)가 10/28 문의
+ *   "Same problem again - the package is not here."보다 앞이라 "배송 완료 기록이 뜬 뒤에 못
+ *   받았다고 했다"는 F1(반복 주장) 흐름이 성립한다 (SPEC 4장 규칙 2).
+ *
+ * 주문마다 날짜 오름차순이다 (`schemas.ts`의 `carrierEventProblems`가 확인).
+ */
+export const carrierEvents: SeedCarrierEvent[] = [
+  { orderId: 'O01', date: '2026-10-18', status: 'shipped', text: 'Shipment picked up', isDemo: true },
+  { orderId: 'O01', date: '2026-10-21', status: 'in_transit', text: 'In transit to destination country', isDemo: true },
+  { orderId: 'O01', date: '2026-10-30', status: 'customs_hold', text: 'Customs hold – recipient customs ID missing', isDemo: true },
+  { orderId: 'O08', date: '2026-10-17', status: 'shipped', text: 'Shipment picked up', isDemo: true },
+  { orderId: 'O08', date: '2026-10-19', status: 'in_transit', text: 'In transit to destination facility', isDemo: true },
+  { orderId: 'O08', date: '2026-10-21', status: 'out_for_delivery', text: 'Out for delivery', isDemo: true },
+  { orderId: 'O08', date: '2026-10-22', status: 'delivered', text: 'Delivered – left at front door', isDemo: true },
+];
+
 // ───────────────────────────── 묶음 ─────────────────────────────
 
 export function buildSeed() {
   const undated = buildUndatedOrders();
   const inquiries = buildInquiries(undated);
   const orders = withOrderDates(undated, inquiries);
-  return { products, buyers, inquiries, disputes: buildDisputes(orders), orders };
+  return { products, buyers, inquiries, disputes: buildDisputes(orders), orders, carrierEvents };
 }

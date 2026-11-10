@@ -1,9 +1,9 @@
-# seed/ — 데모 시드 데이터 (T007·T028, data 레인)
+# seed/ — 데모 시드 데이터 (T007·T028·T045, data 레인)
 
-모든 화면이 쓰는 데모 데이터다. 기준: **SPEC v2.2**, 원문(PRD v2) 6장 + 기획자 결정 2026-11-09 (Q8·Q10).
+모든 화면이 쓰는 데모 데이터다. 기준: **SPEC v2.5**, 원문(PRD v2) 6장 + 기획자 결정 2026-11-09 (Q8·Q10) + 사람 승인 2026-11-10 (배송사 데이터).
 
 ```
-npm run seed    # 아래 JSON 5개를 다시 만들고 zod 검증 후 요약 출력 (DB 적재는 T025)
+npm run seed    # 아래 JSON 6개를 다시 만들고 zod 검증 후 요약 출력 (DB 적재는 T025)
 npm test        # tests/unit/seed.test.ts — 원문 표와 대조
 ```
 
@@ -14,6 +14,7 @@ npm test        # tests/unit/seed.test.ts — 원문 표와 대조
 | `inquiries.json` | 31 (표 8 + 자동 생성 23) | 6-3 |
 | `disputes.json` | 9 (D1~D9) | 6-4 |
 | `orders.json` | 214 (샌드박스 12 + 시드 202) | 4-1, 6-1, 6-5 |
+| `carrier-events.json` | 7 (O01 3 + O08 4) | S5 (SPEC v2.5 12장) |
 
 소스: `schemas.ts` (zod, `src/types.ts` 8부와 1:1) · `data.ts` (표 값 + 결정적 자동 생성) · `generate.ts` (CLI) · `index.ts` (화면·테스트용 입구).
 
@@ -74,6 +75,28 @@ D3은 F1(반복 주장) 규칙이 걸려야 하므로 배송 완료 기록이 �
 (O08~O11)이 모두 추적 등록이고, 분쟁 D3·D7·D8이 그 중 세 건에 걸린다. v2.2에서 계약에
 `SeedDispute.orderId`가 생겨 **어느 주문인지 시드가 고정한다** (기획자 결정 Q10):
 주장 1 O09(D7) → 주장 2 O10(D8) → 세 번째 주장 O08(D3), 주문일도 그 순서다.
+
+## 시연용 배송사 데이터 (`carrier-events.json`, v2.5)
+
+`carrier-events.json`은 **배송사 추적 이벤트**다 — PayPal에서 받아 온 데이터가 아니라 우리가
+시연을 위해 적은 데이터이고, 그래서 모든 줄에 `isDemo: true`가 붙고 화면은 늘 **'Demo data'
+배지**를 붙인다 (SPEC 10장의 "시연용 데이터" ①). 세 군데에 쓰인다: ① 분류 입력
+(`ClassifyInput.trackingEvents`)에 이벤트의 `text`가 그대로 들어간다 ② 서연 화면(S5)의 **"배송사
+정보 반영 후"** — O01의 통관 보류 줄이 A1(추적 없는 미수령)에서 A2(통관 보류)로 넘어가는 근거다
+(SPEC 2장. 실제 분쟁 D2는 추적번호가 없는 샌드박스 주문 O13에 걸려 있고, 시드의 D2는 O01을
+가리킨다) ③ buyer_m의 **배송 완료 기록** — O08의 `delivered` 줄이 "배송 완료 기록 + 이전 미수령
+분쟁 2회" F1(악용 의심) 판정의 배송 쪽 근거다 (SPEC 4장 규칙 2).
+
+| 주문 | 흐름 | 비고 |
+|---|---|---|
+| O01 (서연, 주문일 10-17, D2) | `shipped` 10-18 → `in_transit` 10-21 → `customs_hold` **10-30** | 통관 보류 글은 원문 S5 예시 그대로 `Customs hold – recipient customs ID missing` (가운데 줄표는 en dash). **배송 완료가 없다** |
+| O08 (buyer_m, 주문일 10-16, D3) | `shipped` 10-17 → `in_transit` 10-19 → `out_for_delivery` 10-21 → `delivered` **10-22** | 배송 완료가 10/28 문의 "Same problem again - the package is not here."보다 앞이라 "배송 완료 기록이 뜬 뒤에 못 받았다고 했다"는 흐름이 성립한다 |
+
+그 밖의 주문에는 이벤트를 넣지 않는다 (필요한 최소). 글은 배송사가 쓸 법한 짧은 영어 한 줄이고
+이름·이메일·주소·개인통관고유부호 값은 넣지 않는다. 주문마다 날짜 오름차순이고, 이벤트 날짜는
+그 주문일 이후·시연 시점(2026-11-10) 이전이다 (`schemas.ts`의 `carrierEventProblems`가 생성
+때 확인한다). 화면·다른 레인은 `seed/index.ts`의 `seedCarrierEvents`나 `carrierEventsFor(orderId)`
+(날짜순, 없으면 빈 배열)로 읽는다 — 어느 쪽도 판정·계산을 하지 않는다.
 
 ## 주문일 (`SeedOrder.date`, v2.2)
 

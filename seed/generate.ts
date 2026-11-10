@@ -8,8 +8,10 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { buildSeed } from './data';
 import {
+  carrierEventProblems,
   disputeOrderProblems,
   seedBuyersSchema,
+  seedCarrierEventsSchema,
   seedDisputesSchema,
   seedInquiriesSchema,
   seedOrdersSchema,
@@ -38,22 +40,29 @@ function main(): void {
   const inquiries = writeChecked('inquiries.json', seed.inquiries, seedInquiriesSchema);
   const disputes = writeChecked('disputes.json', seed.disputes, seedDisputesSchema);
   const orders = writeChecked('orders.json', seed.orders, seedOrdersSchema);
+  const carrierEvents = writeChecked('carrier-events.json', seed.carrierEvents, seedCarrierEventsSchema);
 
   const problems = disputeOrderProblems(disputes, orders);
   if (problems.length > 0) throw new Error(`분쟁 → 주문 연결이 어긋났다:\n  ${problems.join('\n  ')}`);
+
+  const carrierProblems = carrierEventProblems(carrierEvents, orders);
+  if (carrierProblems.length > 0) throw new Error(`배송사 이벤트가 주문과 어긋났다:\n  ${carrierProblems.join('\n  ')}`);
 
   const closedLossCents = disputes.reduce((sum, d) => sum + (d.lossCents ?? 0), 0);
   const tracked = orders.filter((o) => o.tracked).length;
   const orderDates = orders.map((o) => o.date).sort();
   const byMonth = countBy(orders, (o) => o.date.slice(0, 7));
 
+  const carrierOrders = [...new Set(carrierEvents.map((e) => e.orderId))];
+
   const lines = [
-    'seed 다시 생성 완료 (원문 6장, SPEC v2.2)',
+    'seed 다시 생성 완료 (원문 6장, SPEC v2.5)',
     `  products.json   ${products.length}건  ${products.map((p) => `${p.sku} ${asMoney(p.priceCents)}`).join(' · ')}`,
     `  buyers.json     ${buyers.length}건  샌드박스 ${buyers.filter((b) => b.sandbox).length}명`,
     `  inquiries.json  ${inquiries.length}건  (표 8 + 자동 생성 ${inquiries.length - 8})`,
     `  disputes.json   ${disputes.length}건  진행 중 ${disputes.filter((d) => d.status === 'open').length} · 종결 ${disputes.filter((d) => d.status === 'closed').length} · 종결 손실 합 ${closedLossCents}¢ (${asMoney(closedLossCents)})`,
     `  orders.json     ${orders.length}건  샌드박스 ${orders.filter((o) => o.source === 'sandbox').length} · 시드 ${orders.filter((o) => o.source === 'seed').length}`,
+    `  carrier-events.json  ${carrierEvents.length}건 (시연용, 전부 Demo data)  ${carrierOrders.map((id) => `${id} ${carrierEvents.filter((e) => e.orderId === id).map((e) => e.status).join(' → ')}`).join(' · ')}`,
     `  주문 상품별      ${Object.entries(countBy(orders, (o) => o.sku)).map(([k, v]) => `${k} ${v}`).join(' · ')}`,
     `  주문 국가별      ${Object.entries(countBy(orders, (o) => o.country)).map(([k, v]) => `${k} ${v}`).join(' · ')}`,
     `  추적 등록        ${tracked} / ${orders.length} (${((tracked / orders.length) * 100).toFixed(1)}%)`,
