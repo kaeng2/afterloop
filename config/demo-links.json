@@ -33,6 +33,14 @@
       "showOnScreen": false,
       "liveSendAllowed": false,
       "note": "옛 서연 분쟁. 시연 제외 — 아무 조치도 하지 않는다"
+    },
+    {
+      "paypalDisputeId": "PP-R-HEY-10197767",
+      "seedDisputeId": null,
+      "carrierOrderId": null,
+      "showOnScreen": false,
+      "liveSendAllowed": true,
+      "note": "연습용 분쟁 (샌드박스 주문 O04, Yuki). 녹화 전 실제 전송 시험용"
     }
   ]
 }
