@@ -29,7 +29,12 @@ const fixture = (name: string): Record<string, unknown> =>
 const WAITING = fixture('dispute-detail.inquiry-waiting-seller.json');
 /** PayPal 검토 중. links는 self뿐이고 응답 기한이 없다 */
 const UNDER_REVIEW = fixture('dispute-detail.inquiry-under-review-initial.json');
+/** 실제 분쟁 D2 꼴 (T037): `messages` 키가 없고 구매자 접수 글이 `evidences[].notes`에만 있다 */
+const CLAIM = fixture('dispute-detail.claim-under-review.json');
 const LIST = fixture('dispute-list.json');
+
+/** 그 fixture의 구매자 접수 글. 원문을 테스트 파일에 베끼지 않고 fixture에서 읽는다 */
+const CLAIM_NOTE = (CLAIM.evidences as { notes: string }[])[0].notes;
 
 const EXTRA: BoardExtra = { hasTracking: false, hasDeliveredTracking: false, buyerPriorInrDisputes: 0, isDemo: false };
 
@@ -102,7 +107,7 @@ describe('toBoardState: fixture 변환', () => {
 
   it('목록 항목도 같은 값으로 변환된다 (dispute-list.json)', () => {
     const item = parseDisputeSummary((LIST.items as unknown[])[0]);
-    const board = toBoardState({ ...item, messages: [] }, EXTRA);
+    const board = toBoardState({ ...item, messages: [], evidences: [] }, EXTRA);
 
     expect(board.disputeId).toBe('PP-R-XWI-10197379');
     expect(board.amountCents).toBe(4800);
@@ -331,6 +336,7 @@ describe('toClassifyInput', () => {
           { posted_by: 'BUYER', content: '  ' },
           { posted_by: 'ARBITER', content: 'PayPal review' },
         ],
+        evidences: [], // "messages만 있는 분쟁" — fixture의 evidences[0](같은 글)을 빼고 본다 (T037)
       }),
       extra,
     );
@@ -346,13 +352,16 @@ describe('toClassifyInput', () => {
   });
 
   it('개인통관고유부호 모양도 가리지 않고 그대로 넘긴다 (가리는 것은 분류기의 일)', () => {
-    const input = toClassifyInput(detail({ messages: [{ posted_by: 'BUYER', content: '통관번호 P123456789012 입니다' }] }), extra);
+    const input = toClassifyInput(
+      detail({ messages: [{ posted_by: 'BUYER', content: '통관번호 P123456789012 입니다' }], evidences: [] }),
+      extra,
+    );
     expect(input.buyerMessages).toEqual(['통관번호 P123456789012 입니다']);
   });
 
   it('메시지가 없으면 빈 배열, trackingEvents는 복사한다', () => {
     const events = ['a'];
-    const input = toClassifyInput(detail({ messages: [] }), { ...extra, trackingEvents: events });
+    const input = toClassifyInput(detail({ messages: [], evidences: [] }), { ...extra, trackingEvents: events });
 
     expect(input.buyerMessages).toEqual([]);
     expect(input.trackingEvents).toEqual(['a']);
@@ -363,6 +372,153 @@ describe('toClassifyInput', () => {
     expect(() => toClassifyInput(detail(), { ...extra, trackingEvents: [1] as unknown as string[] })).toThrow(
       /trackingEvents/,
     );
+  });
+});
+
+// ── 구매자 글: messages + evidences[].notes (T037) ───────────────────────────
+describe('toClassifyInput: evidences의 구매자 글도 읽는다', () => {
+  const extra = { hasTracking: true, hasDeliveredTracking: false, buyerPriorInrDisputes: 1, trackingEvents: [] };
+
+  /** `messages`·`evidences`만 바꿔 분류 입력을 만든다 (base는 합의 단계 fixture). */
+  const classify = (over: Record<string, unknown>, base: Record<string, unknown> = WAITING) =>
+    toClassifyInput(detail(over, base), extra).buyerMessages;
+
+  it('messages 키가 없고 evidences에만 구매자 글이 있는 분쟁(D2 꼴)도 1건을 읽는다', () => {
+    const input = toClassifyInput(detail({}, CLAIM), extra);
+
+    expect(input.buyerMessages).toEqual([CLAIM_NOTE]);
+    expect(input.reason).toBe('MERCHANDISE_OR_SERVICE_NOT_RECEIVED');
+  });
+
+  it('messages와 evidences에 같은 글이 있으면 1건이다 (fixture의 접수 글 = messages[0])', () => {
+    // 이 fixture는 손대지 않은 그대로 쓴다: messages[0].content와 evidences[0].notes가 같은 글이다
+    expect(toClassifyInput(detail(), extra).buyerMessages).toEqual(['Color and size differ from listing']);
+  });
+
+  it('앞뒤 공백만 다른 같은 글도 1건이고, 먼저 오는 것을 남긴다', () => {
+    expect(
+      classify({
+        messages: [{ posted_by: 'BUYER', content: '같은 글', time_posted: '2026-11-09T06:00:00Z' }],
+        evidences: [{ source: 'SUBMITTED_BY_BUYER', notes: '  같은 글  ', date: '2026-11-09T07:00:00Z' }],
+      }),
+    ).toEqual(['같은 글']);
+  });
+
+  it('글이 다르면 둘 다 넣고 시각순(이른 것부터)으로 세운다', () => {
+    expect(
+      classify({
+        messages: [{ posted_by: 'BUYER', content: '나중 글', time_posted: '2026-11-09T10:00:00Z' }],
+        evidences: [{ source: 'SUBMITTED_BY_BUYER', notes: '먼저 글', date: '2026-11-09T06:00:00Z' }],
+      }),
+    ).toEqual(['먼저 글', '나중 글']);
+  });
+
+  it('시각은 Date.parse로 비교한다 (문자열 비교면 거꾸로 선다)', () => {
+    // 문자열로 비교하면 `.`(0x2E) < `Z`라서 `...25.608Z`가 `...25Z`보다 앞에 선다
+    expect(
+      classify({
+        messages: [{ posted_by: 'BUYER', content: '늦은 글', time_posted: '2026-11-09T06:09:25.608Z' }],
+        evidences: [{ source: 'SUBMITTED_BY_BUYER', notes: '이른 글', date: '2026-11-09T06:09:25Z' }],
+      }),
+    ).toEqual(['이른 글', '늦은 글']);
+  });
+
+  it('시각이 같으면 모은 순서(messages 먼저, 그다음 evidences)를 지킨다', () => {
+    expect(
+      classify({
+        messages: [{ posted_by: 'BUYER', content: 'm', time_posted: '2026-11-09T06:00:00Z' }],
+        evidences: [{ source: 'SUBMITTED_BY_BUYER', notes: 'e', date: '2026-11-09T06:00:00Z' }],
+      }),
+    ).toEqual(['m', 'e']);
+  });
+
+  it('시각이 없거나 읽을 수 없는 글은 뒤에, 모은 순서로 붙는다', () => {
+    expect(
+      classify({
+        messages: [
+          { posted_by: 'BUYER', content: 'm-시각없음' },
+          { posted_by: 'BUYER', content: 'm-못읽는시각', time_posted: '어제' },
+          { posted_by: 'BUYER', content: 'm-시각있음', time_posted: '2026-11-09T09:00:00Z' },
+        ],
+        evidences: [
+          { source: 'SUBMITTED_BY_BUYER', notes: 'e-시각없음' },
+          { source: 'SUBMITTED_BY_BUYER', notes: 'e-시각있음', date: '2026-11-09T08:00:00Z' },
+        ],
+      }),
+    ).toEqual(['e-시각있음', 'm-시각있음', 'm-시각없음', 'm-못읽는시각', 'e-시각없음']);
+  });
+
+  it('같은 입력이면 항상 같은 순서가 나온다', () => {
+    const over = {
+      messages: [
+        { posted_by: 'BUYER', content: 'b', time_posted: '2026-11-09T06:00:00Z' },
+        { posted_by: 'BUYER', content: 'a' },
+      ],
+      evidences: [
+        { source: 'SUBMITTED_BY_BUYER', notes: 'c' },
+        { source: 'SUBMITTED_BY_BUYER', notes: 'd', date: '2026-11-09T05:00:00Z' },
+      ],
+    };
+
+    expect(classify(over)).toEqual(classify(over));
+    expect(classify(over)).toEqual(['d', 'b', 'a', 'c']);
+  });
+
+  it('판매자·PayPal 증빙의 notes, 빈 notes, notes 없는 항목은 넣지 않는다', () => {
+    expect(
+      classify({
+        messages: [],
+        evidences: [
+          { source: 'SUBMITTED_BY_SELLER', notes: '판매자가 낸 증빙', date: '2026-11-09T01:00:00Z' },
+          { source: 'REQUESTED_FROM_SELLER', notes: 'PayPal이 요청한 자료' },
+          { source: 'SUBMITTED_BY_BUYER', notes: '   ' },
+          { source: 'SUBMITTED_BY_BUYER', date: '2026-11-09T02:00:00Z' },
+          { notes: 'source가 없는 증빙' },
+          { evidence_type: 'CREATE', source: 'SUBMITTED_BY_BUYER', notes: '구매자 글' },
+        ],
+      }),
+    ).toEqual(['구매자 글']);
+  });
+
+  it('evidences 키가 없는 응답도 예외 없이 messages만 읽는다', () => {
+    const noEvidences = { ...WAITING };
+    delete (noEvidences as Record<string, unknown>).evidences;
+
+    expect(classify({}, noEvidences)).toEqual(['Color and size differ from listing']);
+    expect(classify({ messages: [] }, noEvidences)).toEqual([]);
+  });
+
+  it('예외 문구에 구매자 글이 들어가지 않는다', () => {
+    let message = '';
+    try {
+      toClassifyInput(detail({}, CLAIM), { ...extra, trackingEvents: [1] as unknown as string[] });
+    } catch (e) {
+      message = (e as Error).message;
+    }
+
+    expect(message).toContain('trackingEvents');
+    expect(message).not.toContain(CLAIM_NOTE);
+    expect(message).not.toContain(CLAIM_NOTE.slice(0, 8));
+  });
+
+  it('BoardState에는 evidences의 구매자 글이 들어가지 않는다 (SPEC 10장)', () => {
+    const board = toBoardState(detail({}, CLAIM), EXTRA);
+    const text = JSON.stringify(board);
+
+    expect(text).not.toContain(CLAIM_NOTE.slice(0, 8));
+    expect(text).not.toContain('testbuyer2@example.com');
+    expect(text).not.toContain('Test Buyer Two');
+  });
+
+  it('D2 꼴의 BoardState는 지금 그대로다 (CHARGEBACK, 기한 없음, 허용된 수 없음)', () => {
+    // `provide_supporting_info`는 계약의 MoveType에 없어서 버려진다 (T037에서 바꾸지 않는다)
+    const board = toBoardState(detail({}, CLAIM), EXTRA);
+
+    expect(board.stage).toBe('CHARGEBACK');
+    expect(board.channel).toBe('INTERNAL');
+    expect(board.dueDate).toBe('');
+    expect(board.allowedMoves).toEqual([]);
+    expect(board.amountCents).toBe(7200);
   });
 });
 

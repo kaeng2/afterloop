@@ -142,7 +142,9 @@
     {
       "key": "D2",
       "disputeId": "PP-R-GAH-10197649",
-      "orderKey": "O01"
+      "orderKey": "O01",
+      "demoExcluded": true,
+      "note": "시연 제외 (2026-11-10): 접수 몇 분 뒤 PayPal 심사 단계(CHARGEBACK)로 넘어감. 아무 조치도 하지 않는다 (환불 수락 금지)."
     },
     {
       "key": "D3",

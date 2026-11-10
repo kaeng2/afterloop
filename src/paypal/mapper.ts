@@ -125,6 +125,62 @@ function requireCount(value: number, field: string): number {
   return value;
 }
 
+// ── 구매자 글 모으기 ────────────────────────────────────────────────────────
+
+/** 구매자가 낸 증빙의 `source`. 판매자·PayPal이 낸 증빙의 `notes`는 구매자 글이 아니다. */
+const BUYER_EVIDENCE_SOURCE = 'SUBMITTED_BY_BUYER';
+
+/** 구매자 글 1건. `order`는 모은 순서(`messages` 먼저, 그다음 `evidences`)다. */
+type BuyerText = { content: string; postedAt: number | null; order: number };
+
+/** 시각 문자열 → 비교용 수. 없거나 읽을 수 없으면 null ("시각 없음"으로 본다). */
+function postedAtOf(raw: string | undefined): number | null {
+  if (raw === undefined || raw.trim() === '') return null;
+  const parsed = Date.parse(raw); // 문자열 비교 금지: `...25Z`와 `...25.608Z`가 거꾸로 선다
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+/**
+ * 구매자가 쓴 글. `messages`(`posted_by: BUYER`)와 `evidences`(`source: SUBMITTED_BY_BUYER`)를 함께 읽는다
+ * (실제 분쟁에는 `messages` 키가 아예 없고 접수 글이 `evidences[].notes`에만 있는 건이 있다 — T037).
+ *
+ * 순서: 시각을 읽을 수 있는 글을 이른 것부터, 그 뒤에 시각 없는 글을 모은 순서대로. 시각이 같으면 모은 순서.
+ * 같은 글(앞뒤 공백을 뺀 뒤 같은 문자열)은 먼저 오는 것만 남긴다. 같은 입력이면 항상 같은 순서가 나온다.
+ */
+function buyerTexts(detail: DisputeDetail): string[] {
+  const collected: BuyerText[] = [];
+
+  for (const message of detail.messages) {
+    if (message.posted_by.toUpperCase() !== 'BUYER') continue;
+    if (message.content.trim() === '') continue;
+    collected.push({ content: message.content, postedAt: postedAtOf(message.time_posted), order: collected.length });
+  }
+
+  for (const evidence of detail.evidences) {
+    if ((evidence.source ?? '').toUpperCase() !== BUYER_EVIDENCE_SOURCE) continue;
+    const notes = evidence.notes ?? '';
+    if (notes.trim() === '') continue;
+    collected.push({ content: notes, postedAt: postedAtOf(evidence.date), order: collected.length });
+  }
+
+  const sorted = [...collected].sort((a, b) => {
+    if (a.postedAt !== null && b.postedAt !== null && a.postedAt !== b.postedAt) return a.postedAt - b.postedAt;
+    if (a.postedAt === null && b.postedAt !== null) return 1; // 시각 없는 글은 뒤로
+    if (a.postedAt !== null && b.postedAt === null) return -1;
+    return a.order - b.order; // 시각이 같거나 둘 다 없으면 모은 순서
+  });
+
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const text of sorted) {
+    const key = text.content.trim();
+    if (seen.has(key)) continue; // 같은 글이 `messages`·`evidences` 양쪽에 있으면 1건 (먼저 오는 것)
+    seen.add(key);
+    out.push(text.content);
+  }
+  return out;
+}
+
 // ── 공개 변환 함수 ───────────────────────────────────────────────────────────
 
 /** 분쟁 상세 + 밖에서 받은 값 → `BoardState`. */
@@ -183,7 +239,8 @@ export function countPriorInrDisputes(disputes: DisputeSummary[], buyerKey: stri
 }
 
 /**
- * 분류 입력 (`ClassifyInput`). 구매자 메시지 원문이 들어가는 유일한 변환이다.
+ * 분류 입력 (`ClassifyInput`). 구매자 글 원문이 들어가는 유일한 변환이다
+ * (`messages`와 `evidences[].notes`를 함께 읽는다 — `buyerTexts`).
  * 개인통관고유부호 모양(`P` + 숫자 12자리)도 가리지 않고 그대로 넘긴다 (가리는 것은 분류기 T006의 일).
  * 이 값은 로그에 남기지 않는다.
  */
@@ -196,10 +253,7 @@ export function toClassifyInput(detail: DisputeDetail, extra: ClassifyExtra): Cl
 
   return {
     reason: d.reason,
-    buyerMessages: d.messages
-      .filter((message) => message.posted_by.toUpperCase() === 'BUYER')
-      .map((message) => message.content)
-      .filter((content) => content.trim() !== ''),
+    buyerMessages: buyerTexts(d),
     trackingEvents: [...extra.trackingEvents],
     hasTracking: requireBoolean(extra.hasTracking, 'hasTracking'),
     hasDeliveredTracking: requireBoolean(extra.hasDeliveredTracking, 'hasDeliveredTracking'),
