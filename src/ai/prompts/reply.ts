@@ -12,12 +12,20 @@
  * 값은 `build*User`가 만드는 user 쪽에만 들어간다.
  *
  * 사실값 (SPEC 3장, 검토 결정 4):
- * - 프롬프트에는 사실값의 **토큰 이름과 종류만** 넣고 **값은 넣지 않는다** (`⟦DATE_1⟧ (DATE)`).
+ * - 프롬프트에는 사실값의 **토큰 이름·종류·뜻만** 넣고 **값은 넣지 않는다**
+ *   (`⟦DATE_1⟧ (DATE) = the date the seller will check the status and contact the buyer again.`).
  *   값을 보여 주지 않으면 모델에게 "by Nov 17"처럼 옮겨 쓸 **진짜 값이 없고**, 추적번호·통관 상태가
  *   모델에 가지도 않는다 (지어낸 값은 코드가 `draft_literal_facts`로 막는다). 값을 채우는 것은
  *   전송 직전 단계(`fillTokens`)다. 규칙 문장의 예시도 시연 값을 쓰지 않는다 (아래 `FACT_RULES`).
+ * - **뜻을 함께 넘기는 이유** (T053, SPEC v2.7 3장 "날짜의 뜻"): 토큰 이름과 종류만 가면 모델이
+ *   `⟦DATE_1⟧`의 뜻을 실행마다 다르게 골랐다 (한 번은 "그날까지 배송될 것", 한 번은 "안 오면 재발송").
+ *   날짜는 **판매자가 진행 상황을 확인해서 다시 연락하는 날**이지 도착 예상일이 아니다. 그 한 줄은
+ *   `config/rules.json`의 `reply.followUpDateMeaning`에서 온다 (`ReplyDraftPolicy`).
  * - 금액은 사실값 토큰이 아니라 실행 자리표시자(`{{offerAmount}}` 등)로만 쓴다. 이름은
  *   `src/exec/message.ts`의 `SOURCES`와 같다.
+ * - **돈이 드는 약속** (T053, SPEC v2.7 3장 "정책 밖 약속 막기"): 환불·재발송·교환·할인·무료 배송·보상은
+ *   모델이 스스로 쓰지 않는다. 대안은 `<allowed_commitments>`에 적힌 판매자 정책뿐이다. 지시만으로는
+ *   모자라므로 지켜졌는지는 코드가 본다 (`src/ai/commitments.ts`).
  *
  * 신뢰하지 않는 입력: 구매자 글·판매자 초안·전송본은 모두 구분 태그 안에만 넣고
  * `sanitizeUntrusted`(개인정보 가림 + 각괄호 무력화)를 거친다. 태그 안의 글은 지시가 아니라
@@ -31,7 +39,8 @@ import {
   sanitizeUntrusted,
 } from '@/ai/prompts/classify';
 import type { FactLocale } from '@/ai/tokens';
-import type { Cause, FactToken } from '@/types';
+import { FOLLOW_UP_DATE_TOKEN } from '@/engine/followup';
+import type { Cause, FactToken, ReplyDraftPolicy } from '@/types';
 
 /** 답장의 목적. 엔진이 추천한 수를 답장 쪽 낱말로 옮긴 것이다 (T042 지시서). */
 export type ReplyMove = 'fight' | 'offer' | 'refund';
@@ -83,12 +92,63 @@ export function localeName(locale: FactLocale): string {
   return LOCALE_NAMES[locale];
 }
 
-/** 사실값을 프롬프트에 적는 꼴. **값은 넣지 않는다** (위 주석). */
-function factLines(facts: FactToken[]): string {
+/**
+ * 종류별 기본 뜻 한 줄 (T053). `factMeanings`에 뜻이 없고 답장 후 확인 기한 토큰도 아닐 때 쓴다.
+ * "코드가 채운다"를 못 박아서 모델이 값을 지어내거나 뜻을 넓혀 읽지 않게 한다.
+ */
+const DEFAULT_FACT_MEANINGS: Readonly<Record<FactToken['kind'], string>> = {
+  DATE: 'a date filled in by code. Use it only as the date the sentence around it says, and invent no other meaning.',
+  AMOUNT: 'an amount filled in by code',
+  TRACKING: 'a tracking number filled in by code',
+  CUSTOMS_STATUS: 'a customs status filled in by code',
+};
+
+/** 뜻 한 줄의 길이 상한. 설정·입력에서 오는 글이라 `<facts>`의 한 줄이 글 한 편이 되지 않게 묶는다. */
+const MEANING_MAX_CHARS = 240;
+
+/**
+ * 토큰 하나의 뜻 한 줄.
+ * - 답장 후 확인 기한 토큰(`src/engine/followup.ts`의 `FOLLOW_UP_DATE_TOKEN`)은 **정책의 뜻**을 쓴다.
+ *   그 토큰만 뜻이 정해져 있다 — 값이 코드가 만든 "다시 연락하는 날"이기 때문이다 (SPEC v2.7 3장).
+ * - 그 밖의 토큰은 호출자가 `factMeanings`에 적어 준 뜻, 없으면 종류별 기본 한 줄.
+ */
+function factMeaning(fact: FactToken, policy: ReplyDraftPolicy, meanings?: Record<string, string>): string {
+  if (fact.token === FOLLOW_UP_DATE_TOKEN) return policy.followUpDateMeaning;
+  return meanings?.[fact.token] ?? DEFAULT_FACT_MEANINGS[fact.kind];
+}
+
+/**
+ * 사실값을 프롬프트에 적는 꼴. **값은 넣지 않고 뜻을 넣는다** (위 주석):
+ * `⟦DATE_1⟧ (DATE) = the date the seller will check the status and contact the buyer again. Not a delivery date.`
+ *
+ * 뜻은 설정(`reply.followUpDateMeaning`)이나 호출자가 준 글이라 완전히 신뢰할 값이 아니다 —
+ * 한 줄로 접고 각괄호를 지우고 길이를 자른다 (T050 2번의 `oneLineValue`를 그대로 쓴다).
+ */
+function factLines(facts: FactToken[], policy: ReplyDraftPolicy, meanings?: Record<string, string>): string {
   if (facts.length === 0) return '<none/>';
   return facts
-    .map((fact) => `<fact token="${sanitizeUntrusted(fact.token)}" kind="${sanitizeUntrusted(fact.kind)}"/>`)
+    .map((fact) => {
+      const token = sanitizeUntrusted(fact.token);
+      const kind = sanitizeUntrusted(fact.kind);
+      return `${token} (${kind}) = ${oneLineValue(factMeaning(fact, policy, meanings), MEANING_MAX_CHARS)}`;
+    })
     .join('\n');
+}
+
+/** 허용한 약속 한 줄의 길이 상한. 설정에서 오는 글이므로 `oneLineValue`로 접는다. */
+const COMMITMENT_MAX_CHARS = 200;
+
+/**
+ * 이 원인 세부 유형에 쓸 수 있는 약속만 줄로 적는다 (T053, SPEC v2.7 3장 "정책 밖 약속 막기").
+ * 없으면 `<none/>` — 그러면 모델이 쓸 수 있는 대안이 없다는 뜻이고, 그래도 돈이 드는 약속을 쓰면
+ * 코드가 잡아 판매자 확인으로 넘긴다 (`src/ai/commitments.ts`, `src/ai/reply.ts`).
+ */
+function commitmentLines(policy: ReplyDraftPolicy, subtype: string): string {
+  const lines = policy.allowedCommitments
+    .filter((commitment) => (commitment.subtypes as string[]).includes(subtype))
+    .map((commitment) => `- ${oneLineValue(commitment.text, COMMITMENT_MAX_CHARS)}`)
+    .filter((line) => line !== '- ');
+  return lines.length === 0 ? '<none/>' : lines.join('\n');
 }
 
 /** 구매자 글. 신뢰하지 않는 입력이므로 태그 안에만 넣는다. */
@@ -140,9 +200,21 @@ function optionalLine(key: string, value: string | undefined, max: number): stri
  */
 const FACT_RULES = `Facts you may not write:
 - Dates, amounts, tracking numbers and customs statuses appear only as the tokens listed in <facts>, copied character for character (for example ⟦DATE_1⟧). Code fills in the values later.
+- Each line in <facts> gives a token, its kind and what it means. Use a token only with that meaning. If the meaning of a date token is that the seller will check the status and contact the buyer again, never use it as the day the parcel arrives, is delivered or clears customs.
 - Never write a date, an amount, a tracking number or a customs status in digits or in words - not "March 3", not "the 3rd of March", not "$19", not "nineteen dollars", not "XX000000000XX". If you need a fact that is not in <facts>, leave that detail out of the sentence.
 - Money appears only as an execution placeholder: {{offerAmount}}, {{refundAmount}} or {{disputeAmount}}, copied character for character.
 - Personal data is already masked as ${PCCC_PLACEHOLDER}, ${EMAIL_PLACEHOLDER} or ${PHONE_PLACEHOLDER}. Never copy those markers into your output and never guess what they hid.`;
+
+/**
+ * 돈이 드는 약속 규칙 (T053, SPEC v2.7 3장 "정책 밖 약속 막기"). 초안과 코칭이 함께 지킨다.
+ *
+ * 예외는 추천 수가 `offer`·`refund`일 때의 환불이다 — 그것은 모델이 만든 약속이 아니라 엔진이 고른
+ * 실행 계획이고, 금액은 자리표시자로만 쓴다 (`FACT_RULES`와 아래 `The move is …`가 그대로 지킨다).
+ */
+const COMMITMENT_RULES = `Commitments you may not invent:
+- Never promise anything that costs the seller money: no refund, no reship or resend, no replacement or exchange, no discount or coupon, no free shipping, no compensation or store credit. Not even as a fallback, a condition or a hint ("if it has not arrived, I will ...").
+- If the reply needs a next step or a fallback, use only the lines in <allowed_commitments>. If that section is <none/>, offer no alternative at all: say what you are doing and when you will come back.
+- The only exception is the move below: when the move is offer or refund, the refund is the seller's own decision, and the amount is written only as an execution placeholder.`;
 
 /** 주입 방어. 태그 안의 글은 데이터다 (SPEC 3장). */
 const UNTRUSTED_RULES = `Untrusted input:
@@ -176,34 +248,42 @@ buyer_message_en:
 - The seller reads this on screen; it is never sent to the buyer.
 
 coaching:
-- Three to five very short English instructions that describe the shape of the reply, such as "Reply today", "Apologize", "Explain the customs hold", "Ask for the customs code", "Give a date", "Offer a fallback".
+- Three to five very short English instructions that describe the shape of the reply, such as "Reply today", "Apologize", "Explain the customs hold", "Ask for the customs code", "Say when you will follow up".
 - Imperative, under about 60 characters each, in the order the seller should write them. Fit them to the cause subtype and to the move.
+- The commitment rules below hold for these lines too: never write a line like "Offer a refund" or "Promise a reship" unless the move itself is offer or refund.
 
 draft_en:
 - Two to five sentences of English, written as the seller to the buyer, under 1200 characters.
 - Open by name if a buyer_first_name is given, sign off with seller_name if one is given.
 - Plain, warm, specific. Apologize once if the delay or fault is the seller's side. No marketing language, no excuses about the carrier that the facts do not support.
 - Promise nothing beyond the move below. Do not write "guarantee", "100%", "definitely" or "I promise".
+- Write a date token with the meaning <facts> gives it. When that meaning is the day the seller checks the status and comes back to the buyer, the sentence looks like this: "I will check with the carrier and contact you again by ⟦DATE_1⟧."
 
 The move is the purpose of the reply:
-- fight: explain what actually happened, ask for exactly what you need from the buyer, give the date token if one is listed, and name one fallback if the date passes. Do not offer or mention any amount of money.
+- fight: explain what actually happened, ask for exactly what you need from the buyer, and say when you will come back with news, using the date token if one is listed. Any next step must come from <allowed_commitments>. Do not offer or mention any amount of money.
 - offer: offer a partial refund to settle now. Write the amount only as {{offerAmount}} and say what happens when the buyer accepts.
 - refund: tell the buyer the full refund is on its way. Write the amount only as {{refundAmount}} if an amount is needed at all.
+
+${COMMITMENT_RULES}
 
 ${FACT_RULES}
 
 ${UNTRUSTED_RULES}`;
 
-/** 초안 호출의 user 쪽. 입력 객체는 바꾸지 않는다. */
-export function buildDraftUser(input: {
-  buyerMessages: string[];
-  buyerLocale: FactLocale;
-  buyerFirstName?: string;
-  sellerName?: string;
-  cause: Cause;
-  move: ReplyMove;
-  facts: FactToken[];
-}): string {
+/** 초안 호출의 user 쪽. 입력 객체는 바꾸지 않는다. 정책은 `src/ai/reply.ts`가 읽어서 넘긴다. */
+export function buildDraftUser(
+  input: {
+    buyerMessages: string[];
+    buyerLocale: FactLocale;
+    buyerFirstName?: string;
+    sellerName?: string;
+    cause: Cause;
+    move: ReplyMove;
+    facts: FactToken[];
+    factMeanings?: Record<string, string>;
+  },
+  policy: ReplyDraftPolicy,
+): string {
   // 유형 코드도 한 줄로 만든다 — 표의 설명은 코드가 가진 고정 문구이고, 코드 자체는 분류기에서 온다
   const subtype = oneLineValue(input.cause.subtype, NAME_MAX_CHARS);
   const task = [
@@ -220,8 +300,11 @@ export function buildDraftUser(input: {
     task,
     '</reply_task>',
     '<facts>',
-    factLines(input.facts),
+    factLines(input.facts, policy, input.factMeanings),
     '</facts>',
+    '<allowed_commitments>',
+    commitmentLines(policy, subtype),
+    '</allowed_commitments>',
     '<buyer_messages>',
     messageLines(input.buyerMessages),
     '</buyer_messages>',
@@ -247,20 +330,33 @@ outgoing:
 - Same number of sentences, same meaning, same commitments. Add no detail, no apology, no deadline and no offer that is not in the English.
 - Translate nothing else: no commentary, no notes, no transliteration of the seller's name beyond what the target language needs.
 - Keep every ⟦TOKEN⟧ and every {{placeholder}} exactly as it appears in the English: same spelling, same count, untranslated. They are not words; they are holes the code fills. A sentence may need reordering around them, and that is fine.
+- Do not change what the verb next to a date token says. "I will contact you again by ⟦DATE_1⟧" stays a promise to get back in touch; it never becomes "it will arrive by", "it will be delivered by" or "it will clear customs by".
+- Add no commitment the English does not make. If the English promises no refund, no reship, no replacement, no discount, no free shipping and no compensation, neither does your translation.
 
 ${FACT_RULES}
 
 ${UNTRUSTED_RULES}`;
 
-/** 전송본 호출의 user 쪽. 판매자가 고친 초안도 신뢰하지 않는 입력으로 다룬다. */
-export function buildTranslateUser(input: { draftEn: string; buyerLocale: FactLocale; facts: FactToken[] }): string {
+/**
+ * 전송본 호출의 user 쪽. 판매자가 고친 초안도 신뢰하지 않는 입력으로 다룬다.
+ * `<facts>`에 뜻을 함께 넘긴다 — 번역이 날짜 토큰의 뜻을 바꾸지 않게 하는 데 쓰인다 (T053).
+ */
+export function buildTranslateUser(
+  input: {
+    draftEn: string;
+    buyerLocale: FactLocale;
+    facts: FactToken[];
+    factMeanings?: Record<string, string>;
+  },
+  policy: ReplyDraftPolicy,
+): string {
   return [
     '<target>',
     `language: ${input.buyerLocale} (${localeName(input.buyerLocale)})`,
     `tone: ${LOCALE_TONE[input.buyerLocale]}`,
     '</target>',
     '<facts>',
-    factLines(input.facts),
+    factLines(input.facts, policy, input.factMeanings),
     '</facts>',
     '<draft>',
     sanitizeUntrusted(input.draftEn),

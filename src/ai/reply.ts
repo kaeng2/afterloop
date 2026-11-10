@@ -30,6 +30,8 @@
  */
 import { z } from 'zod';
 
+import rulesConfigJson from '../../config/rules.json';
+import { findCommitments, type CommitmentCategory } from '@/ai/commitments';
 import { maskPersonal } from '@/ai/prompts/classify';
 import {
   BACK_TRANSLATE_OUTPUT_SCHEMA,
@@ -44,9 +46,11 @@ import {
   type ReplyMove,
 } from '@/ai/prompts/reply';
 import { checkTokens, type FactLocale } from '@/ai/tokens';
-import type { Cause, FactToken, LlmCaller, TokenCheck } from '@/types';
+import { SUBTYPES } from '@/engine/params';
+import type { Cause, FactToken, LlmCaller, ReplyDraftPolicy, TokenCheck } from '@/types';
 
 export type { ReplyMove };
+export type { CommitmentCategory };
 
 // ───────────────────────────── 계약 (아직 `src/types.ts`에 넣지 않는다) ─────────────────────────────
 
@@ -64,6 +68,12 @@ export type ReplyInput = {
   move: ReplyMove;
   /** 코드가 준 사실값. 초안은 이 토큰만 쓸 수 있다 */
   facts: FactToken[];
+  /**
+   * 토큰 하나의 뜻 한 줄 (T053). 프롬프트의 `<facts>`에 그대로 간다.
+   * 답장 후 확인 기한 토큰(`FOLLOW_UP_DATE_TOKEN`)의 뜻은 정책이 정하므로 여기 적어도 쓰이지 않고,
+   * 적지 않은 토큰은 종류별 기본 한 줄이 쓰인다 (`src/ai/prompts/reply.ts`).
+   */
+  factMeanings?: Record<string, string>;
 };
 
 export type ReplyFailureReason = 'ai_unavailable' | 'invalid_output' | 'refused';
@@ -110,16 +120,80 @@ export type ReplyFailureDetail =
 export type ReplyFailure = { ok: false; reason: ReplyFailureReason; detail: string };
 
 export type ReplyDraft =
-  | { ok: true; buyerMessageEn: string; coaching: string[]; draftEn: string }
+  | {
+      ok: true;
+      buyerMessageEn: string;
+      coaching: string[];
+      draftEn: string;
+      /**
+       * 영어 초안에서 찾은 **정책 밖** 돈이 드는 약속 (T053, SPEC v2.7 3장).
+       * 비어 있지 않으면 화면이 판매자에게 그 범주를 확인받고, 확인한 범주를
+       * `TranslateInput.confirmedCommitments`로 넘긴다. `ok: true`는 그대로다 —
+       * 초안 자체는 쓸 수 있고, 막는 것은 전송이다.
+       */
+      outsidePolicy: CommitmentCategory[];
+    }
   | ReplyFailure;
 
-export type TranslateInput = { draftEn: string; buyerLocale: FactLocale; facts: FactToken[] };
+export type TranslateInput = {
+  draftEn: string;
+  buyerLocale: FactLocale;
+  facts: FactToken[];
+  /** 답장의 목적. 환불이 실행 계획인지(`offer`·`refund`) 정책 밖 약속인지 가른다 (T053) */
+  move: ReplyMove;
+  /** 판매자가 화면에서 확인한 약속 범주. 확인한 것만 전송을 막지 않는다 (T053) */
+  confirmedCommitments?: CommitmentCategory[];
+  /** 토큰의 뜻 한 줄. `ReplyInput.factMeanings`와 같은 값을 넘기면 두 호출의 뜻이 같아진다 */
+  factMeanings?: Record<string, string>;
+};
 
 export type ReplyTranslation =
-  | { ok: true; outgoing: string; backTranslationEn: string; check: TokenCheck; sendable: boolean }
+  | {
+      ok: true;
+      outgoing: string;
+      backTranslationEn: string;
+      check: TokenCheck;
+      sendable: boolean;
+      /** 초안(입력 `draftEn`)에서 찾은 정책 밖 약속. 판매자가 확인하면 전송을 막지 않는다 */
+      outsidePolicy: CommitmentCategory[];
+      /**
+       * 전송본에는 있는데 초안에는 없는 약속 범주 = 번역이 약속을 더했다.
+       * 판매자가 읽은 글에 없던 약속이므로 **확인으로도 풀리지 않는다** (SPEC v2.7 3장).
+       */
+      addedInTranslation: CommitmentCategory[];
+    }
   | ReplyFailure;
 
 export type ReplyDeps = { llm: LlmCaller };
+
+// ───────────────────────────── 초안 정책 (설정에서 읽는다) ─────────────────────────────
+
+/**
+ * 답장 초안 정책 (`config/rules.json`의 `reply`. 계약은 `src/types.ts`의 `ReplyDraftPolicy`).
+ * 인수 테스트 AC31이 설정 내용을 지키고, 여기서는 **모양만** 본다 (틀리면 예외 — 설정이 깨진 채로
+ * 프롬프트가 나가면 모델이 날짜의 뜻을 제멋대로 고르기 때문이다. T053 배경).
+ *
+ * `note`·`followUpDays` 같은 다른 칸은 버린다 (`strict`가 아니다. `followUpDays`는
+ * `src/engine/followup.ts`가 같은 덩어리에서 따로 읽는다).
+ */
+const ReplyDraftPolicySchema: z.ZodType<ReplyDraftPolicy> = z.object({
+  followUpDateMeaning: z.string().trim().min(1),
+  allowedCommitments: z.array(
+    z.object({
+      id: z.string().trim().min(1),
+      text: z.string().trim().min(1),
+      subtypes: z.array(z.enum(SUBTYPES)),
+    }),
+  ),
+});
+
+/**
+ * 쓸 정책. 인자를 주면 그것을(모양 검사는 그대로 한다), 안 주면 설정을 읽는다.
+ * 단위 테스트는 정책을 직접 넘겨서 설정 파일에 기대지 않는다 (지시서 1번).
+ */
+export function replyDraftPolicy(policy?: ReplyDraftPolicy): ReplyDraftPolicy {
+  return ReplyDraftPolicySchema.parse(policy ?? (rulesConfigJson as { reply?: unknown }).reply);
+}
 
 // ───────────────────────────── 한계값 ─────────────────────────────
 
@@ -152,6 +226,20 @@ const ALLOWED_SLOTS: Readonly<Record<ReplyMove, readonly string[]>> = {
   fight: ['disputeAmount'],
   offer: ['offerAmount', 'disputeAmount'],
   refund: ['refundAmount', 'disputeAmount'],
+};
+
+/**
+ * 추천 수에서 쓸 수 있는 돈이 드는 약속 (T053, SPEC v2.7 3장 "정책 밖 약속 막기").
+ *
+ * `offer`·`refund`일 때의 환불은 모델이 만든 약속이 아니라 **엔진이 고른 실행 계획**이므로 약속으로
+ * 세지 않는다 (금액은 자리표시자로만 쓴다. 그것은 `ALLOWED_SLOTS`가 따로 지킨다).
+ * 그 밖의 범주는 지금 허용 항목이 없다 — 설정의 `allowedCommitments`에 적힌 약속은 돈이 들지 않는
+ * 것들이고(AC31이 그 글에 이런 낱말이 없음을 지킨다), 그래서 이 표를 설정에서 읽지 않는다.
+ */
+const ALLOWED_COMMITMENTS: Readonly<Record<ReplyMove, readonly CommitmentCategory[]>> = {
+  fight: [],
+  offer: ['refund'],
+  refund: ['refund'],
 };
 
 /**
@@ -263,6 +351,15 @@ function hasLiteralFacts(text: string, facts: FactToken[]): boolean {
   return checkTokens(text, text, facts).literalFacts.length > 0;
 }
 
+/**
+ * 글에서 찾은 돈이 드는 약속 중 이 수에서 허용되지 않은 것 (`src/ai/commitments.ts`가 글을 본다).
+ * 순서는 `COMMITMENT_CATEGORIES` 고정 순서다.
+ */
+function outsidePolicy(text: string, locale: FactLocale, move: ReplyMove): CommitmentCategory[] {
+  const allowed = ALLOWED_COMMITMENTS[move];
+  return findCommitments(text, locale).filter((category) => !allowed.includes(category));
+}
+
 // ───────────────────────────── 1. 초안 ─────────────────────────────
 
 /**
@@ -291,12 +388,20 @@ function draftProblems(draftEn: string, facts: FactToken[], move: ReplyMove): Re
 /**
  * 코칭 + 영어 초안 (+ 구매자 글 영어 번역). LLM 호출 1회.
  *
+ * `policy`를 안 주면 `config/rules.json`의 `reply`를 읽는다 (T053). 정책은 두 군데에 쓰인다:
+ * 프롬프트의 `<facts>` 뜻·`<allowed_commitments>`, 그리고 초안에서 찾은 정책 밖 약속(`outsidePolicy`).
+ *
  * 입력 객체는 바꾸지 않는다. 같은 입력·같은 LLM 응답이면 같은 결과다 (`Math.random`·`Date`를 읽지 않는다).
  */
-export async function draftReply(input: ReplyInput, deps: ReplyDeps): Promise<ReplyDraft> {
+export async function draftReply(
+  input: ReplyInput,
+  deps: ReplyDeps,
+  policy?: ReplyDraftPolicy,
+): Promise<ReplyDraft> {
+  const draftPolicy = replyDraftPolicy(policy);
   const asked = await ask(
     deps.llm,
-    { system: DRAFT_SYSTEM, user: buildDraftUser(input), jsonSchema: DRAFT_OUTPUT_SCHEMA },
+    { system: DRAFT_SYSTEM, user: buildDraftUser(input, draftPolicy), jsonSchema: DRAFT_OUTPUT_SCHEMA },
     DraftSchema,
   );
   if (!asked.ok) return asked;
@@ -308,9 +413,18 @@ export async function draftReply(input: ReplyInput, deps: ReplyDeps): Promise<Re
   // 코칭 줄도 사실값 검사를 받는다 (T050 5번, `reports/T042-verify.md` ④). 코칭은 구매자에게 가지
   // 않지만 화면에 그대로 보이고, 모델은 값을 받지 않으므로 코칭에 적힌 날짜·금액은 지어낸 값이다 —
   // 판매자가 그것을 초안에 옮길 수 있다. 그 줄만 버리고(판정 자체를 버리지 않는다) 3줄이 안 되면 거부한다
+  //
+  // 정책 밖 약속이 적힌 줄도 같은 자리에서 버린다 (T053 3번). "Offer a refund if it is late"는
+  // 판매자가 그대로 따라 쓰기 쉬운 지시이고, 그렇게 쓴 초안은 전송 전에 판매자 확인을 받아야 한다 —
+  // 코칭이 그 길로 떠미는 것을 막는다 (수가 `offer`·`refund`면 환불은 실행 계획이므로 남는다)
   const coaching = asked.value.coaching
     .map((line) => oneLine(line, COACHING_LINE_MAX))
-    .filter((line) => line !== '' && !hasLiteralFacts(line, input.facts))
+    .filter(
+      (line) =>
+        line !== '' &&
+        !hasLiteralFacts(line, input.facts) &&
+        outsidePolicy(line, 'en', input.move).length === 0,
+    )
     .slice(0, COACHING_MAX);
   if (coaching.length < COACHING_MIN) return failure('invalid_output', 'coaching_too_few');
 
@@ -323,7 +437,9 @@ export async function draftReply(input: ReplyInput, deps: ReplyDeps): Promise<Re
       : lengthProblem(buyerMessageEn, TRANSLATED_MAX_CHARS, 'buyer_message');
   if (buyerProblem !== null) return failure('invalid_output', buyerProblem);
 
-  return { ok: true, buyerMessageEn, coaching, draftEn };
+  // 정책 밖 약속은 초안을 거부하는 사유가 아니다 (SPEC v2.7 3장: 전송 가능으로 두지 않고 판매자가
+  // 확인한다). 판매자가 초안을 고쳐 지울 수도 있으므로, 전송을 가르는 판정은 `translateReply`가 다시 한다
+  return { ok: true, buyerMessageEn, coaching, draftEn, outsidePolicy: outsidePolicy(draftEn, 'en', input.move) };
 }
 
 // ───────────────────────────── 2. 전송본 + 역번역 ─────────────────────────────
@@ -350,14 +466,36 @@ function draftInputProblem(draftEn: string, facts: FactToken[]): ReplyFailureDet
 }
 
 /**
+ * 전송을 가르는 판정 (T053). `check.ok`에 돈이 드는 약속 두 가지를 더해서 본다:
+ * - 번역이 더한 약속(`addedInTranslation`)은 판매자가 읽은 글에 없던 것이므로 **확인으로도 풀리지 않는다.**
+ * - 초안에 있던 정책 밖 약속(`outsidePolicy`)은 판매자가 화면에서 확인한 범주(`confirmedCommitments`)에
+ *   모두 들어 있을 때만 풀린다.
+ */
+function sendableNow(
+  check: TokenCheck,
+  outside: CommitmentCategory[],
+  added: CommitmentCategory[],
+  confirmed: CommitmentCategory[],
+): boolean {
+  return check.ok && added.length === 0 && outside.every((category) => confirmed.includes(category));
+}
+
+/**
  * 구매자 언어 전송본 + 역번역 + 검사. LLM 호출 2회 (번역, 역번역).
  * `buyerLocale === 'en'`이면 호출 0회로 초안을 그대로 돌려준다.
+ * `policy`를 안 주면 `config/rules.json`의 `reply`를 읽는다 (프롬프트의 `<facts>` 뜻에 쓴다).
  *
- * `ok: true`는 "글을 만들었다"는 뜻이고, 보내도 되는지는 `sendable`(= `check.ok`)이 정한다.
- * 토큰이 빠지거나 늘거나, 값을 글자로 썼거나, 초안에 없는 약속이 생기면 `sendable`이 false다.
+ * `ok: true`는 "글을 만들었다"는 뜻이고, 보내도 되는지는 `sendable`이 정한다.
+ * 토큰이 빠지거나 늘거나, 값을 글자로 썼거나, 초안에 없는 약속이 생겼거나, 정책 밖 약속이 판매자 확인을
+ * 받지 않았으면 `sendable`이 false다.
  * 토큰에 값을 채우는 일은 여기서 하지 않는다 — 전송 직전 단계가 `fillTokens`로 한다.
  */
-export async function translateReply(input: TranslateInput, deps: ReplyDeps): Promise<ReplyTranslation> {
+export async function translateReply(
+  input: TranslateInput,
+  deps: ReplyDeps,
+  policy?: ReplyDraftPolicy,
+): Promise<ReplyTranslation> {
+  const draftPolicy = replyDraftPolicy(policy);
   const draftEn = input.draftEn.trim();
   const draftProblem = lengthProblem(draftEn, DRAFT_INPUT_MAX_CHARS, 'draft');
   if (draftProblem !== null) return failure('invalid_output', draftProblem);
@@ -365,16 +503,38 @@ export async function translateReply(input: TranslateInput, deps: ReplyDeps): Pr
   const inputProblem = draftInputProblem(draftEn, input.facts);
   if (inputProblem !== null) return failure('invalid_output', inputProblem);
 
+  // 초안에서 찾은 정책 밖 약속. 판매자가 고친 글을 보므로 초안에서 지웠으면 여기서도 사라진다
+  const outside = outsidePolicy(draftEn, 'en', input.move);
+  const inDraft = findCommitments(draftEn, 'en');
+  const confirmed = input.confirmedCommitments ?? [];
+
   if (input.buyerLocale === 'en') {
+    // 영어는 번역이 없으므로 약속이 더해질 자리도 없다 (초안이 그대로 전송본이다)
     const check = checkTokens(draftEn, draftEn, input.facts);
-    return { ok: true, outgoing: draftEn, backTranslationEn: draftEn, check, sendable: check.ok };
+    return {
+      ok: true,
+      outgoing: draftEn,
+      backTranslationEn: draftEn,
+      check,
+      sendable: sendableNow(check, outside, [], confirmed),
+      outsidePolicy: outside,
+      addedInTranslation: [],
+    };
   }
 
   const translated = await ask(
     deps.llm,
     {
       system: TRANSLATE_SYSTEM,
-      user: buildTranslateUser({ draftEn, buyerLocale: input.buyerLocale, facts: input.facts }),
+      user: buildTranslateUser(
+        {
+          draftEn,
+          buyerLocale: input.buyerLocale,
+          facts: input.facts,
+          factMeanings: input.factMeanings,
+        },
+        draftPolicy,
+      ),
       jsonSchema: TRANSLATE_OUTPUT_SCHEMA,
     },
     TranslateSchema,
@@ -402,5 +562,18 @@ export async function translateReply(input: TranslateInput, deps: ReplyDeps): Pr
   if (backProblem !== null) return failure('invalid_output', backProblem);
 
   const check = checkTokens(draftEn, outgoing, input.facts);
-  return { ok: true, outgoing, backTranslationEn, check, sendable: check.ok };
+  // 전송본의 약속을 구매자 언어로 찾아서 초안에 없던 범주를 가린다 (T053 5번). `checkTokens`의
+  // `newPromises`("반드시"·"보장")와는 다른 겹이다 — 저기는 말투의 확언, 여기는 돈이 드는 약속이다
+  const addedInTranslation = findCommitments(outgoing, input.buyerLocale).filter(
+    (category) => !inDraft.includes(category),
+  );
+  return {
+    ok: true,
+    outgoing,
+    backTranslationEn,
+    check,
+    sendable: sendableNow(check, outside, addedInTranslation, confirmed),
+    outsidePolicy: outside,
+    addedInTranslation,
+  };
 }
