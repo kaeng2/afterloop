@@ -1,0 +1,128 @@
+{
+  "_note": "손으로 만든 가짜 응답이다 (실제 응답을 복사하지 않았다). 칸 이름은 PayPal Transaction Search 문서 GET /v1/reporting/transactions 의 transaction_details[].transaction_info / payer_info / cart_info.item_details 와 total_pages / last_refreshed_datetime 에 맞췄다. payer_info·shipping_info의 이름·이메일·주소·payer_id는 개인정보 걸러내기 테스트용 가짜 값이다.",
+  "pages": {
+    "c1p1": {
+      "total_pages": 2,
+      "page": 1,
+      "last_refreshed_datetime": "2026-09-16T01:00:00+0000",
+      "transaction_details": [
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A1",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-08-03T10:15:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "48.00" },
+            "transaction_status": "S"
+          },
+          "payer_info": {
+            "account_id": "FAKEPAYERID01",
+            "email_address": "fake.buyer.one@example.test",
+            "country_code": "US",
+            "payer_name": { "given_name": "Fakegiven", "surname": "Fakesurname" }
+          },
+          "shipping_info": { "name": "Fakegiven Fakesurname", "address": { "line1": "123 Fake Street", "city": "Faketown", "postal_code": "00000" } },
+          "cart_info": { "item_details": [ { "item_name": "Linen Shirt", "item_quantity": "1", "total_item_amount": { "currency_code": "USD", "value": "48.00" } } ] }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A2",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-08-31T23:30:00-0700",
+            "transaction_amount": { "currency_code": "USD", "value": "48.10" },
+            "transaction_status": "S"
+          },
+          "payer_info": { "account_id": "FAKEPAYERID02", "email_address": "fake.buyer.two@example.test", "country_code": "US", "phone_number": { "national_number": "5550100" } },
+          "cart_info": {
+            "item_details": [
+              { "item_name": "Linen Shirt", "item_quantity": "1", "total_item_amount": { "currency_code": "USD", "value": "48.00" } },
+              { "item_name": "Sticker", "item_quantity": "2", "total_item_amount": { "currency_code": "USD", "value": "0.10" } }
+            ]
+          }
+        }
+      ]
+    },
+    "c1p2": {
+      "total_pages": 2,
+      "page": 2,
+      "last_refreshed_datetime": "2026-09-16T01:00:00+0000",
+      "transaction_details": [
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A3",
+            "transaction_event_code": "T1107",
+            "transaction_initiation_date": "2026-08-10T09:00:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-48.00" },
+            "transaction_status": "S"
+          },
+          "payer_info": { "account_id": "FAKEPAYERID01", "email_address": "fake.buyer.one@example.test", "country_code": "US" }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A4",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-08-12T09:00:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "30.00" },
+            "transaction_status": "P"
+          },
+          "payer_info": { "country_code": "US" },
+          "cart_info": { "item_details": [ { "item_name": "Wool Scarf", "item_quantity": "1", "total_item_amount": { "currency_code": "USD", "value": "30.00" } } ] }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A5",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-08-20T09:00:00+0000",
+            "transaction_amount": { "currency_code": "EUR", "value": "25.00" },
+            "transaction_status": "S"
+          },
+          "payer_info": { "account_id": "FAKEPAYERID05", "email_address": "fake.buyer.five@example.test", "country_code": "DE" },
+          "cart_info": { "item_details": [ { "item_name": "Wool Scarf", "item_quantity": "1", "total_item_amount": { "currency_code": "EUR", "value": "25.00" } } ] }
+        }
+      ]
+    },
+    "c2p1": {
+      "total_pages": 1,
+      "page": 1,
+      "last_refreshed_datetime": "2026-09-16T00:30:00+0000",
+      "transaction_details": [
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A2",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-08-31T23:30:00-0700",
+            "transaction_amount": { "currency_code": "USD", "value": "48.10" },
+            "transaction_status": "S"
+          },
+          "payer_info": { "country_code": "US" },
+          "cart_info": {
+            "item_details": [
+              { "item_name": "Linen Shirt", "item_quantity": "1", "total_item_amount": { "currency_code": "USD", "value": "48.00" } },
+              { "item_name": "Sticker", "item_quantity": "2", "total_item_amount": { "currency_code": "USD", "value": "0.10" } }
+            ]
+          }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A6",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-09-05T12:00:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "37.50" },
+            "transaction_status": "S"
+          },
+          "payer_info": { "account_id": "FAKEPAYERID06", "email_address": "fake.buyer.six@example.test", "country_code": "US" },
+          "cart_info": { "item_details": [ { "item_name": "Wool Scarf", "item_quantity": "3", "total_item_amount": { "currency_code": "USD", "value": "37.50" } } ] }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "FAKETX0000000000A7",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-09-10T12:00:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "0.05" },
+            "transaction_status": "S"
+          },
+          "cart_info": { "item_details": [ { "item_name": "Sticker", "item_quantity": "1" } ] }
+        }
+      ]
+    }
+  }
+}
