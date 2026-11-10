@@ -25,7 +25,23 @@ import type { CheckTokensFn, FactToken, TokenCheck } from '@/types';
 // ───────────────────────────── 토큰 문법 ─────────────────────────────
 
 /** 토큰 종류 (계약: `src/types.ts` 6부 `FactToken['kind']`). */
-const KINDS: readonly FactToken['kind'][] = ['DATE', 'AMOUNT', 'TRACKING', 'CUSTOMS_STATUS'];
+const KINDS: readonly FactToken['kind'][] = [
+  'DATE',
+  'AMOUNT',
+  'TRACKING',
+  'CUSTOMS_STATUS',
+  // v2.9 이름 토큰 (T056). 값은 `src/ai/names.ts`가 `config/rules.json`의 `reply.names`에서 만든다
+  'BUYER_NAME',
+  'SELLER_NAME',
+];
+
+/** 이름 종류. 값 글자를 "직접 쓴 사실값"으로 세지 않는다 (이름 검사는 하지 않는다. T056 1번). */
+const NAME_KINDS: ReadonlySet<FactToken['kind']> = new Set<FactToken['kind']>(['BUYER_NAME', 'SELLER_NAME']);
+
+/** 이 사실값이 이름 토큰인가 (`⟦BUYER_NAME_1⟧`·`⟦SELLER_NAME_1⟧`). */
+export function isNameFact(fact: FactToken): boolean {
+  return NAME_KINDS.has(fact.kind);
+}
 
 /** 사실값 표기에 쓰는 언어. */
 export type FactLocale = 'ko' | 'en' | 'ja' | 'de';
@@ -145,6 +161,7 @@ function formatAmount(raw: string): string {
  * 사실값 하나의 현지 표기.
  * `DATE`: ISO 날짜 → `11월 17일` / `November 17` / `11月17日` / `17. November`.
  * `AMOUNT`: 센트 정수 → `$7.20`. `TRACKING`·`CUSTOMS_STATUS`: 그대로.
+ * `BUYER_NAME`·`SELLER_NAME`: 그대로 — 값이 이미 그 언어 꼴이다 (`서연 님`. 언어 꼴은 `src/ai/names.ts`가 고른다).
  */
 export function formatFact(kind: FactToken['kind'], raw: string, locale: FactLocale): string {
   switch (kind) {
@@ -154,6 +171,8 @@ export function formatFact(kind: FactToken['kind'], raw: string, locale: FactLoc
       return formatAmount(raw);
     case 'TRACKING':
     case 'CUSTOMS_STATUS':
+    case 'BUYER_NAME':
+    case 'SELLER_NAME':
       return raw;
     default:
       throw new Error('모르는 사실값 종류다');
@@ -564,6 +583,8 @@ function findLiteralFacts(draft: string, outgoing: string, facts: FactToken[]): 
     }
   }
   for (const fact of facts) {
+    // 이름 값(`Seo-yeon`·`Hannah, Fernwood Knits`)은 사실값이 아니다. 글자로 적혀도 세지 않는다 (T056 1번)
+    if (isNameFact(fact)) continue;
     for (const needle of needlesOf(fact)) {
       for (const span of verbatimSpans(outgoing, needle)) hits.add(span.start, span.end, needle);
     }
