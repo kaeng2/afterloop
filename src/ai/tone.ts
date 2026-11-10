@@ -13,11 +13,20 @@
  * - 근거는 코드가 확인한다. 구매자 글에 실제로 들어 있지 않은 구절은 버린다 (모델이 지어낸 근거를
  *   화면에 내지 않는다). 확인 기준은 **모델이 본 글**(가림·각괄호 무력화를 거친 글)이다 — 모델에
  *   보여 주지 않은 글자를 되살려 온 구절도 지어낸 근거이므로 함께 버려진다.
+ * - 화면에 나가는 글자는 **구매자 글에 있는 그대로**다 (맞은 자리의 원문 조각). 맞춰 볼 때만 대소문자를
+ *   무시한다 — 모델이 인용하며 바꾼 대소문자는 구매자가 쓴 것이 아니므로 화면에 내지 않는다 (T050 7번).
  * - 로그를 남기지 않는다. 결과에는 근거 구절만 담고 구매자 글 전체는 담지 않는다 (SPEC 10장).
  */
 import { z } from 'zod';
 
-import { maskPersonal, maskTruncatedPccc, sanitizeUntrusted } from '@/ai/prompts/classify';
+import {
+  EMAIL_PLACEHOLDER,
+  PCCC_PLACEHOLDER,
+  PHONE_PLACEHOLDER,
+  maskPersonal,
+  maskTruncatedPccc,
+  sanitizeUntrusted,
+} from '@/ai/prompts/classify';
 import { TONE_OUTPUT_SCHEMA, TONE_SYSTEM, buildToneUser } from '@/ai/prompts/tone';
 import type { LlmCaller } from '@/types';
 
@@ -74,14 +83,22 @@ function normalize(text: string): string {
 
 /**
  * 근거를 맞춰 볼 건초더미: **모델에 보여 준 글**을 글마다 따로 다듬어 줄바꿈으로 이어 붙인다.
+ * 두 벌을 만든다 — `display`는 구매자가 쓴 글자 그대로, `lower`는 맞춰 보기용 소문자다
+ * (자리를 그대로 쓸 수 있게 `display`를 그 자리에서 소문자로 바꾼 것이다).
  *
  * 글마다 따로 다듬고 줄바꿈으로 잇는 이유: 다듬은 구절에는 줄바꿈이 남지 않으므로, 서로 다른 두 글의
  * 끝과 시작을 이어 붙여 만든 구절은 어디에도 들어 있지 않게 된다 (모델이 두 글을 꿰매 만든 인용은
  * 구매자가 쓴 말이 아니다).
  */
-function haystackOf(messages: string[]): string {
-  return messages.map((message) => normalize(sanitizeUntrusted(message))).join('\n');
+type Haystack = { display: string; lower: string };
+
+function haystackOf(messages: string[]): Haystack {
+  const display = messages.map((message) => normalizeSpace(sanitizeUntrusted(message))).join('\n');
+  return { display, lower: display.toLowerCase() };
 }
+
+/** 가림 표식. 이 표식이 든 구절은 근거에서 뺀다 (아래 `verifiedEvidence`). */
+const MASK_MARKERS: readonly string[] = [PCCC_PLACEHOLDER, EMAIL_PLACEHOLDER, PHONE_PLACEHOLDER];
 
 /**
  * 화면·보고에 남길 한 조각: 개인정보 가림 + 한 줄 + 길이 제한 (SPEC 3장·10장).
@@ -106,19 +123,34 @@ function normalizeSpace(text: string): string {
 /**
  * 모델이 보낸 근거 중 **구매자 글에서 확인된 것만** 남긴다 (지시서: 지어낸 근거는 화면에 내지 않는다).
  *
+ * 화면에 내보내는 글자는 **구매자 글에 있는 그대로**다 — 맞은 자리의 원문 조각을 쓰고 모델이 보낸
+ * 글자는 쓰지 않는다 (T050 7번, `reports/T043-verify.md` M1). 맞춰 볼 때만 대소문자를 무시하므로,
+ * 구매자가 `you are a scammer`라고 쓴 것을 모델이 `YOU ARE A SCAMMER`로 인용해도 화면에는 구매자가
+ * 쓴 소문자가 나간다 (대문자는 프롬프트 스스로 화남의 신호로 꼽는 "shouting"이다 — 구매자가 쓰지
+ * 않은 신호를 화면에 내지 않는다).
+ *
  * 버리는 것: 빈 구절, 구매자 글에 없는 구절, 이미 쓴 구절과 같은 구절 (같은 말을 세 번 보내면 근거가
- * 한 개뿐인 것과 같다). 남은 것 중 앞에서부터 `TONE_EVIDENCE_MAX`개까지만 쓴다.
+ * 한 개뿐인 것과 같다), 가림 표식이 든 구절 (`⟦PCCC⟧`·`⟦EMAIL⟧`·`⟦PHONE⟧`. 가려진 자리를 인용한
+ * 것은 구매자가 쓴 말이 아니고 화면에 뜻도 없다. `reports/T043-verify.md` R2).
+ * 남은 것 중 앞에서부터 `TONE_EVIDENCE_MAX`개까지만 쓴다.
  */
 function verifiedEvidence(raw: string[], messages: string[]): string[] {
   const haystack = haystackOf(messages);
+  // 소문자로 바꿀 때 길이가 달라지는 글자가 섞여 있으면 자리를 믿을 수 없다 (예: `İ` → 두 글자).
+  // 그때는 원문 조각을 떠 오지 않고 모델이 보낸 글자를 쓴다 — 확인은 그대로 하므로 지어낸 근거는 막힌다
+  const aligned = haystack.lower.length === haystack.display.length;
   const seen = new Set<string>();
   const out: string[] = [];
 
   for (const item of raw) {
     if (out.length >= TONE_EVIDENCE_MAX) break;
     const key = normalize(item);
-    if (key === '' || seen.has(key) || !haystack.includes(key)) continue;
-    const line = snippet(item);
+    if (key === '' || seen.has(key)) continue;
+    const at = haystack.lower.indexOf(key);
+    if (at === -1) continue;
+    const quoted = aligned ? haystack.display.slice(at, at + key.length) : normalizeSpace(item);
+    if (MASK_MARKERS.some((marker) => quoted.includes(marker))) continue;
+    const line = snippet(quoted);
     if (line === '') continue;
     seen.add(key);
     out.push(line);

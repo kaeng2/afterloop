@@ -1,7 +1,7 @@
 /**
  * 정책 판정 (SPEC v2.1 5장 "수 → API", 6장). 숫자 계산은 `oracle.ts`가 하고 여기서는 걸러내고 고른다.
  */
-import type { BoardState, Category, Evaluation, MoveType, PolicyConfig, Subtype } from '@/types';
+import type { BoardState, Category, Evaluation, MoveType, PolicyConfig, Recommendation, Subtype } from '@/types';
 
 /** 차단 이유. `Evaluation.blockedBy`에 들어간다. */
 export const BLOCKED = {
@@ -45,6 +45,21 @@ export function apiMoveFor(move: Evaluation['move'], board: BoardState): MoveTyp
 export function isOfferInScope(board: BoardState, rules: PolicyConfig): boolean {
   const subtype = board.cause?.subtype;
   return subtype !== undefined && rules.offer.eligibleSubtypes.includes(subtype);
+}
+
+/**
+ * SPEC v2.6 9-4 "제안이 먼저": 추천이 제안이고 지금 `make_offer`가 허용돼 있으면 참 —
+ * 이때 메시지를 먼저 보내면 안 된다.
+ *
+ * 판매자가 메시지를 보내면 PayPal은 구매자 답을 기다리는 상태가 되고 `make_offer` 링크가 사라진다
+ * (2026-11-10 연습용 분쟁에서 확인). 그래서 제안 추천인 분쟁은 make-offer를 첫 번째 행동으로 보낸다.
+ * `make_offer`가 이미 허용돼 있지 않으면 제안할 방법이 없으므로 막을 이유도 없다 (거짓).
+ *
+ * `recommendation`은 같은 `board`로 만든 것이라고 가정한다. 여기서 다시 계산하지 않는다.
+ * 순수 함수 — 입력을 변형하지 않는다. 화면과 앱 서버 코드는 이 결과를 옮기기만 한다 (SPEC 3장).
+ */
+export function offerComesFirst(board: BoardState, recommendation: Recommendation): boolean {
+  return recommendation.best?.move === 'offer' && board.allowedMoves.includes('make_offer');
 }
 
 /**
