@@ -267,7 +267,7 @@
 | `src/app/cases/actions.ts` | 폼에 `kind`(zod enum, 기본 `message`)만 추가. 금액·계획은 여전히 받지 않는다 |
 | `src/app/cases/reply/reply-panel.tsx` | 제안이 먼저인 분쟁: 주 버튼 "Send offer · $7"(`case.send.offerButton`) + 이유 줄, 그 아래 "Send in Korean"은 조용한 버튼으로 꺼진 채 `case.view.offerFirst` 안내 유지. 실제 전송 확인 창은 제안용 문구. 결과는 같은 자리·같은 모양 |
 | `src/app/cases/view/case-view.tsx`, `case.css` | `.case-columns`(auto-fit 격자) → `.case-stack`(세로 flex). 순서: 머리글 → 비교 → 원인 → 대화 → 배송사. 왼쪽 열 폭 전체 |
-| `config/copy.en.json`·`copy.ko.json` | `case.` 키만 12개씩 추가 (두 파일 같은 키): `case.reply.fact.BUYER_NAME`·`SELLER_NAME`, `case.reply.check.nameHonorific`, `case.send.offerButton`·`confirmLiveOffer`, `case.send.blocked.nameHonorific`·`noOffer`·`offerStatus`, `case.send.error.offerNotRecommended`·`offerStatus`·`nameHonorific` |
+| `config/copy.en.json`·`copy.ko.json` | `case.` 키만 11개씩 추가 (두 파일 같은 키): `case.reply.fact.BUYER_NAME`·`SELLER_NAME`, `case.reply.check.nameHonorific`, `case.send.offerButton`·`confirmLiveOffer`, `case.send.blocked.nameHonorific`·`noOffer`·`offerStatus`, `case.send.error.offerNotRecommended`·`offerStatus`·`nameHonorific` |
 | `tests/unit/app-case-reply-retry.test.ts` (새, 20개) | 아래 완료 기준 대조 |
 | `tests/unit/app-send.test.ts` | 시험 사실값을 `caseReplyFacts(...).outgoing`로 (서버가 다시 만드는 값과 같게 — 서명 토큰이 늘 있다), 준비 답장에 `nameProblems` |
 | `tests/unit/app-case-reply.test.ts` | "검사 줄은 세 가지" → 네 가지 (이름 호칭 줄 추가). 기대값을 바꾼 것은 이것뿐 |
