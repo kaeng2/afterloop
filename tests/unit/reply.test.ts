@@ -122,6 +122,7 @@ function draftAnswer(over: Record<string, unknown> = {}): Reply {
       buyer_message_en:
         "It has been three weeks and it still has not arrived. If I do not hear back, I will file a dispute with my card company.",
       coaching: ['Reply today', 'Apologize for the wait', 'Explain the customs hold', 'Ask for the customs code', 'Give a date'],
+      chips: ['Apology', 'Customs hold', 'Ask for code', 'Follow-up: ⟦DATE_1⟧'],
       draft_en: SEOYEON_DRAFT,
       ...over,
     },
@@ -170,7 +171,7 @@ describe('서연 건 (A2 통관 보류, fight, 한국어)', () => {
     const { calls, llm } = fakeLlm(draftAnswer());
     await draftReply(seoyeon(), { llm });
     expect(calls[0].system).toBe(DRAFT_SYSTEM);
-    expect(calls[0].jsonSchema.required).toEqual(['buyer_message_en', 'coaching', 'draft_en']);
+    expect(calls[0].jsonSchema.required).toEqual(['buyer_message_en', 'coaching', 'chips', 'draft_en']);
 
     const translateCall = fakeLlm(...translateAnswers());
     await translateReply(translateInput(), { llm: translateCall.llm });
@@ -377,6 +378,54 @@ describe('초안 검증', () => {
 });
 
 // ───────────────────────────── 3. 전송본 검사 (checkTokens 결과를 그대로) ─────────────────────────────
+
+describe('칩 (T069)', () => {
+  const chipsOf = async (chips: string[]) => {
+    const { llm } = fakeLlm(draftAnswer({ chips }));
+    return draftReply(seoyeon(), { llm });
+  };
+
+  it('좋은 칩은 그대로 나온다', async () => {
+    const result = await chipsOf(['Apology', 'Customs hold', 'Ask for code', 'Follow-up: ⟦DATE_1⟧']);
+    expect(result.ok && result.chips).toEqual(['Apology', 'Customs hold', 'Ask for code', 'Follow-up: ⟦DATE_1⟧']);
+  });
+
+  it('환불·금액·자리표시자·문장·없는 토큰·25자 넘는 칩은 버린다', async () => {
+    const result = await chipsOf([
+      'Apology',
+      'Customs hold',
+      'Ask for code',
+      'Full refund',
+      'Refund $74',
+      '{{offerAmount}} back',
+      'I will check with the carrier and reply.',
+      'Follow-up: ⟦DATE_9⟧',
+      'Explain the long customs hold',
+    ]);
+    expect(result.ok && result.chips).toEqual(['Apology', 'Customs hold', 'Ask for code']);
+  });
+
+  it('버린 뒤 3개 미만이면 빈 배열이고 초안은 성공이다', async () => {
+    const result = await chipsOf(['Apology', 'Full refund', 'Refund $74']);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.chips).toEqual([]);
+    expect(result.coaching.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('칩 필드가 없으면 빈 배열이다', async () => {
+    const { llm } = fakeLlm({ json: { ...(draftAnswer() as { json: object }).json, chips: undefined } });
+    const result = await draftReply(seoyeon(), { llm });
+    expect(result.ok && result.chips).toEqual([]);
+  });
+
+  it('스키마와 프롬프트에 chips가 있다', async () => {
+    const { llm, calls } = fakeLlm(draftAnswer());
+    await draftReply(seoyeon(), { llm });
+    expect(JSON.stringify(calls[0].jsonSchema)).toContain('"chips"');
+    expect(calls[0].system).toContain('chips:');
+  });
+});
 
 describe('전송본 검사', () => {
   async function translateWith(outgoing: string) {
