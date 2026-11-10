@@ -149,7 +149,7 @@ describe('AC18 6번: 통과하는 글이면 버튼이 켜진다', () => {
   it('사실값 줄: 날짜의 이름은 "Follow-up date"이고 값은 한국어 표기다 (Delivery date가 아니다)', async () => {
     const { draft, translation } = await prepare(DRAFT_EN, OUTGOING);
     const view = buildReplyView(base(draft, translation));
-    expect(view.factRows).toEqual([{ token: '⟦DATE_1⟧', labelKey: 'case.reply.fact.DATE', value: '11월 17일' }]);
+    expect(view.factRows).toEqual([{ token: '⟦DATE_1⟧', labelKey: 'case.reply.fact.DATE', value: '11월 17일', primary: true }]);
     expect(copyTables.en['case.reply.fact.DATE']).toBe('Follow-up date');
   });
 
@@ -432,14 +432,15 @@ describe('1번: 위험 점수는 머리글 배지 하나 (펼침 버튼)', () =>
 });
 
 describe('2번: PayPal 상태를 쉬운 말로', () => {
-  it('문구 파일의 case.status.*에서 오고, 원래 코드는 옆에 작은 글씨로', () => {
+  // T061 1번: 상태 쉬운 말은 머리글 첫 줄에 들어가고, 원래 코드는 그 줄의 title(마우스를 올리면 보임)로 옮겼다
+  it('문구 파일의 case.status.*에서 오고, 원래 코드는 머리글 첫 줄의 title로', () => {
     expect(copyTables.en['case.status.WAITING_FOR_SELLER_RESPONSE']).toBe('Waiting for your reply');
     expect(copyTables.en['case.status.WAITING_FOR_BUYER_RESPONSE']).toBe('Waiting for the buyer');
     expect(copyTables.en['case.status.UNDER_REVIEW']).toBe('PayPal is reviewing');
     expect(copyTables.en['case.status.RESOLVED']).toBe('Resolved');
     const html = renderCase(caseInput());
     expect(html).toContain('Waiting for your reply');
-    expect(html).toMatch(/class="case-status-code num">WAITING_FOR_SELLER_RESPONSE</);
+    expect(html).toMatch(/class="case-headline num" title="WAITING_FOR_SELLER_RESPONSE"/);
   });
 
   it('표에 없는 상태는 원래 코드만', () => {
@@ -451,33 +452,35 @@ describe('2번: PayPal 상태를 쉬운 말로', () => {
   });
 });
 
-describe('3번: 원인 칸은 카드 하나, 한 줄', () => {
-  const causeCard = (html: string) => {
-    const match = html.match(/<section class="card case-cause-card"[\s\S]*?<\/section>/);
+// T061 3번: 옛 원인 칸("PayPal data only: A1 … → …")은 없애고 한 줄 요약으로 바꿨다
+describe('3번 (T061): 원인 칸 대신 한 줄 요약', () => {
+  const summary = (html: string) => {
+    const match = html.match(/<section class="case-summary"[\s\S]*?<\/section>/);
     expect(match).not.toBeNull();
     return match![0];
   };
 
-  it('"PayPal data only: A1 Not shipped → With carrier data: A2 Customs delay", Code decides는 한 번, Demo data는 오른쪽에', () => {
-    const card = causeCard(renderCase(caseInput()));
-    const text = card.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-    expect(text).toMatch(/PayPal data only: A1 Not shipped → With carrier data: A2 Customs delay/);
-    expect(card.split(copyTables.en['badge.codeDecides']).length - 1).toBe(1);
-    expect(card.split(copyTables.en['badge.demo']).length - 1).toBe(1);
-    expect(card.indexOf(copyTables.en['badge.demo'])).toBeGreaterThan(card.indexOf('With carrier data'));
-    expect(card).toMatch(/aria-label="changes to"/);
-  });
-
-  it('통관 보류 상세 문구는 원인 칸에 없고 배송사 카드에 있다', () => {
+  it('원인 카드가 없고, 요약은 엔진 원인 전환(A1 → A2)의 문구 + Code decides 한 번 + 코드는 보조 글자', () => {
     const html = renderCase(caseInput());
-    expect(causeCard(html)).not.toContain(CUSTOMS_EVENT);
-    expect(html).toContain(CUSTOMS_EVENT);
+    expect(html).not.toContain('case-cause-card');
+    const box = summary(html);
+    expect(box).toContain(copyTables.en['case.view.summary.A1_A2'].replace(/'/g, '&#x27;'));
+    expect(box.split(copyTables.en['badge.codeDecides']).length - 1).toBe(1);
+    expect(box).toMatch(/class="case-summary-codes num">A1 → A2</);
   });
 
-  it('후 보드가 없으면 왼쪽만', () => {
-    const card = causeCard(renderCase(caseInput({ boardDemo: null })));
-    expect(card).not.toContain('With carrier data');
-    expect(card).not.toContain('aria-label="changes to"');
+  it('통관 보류 상세 문구는 요약에 없고 대화 안 배송사 줄에 있다', () => {
+    const html = renderCase(caseInput());
+    expect(summary(html)).not.toContain(CUSTOMS_EVENT);
+    const line = html.slice(html.indexOf('class="case-carrier-line"'));
+    expect(line.slice(0, line.indexOf('</li>'))).toContain(CUSTOMS_EVENT);
+  });
+
+  it('후 보드가 없으면 전 원인 하나 (전환 문구 없음) + "배송사 정보 없음" 한 줄', () => {
+    const box = summary(renderCase(caseInput({ boardDemo: null })));
+    expect(box).not.toContain('A1 → A2');
+    expect(box).toContain(copyTables.en['case.view.subtype.A1']);
+    expect(box).toContain(copyTables.en['case.view.noCarrier']);
   });
 
   it('짧은 이름 키가 세부 유형 16개 모두 두 문구 파일에 있다', () => {

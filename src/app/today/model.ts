@@ -17,7 +17,15 @@ import { paramsFromConfig, rulesFromConfig } from '@/engine/params';
 import { recommend } from '@/engine/recommend';
 import { FIX_ORDER } from '@/engine/sim';
 import { simulateStore } from '@/engine/storefront';
-import type { AutopilotDecision, Evaluation, ParamsConfig, PolicyConfig, SeedBuyer, SeedProduct } from '@/types';
+import type {
+  AutopilotDecision,
+  BoardState,
+  Evaluation,
+  ParamsConfig,
+  PolicyConfig,
+  SeedBuyer,
+  SeedProduct,
+} from '@/types';
 
 import type { RiskBand } from '../_shared/badge-keys';
 import { copyTables, t } from '../_shared/copy';
@@ -85,6 +93,11 @@ export type TodayItem = {
   sub: string | null;
   /** 작은 위험 배지. 없으면 `null`. */
   band: RiskBand | null;
+  /**
+   * 위험 배지 대신 보이는 회색 표시 문구 키 (Routine = 엔진이 자동 처리하지 않기로 한 항목 → `today.skipped`).
+   * 있으면 목록은 위험 배지 대신 이것을 보인다. 없으면 `null`.
+   */
+  chipKey: string | null;
   /** 정렬용 엔진 점수 (분쟁만). */
   score: number | null;
   /** 정렬용 응답 기한 (분쟁만, ISO 8601. 모르면 빈 글자). */
@@ -125,10 +138,10 @@ export type TodayInput = {
 };
 
 /**
- * 추적 항목의 위험 배지. 미등록 주문은 아직 분쟁이 아니라 엔진 점수가 없다 — 지시서 T060 3절 "Watch 배지".
- * (정책 값이라 `config/rules.json`에 두는 것이 맞다. 이 레인은 그 파일을 고칠 수 없어 보고서에 결정 요청으로 적었다)
+ * 추적 미등록 주문은 엔진 점수가 없어 고정 표시 (T061 6번). 엔진 `escalationRisk` 결과가 아니라
+ * "추적 항목은 늘 Watch로 보인다"는 고정 상태 표시다 — 지시서 T060 3절 "Watch 배지".
  */
-const TRACKING_BAND: RiskBand = 'Watch';
+const UNTRACKED_FIXED_WATCH_BAND: RiskBand = 'Watch';
 
 const BAND_RANK: Record<RiskBand, number> = { High: 3, Watch: 2, Low: 1 };
 
@@ -168,10 +181,35 @@ function subLine(loaded: LoadedDispute, decision: AutopilotDecision, best: Evalu
   return t(`today.sub.${decision.rule}`, { move: t(`today.move.${best.move}`) });
 }
 
+/** Routine 항목의 회색 표시 (엔진 `decideAutopilot`이 건너뛴 항목). */
+const SKIPPED_CHIP_KEY = 'today.skipped';
+
+/**
+ * Routine(Mike) 상세의 한 줄 상태 문장 (T061 Today 목록 절). 엔진 판정·규칙 이름에서 문구 키를 고른다:
+ * 악용 의심 + F1(반복 미수령 주장) + 미수령 분쟁이면 "3rd 'not received' claim in 90 days …" (배송 완료 기록이
+ * 있으면 그 말을 붙인 키), 그 밖의 건너뜀은 일반 문장. 서수는 보드의 `buyerPriorInrDisputes + 1`
+ * (엔진 `decideAutopilot` 로그와 같은 규칙). Routine이 아니면 `null`.
+ */
+export function routineLine(board: BoardState, decision: AutopilotDecision): string | null {
+  if (decision.verdict !== 'skipped' || decision.rule !== 'suspected_abuse') return null;
+  const f1 = board.cause?.subtype === 'F1' && board.reason.includes('NOT_RECEIVED');
+  if (!f1) return t('case.routine.other');
+  const ordinalText = ordinal(board.buyerPriorInrDisputes + 1);
+  return board.hasDeliveredTracking
+    ? t('case.routine.F1.delivered', { ordinal: ordinalText })
+    : t('case.routine.F1', { ordinal: ordinalText });
+}
+
+/** 보드 하나의 엔진 판정 (목록·Routine 상세가 같은 값을 쓰게). */
+export function decideFor(board: BoardState, rules?: PolicyConfig, params?: ParamsConfig): AutopilotDecision {
+  const best = recommend(board, params === undefined ? undefined : paramsFromConfig(params), rules).best;
+  return decideAutopilot(board, best, rules ?? rulesFromConfig());
+}
+
 function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: ParamsConfig): TodayItem {
   const board = pickBoard(loaded);
   const best = recommend(board, params === undefined ? undefined : paramsFromConfig(params), rules).best;
-  const decision = decideAutopilot(board, best, rules ?? rulesFromConfig());
+  const decision = decideFor(board, rules, params);
   const risk = loaded.signals === null ? null : escalationRisk(loaded.signals, rules);
   const routine = decision.verdict === 'skipped' && decision.rule === 'suspected_abuse';
 
@@ -184,6 +222,7 @@ function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: Param
     label: kindLabel(board.cause?.subtype, board.buyerPriorInrDisputes),
     sub: subLine(loaded, decision, best),
     band: risk?.band ?? null,
+    chipKey: routine ? SKIPPED_CHIP_KEY : null,
     score: risk?.score ?? null,
     dueDate: board.dueDate,
   };
@@ -200,7 +239,8 @@ function trackingItem(tracking: TrackingSummary): TodayItem | null {
     name: count === 1 ? t('today.tracking.titleOne', { count }) : t('today.tracking.title', { count }),
     label: null,
     sub: null,
-    band: TRACKING_BAND,
+    band: UNTRACKED_FIXED_WATCH_BAND,
+    chipKey: null,
     score: null,
     dueDate: '',
   };
@@ -261,6 +301,7 @@ function preventItem(pick: PreventPick, product: SeedProduct): TodayItem {
     label: null,
     sub: t('today.prevent.sub', { stock: product.stock, percent: pick.cutPercent }),
     band: null,
+    chipKey: null,
     score: null,
     dueDate: '',
   };

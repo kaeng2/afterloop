@@ -516,10 +516,13 @@ describe('T060 옛 주소와 정적 검사', () => {
     expect(code).not.toMatch(/loadCase|loadDemoDisputes|_server/);
   });
 
-  it('Today 오른쪽 칸은 지금의 사례 상세와 답장 칸을 그대로 쓴다', () => {
+  it('Today 오른쪽 칸: 분쟁은 사례 상세 + 답장 칸, Routine은 답장 칸 없는 상세 (T061)', () => {
     const detail = readFileSync(path.join(ROOT, 'src/app/cases/case-detail.tsx'), 'utf8');
-    expect(detail).toMatch(/<CaseView /);
-    expect(detail).toMatch(/<ReplyPanel /);
+    expect(detail).toMatch(/<CaseView\b/);
+    expect(detail).toMatch(/<ReplyPanel\b/);
+    expect(detail).toMatch(/<RoutineDetail\b/);
+    const routine = readFileSync(path.join(ROOT, 'src/app/cases/routine-detail.tsx'), 'utf8');
+    expect(routine).not.toMatch(/ReplyPanel|loadReply/);
     const page = readFileSync(path.join(ROOT, 'src/app/page.tsx'), 'utf8');
     expect(page).toMatch(/<CaseDetail /);
   });

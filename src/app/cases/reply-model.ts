@@ -89,6 +89,11 @@ export type ReplyViewInput = {
   /** 1부 보기용 값의 `messageSend.blocked` (`offerComesFirst`). */
   offerFirst: boolean;
   mode: SendMode;
+  /**
+   * 연결 표에서 이 분쟁의 실제 전송이 허용되는가 (`liveSendAllowed`, 서버가 정한 값). 스위치가 켜져 있어도
+   * 거짓이면 "Live" 글자를 보이지 않는다 (T061 전송 상태 표시). 주지 않으면 허용으로 본다.
+   */
+  liveAllowed?: boolean;
   draftSource: DraftSource;
   /** 판매자가 화면에서 확인한 약속 범주. */
   confirmed: CommitmentCategory[];
@@ -109,9 +114,15 @@ export type CheckRowView = {
   ok: boolean;
   /** 걸린 글자 (토큰 이름·직접 쓴 값·약속 표현). 통과면 빈 배열. */
   items: string[];
+  /**
+   * 늘 보이는 줄인가 (T061 6번: Facts match · No new promises). 거짓인 줄은 "More checks" 접기 안에 두되,
+   * **실패하면 접기와 상관없이 보인다** (`visibleChecks`).
+   */
+  primary: boolean;
 };
 
-export type FactRowView = { token: string; labelKey: string; value: string };
+/** 사실값 줄. `primary`면 늘 보인다 (확인 기한 날짜). 나머지(이름·서명)는 접기 안. */
+export type FactRowView = { token: string; labelKey: string; value: string; primary: boolean };
 
 export type CommitmentView = { category: CommitmentCategory; labelKey: string; confirmed: boolean };
 
@@ -197,7 +208,27 @@ export const REPLY_KEYS = {
   fixedDraft: 'case.reply.fixedDraft',
   modeSimulated: 'case.send.mode.simulated',
   modeLive: 'case.send.mode.live',
+  modeLiveNotAllowed: 'case.send.mode.liveNotAllowed',
 } as const;
+
+/**
+ * 전송 모드 글자 키 (T061 전송 상태 표시). 모드는 서버가 정한다 — 화면은 옮기기만.
+ * - 스위치 꺼짐 → "Simulated send — nothing goes to PayPal"
+ * - 켜짐 + 연결 표 허용 → "Live · PayPal sandbox"
+ * - 켜짐 + 연결 표 불허 → "Live send not allowed for this case — nothing goes to PayPal" (보내면 서버가 거부한다)
+ */
+export function sendModeKey(mode: SendMode, liveAllowed: boolean): string {
+  if (mode !== 'live') return REPLY_KEYS.modeSimulated;
+  return liveAllowed ? REPLY_KEYS.modeLive : REPLY_KEYS.modeLiveNotAllowed;
+}
+
+/** 검사 줄 나누기: 보이는 줄(늘 보이는 줄 + 실패한 줄)과 접기 안의 줄(통과한 나머지). */
+export function visibleChecks(rows: CheckRowView[]): { shown: CheckRowView[]; folded: CheckRowView[] } {
+  return {
+    shown: rows.filter((row) => row.primary || !row.ok),
+    folded: rows.filter((row) => !row.primary && row.ok),
+  };
+}
 
 /** 막힌 이유 키. `canSend`가 고른다. */
 export const BLOCK_KEYS = {
@@ -289,10 +320,20 @@ export function filledText(text: string, facts: FactToken[], locale: FactLocale)
  */
 function checkRows(check: TokenCheck, nameProblems: ReplyNameProblem[]): CheckRowView[] {
   return [
-    { labelKey: 'case.reply.check.tokens', ok: check.missing.length === 0 && check.extra.length === 0, items: [...check.missing, ...check.extra] },
-    { labelKey: 'case.reply.check.literal', ok: check.literalFacts.length === 0, items: [...check.literalFacts] },
-    { labelKey: 'case.reply.check.promises', ok: check.newPromises.length === 0, items: [...check.newPromises] },
-    { labelKey: NAME_PROBLEM_KEY.honorific_after_name, ok: !nameProblems.includes('honorific_after_name'), items: [] },
+    {
+      labelKey: 'case.reply.check.tokens',
+      ok: check.missing.length === 0 && check.extra.length === 0,
+      items: [...check.missing, ...check.extra],
+      primary: true,
+    },
+    { labelKey: 'case.reply.check.literal', ok: check.literalFacts.length === 0, items: [...check.literalFacts], primary: false },
+    { labelKey: 'case.reply.check.promises', ok: check.newPromises.length === 0, items: [...check.newPromises], primary: true },
+    {
+      labelKey: NAME_PROBLEM_KEY.honorific_after_name,
+      ok: !nameProblems.includes('honorific_after_name'),
+      items: [],
+      primary: false,
+    },
   ];
 }
 
@@ -356,7 +397,12 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
       : localFacts
           // 영어 초안에 실제로 쓰인 토큰만 보인다 (T058). 쓰이지 않은 사실값 줄은 숨긴다 — 표시만 거른다
           .filter((fact) => usedInDraft.has(fact.token))
-          .map((fact) => ({ token: fact.token, labelKey: FACT_LABEL[fact.kind], value: fact.value }));
+          .map((fact) => ({
+            token: fact.token,
+            labelKey: FACT_LABEL[fact.kind],
+            value: fact.value,
+            primary: fact.kind === 'DATE',
+          }));
 
   // 정책 밖 약속: 전송본을 만들 때 모듈이 다시 본 값이 있으면 그것, 없으면 초안의 값 (T053)
   const outside = translation?.outsidePolicy ?? draft?.outsidePolicy ?? [];
@@ -407,7 +453,7 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
     commitments,
     addedInTranslation: added.map((category) => ({ category, labelKey: commitmentKey(category) })),
     mode: input.mode,
-    modeKey: input.mode === 'live' ? REPLY_KEYS.modeLive : REPLY_KEYS.modeSimulated,
+    modeKey: sendModeKey(input.mode, input.liveAllowed ?? true),
     gate,
     result,
     canReset: input.mode === 'simulated' && succeeded,

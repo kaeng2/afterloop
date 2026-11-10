@@ -366,7 +366,8 @@ describe('AC18 12번: 개인정보 가림과 실제·시연용 구분', () => {
 
   it('카드사 언급은 엔진 신호가 참일 때만 표시한다', () => {
     const real = view.messages.find((m) => m.source === 'paypal');
-    expect(real?.original.filter((s) => s.mark).map((s) => s.text)).toEqual(['카드사', '이의제기']);
+    // T061 4번: 짧은 틈("에 ")으로 붙은 두 낱말은 한 표시로 잇는다
+    expect(real?.original.filter((s) => s.mark).map((s) => s.text)).toEqual(['카드사에 이의제기']);
     expect(flat(real?.original ?? null)).not.toContain('P123456789012');
     const quiet = buildCaseView(input({ signals: { ...SEOYEON_START, mentionsCardCompany: false } }), P, R);
     expect(quiet.messages.every((m) => m.original.every((s) => !s.mark))).toBe(true);
@@ -517,8 +518,8 @@ describe('대화: 같은 배지는 한 번만', () => {
       includeInquiries: true,
     });
     const v = buildCaseView(input({ messages }), P, R);
-    const html = renderToStaticMarkup(createElement(Conversation, { messages: v.messages }));
-    const demoItem = html.slice(html.indexOf('case-message-demo'));
+    const html = renderToStaticMarkup(createElement(Conversation, { messages: v.messages, carrierLine: null, locale: 'ko' }));
+    const demoItem = html.slice(html.indexOf('case-bubble-demo'));
     const demoOnly = demoItem.slice(0, demoItem.indexOf('</li>'));
     const demoLabel = copyTables.en['badge.demo'] ?? 'Demo data';
     expect(demoOnly.split(demoLabel).length - 1).toBe(1);

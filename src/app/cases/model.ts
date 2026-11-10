@@ -16,6 +16,7 @@
 import { maskPersonal } from '@/ai/prompts/classify';
 import type { FactLocale } from '@/ai/tokens';
 import { escalationRisk } from '@/engine/escalation';
+import { paramsFromConfig } from '@/engine/params';
 import { offerComesFirst } from '@/engine/policy';
 import { recommend } from '@/engine/recommend';
 import { CARD_COMPANY_TERMS } from '@/engine/signals';
@@ -108,6 +109,11 @@ export type CompareSideView = {
   expectedLoss: MoneyView | null;
   /** 이 칸에만 붙는 배지 (후 칸 = 'Demo data'. 배송사 정보가 시연용이라서). */
   badges: BadgeKind[];
+  /**
+   * 기대 손실에 든 대응 시간 비용 (가정값 `timeCostCents` — 엔진이 쓰는 값 그대로). 전액 환불 칸에만 둔다:
+   * 분쟁 금액과 환불 기대 손실이 같은 화면에 있어 생기는 의문을 "incl. $N of your time"으로 푼다. 그 밖은 `null`.
+   */
+  timeCost: MoneyView | null;
   /** 엔진 평가 그대로 (2부가 `planMove`에 넘긴다). */
   evaluation: Evaluation | null;
 };
@@ -134,6 +140,23 @@ export type CauseView = {
   badge: BadgeKind;
   needsReview: boolean;
 };
+
+/**
+ * 한 줄 요약 (T061 3번. 옛 원인 칸을 대체). 문구는 엔진 원인 전환(전 세부 유형 → 후 세부 유형)으로 고른다:
+ * `case.view.summary.<전>_<후>`가 있으면 그것, 없으면 결정하는 쪽 원인의 세부 유형 이름(`case.view.subtype.*`).
+ * 세부 유형 코드(A1 → A2)는 보조 글자로만 (`codes`).
+ */
+export type SummaryView = {
+  key: string;
+  /** 결정하는 쪽 원인의 판정 배지 (규칙 → 'Code decides', LLM → 'AI suggests'). */
+  badge: BadgeKind;
+  /** 보조 글자용 세부 유형 코드. 전환이면 `before`가 있고, 하나면 `before: null`. */
+  codes: { before: Subtype | null; after: Subtype };
+  needsReview: boolean;
+};
+
+/** 대화 안에 끼우는 배송사 줄 (가장 최근 배송사 기록 1건. 시연용이라 'Demo data'). */
+export type CarrierLineView = { date: string; text: string; badges: BadgeKind[] };
 
 export type RiskPartView = {
   signal: keyof EscalationWeights;
@@ -172,6 +195,10 @@ export type CaseView = {
   carrier: { events: CarrierEventView[]; badges: BadgeKind[] } | null;
   compare: CompareView;
   cause: { before: CauseView | null; after: CauseView | null };
+  /** 한 줄 요약. 원인이 하나도 없으면 `null`. */
+  summary: SummaryView | null;
+  /** 대화 안에 날짜 순으로 끼우는 배송사 줄. 배송사 정보가 없으면 `null`. */
+  carrierLine: CarrierLineView | null;
   /** 지금 확대 위험. 신호가 없으면 `null` (0이나 다른 값을 넣지 않는다). */
   risk: RiskView | null;
   /** 판매자가 지금 답장했다고 볼 때 (2부가 답장 뒤에 보인다). */
@@ -212,35 +239,59 @@ export function statusKeyFor(statusCode: string): string | null {
 // ───────────────────────────── 글 조각 (카드사 언급 표시) ─────────────────────────────
 
 /**
+ * 두 표시 사이 틈이 이 길이 이하이고 글자·공백뿐이면 한 표시로 잇는다 ("카드사" + "에 " + "이의제기"
+ * → "카드사에 이의제기"). 문장 부호가 끼면 잇지 않는다.
+ */
+const JOIN_GAP_MAX = 3;
+const JOINABLE_GAP = /^[\p{L}\s]*$/u;
+
+/**
  * 글을 조각으로 가른다. `terms`가 `null`이면 한 조각이다.
  * 낱말 목록은 엔진(`CARD_COMPANY_TERMS`, T044)의 것을 그대로 쓴다 — 이 파일에 낱말을 따로 두지 않는다.
  * 대소문자를 가리지 않는다 (엔진과 같다).
+ *
+ * 모든 자리에서 맞는 낱말을 다 찾아 겹치는 표시를 합친다 — "dispute with my card"와 "card company"가
+ * 겹치면 "dispute with my card company" 하나가 된다 (T061 4번). 아주 짧은 틈은 위 규칙으로 잇는다.
  */
 export function segmentsOf(text: string, terms: readonly string[] | null): TextSegment[] {
   if (terms === null || terms.length === 0 || text === '') return [{ text, mark: false }];
   const lower = text.toLowerCase();
   const lowered = terms.map((term) => term.toLowerCase()).filter((term) => term !== '');
 
+  // 1. 맞는 구간 전부 [시작, 끝)
+  const spans: [number, number][] = [];
+  for (let i = 0; i < text.length; i += 1) {
+    for (const term of lowered) {
+      if (lower.startsWith(term, i)) spans.push([i, i + term.length]);
+    }
+  }
+  if (spans.length === 0) return [{ text, mark: false }];
+
+  // 2. 겹치거나 짧은 틈으로 붙은 구간 합치기
+  spans.sort((a, b) => a[0] - b[0] || b[1] - a[1]);
+  const merged: [number, number][] = [];
+  for (const [from, to] of spans) {
+    const last = merged[merged.length - 1];
+    if (last !== undefined) {
+      const gap = from - last[1];
+      if (gap <= 0 || (gap <= JOIN_GAP_MAX && JOINABLE_GAP.test(text.slice(last[1], from)))) {
+        last[1] = Math.max(last[1], to);
+        continue;
+      }
+    }
+    merged.push([from, to]);
+  }
+
+  // 3. 조각으로
   const out: TextSegment[] = [];
   let plainFrom = 0;
-  let i = 0;
-  while (i < text.length) {
-    // 이 자리에서 시작하는 가장 긴 낱말 ("credit card company"가 "card company"보다 먼저)
-    let hit = 0;
-    for (const term of lowered) {
-      if (term.length > hit && lower.startsWith(term, i)) hit = term.length;
-    }
-    if (hit === 0) {
-      i += 1;
-      continue;
-    }
-    if (i > plainFrom) out.push({ text: text.slice(plainFrom, i), mark: false });
-    out.push({ text: text.slice(i, i + hit), mark: true });
-    i += hit;
-    plainFrom = i;
+  for (const [from, to] of merged) {
+    if (from > plainFrom) out.push({ text: text.slice(plainFrom, from), mark: false });
+    out.push({ text: text.slice(from, to), mark: true });
+    plainFrom = to;
   }
   if (plainFrom < text.length) out.push({ text: text.slice(plainFrom), mark: false });
-  return out.length === 0 ? [{ text, mark: false }] : out;
+  return out;
 }
 
 const hasMark = (segments: TextSegment[] | null): boolean => (segments ?? []).some((segment) => segment.mark);
@@ -252,10 +303,12 @@ function compareSide(
   recommendation: Recommendation,
   sourceKey: string,
   badges: BadgeKind[],
+  timeCostCents: number,
 ): CompareSideView {
   const best = recommendation.best;
   const cents = best?.expectedLossCents ?? null;
   return {
+    timeCost: best?.move === 'refund' ? { cents: timeCostCents, display: toDollarsRounded(timeCostCents) } : null,
     sourceKey,
     move: best?.move ?? null,
     apiMove: best?.apiMove ?? null,
@@ -278,6 +331,29 @@ function causeView(cause: Cause | undefined): CauseView | null {
     badge: decidedBy === 'code' ? 'codeDecides' : 'aiSuggests',
     needsReview: cause.needsReview,
   };
+}
+
+/** 한 줄 요약 키 고르기 (위 `SummaryView` 설명). 결정하는 쪽 = 후 원인이 있으면 후, 없으면 전. */
+export function summaryOf(before: CauseView | null, after: CauseView | null): SummaryView | null {
+  const decider = after ?? before;
+  if (decider === null) return null;
+  const transition = before !== null && after !== null && before.subtype !== after.subtype;
+  const transitionKey = transition ? `case.view.summary.${before.subtype}_${after.subtype}` : null;
+  const key = transitionKey !== null && typeof copyTables.en[transitionKey] === 'string' ? transitionKey : decider.subtypeKey;
+  return {
+    key,
+    badge: decider.badge,
+    codes: { before: transition ? before.subtype : null, after: decider.subtype },
+    needsReview: decider.needsReview,
+  };
+}
+
+/** 날짜 (`YYYY-MM-DD…`) → "Oct 30". 날짜 꼴이 아니면 받은 그대로. 시간대 영향 없이 UTC로 읽는다. */
+export function shortDate(ymd: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymd);
+  if (match === null) return ymd;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' }).format(date);
 }
 
 function riskView(risk: EscalationRisk, demoSignals: ReadonlySet<keyof EscalationWeights>): RiskView {
@@ -339,6 +415,16 @@ export function buildCaseView(input: CaseViewInput, params?: Params, rules?: Pol
   const replyRec = recDemo ?? recReal;
   const offerFirst = offerComesFirst(replyBoard, replyRec);
 
+  const timeCostCents = (params ?? paramsFromConfig()).timeCostCents;
+  const causeBefore = causeView(input.boardReal.cause);
+  const causeAfter = input.boardDemo === null ? null : causeView(input.boardDemo.cause);
+  const lastEvent =
+    input.boardDemo === null || input.carrierEvents.length === 0
+      ? null
+      : [...input.carrierEvents].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))[
+          input.carrierEvents.length - 1
+        ];
+
   const carrier =
     input.boardDemo === null || input.carrierEvents.length === 0
       ? null
@@ -367,16 +453,15 @@ export function buildCaseView(input: CaseViewInput, params?: Params, rules?: Pol
     compare: {
       labelKey: 'case.view.expectedLoss',
       badges: ['assumption'],
-      before: compareSide(input.boardReal, recReal, 'case.view.paypalOnly', []),
+      before: compareSide(input.boardReal, recReal, 'case.view.paypalOnly', [], timeCostCents),
       after:
         input.boardDemo === null || recDemo === null
           ? null
-          : compareSide(input.boardDemo, recDemo, 'case.view.withCarrier', ['demo']),
+          : compareSide(input.boardDemo, recDemo, 'case.view.withCarrier', ['demo'], timeCostCents),
     },
-    cause: {
-      before: causeView(input.boardReal.cause),
-      after: input.boardDemo === null ? null : causeView(input.boardDemo.cause),
-    },
+    cause: { before: causeBefore, after: causeAfter },
+    summary: summaryOf(causeBefore, causeAfter),
+    carrierLine: lastEvent === null ? null : { date: lastEvent.date, text: lastEvent.text, badges: ['demo'] },
     risk: input.signals === null ? null : riskView(escalationRisk(input.signals, rules), demoSignals),
     riskAfterReply:
       input.signalsAfterReply === null ? null : riskView(escalationRisk(input.signalsAfterReply, rules), demoSignals),

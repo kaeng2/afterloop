@@ -84,8 +84,11 @@ export const loadCaseDraft = cache(async (disputeId: string): Promise<ReplyDraft
   );
 });
 
-/** S5 1부 화면 값의 입력. */
-export async function loadCase(disputeId: string): Promise<CaseLoad> {
+/**
+ * S5 1부 화면 값의 입력. `options.draft`가 거짓이면 AI 초안(구매자 글 영어 포함)을 부르지 않는다 —
+ * 답장 칸이 없는 Routine(Mike) 상세가 쓴다 (LLM 호출 0회).
+ */
+export async function loadCase(disputeId: string, options: { draft?: boolean } = {}): Promise<CaseLoad> {
   // 1. 연습용·시연 제외·표 밖 분쟁은 PayPal을 읽지도 않는다
   if (!isOnScreen(disputeId)) return { kind: 'not_found' };
 
@@ -99,7 +102,10 @@ export async function loadCase(disputeId: string): Promise<CaseLoad> {
   }
 
   // 3. 구매자 글 영어 (AI). 없으면 시드 문의의 영어만
-  const draft = await loadCaseDraft(disputeId);
+  const draft: ReplyDraft =
+    options.draft === false
+      ? { ok: false, reason: 'ai_unavailable', detail: 'llm_failed:LlmConfigError' }
+      : await loadCaseDraft(disputeId);
 
   const input: CaseViewInput = {
     disputeId: loaded.disputeId,

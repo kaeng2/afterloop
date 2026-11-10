@@ -24,7 +24,11 @@ function ItemRow({ item, selected }: { item: TodayItem; selected: boolean }) {
             {item.name}
             {item.label === null ? null : <span className="today-item-label"> · {item.label}</span>}
           </span>
-          {item.band === null ? null : <RiskLevel band={item.band} />}
+          {item.chipKey !== null ? (
+            <span className="today-chip">{t(item.chipKey)}</span>
+          ) : item.band === null ? null : (
+            <RiskLevel band={item.band} />
+          )}
         </span>
         {item.sub === null ? null : <span className="today-item-sub">{item.sub}</span>}
       </Link>

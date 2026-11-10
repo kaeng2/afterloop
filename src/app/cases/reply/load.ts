@@ -29,7 +29,9 @@ import {
   resolveDraftSource,
   resolveSendMode,
 } from '../../_server/send';
+import { buyerShortName } from '../../today/model';
 import { buildCaseView } from '../model';
+import { liveSendAllowedFor } from '../practice';
 import { caseReplyFacts } from '../reply-facts';
 import type { ReplyViewInput } from '../reply-model';
 import { loadCase } from '../view/load';
@@ -42,6 +44,8 @@ export type ReplyLoad = {
   replyId: string | null;
   /** 버튼 글자용 구매자 언어 키 (`case.view.lang.KO` …). */
   languageKey: string | null;
+  /** "<이름> reads (<언어>)"의 이름 (시드 이름에서 목록과 같은 규칙으로). 모르면 `null`. */
+  buyerShort: string | null;
 };
 
 const UNAVAILABLE: ReplyDraft = { ok: false, reason: 'ai_unavailable', detail: 'llm_failed:LlmConfigError' };
@@ -138,10 +142,12 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
       plan,
       offerFirst: caseView.messageSend.blocked,
       mode: resolveSendMode(),
+      liveAllowed: liveSendAllowedFor(disputeId),
       draftSource,
       riskAfterReply: caseView.riskAfterReply,
     },
     replyId,
     languageKey: caseView.header.languageKey,
+    buyerShort: caseView.header.buyerName === null ? null : buyerShortName(caseView.header.buyerName),
   };
 });
