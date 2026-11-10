@@ -69,14 +69,15 @@
 <!-- afterloop:last-run:disputes -->
 ## 분쟁 읽기 (`npm run sandbox:disputes`)
 
-- 시각: 2026-11-10 08:57 KST
+- 시각: 2026-11-10 09:51 KST
 - 엔드포인트: GET /v1/customer/disputes → GET /v1/customer/disputes/{id} (조회만)
-- 분쟁 3건 · 변환 성공 3건 · 변환 실패 0건
+- 분쟁 4건 · 변환 성공 4건 · 변환 실패 0건
 
-| 분쟁 ID | reason | 단계 | 채널 | 금액(센트) | 기한 | 허용된 수 | 이전 INR |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| PP-R-FYT-10197651 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | INTERNAL | 3500 | - | - | 0 |
-| PP-R-MBJ-10197650 | MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED | INQUIRY | INTERNAL | 4800 | 2026-11-29T23:45:07.079Z | send_message,make_offer,accept_claim | 0 |
-| PP-R-GAH-10197649 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | INTERNAL | 7200 | - | - | 0 |
+| 분쟁 ID | reason | status | 단계 | 채널 | 금액(센트) | 기한 | 허용된 수 | 다른 링크 | 구매자 글 수 | 이전 INR |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PP-R-GMS-10197661 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | WAITING_FOR_SELLER_RESPONSE | INQUIRY | INTERNAL | 7200 | 2026-11-30T00:37:46.766Z | send_message,make_offer,provide_evidence,accept_claim | escalate | 1 | 1 |
+| PP-R-FYT-10197651 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | UNDER_REVIEW | CHARGEBACK | INTERNAL | 3500 | - | accept_claim | adjudicate,require_evidence,provide_supporting_info | 1 | 0 |
+| PP-R-MBJ-10197650 | MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED | WAITING_FOR_SELLER_RESPONSE | INQUIRY | INTERNAL | 4800 | 2026-11-29T23:45:07.079Z | send_message,make_offer,accept_claim | escalate | 1 | 0 |
+| PP-R-GAH-10197649 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | UNDER_REVIEW | CHARGEBACK | INTERNAL | 7200 | - | accept_claim | adjudicate,require_evidence,provide_supporting_info | 1 | 1 |
 
 > 추적·배송 기록(hasTracking·hasDeliveredTracking)은 주문 상세에서 오는 값이라 여기서는 false로 두고 변환했다 (`npm run sandbox:check`가 읽는다).
