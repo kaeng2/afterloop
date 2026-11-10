@@ -17,7 +17,11 @@
  *
  * 숫자를 만들지 않는다: 기대 손실·추천·위험 점수는 화면이 `src/engine/`을 불러 구한다. 이 파일은
  * 엔진이 받을 **입력**(보드·신호)까지만 만든다.
+ *
+ * `paypal.reason`·`llm.reason`은 고정 코드다 (`_shared/availability.ts`). 예외 문장을 싣지 않는다.
  */
+import 'server-only';
+
 import { cache } from 'react';
 
 import { maskPersonal } from '@/ai/prompts/classify';
@@ -39,6 +43,7 @@ import type {
 } from '@/types';
 import { carrierEventsFor, seedBuyers, seedDisputes, seedInquiries, seedProducts } from '../../../seed/index';
 
+import type { Availability } from '../_shared/availability';
 import { demoLinks, screenLinks, withoutDemoExcluded } from '../_shared/demo-links';
 import type { DemoField, LoadedDispute } from '../_shared/dispute-view';
 import { getLlm, unavailableLlm } from './llm';
@@ -65,8 +70,7 @@ export type LoadDemoDisputesDeps = {
   realTracking?: (disputeId: string) => RealTracking;
 };
 
-/** 쓸 수 있었는지 + 못 쓰면 화면에 보여도 되는 한 줄 (키 이름만 담는다). */
-export type Availability = { ok: boolean; reason?: string };
+export type { Availability };
 
 export type LoadDemoDisputesResult = {
   /** 화면에 낼 분쟁. 연결 표 순서 (D1 → D2 → D3). */
@@ -116,17 +120,40 @@ function timedText(raw: string | undefined, text: string): { text: string; at: s
   return { text, at: raw };
 }
 
-function buyerMessagesWithTime(detail: DisputeDetail): { text: string; at: string }[] {
-  const out: { text: string; at: string }[] = [];
+/**
+ * 구매자 글 (시각 포함). PayPal은 접수 글을 `messages`와 `evidences[].notes`에 **같은 글로 함께** 준다 —
+ * `@/paypal/mapper`의 `buyerTexts`(T037)와 같은 규칙으로 한 번만 센다: 시각 순으로 늘어놓고,
+ * 앞뒤 공백을 뺀 글이 같으면 먼저 오는 것 하나만 남긴다 (T047 보완 D-1).
+ */
+export function buyerMessagesWithTime(detail: DisputeDetail): { text: string; at: string }[] {
+  const collected: { text: string; at: string; order: number }[] = [];
   for (const message of detail.messages) {
     if (message.posted_by.toUpperCase() !== 'BUYER') continue;
     const timed = timedText(message.time_posted, message.content);
-    if (timed !== null) out.push(timed);
+    if (timed !== null) collected.push({ ...timed, order: collected.length });
   }
   for (const evidence of detail.evidences) {
     if ((evidence.source ?? '').toUpperCase() !== 'SUBMITTED_BY_BUYER') continue;
     const timed = timedText(evidence.date, evidence.notes ?? '');
-    if (timed !== null) out.push(timed);
+    if (timed !== null) collected.push({ ...timed, order: collected.length });
+  }
+
+  const timeOf = (at: string): number => {
+    const ms = Date.parse(at);
+    return Number.isNaN(ms) ? Number.POSITIVE_INFINITY : ms; // 읽을 수 없는 시각은 뒤로
+  };
+  const sorted = [...collected].sort((a, b) => {
+    const diff = timeOf(a.at) - timeOf(b.at);
+    return diff !== 0 && !Number.isNaN(diff) ? diff : a.order - b.order;
+  });
+
+  const seen = new Set<string>();
+  const out: { text: string; at: string }[] = [];
+  for (const { text, at } of sorted) {
+    const key = text.trim();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ text, at });
   }
   return out;
 }
@@ -235,9 +262,9 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
   let onScreen: DisputeSummary[];
   try {
     onScreen = withoutDemoExcluded(await listDisputes(client), links);
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : 'dispute list could not be read';
-    return { disputes: [], paypal: { ok: false, reason }, llm: llmAvailability };
+  } catch {
+    // 예외 문장은 싣지 않는다 (PayPal 응답 문장이 섞일 수 있다). 고정 코드만.
+    return { disputes: [], paypal: { ok: false, reason: 'request_failed' }, llm: llmAvailability };
   }
 
   // 표에 있는 분쟁의 상세를 번호로 읽는다 (목록에 아직 없는 분쟁도 바로 나온다, SPEC 9-4).
@@ -356,8 +383,7 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
     });
   }
 
-  const paypal: Availability =
-    failed.length === 0 ? { ok: true } : { ok: true, reason: `${failed.length} dispute(s) could not be read` };
+  const paypal: Availability = failed.length === 0 ? { ok: true } : { ok: true, reason: 'partial' };
 
   return { disputes, paypal, llm: llmAvailability };
 }

@@ -8,9 +8,15 @@
  * (화면은 `common.paypalUnavailable` 문구를 보인다). 값은 어디에도 싣지 않는다 — 키 이름만 적는다.
  *
  * `.env`는 사람이 직접 채운다 (CLAUDE.md). 이 코드는 `process.env`에서만 읽는다.
+ *
+ * `reason`은 고정 코드다 (`_shared/availability.ts`). 화면은 `common.reason.*` 문구로 옮긴다.
  */
+import 'server-only';
+
 import { createPayPalClient } from '@/paypal/client';
 import type { ClientDeps, PayPalClient, PayPalEnv } from '@/types';
+
+import type { UnavailableReason } from '../_shared/availability';
 
 /** 허용하는 단 하나의 baseUrl. live(실거래)는 쓰지 않는다 (CLAUDE.md). */
 export const SANDBOX_BASE_URL = 'https://api-m.sandbox.paypal.com';
@@ -20,13 +26,10 @@ const KEYS = ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET', 'PAYPAL_BASE_URL'] as 
 
 export type PayPalEnvVars = Partial<Record<(typeof KEYS)[number], string>>;
 
-/**
- * 클라이언트를 만들 수 있었는지. 만들 수 없으면 `reason`은 화면에 보여도 되는 한 줄이다
- * (키 이름만 담는다).
- */
+/** 클라이언트를 만들 수 있었는지. 만들 수 없으면 `reason`은 고정 코드다 (값·문장을 담지 않는다). */
 export type PayPalAvailability =
   | { ok: true; client: PayPalClient }
-  | { ok: false; reason: string };
+  | { ok: false; reason: UnavailableReason };
 
 /** 실제 네트워크·시계. 단위 테스트는 `getPayPalClient`에 가짜 `deps`를 넣는다. */
 function liveDeps(log?: ClientDeps['log']): ClientDeps {
@@ -41,22 +44,22 @@ function liveDeps(log?: ClientDeps['log']): ClientDeps {
 /**
  * 환경 변수로 PayPal 클라이언트를 만든다. 던지지 않는다.
  *
- * - 키가 빠졌으면 빠진 **키 이름만** 적어 "쓸 수 없음"
- * - `PAYPAL_BASE_URL`이 샌드박스가 아니면 호출하지 않고 "쓸 수 없음" (받은 값은 적지 않는다)
+ * - 키가 빠졌으면 `not_configured`
+ * - `PAYPAL_BASE_URL`이 샌드박스가 아니면 호출하지 않고 `not_sandbox` (받은 값은 적지 않는다)
  */
 export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVars, deps?: ClientDeps): PayPalAvailability {
   if (typeof window !== 'undefined') {
-    return { ok: false, reason: 'PayPal calls are server-only' };
+    return { ok: false, reason: 'server_only' };
   }
 
   const missing = KEYS.filter((key) => (env[key] ?? '').trim() === '');
   if (missing.length > 0) {
-    return { ok: false, reason: `.env: ${missing.join(', ')} not set` };
+    return { ok: false, reason: 'not_configured' };
   }
 
   const baseUrl = (env.PAYPAL_BASE_URL ?? '').trim().replace(/\/+$/, '');
   if (baseUrl !== SANDBOX_BASE_URL) {
-    return { ok: false, reason: `.env: PAYPAL_BASE_URL must be ${SANDBOX_BASE_URL}` };
+    return { ok: false, reason: 'not_sandbox' };
   }
 
   const paypalEnv: PayPalEnv = {
@@ -69,6 +72,6 @@ export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVar
     return { ok: true, client: createPayPalClient(paypalEnv, deps ?? liveDeps()) };
   } catch {
     // 클라이언트가 설정을 거부했다 (샌드박스 밖 주소 등). 예외 문구를 그대로 올리지 않는다.
-    return { ok: false, reason: '.env: PayPal client could not be created' };
+    return { ok: false, reason: 'client_error' };
   }
 }

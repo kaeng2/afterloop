@@ -3,11 +3,21 @@
  *
  * 기대값 출처: `tasks/T047.md` "완료 기준" + AC19 초안 1·9·10·11번, SPEC v2.6 9-4·9-5·10장.
  * **실호출 0회.** PayPal 클라이언트는 `get`·`call` 횟수를 세는 가짜, LLM은 넣은 답만 주는 가짜다.
+ *
+ * `src/app/_server/*`는 맨 위에 `import 'server-only'`가 있다 (T047 보완 D-2). 그 패키지는 React 서버
+ * 환경이 아니면 import만으로 예외를 던지므로, 이 파일에서만 빈 모듈로 바꿔 끼운다 (`vi.mock`).
+ * 테스트 설정(`vitest.config.ts`)은 고치지 않았다.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import inquiryWaitingSeller from '../fixtures/dispute-detail.inquiry-waiting-seller.json';
+
+vi.mock('server-only', () => ({}));
 
 import { getLlm, unavailableLlm } from '@/app/_server/llm';
-import { loadDemoDisputes } from '@/app/_server/disputes';
+import { buyerMessagesWithTime, loadDemoDisputes } from '@/app/_server/disputes';
+import { UNAVAILABLE_REASONS } from '@/app/_shared/availability';
+import type { DisputeDetail } from '@/paypal/disputes';
 import { getPayPalClient } from '@/app/_server/paypal';
 import { pickBoard } from '@/app/_shared/dispute-view';
 import type { DemoLink, LlmCaller, PayPalClient } from '@/types';
@@ -200,7 +210,66 @@ describe('T047 loadDemoDisputes: 목록에 없는 분쟁 (AC19 초안 10번)', (
     const { disputes, paypal } = await load(client, countingLlm());
     expect(disputes.map((d) => d.disputeId)).toEqual([D1, D3]);
     expect(paypal.ok).toBe(true);
-    expect(paypal.reason).toMatch(/could not be read/);
+    expect(paypal.reason).toBe('partial');
+  });
+});
+
+describe('T047 보완 D-3: "쓸 수 없음" 사유는 고정 코드다', () => {
+  it('목록 조회가 예외를 던져도 예외 문장을 싣지 않는다', async () => {
+    const client: PayPalClient = {
+      call: async () => {
+        throw new Error('POST 없음');
+      },
+      get: async () => {
+        throw new Error('분쟁 목록 조회 실패 (HTTP 500) secret-looking-text');
+      },
+    };
+    const { disputes, paypal } = await load(client, countingLlm());
+    expect(disputes).toEqual([]);
+    expect(paypal).toEqual({ ok: false, reason: 'request_failed' });
+  });
+
+  it('모든 사유가 고정 코드 목록 안에 있고 문구 키가 있다', () => {
+    const outcomes = [
+      getPayPalClient({}),
+      getPayPalClient({ PAYPAL_CLIENT_ID: 'id', PAYPAL_CLIENT_SECRET: 's', PAYPAL_BASE_URL: 'https://api-m.paypal.com' }),
+      getLlm({}),
+    ];
+    for (const outcome of outcomes) {
+      expect(outcome.ok).toBe(false);
+      if (!outcome.ok) expect(UNAVAILABLE_REASONS).toContain(outcome.reason);
+    }
+  });
+});
+
+describe('T047 보완 D-1: 구매자 글을 두 번 세지 않는다', () => {
+  const detail = inquiryWaitingSeller as unknown as DisputeDetail;
+
+  it('같은 글이 `messages`와 `evidences`에 함께 있어도 1건이다 (실제 고정 응답)', () => {
+    expect(detail.messages.filter((m) => m.posted_by === 'BUYER')).toHaveLength(1);
+    expect(detail.evidences.filter((e) => e.source === 'SUBMITTED_BY_BUYER')).toHaveLength(1);
+    expect(buyerMessagesWithTime(detail)).toHaveLength(1);
+  });
+
+  it('시드 문의가 없는 구매자면 `secondMessageUnanswered`가 거짓이다', async () => {
+    const id = detail.dispute_id;
+    const client: PayPalClient = {
+      call: async () => {
+        throw new Error('POST 없음');
+      },
+      get: async (path: string) =>
+        path.startsWith('/v1/customer/disputes?')
+          ? { status: 200, body: { items: [], links: [] } }
+          : { status: 200, body: detail },
+    };
+    const links: DemoLink[] = [
+      { paypalDisputeId: id, seedDisputeId: null, carrierOrderId: null, showOnScreen: true, liveSendAllowed: false },
+    ];
+    const { disputes } = await loadDemoDisputes({ client, llm: countingLlm(), links, now: NOW });
+    expect(disputes).toHaveLength(1);
+    expect(disputes[0].demoFields).not.toContain('earlierInquiries');
+    expect(disputes[0].signals).not.toBeNull();
+    expect(disputes[0].signals?.secondMessageUnanswered).toBe(false);
   });
 });
 
@@ -361,11 +430,9 @@ describe('T047 loadDemoDisputes: 결정론', () => {
 });
 
 describe('T047 서버 도구: 환경 변수가 없을 때', () => {
-  it('PayPal을 쓸 수 없으면 예외 대신 "쓸 수 없음"이다 (키 이름만 적는다)', () => {
+  it('PayPal을 쓸 수 없으면 예외 대신 "쓸 수 없음"이다 (고정 코드만)', () => {
     const missing = getPayPalClient({});
-    expect(missing.ok).toBe(false);
-    expect(missing.ok === false && missing.reason).toMatch(/PAYPAL_CLIENT_ID/);
-    expect(missing.ok === false && missing.reason).not.toMatch(/[A-Za-z0-9]{30}/); // 값은 담지 않는다
+    expect(missing).toEqual({ ok: false, reason: 'not_configured' });
   });
 
   it('live 주소는 거부한다 (샌드박스만)', () => {
@@ -375,7 +442,7 @@ describe('T047 서버 도구: 환경 변수가 없을 때', () => {
       PAYPAL_BASE_URL: 'https://api-m.paypal.com',
     });
     expect(live.ok).toBe(false);
-    expect(live.ok === false && live.reason).toMatch(/api-m\.sandbox\.paypal\.com/);
+    expect(live.ok === false && live.reason).toBe('not_sandbox');
   });
 
   it('샌드박스 주소면 클라이언트를 만든다 (호출은 하지 않는다)', () => {
@@ -397,7 +464,7 @@ describe('T047 서버 도구: 환경 변수가 없을 때', () => {
   it('LLM 키가 없으면 "쓸 수 없음"이고, 대체 호출기는 예외만 던진다', async () => {
     const missing = getLlm({});
     expect(missing.ok).toBe(false);
-    expect(missing.ok === false && missing.reason).toMatch(/LLM_API_KEY/);
+    expect(missing.ok === false && missing.reason).toBe('not_configured');
     await expect(unavailableLlm()({ system: 's', user: 'u', jsonSchema: {} })).rejects.toThrow();
   });
 });

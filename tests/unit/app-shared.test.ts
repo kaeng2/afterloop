@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { BADGE_COPY_KEYS, RISK_BADGE } from '@/app/_shared/badge-keys';
+import { BADGE_COPY_KEYS, RISK_LEVEL } from '@/app/_shared/badge-keys';
 import { copyKeys, copyTables, t } from '@/app/_shared/copy';
 import { demoLinks, isLiveSendAllowed, linkFor, parseDemoLinks, screenLinks, withoutDemoExcluded } from '@/app/_shared/demo-links';
 import { hasDemoValues, pickBoard } from '@/app/_shared/dispute-view';
@@ -219,9 +219,9 @@ describe('T047 메뉴', () => {
     expect(NAV_ITEMS.some((item) => item.href.startsWith('/cases'))).toBe(false);
   });
 
-  it('위험 구간 배지는 엔진의 세 구간을 그대로 옮긴다', () => {
-    expect(Object.keys(RISK_BADGE)).toEqual(['Low', 'Watch', 'High']);
-    expect(t(RISK_BADGE.High.copyKey)).toBe('High');
+  it('위험 단계는 엔진의 세 구간을 그대로 옮긴다', () => {
+    expect(Object.keys(RISK_LEVEL).sort()).toEqual(['High', 'Low', 'Watch']);
+    expect(t(RISK_LEVEL.High.copyKey)).toBe('High');
   });
 
   it('지금 보고 있는 화면만 표시한다', () => {
