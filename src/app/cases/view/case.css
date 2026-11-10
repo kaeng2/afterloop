@@ -50,26 +50,112 @@
   min-width: 0;
 }
 
-.case-cause-list {
-  flex: 1 1 18rem;
-  gap: var(--space-2);
-  min-width: 0;
-  padding: var(--space-2) 0;
-}
-
-.case-cause {
+/* 원인 한 줄 카드 (2부에 함께 넣는 것 3번). 화살표는 비교 카드와 같은 글자·크기·색 */
+.case-cause-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
+}
+
+.case-cause-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
   min-width: 0;
+}
+
+.case-cause-side {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.case-cause-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.case-cause-arrow {
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--color-muted);
+}
+
+.case-cause-badges {
+  display: inline-flex;
+  gap: var(--space-2);
+  margin-left: auto;
 }
 
 .case-subtype {
   font-weight: 650;
 }
 
-.case-note {
+/* PayPal 상태: 쉬운 말 + 원래 코드는 작은 회색 글씨 (2부에 함께 넣는 것 2번) */
+.case-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+}
+
+.case-status-code {
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+/* 머리글의 위험 배지 = 펼침 버튼 (2부에 함께 넣는 것 1번) */
+.case-risk-wrap {
+  position: relative;
   min-width: 0;
+}
+
+.case-risk-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+}
+
+.case-risk-button:hover {
+  border-color: var(--color-accent);
+}
+
+.case-risk-caret {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.case-risk-panel {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 2;
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 2 * var(--gutter)));
+}
+
+.case-risk-panel[hidden] {
+  display: none;
+}
+
+.case-risk-after {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: var(--card-border);
 }
 
 .case-columns {
@@ -177,6 +263,25 @@
 }
 
 @media (max-width: 30rem) {
+  /* 원인 칸도 비교 카드처럼 세로로 쌓는다: 왼쪽 → 화살표 → 오른쪽 */
+  .case-cause-line {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .case-cause-arrow {
+    transform: rotate(90deg);
+  }
+
+  .case-cause-badges {
+    margin-left: 0;
+  }
+
+  .case-risk-panel {
+    right: auto;
+    left: 0;
+  }
+
   .case-event {
     grid-template-columns: max-content minmax(0, 1fr);
   }

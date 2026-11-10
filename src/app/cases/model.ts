@@ -37,6 +37,7 @@ import type {
 } from '@/types';
 
 import type { BadgeKind, RiskBand } from '../_shared/badge-keys';
+import { copyTables } from '../_shared/copy';
 import type { DemoField } from '../_shared/dispute-view';
 import { toDollarsCents, toDollarsRounded } from '../_shared/money';
 
@@ -124,6 +125,8 @@ export type CompareView = {
 export type CauseView = {
   subtype: Subtype;
   subtypeKey: string;
+  /** 한 줄 원인 칸에 쓰는 짧은 이름 키 (`case.view.subtypeShort.A1` = "Not shipped"). */
+  shortKey: string;
   /** 한 줄 설명 (`causeNote`). 없으면 `null`. */
   note: string | null;
   /** 규칙이 정했으면 `code` ('Code decides'), LLM이면 `ai` ('AI suggests'). */
@@ -150,6 +153,11 @@ export type CaseView = {
   header: {
     disputeId: string;
     statusCode: string;
+    /**
+     * PayPal 상태의 쉬운 말 키 (`case.status.WAITING_FOR_SELLER_RESPONSE` = "Waiting for your reply").
+     * 문구 표에 없는 상태는 `null` — 화면은 원래 코드만 보인다.
+     */
+    statusKey: string | null;
     buyerName: string | null;
     productName: string | null;
     /** 분쟁 금액 (센트까지). */
@@ -193,6 +201,13 @@ export function actionKeyFor(move: Evaluation['move'] | null): string {
 const LOCALE: Record<SeedBuyer['language'], FactLocale> = { KO: 'ko', EN: 'en', JA: 'ja', DE: 'de' };
 
 export const OFFER_FIRST_KEY = 'case.view.offerFirst';
+
+/** PayPal 상태 코드 → 쉬운 말 키. 문구 파일(`case.status.*`)에 있는 상태만. 없으면 `null`. */
+export function statusKeyFor(statusCode: string): string | null {
+  if (!/^[A-Z_]+$/.test(statusCode)) return null;
+  const key = `case.status.${statusCode}`;
+  return typeof copyTables.en[key] === 'string' ? key : null;
+}
 
 // ───────────────────────────── 글 조각 (카드사 언급 표시) ─────────────────────────────
 
@@ -257,6 +272,7 @@ function causeView(cause: Cause | undefined): CauseView | null {
   return {
     subtype: cause.subtype,
     subtypeKey: `case.view.subtype.${cause.subtype}`,
+    shortKey: `case.view.subtypeShort.${cause.subtype}`,
     note: cause.causeNote === undefined || cause.causeNote.trim() === '' ? null : maskPersonal(cause.causeNote),
     decidedBy,
     badge: decidedBy === 'code' ? 'codeDecides' : 'aiSuggests',
@@ -339,6 +355,7 @@ export function buildCaseView(input: CaseViewInput, params?: Params, rules?: Pol
     header: {
       disputeId: input.disputeId,
       statusCode: input.statusCode,
+      statusKey: statusKeyFor(input.statusCode),
       buyerName: input.buyer?.name ?? null,
       productName: input.product?.itemName ?? null,
       amount: { cents: input.boardReal.amountCents, display: toDollarsCents(input.boardReal.amountCents) },
