@@ -1,13 +1,66 @@
+/*
+ * 화면 공용 스타일 (T047). 머리글·메뉴·배지·표의 기본 모양만 둔다.
+ * 화면별 스타일은 각 화면 폴더에서 더한다. 색 이름은 아래 토큰만 쓴다.
+ */
+
 :root {
   --background: #ffffff;
+  --surface: #f7f7f8;
   --foreground: #171717;
+  --muted: #5c5f66;
+  --border: #e2e3e7;
+  --accent: #0a4d8c;
+
+  --demo-bg: #fff4d6;
+  --demo-fg: #6b4a00;
+  --assumption-bg: #e8eef7;
+  --assumption-fg: #274a73;
+  --ai-bg: #efe6fb;
+  --ai-fg: #5b2a91;
+  --code-bg: #ececef;
+  --code-fg: #45484f;
+  --risk-low-bg: #e6f3ea;
+  --risk-low-fg: #1f5c33;
+  --risk-watch-bg: #fdf0d9;
+  --risk-watch-fg: #77521a;
+  --risk-high-bg: #fae3e2;
+  --risk-high-fg: #8c2a22;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0d0e10;
+    --surface: #17181b;
     --foreground: #ededed;
+    --muted: #a1a4ac;
+    --border: #2b2d31;
+    --accent: #7fb4e8;
+
+    --demo-bg: #3c2f0c;
+    --demo-fg: #f2d99a;
+    --assumption-bg: #1b2a3d;
+    --assumption-fg: #b9d2ef;
+    --ai-bg: #2b1f42;
+    --ai-fg: #d7c2f5;
+    --code-bg: #262830;
+    --code-fg: #c7cad2;
+    --risk-low-bg: #16301f;
+    --risk-low-fg: #a8d8b9;
+    --risk-watch-bg: #37290f;
+    --risk-watch-fg: #e8c988;
+    --risk-high-bg: #3a1a17;
+    --risk-high-fg: #f0b2ab;
   }
+
+  html {
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 html,
@@ -19,15 +72,11 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
 
 a {
@@ -35,8 +84,160 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* ── 머리글과 메뉴 ──────────────────────────────────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 10;
+  padding: 0.5rem 0.75rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.header {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.header-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem 0.35rem;
+}
+
+.brand {
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.brand-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0 0.9rem;
+}
+
+.nav-link {
+  padding: 0.5rem 0.65rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--foreground);
+}
+
+.nav-link[aria-current='page'] {
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.main {
+  padding: 1.25rem;
+  max-width: 1200px;
+}
+
+/* ── 배지 (`_shared/badges.tsx`) ────────────────────────────────────────── */
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.42rem;
+  margin-right: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.badge-demo {
+  background: var(--demo-bg);
+  color: var(--demo-fg);
+}
+
+.badge-assumption {
+  background: var(--assumption-bg);
+  color: var(--assumption-fg);
+}
+
+.badge-ai {
+  background: var(--ai-bg);
+  color: var(--ai-fg);
+}
+
+.badge-code {
+  background: var(--code-bg);
+  color: var(--code-fg);
+}
+
+.badge-risk-low {
+  background: var(--risk-low-bg);
+  color: var(--risk-low-fg);
+}
+
+.badge-risk-watch {
+  background: var(--risk-watch-bg);
+  color: var(--risk-watch-fg);
+}
+
+.badge-risk-high {
+  background: var(--risk-high-bg);
+  color: var(--risk-high-fg);
+}
+
+/* ── 화면 공용 조각 ─────────────────────────────────────────────────────── */
+
+.page-title {
+  font-size: 1.3rem;
+  font-weight: 650;
+  margin-bottom: 0.4rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.notice {
+  padding: 0.6rem 0.8rem;
+  margin: 0.6rem 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.card {
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.amount {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
