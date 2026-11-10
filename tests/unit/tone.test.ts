@@ -201,7 +201,9 @@ describe('judgeTone — 근거 확인', () => {
     );
   });
 
-  it('줄바꿈·대소문자만 다른 인용은 받아 준다', async () => {
+  // T050 7번으로 **기대값이 바뀐 테스트 1건**이다. 둘째 근거는 전에 모델이 보낸 소문자
+  // (`i am done waiting`)가 나갔다. 이제는 맞은 자리의 원문 조각(`I AM DONE waiting`)이 나간다
+  it('줄바꿈·대소문자만 다른 인용은 받아 주고, 글자는 구매자 글 그대로다', async () => {
     const message = 'This is\nunacceptable. I AM DONE waiting.';
     const { llm } = fakeLlm({
       json: { angryTone: true, evidence: ['This is unacceptable', 'i am done waiting'] },
@@ -209,8 +211,46 @@ describe('judgeTone — 근거 확인', () => {
 
     expect((await judgeTone(input({ buyerMessages: [message] }), { llm })).evidence).toEqual([
       'This is unacceptable',
-      'i am done waiting',
+      'I AM DONE waiting',
     ]);
+  });
+
+  it('모델이 대문자로 바꿔 인용해도 구매자가 쓴 글자가 나간다 (T043 M1)', async () => {
+    const message = 'you are a scammer and i want my money';
+    const { llm } = fakeLlm({
+      json: { angryTone: true, evidence: ['YOU ARE A SCAMMER'] },
+    });
+
+    expect((await judgeTone(input({ buyerMessages: [message] }), { llm })).evidence).toEqual([
+      'you are a scammer',
+    ]);
+  });
+
+  it('가림 표식이 든 구절은 근거에서 뺀다 (T043 R2)', async () => {
+    const message = '화나요. 메일 buyer@example.com 으로 답 주세요. 부호는 P123456789012.';
+    const { llm } = fakeLlm({
+      json: {
+        angryTone: true,
+        evidence: ['메일 ⟦EMAIL⟧ 으로 답 주세요', '부호는 ⟦PCCC⟧', '화나요'],
+      },
+    });
+
+    const result = await judgeTone(input({ buyerMessages: [message] }), { llm });
+
+    expect(result.evidence).toEqual(['화나요']);
+    expect(result.evidence.join(' ')).not.toContain('⟦');
+  });
+
+  it('소문자로 바꿀 때 길이가 달라지는 글자가 섞여 있어도 확인은 그대로 한다 (İ)', async () => {
+    const message = 'İstanbul: this is a SCAM and I am furious';
+    const { llm } = fakeLlm({
+      json: { angryTone: true, evidence: ['this is a scam', '지어낸 말'] },
+    });
+
+    const result = await judgeTone(input({ buyerMessages: [message] }), { llm });
+
+    // 자리를 믿을 수 없으므로 원문 조각을 떠 오지 않는다. 확인은 그대로 하므로 지어낸 근거는 막힌다
+    expect(result).toEqual({ angryTone: true, evidence: ['this is a scam'] });
   });
 
   it('긴 구절은 확인한 뒤 길이를 깎는다', async () => {

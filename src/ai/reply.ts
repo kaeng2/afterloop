@@ -18,11 +18,15 @@
  *   "AI unavailable"로 내려간다 (SPEC 3장).
  * - 돌려주기 전에 개인정보를 한 번 더 가린다 (`maskPersonal`). 가려진 자리는 `⟦EMAIL⟧`처럼 토큰 형식이
  *   아닌 괄호 표기가 되므로 `checkTokens`가 형식 오류로 잡아 초안이 거부된다 — 막는 쪽으로 틀린다.
- * - `detail`에는 구매자 글·초안·프롬프트·키를 싣지 않는다. 고정된 사유 코드만 쓴다.
+ * - `detail`에는 구매자 글·초안·프롬프트·키를 싣지 않는다. `ReplyFailureDetail`에 적힌 고정 사유 코드만
+ *   쓴다 (오류 이름도 그대로 붙이지 않는다. T050 6번).
+ *
+ * 판매자가 고친 초안도 신뢰하지 않는 입력이다: `translateReply`는 **호출 전에** 그 초안을 검사해서
+ * 사실값을 글자로 쓴 글·연락처가 든 글을 거부한다 (T050 3·4번. `draftInputProblem`).
  *
  * 호출 횟수는 고정이다: `draftReply` 1회, `translateReply` 2회(번역·역번역).
- * `buyerLocale === 'en'`이면 `translateReply`는 0회다. 다시 묻지 않는다 (분류기와 달리 재요청이 없다 —
- * 판매자가 화면에서 다시 누르는 것이 재요청이다).
+ * `buyerLocale === 'en'`이거나 판매자 초안이 위 검사를 통과하지 못하면 `translateReply`는 0회다.
+ * 다시 묻지 않는다 (분류기와 달리 재요청이 없다 — 판매자가 화면에서 다시 누르는 것이 재요청이다).
  */
 import { z } from 'zod';
 
@@ -64,7 +68,45 @@ export type ReplyInput = {
 
 export type ReplyFailureReason = 'ai_unavailable' | 'invalid_output' | 'refused';
 
-/** 쓸 수 없는 결과. `detail`은 고정 사유 코드이고 구매자 글·초안을 담지 않는다. */
+/**
+ * `detail`에 쓸 수 있는 **고정 사유 코드 전부** (T050 6번, `reports/T042-verify.md` ⑤).
+ *
+ * 목록을 타입으로 둬서 구매자 글·초안·프롬프트·키·오류 메시지가 `detail`에 들어갈 길이 없게 한다 —
+ * 새 사유를 쓰려면 여기에 먼저 적어야 한다. LLM 쪽 실패는 `src/ai/llm.ts`가 던지는 클래스 이름만
+ * 받고, 모르는 이름은 `unknown_error`다 (이름을 그대로 붙이지 않는다).
+ */
+export type ReplyFailureDetail =
+  // LLM 호출
+  | 'llm_failed:LlmError'
+  | 'llm_failed:LlmApiError'
+  | 'llm_failed:LlmConfigError'
+  | 'llm_failed:LlmResponseError'
+  | 'llm_refused'
+  | 'unknown_error'
+  | 'output_schema'
+  // 모델이 쓴 초안
+  | 'draft_empty'
+  | 'draft_too_long'
+  | 'draft_unknown_placeholder'
+  | 'draft_unknown_tokens'
+  | 'draft_literal_facts'
+  // 판매자가 고친 초안 (`translateReply`의 입력)
+  | 'draft_has_personal_data'
+  | 'draft_has_literal_facts'
+  // 코칭·구매자 글 번역
+  | 'coaching_too_few'
+  | 'buyer_message_empty'
+  | 'buyer_message_too_long'
+  // 전송본·역번역
+  | 'outgoing_empty'
+  | 'outgoing_too_long'
+  | 'back_translation_empty'
+  | 'back_translation_too_long';
+
+/**
+ * 쓸 수 없는 결과. `detail`은 `ReplyFailureDetail` 하나이거나, 초안 검증처럼 사유가 여럿일 때
+ * 그 코드들을 `,`로 이은 것이다. 구매자 글·초안·프롬프트·키는 담지 않는다.
+ */
 export type ReplyFailure = { ok: false; reason: ReplyFailureReason; detail: string };
 
 export type ReplyDraft =
@@ -134,19 +176,37 @@ const BackTranslateSchema = z.object({ back_translation_en: z.string() });
 
 // ───────────────────────────── 작은 도구 ─────────────────────────────
 
-function failure(reason: ReplyFailureReason, detail: string): ReplyFailure {
-  return { ok: false, reason, detail };
+function failure(
+  reason: ReplyFailureReason,
+  detail: ReplyFailureDetail | readonly ReplyFailureDetail[],
+): ReplyFailure {
+  return { ok: false, reason, detail: typeof detail === 'string' ? detail : detail.join(',') };
 }
+
+/**
+ * 아는 오류 이름만 사유 코드로 옮긴다 (`src/ai/llm.ts`가 던지는 클래스 이름).
+ * 객체가 아니라 `Map`을 쓴다 — `error.name`은 무엇이든 될 수 있고, 객체 색인은 `toString` 같은
+ * 상속 키에도 맞는다.
+ */
+const LLM_ERROR_DETAILS = new Map<string, ReplyFailureDetail>([
+  ['LlmError', 'llm_failed:LlmError'],
+  ['LlmApiError', 'llm_failed:LlmApiError'],
+  ['LlmConfigError', 'llm_failed:LlmConfigError'],
+  ['LlmResponseError', 'llm_failed:LlmResponseError'],
+]);
 
 /**
  * LLM 예외를 결과로 접는다. 거절은 `refused`, 그 밖은 `ai_unavailable`이다.
  * `src/ai/llm.ts`가 `name`으로 약속한 값만 본다 (분류기와 같은 이유로 SDK를 끌어오지 않는다).
- * 예외 메시지는 싣지 않는다 — 깨진 JSON 본문이 섞여 구매자 글이 되돌아와 있을 수 있다.
+ *
+ * 예외 메시지도, **오류 이름도 그대로 싣지 않는다** (T050 6번): 깨진 JSON 본문이 섞여 구매자 글이
+ * 되돌아와 있을 수 있고, `name`은 임의 문자열일 수 있다 (`reports/T042-verify.md` ⑤).
+ * 목록에 없는 이름은 `unknown_error`다.
  */
 function fromError(error: unknown): ReplyFailure {
-  const name = error instanceof Error ? error.name : 'unknown';
+  const name = error instanceof Error ? error.name : '';
   if (name === 'LlmRefusalError') return failure('refused', 'llm_refused');
-  return failure('ai_unavailable', `llm_failed:${name}`);
+  return failure('ai_unavailable', LLM_ERROR_DETAILS.get(name) ?? 'unknown_error');
 }
 
 /** 여러 줄을 지키면서 양끝만 다듬고 개인정보를 가린다 (문단이 있는 초안·전송본용). */
@@ -185,10 +245,22 @@ async function ask<T>(
 }
 
 /** 길이만 보는 검사. 비었거나 상한을 넘으면 사유 코드를 돌려준다. */
-function lengthProblem(text: string, max: number, what: string): string | null {
+function lengthProblem(
+  text: string,
+  max: number,
+  what: 'draft' | 'buyer_message' | 'outgoing' | 'back_translation',
+): ReplyFailureDetail | null {
   if (text === '') return `${what}_empty`;
   if (text.length > max) return `${what}_too_long`;
   return null;
+}
+
+/**
+ * 글 한 토막에 사실값을 글자로 썼는가. `checkTokens`에 같은 글을 두 번 넣어 `literalFacts`만 본다
+ * (`draftProblems`와 같은 방식 — 글자로 쓴 사실값 탐지를 여기서 다시 구현하지 않는다).
+ */
+function hasLiteralFacts(text: string, facts: FactToken[]): boolean {
+  return checkTokens(text, text, facts).literalFacts.length > 0;
 }
 
 // ───────────────────────────── 1. 초안 ─────────────────────────────
@@ -200,8 +272,8 @@ function lengthProblem(text: string, max: number, what: string): string | null {
  * `extra`에 "`facts`에 없는 토큰과 형식 오류", `literalFacts`에 "글자로 쓴 사실값"만 남는다.
  * 글자로 쓴 사실값 탐지를 여기서 다시 구현하지 않기 위한 자리다 (지시서: `tokens.ts`의 기존 함수를 쓴다).
  */
-function draftProblems(draftEn: string, facts: FactToken[], move: ReplyMove): string[] {
-  const problems: string[] = [];
+function draftProblems(draftEn: string, facts: FactToken[], move: ReplyMove): ReplyFailureDetail[] {
+  const problems: ReplyFailureDetail[] = [];
 
   const tooLong = lengthProblem(draftEn, DRAFT_MAX_CHARS, 'draft');
   if (tooLong !== null) return [tooLong];
@@ -231,11 +303,14 @@ export async function draftReply(input: ReplyInput, deps: ReplyDeps): Promise<Re
 
   const draftEn = clean(asked.value.draft_en);
   const problems = draftProblems(draftEn, input.facts, input.move);
-  if (problems.length > 0) return failure('invalid_output', problems.join(','));
+  if (problems.length > 0) return failure('invalid_output', problems);
 
+  // 코칭 줄도 사실값 검사를 받는다 (T050 5번, `reports/T042-verify.md` ④). 코칭은 구매자에게 가지
+  // 않지만 화면에 그대로 보이고, 모델은 값을 받지 않으므로 코칭에 적힌 날짜·금액은 지어낸 값이다 —
+  // 판매자가 그것을 초안에 옮길 수 있다. 그 줄만 버리고(판정 자체를 버리지 않는다) 3줄이 안 되면 거부한다
   const coaching = asked.value.coaching
     .map((line) => oneLine(line, COACHING_LINE_MAX))
-    .filter((line) => line !== '')
+    .filter((line) => line !== '' && !hasLiteralFacts(line, input.facts))
     .slice(0, COACHING_MAX);
   if (coaching.length < COACHING_MIN) return failure('invalid_output', 'coaching_too_few');
 
@@ -254,6 +329,27 @@ export async function draftReply(input: ReplyInput, deps: ReplyDeps): Promise<Re
 // ───────────────────────────── 2. 전송본 + 역번역 ─────────────────────────────
 
 /**
+ * 판매자가 고친 초안을 쓸 수 있는지 **번역을 부르기 전에** 본다 (T050 3·4번, `reports/T042-verify.md` ③).
+ * 쓸 수 없으면 호출 0회로 거부한다 — 쓸 수 없는 글을 돈을 들여 번역하지 않는다.
+ *
+ * 왜 전송본 검사(`checkTokens(draft, outgoing, …)`)로는 모자라는가: 번역 프롬프트는 "사실값을 글자로
+ * 쓰지 말 것"·"가림 표식을 베끼지 말 것"을 지시하므로, **지시를 잘 따르는 모델은 판매자가 글자로 적은
+ * 날짜·금액·연락처를 조용히 빼고** 번역한다. 그러면 초안·전송본을 견주는 검사는 통과해
+ * (`sendable: true`) 판매자가 적은 내용이 사라진 글이 구매자에게 간다.
+ *
+ * `buyerLocale === 'en'`도 같은 길을 지난다 — 그 경로는 가리는 단계가 아예 없어서 판매자가 적은
+ * 이메일·전화번호가 그대로 구매자에게 갔다 (SPEC 10장: 분쟁 메시지에 연락처를 넣지 않는다).
+ *
+ * 순서: 개인정보를 먼저 본다. 개인통관고유부호는 사실값 검사(`literalFacts`)에도 걸리므로 순서가
+ * 사유 코드를 정한다 — 더 좁은 쪽(연락처·부호)을 먼저 알려 준다.
+ */
+function draftInputProblem(draftEn: string, facts: FactToken[]): ReplyFailureDetail | null {
+  if (maskPersonal(draftEn) !== draftEn) return 'draft_has_personal_data';
+  if (hasLiteralFacts(draftEn, facts)) return 'draft_has_literal_facts';
+  return null;
+}
+
+/**
  * 구매자 언어 전송본 + 역번역 + 검사. LLM 호출 2회 (번역, 역번역).
  * `buyerLocale === 'en'`이면 호출 0회로 초안을 그대로 돌려준다.
  *
@@ -265,6 +361,9 @@ export async function translateReply(input: TranslateInput, deps: ReplyDeps): Pr
   const draftEn = input.draftEn.trim();
   const draftProblem = lengthProblem(draftEn, DRAFT_INPUT_MAX_CHARS, 'draft');
   if (draftProblem !== null) return failure('invalid_output', draftProblem);
+
+  const inputProblem = draftInputProblem(draftEn, input.facts);
+  if (inputProblem !== null) return failure('invalid_output', inputProblem);
 
   if (input.buyerLocale === 'en') {
     const check = checkTokens(draftEn, draftEn, input.facts);
