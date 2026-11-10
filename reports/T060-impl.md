@@ -91,7 +91,7 @@
 | `src/app/cases/[disputeId]/page.tsx`·`layout.tsx` | `/?item=`로 redirect · 빈 통과 |
 | `src/app/products/page.tsx`·`products.css` (새) | Products 최소판 |
 | `config/copy.en.json`·`copy.ko.json` | `shell.*`·`today.*` 새 키, `nav.orders`·`nav.inbox` 삭제, `nav.products` = "Products" |
-| `tests/unit/app-today.test.ts` (새) | 아래 완료 기준 전부 (36개) |
+| `tests/unit/app-today.test.ts` (새) | 아래 완료 기준 전부 (40개) |
 | `tests/unit/app-shared.test.ts` | 4칸 메뉴 기대 → 두 탭 (재시도 3번 허용 범위) |
 
 `tests/unit/app-shared-design.test.ts`(그림자 금지·360px 고정 폭 금지)는 **고치지 않았다** — 그대로 통과한다.
@@ -113,7 +113,7 @@
 | 명령 | 통과 | 실패 | 비고 |
 |---|---|---|---|
 | npm run test:acceptance | 158 | 0 | 9 skipped (기존과 같음) |
-| npm test (vitest tests/unit) | 1868 | 0 | 40 파일. 새 `app-today.test.ts` 36개 포함 |
+| npm test (vitest tests/unit) | 1868 | 0 | 40 파일. 새 `app-today.test.ts` 40개 포함 |
 | npx tsc --noEmit | 통과 | 0 | |
 | npm run lint | 통과 | 0 | |
 | npm run build | 통과 | 0 | 모든 경로 ƒ(동적). 이 worktree에 `.env`가 없어 빌드 중 PayPal 호출 없음 |
