@@ -153,6 +153,29 @@ describe('AC18 6번: 통과하는 글이면 버튼이 켜진다', () => {
     expect(copyTables.en['case.reply.fact.DATE']).toBe('Follow-up date');
   });
 
+  it('T058: 초안에 날짜 토큰이 없으면 DATE 줄이 없고, 있으면 있다 (표시만. 사실값 자체는 그대로)', async () => {
+    const { draft, translation } = await prepare(DRAFT_EN, OUTGOING);
+    expect(buildReplyView(base(draft, translation)).factRows.map((row) => row.token)).toEqual(['⟦DATE_1⟧']);
+    if (!draft.ok) throw new Error('draft failed');
+    const noDate: ReplyDraft = { ...draft, draftEn: draft.draftEn.replace('⟦DATE_1⟧', 'soon') };
+    const input = base(noDate, translation);
+    expect(buildReplyView(input).factRows).toEqual([]);
+    expect(input.facts).toEqual(FACTS);
+  });
+
+  it('T058: 이름·서명 줄도 같은 규칙 (초안에 쓰인 토큰만)', async () => {
+    const { draft, translation } = await prepare(DRAFT_EN, OUTGOING);
+    if (!draft.ok) throw new Error('draft failed');
+    const facts: FactToken[] = [
+      ...FACTS,
+      { token: '⟦BUYER_NAME_1⟧', kind: 'BUYER_NAME', value: 'Seo-yeon' },
+      { token: '⟦SELLER_NAME_1⟧', kind: 'SELLER_NAME', value: 'Hannah' },
+    ];
+    const named: ReplyDraft = { ...draft, draftEn: `Hello ⟦BUYER_NAME_1⟧, ${draft.draftEn}` };
+    const rows = buildReplyView({ ...base(named, translation), facts }).factRows.map((row) => row.labelKey);
+    expect(rows).toEqual(['case.reply.fact.DATE', 'case.reply.fact.BUYER_NAME']);
+  });
+
   it('replyFacts가 만든 값을 그대로 쓴다 (서연 기한 11/30, 오늘 11/10 → 11/17)', () => {
     expect(replyFacts({ now: '2026-11-10T03:00:00Z', disputeDueDate: D2_BASE.dueDate })).toEqual(FACTS);
   });

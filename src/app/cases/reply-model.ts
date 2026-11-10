@@ -20,7 +20,7 @@
  * 보여 줄 글만 `formatFact`로 현지 표기한 사본을 `fillTokens`에 넣어 채운다.
  */
 import type { CommitmentCategory, ReplyDraft, ReplyNameProblem, ReplyTranslation } from '@/ai/reply';
-import { fillTokens, formatFact, type FactLocale } from '@/ai/tokens';
+import { extractTokens, fillTokens, formatFact, type FactLocale } from '@/ai/tokens';
 import { fillMessage } from '@/exec/message';
 import type { ActionPlan, BoardState, FactToken, TokenCheck } from '@/types';
 
@@ -348,11 +348,15 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
       ? { amountCents: input.plan.amountCents, amountDisplay: toDollarsRounded(input.plan.amountCents) }
       : null;
 
+  const usedInDraft = new Set(draft === null ? [] : extractTokens(draft.draftEn));
   const localFacts = input.buyerLocale === null ? null : localizedFacts(input.facts, input.buyerLocale);
   const factRows: FactRowView[] =
     draft === null || localFacts === null
       ? []
-      : localFacts.map((fact) => ({ token: fact.token, labelKey: FACT_LABEL[fact.kind], value: fact.value }));
+      : localFacts
+          // 영어 초안에 실제로 쓰인 토큰만 보인다 (T058). 쓰이지 않은 사실값 줄은 숨긴다 — 표시만 거른다
+          .filter((fact) => usedInDraft.has(fact.token))
+          .map((fact) => ({ token: fact.token, labelKey: FACT_LABEL[fact.kind], value: fact.value }));
 
   // 정책 밖 약속: 전송본을 만들 때 모듈이 다시 본 값이 있으면 그것, 없으면 초안의 값 (T053)
   const outside = translation?.outsidePolicy ?? draft?.outsidePolicy ?? [];
