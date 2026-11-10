@@ -83,8 +83,8 @@ const TABLE_6_3 = [
   {
     date: '2026-11-02',
     buyer: '김서연',
-    original: '배송 조회가 일주일째 그대로예요. 확인 부탁드려요.',
-    english: "Tracking hasn't changed in a week. Could you check?",
+    original: "배송 조회가 며칠째 '통관 보류'에서 그대로예요. 확인해 주실 수 있나요?",
+    english: 'Tracking has been stuck on customs hold for days. Could you check?',
     signal: 'A2',
   },
   {
