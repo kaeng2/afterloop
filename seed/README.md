@@ -62,11 +62,11 @@ npm test        # tests/unit/seed.test.ts — 원문 표와 대조
 | O05 | B03 Yuki T. | `yuki` | FK-BN-SET | — | — | 2026-10-25 |
 | O06 | B05 Lena K. | `lena` | FK-BN-SET | ✓ | — | 2026-09-26 |
 | O07 | B05 Lena K. | `lena` | FK-CD-OAT | — | — | 2026-10-12 |
-| O08 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | D3 INR (세 번째 주장) | 2026-10-16 |
-| O09 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | D7 전액 환불 (주장 1) | 2026-08-20 |
-| O10 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | D8 배송 증빙 승소 (주장 2) | 2026-09-14 |
-| O11 | B04 buyer_m*** | `buyer_m` | FK-BN-SET | ✓ | — | 2026-10-20 |
-| O12 | B04 buyer_m*** | `buyer_m` | FK-CD-OAT | ✓ | — | 2026-10-31 |
+| O08 | B04 Mike Morgan | `buyer_m` | FK-BN-SET | ✓ | D3 INR (세 번째 주장) | 2026-10-16 |
+| O09 | B04 Mike Morgan | `buyer_m` | FK-BN-SET | ✓ | D7 전액 환불 (주장 1) | 2026-08-20 |
+| O10 | B04 Mike Morgan | `buyer_m` | FK-BN-SET | ✓ | D8 배송 증빙 승소 (주장 2) | 2026-09-14 |
+| O11 | B04 Mike Morgan | `buyer_m` | FK-BN-SET | ✓ | — | 2026-10-20 |
+| O12 | B04 Mike Morgan | `buyer_m` | FK-CD-OAT | ✓ | — | 2026-10-31 |
 
 추적: 등록 7 (O01, O06, O08~O12) · 미등록 5 (O02~O05, O07).
 
