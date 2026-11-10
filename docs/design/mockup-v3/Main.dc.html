@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AfterLoop seller workspace</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;900&amp;family=Noto+Sans+KR:wght@400;700&amp;family=Noto+Sans+JP:wght@400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0066F5}a:hover{color:#002991}
+.al *{box-sizing:border-box}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:15px;font-weight:700;letter-spacing:-0.2px;transition:background-color .2s,opacity .2s;white-space:nowrap}
+.btn:focus-visible,.task:focus-visible,.tab:focus-visible,.sw:focus-visible,.prow:focus-visible,.lnk:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+.b-black{background:#000000;color:#FFFFFF}.b-black:hover{background:#333333}
+.b-tint{background:#05378214;color:#000000}.b-tint:hover{background:#05378227}
+.b-line{background:#FFFFFF;color:#000000;border:2px solid #CFD3D8}.b-line:hover{background:#F0F2F9}
+.btn:disabled{cursor:default;opacity:.5}
+.lnk{border:0;background:none;padding:0;font:inherit;font-size:14px;font-weight:700;color:#0066F5;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.tab{min-height:40px;padding:8px 16px;border:0;border-radius:88px;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#000000A1;cursor:pointer}
+.tab.on{background:#FFFFFF;color:#000000}
+.task{display:flex;gap:12px;width:100%;padding:14px 16px;border:0;border-radius:16px;background:transparent;font:inherit;text-align:left;cursor:pointer;color:#000000;transition:background-color .15s}
+.task:hover{background:#FFFFFF80}
+.task.on{background:#FFFFFF;box-shadow:rgba(0,0,0,0.06) 0 2px 10px}
+.sev{width:10px;height:10px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.s-high{background:#C4321F}.s-watch{background:#E0A100}.s-info{background:#0066F5}.s-done{background:#0B6B3A}.s-auto{background:#9AA0A6}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+.c-high{background:#FBE7E4;color:#9E2414}.c-watch{background:#FFF3D6;color:#6B4700}.c-ok{background:#E3F4EA;color:#0B6B3A}.c-grey{background:#ECEEF0;color:#3F4144}.c-ai{background:#E3F3FF;color:#002991}
+.sw{position:relative;width:52px;height:30px;flex-shrink:0;border-radius:1000px;border:0;background:#CFD3D8;cursor:pointer;transition:background-color .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#FFFFFF;box-shadow:rgba(0,0,0,.2) 0 1px 3px;transition:transform .2s}
+.sw.on{background:#0066F5}.sw.on::after{transform:translateX(22px)}
+.dot{width:10px;height:10px;border-radius:50%;background:#D9DCE0;transition:background-color .4s}
+.dot.hit{background:#C4321F}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:12px 14px;border:0;border-radius:14px;background:transparent;font:inherit;font-size:14px;text-align:left;cursor:pointer;color:#000000}
+.prow:hover{background:#F5F7FB}.prow.on{background:#05378214;font-weight:700}
+.bub-in{align-self:flex-start;max-width:80%;background:#F1EFEA;border-radius:18px 18px 18px 6px;padding:12px 16px}
+.bub-out{align-self:flex-end;max-width:80%;background:#002991;color:#FFFFFF;border-radius:18px 18px 6px 18px;padding:12px 16px}
+.ko{font-family:'Noto Sans KR',Figtree,sans-serif}
+.ja{font-family:'Noto Sans JP',Figtree,sans-serif}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.rise{animation:rise .3s ease}
+@keyframes slidein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+.drawer{animation:slidein .25s ease}
+</style>
+</helmet>
+<div class="al" style="min-height: 100vh; background: #FFFFFF; color: #000000; font-family: Figtree, 'Noto Sans KR', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; letter-spacing: -0.15px">
+
+<!-- ============ TOP BAR ============ -->
+<header style="position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 12px 24px; background: #FFFFFF; border-bottom: 1px solid #CFD3D8">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#002991"></circle><path d="M10 16a6 6 0 1 0 6-6" fill="none" stroke="#60CDFF" stroke-width="3" stroke-linecap="round"></path><path d="M16 6.5l3 3.5-3.6 2.6" fill="none" stroke="#60CDFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span style="font-size: 19px; font-weight: 900; letter-spacing: -0.5px">AfterLoop</span>
+</div>
+<nav aria-label="Main" style="display: inline-flex; gap: 2px; padding: 2px; border-radius: 96px; background: #05378214">
+<button type="button" class="{{tabTodayCls}}" onClick="{{goToday}}">Today <span style="font-weight: 400">{{openCount}}</span></button>
+<button type="button" class="{{tabProdCls}}" onClick="{{goProducts}}">Products</button>
+</nav>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 6px 4px 14px; border-radius: 1000px; border: 2px solid #E4E6E9">
+<span style="font-size: 14px; font-weight: 700">Autopilot</span><span style="font-size: 13px; color: #3F4144">{{apState}}</span>
+<button type="button" class="{{apSwCls}}" role="switch" aria-checked="{{apOn}}" aria-label="Autopilot" onClick="{{apClick}}"></button>
+</div>
+<button type="button" class="btn b-line" onClick="{{toggleAct}}">PayPal activity <span class="chip c-grey">{{actCount}}</span></button>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700"><span style="width: 32px; height: 32px; border-radius: 50%; background: #60CDFF; display: inline-flex; align-items: center; justify-content: center">H</span>Fernwood Knits</span>
+</div>
+</header>
+
+<div style="display: flex; align-items: flex-start">
+<div style="flex: 1; min-width: 0">
+
+<!-- ============ TODAY: inbox workspace ============ -->
+<sc-if value="{{isToday}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start">
+
+<aside style="flex: 1 1 340px; max-width: 400px; min-height: calc(100vh - 66px); background: #F1EFEA; padding: 24px 16px; display: flex; flex-direction: column; gap: 6px">
+<div style="padding: 0 8px 12px">
+<div style="font-size: 13px; color: #3F4144">Tue, Nov 10 · 17 days to Black Friday</div>
+<div style="font-size: 26px; font-weight: 900; letter-spacing: -0.52px; line-height: 1.2">Today</div>
+<button type="button" class="lnk" onClick="{{goProducts}}" style="margin-top: 6px; text-align: left">Stock left could cost {{storeBefore}} in disputes · {{storeAll}} with fixes →</button>
+</div>
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<div style="padding: 14px 8px 4px; font-size: 12px; font-weight: 700; color: #3F4144; text-transform: uppercase; letter-spacing: .4px">{{g.label}}</div>
+<sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+<button type="button" class="{{t.cls}}" onClick="{{t.pick}}">
+<span class="{{t.sev}}"></span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="display: flex; justify-content: space-between; gap: 8px"><b style="font-size: 15px">{{t.title}}</b><span class="{{t.chipCls}}">{{t.chip}}</span></span>
+<span style="font-size: 13px; color: #3F4144">{{t.sub}}</span>
+</span>
+</button>
+</sc-for>
+</sc-for>
+</aside>
+
+<section style="flex: 999 1 560px; min-width: 0; padding: 28px 32px 0; display: flex; flex-direction: column; gap: 20px">
+
+<!-- Seo-yeon -->
+<sc-if value="{{sel.seo}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap">
+<div>
+<div style="font-size: 13px; color: #3F4144">Case PP-D-20002 · Wool Sweater $72 · reply due Nov 12</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">김서연 Seo-yeon Kim <span style="font-weight: 400; font-size: 15px; color: #3F4144">writes in Korean</span></h1>
+</div>
+<div style="text-align: right">
+<div style="font-size: 12px; color: #3F4144">Escalation risk · calculated</div>
+<div style="{{seoRiskSt}}">{{seoRisk}}</div>
+</div>
+</div>
+
+<div class="rise" style="background: #E3F3FF; border-radius: 20px; padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start">
+<span class="chip c-ai" style="background: #FFFFFF">AI</span>
+<div>
+<div style="font-weight: 700; color: #002991">It's not lost — it's waiting at Korean customs for one number.</div>
+<div style="font-size: 14px; color: #1B2B55">The carrier shows "Customs hold – recipient customs ID missing" since Oct 30, and her message is about the wait. Ask for her personal customs code and give a date.</div>
+<button type="button" class="lnk" onClick="{{toggleWhy}}" style="margin-top: 6px">{{whyLabel}}</button>
+<sc-if value="{{showWhy}}" hint-placeholder-val="{{ false }}">
+<div class="rise" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #1B2B55">
+<div style="display: flex; justify-content: space-between; gap: 12px"><span>Mentions her card company (카드사, 이의제기)</span><b>+3</b></div>
+<div style="display: flex; justify-content: space-between; gap: 12px"><span>Second message, still unanswered</span><b>{{why2}}</b></div>
+<div style="display: flex; justify-content: space-between; gap: 12px"><span>Frustrated tone</span><b>{{why3}}</b></div>
+<div style="color: #3F4144">Cause comes from AI. The score is plain rules, so it's the same every time.</div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px">
+<div style="align-self: center; font-size: 12px; color: #3F4144">Oct 30 · Carrier: Customs hold – recipient customs ID missing</div>
+<div class="bub-in"><div class="ko" lang="ko" style="font-size: 15px">배송 조회가 일주일째 그대로예요. 확인 부탁드려요.</div><div style="font-size: 13px; color: #3F4144; margin-top: 4px">Tracking hasn't changed in a week. Could you check? · Nov 2</div></div>
+<div class="bub-in"><div class="ko" lang="ko" style="font-size: 15px">벌써 3주째인데 아직도 안 왔어요. 연락 없으면 카드사에 이의제기할게요.</div><div style="font-size: 13px; color: #3F4144; margin-top: 4px">It's been 3 weeks and it still hasn't arrived. If I don't hear back, I'll file a dispute with my card company. · Nov 9</div></div>
+<sc-if value="{{seoSent}}" hint-placeholder-val="{{ false }}">
+<div class="bub-out rise"><div class="ko" lang="ko" style="font-size: 15px">서연 님, 기다리게 해서 죄송해요. 스웨터는 현재 한국 세관에서 개인통관고유부호를 기다리고 있어요. 번호를 답장으로 알려주시면 11월 17일까지 받으실 수 있을 거예요. 그때까지 도착하지 않으면 전액 환불해 드릴게요.</div><div style="font-size: 13px; color: #C9E3FF; margin-top: 4px">Sent in Korean · just now</div></div>
+</sc-if>
+</div>
+
+<sc-if value="{{seoNotSent}}" hint-placeholder-val="{{ true }}">
+<div style="position: sticky; bottom: 0; background: #FFFFFF; border-top: 1px solid #E4E6E9; padding: 16px 0 20px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px"><span style="font-weight: 700">Suggested reply covers:</span><span class="chip c-grey">Apology</span><span class="chip c-grey">Customs hold</span><span class="chip c-grey">Ask for code</span><span class="chip c-grey">Date: Nov 17</span><span class="chip c-grey">Fallback: full refund</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="border: 2px solid #E4E6E9; border-radius: 16px; padding: 12px 14px"><div style="font-size: 12px; font-weight: 700; color: #3F4144">You write (English)</div><div style="font-size: 14px">Sorry for the wait, Seo-yeon. Your sweater is at Korean customs, waiting for your personal customs code. Reply with it and it should reach you by Nov 17. If it doesn't, I'll refund you in full.</div></div>
+<div style="border: 2px solid #E4E6E9; border-radius: 16px; padding: 12px 14px"><div style="font-size: 12px; font-weight: 700; color: #3F4144">She reads (Korean)</div><div class="ko" lang="ko" style="font-size: 14px">서연 님, 기다리게 해서 죄송해요. 스웨터는 현재 한국 세관에서 개인통관고유부호를 기다리고 있어요. 번호를 답장으로 알려주시면 11월 17일까지 받으실 수 있을 거예요. 그때까지 도착하지 않으면 전액 환불해 드릴게요.</div></div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+<span style="font-size: 13px; color: #0B6B3A; font-weight: 700">✓ Date matches (Nov 17 = 11월 17일) · ✓ No promise added in translation</span>
+<button type="button" class="btn b-black" onClick="{{sendSeo}}" disabled="{{seoBusy}}">{{seoBtn}}</button>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+<!-- Tracking -->
+<sc-if value="{{sel.trk}}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size: 13px; color: #3F4144">Prevent · item not received</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">{{trkTitle}}</h1>
+<p style="margin: 6px 0 0; color: #3F4144">{{trkSub}}</p>
+</div>
+<div style="border: 2px solid #E4E6E9; border-radius: 20px; overflow: hidden">
+<div style="overflow-x: auto"><div style="min-width: 640px">
+<div style="display: grid; grid-template-columns: 80px minmax(0,1.3fr) minmax(0,1.5fr) 70px minmax(0,1.4fr); gap: 12px; padding: 10px 18px; font-size: 12px; font-weight: 700; color: #3F4144; background: #F5F7FB"><span>Order</span><span>Buyer</span><span>Item</span><span>Shipped</span><span>Tracking</span></div>
+<sc-for list="{{trkRows}}" as="o" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 80px minmax(0,1.3fr) minmax(0,1.5fr) 70px minmax(0,1.4fr); gap: 12px; padding: 12px 18px; border-top: 1px solid #E4E6E9; font-size: 14px; align-items: center">
+<b>{{o.id}}</b><span>{{o.buyer}}</span><span>{{o.item}}</span><span>{{o.shipped}}</span><span class="{{o.cls}}">{{o.trk}}</span>
+</div>
+</sc-for>
+</div></div>
+</div>
+<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap"><button type="button" class="btn b-black" onClick="{{runTrk}}" disabled="{{trkBusy}}">{{trkBtn}}</button><span style="font-size: 13px; color: #3F4144">Uses your carrier's numbers. Buyers see tracking in PayPal right away.</span></div>
+</sc-if>
+
+<!-- Lena -->
+<sc-if value="{{sel.lena}}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size: 13px; color: #3F4144">Prevent · promise not kept</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">{{lenaTitle}}</h1>
+<p style="margin: 6px 0 0; color: #3F4144">On Nov 6 you replied "I'll refund the shipping difference." Promises left open for 3+ days are a common path to a dispute.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div class="bub-in"><div lang="de">Sie hatten mir eine Rückerstattung versprochen. Wann kommt sie?</div><div style="font-size: 13px; color: #3F4144; margin-top: 4px">You promised me a refund. When will it come? · Lena K. · Oct 29</div></div>
+</div>
+<div><button type="button" class="btn b-black" onClick="{{askLena}}" disabled="{{lenaDone}}">{{lenaBtn}}</button></div>
+</sc-if>
+
+<!-- KR customs -->
+<sc-if value="{{sel.kc}}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size: 13px; color: #3F4144">Prevent · Korean customs</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">{{kcTitle}}</h1>
+<p style="margin: 6px 0 0; color: #3F4144">Korean customs can hold a parcel until the buyer's personal customs code (개인통관고유부호) is given. It later looks like "item not received" — exactly what happened to Seo-yeon.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="border: 2px solid #E4E6E9; border-radius: 16px; padding: 14px"><div style="font-size: 12px; font-weight: 700; color: #3F4144">They read (Korean) <span class="chip c-ai">AI</span></div><div class="ko" lang="ko">안녕하세요, Fernwood Knits입니다. 한국 통관을 위해 개인통관고유부호가 필요해요. 이 메일에 답장으로 알려주시면 택배사에 바로 전달할게요.</div></div>
+<div style="border: 2px solid #E4E6E9; border-radius: 16px; padding: 14px"><div style="font-size: 12px; font-weight: 700; color: #3F4144">What it says</div><div>Hi, this is Fernwood Knits. Korean customs needs your personal customs code. Reply with it and we'll pass it to the carrier right away.</div></div>
+</div>
+<div style="font-size: 14px">To: 정다은 Da-eun (#1049), 최민준 Min-jun (#1053), 한소희 So-hee (#1056)</div>
+<div><button type="button" class="btn b-black" onClick="{{runKc}}" disabled="{{kcBusy}}">{{kcBtn}}</button></div>
+</sc-if>
+
+<!-- Ji-ho -->
+<sc-if value="{{sel.jiho}}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size: 13px; color: #3F4144">Case PP-D-20001 · Knit Cardigan $48 · reply due Nov 19</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">박지호 Ji-ho Park · color</h1>
+</div>
+<div class="bub-in"><div class="ko" lang="ko">사진이랑 색이 너무 달라요. 베이지가 아니라 회색이에요.</div><div style="font-size: 13px; color: #3F4144; margin-top: 4px">The color is very different from the photo. It's grey, not beige. · Nov 8</div></div>
+<div style="border: 2px solid #E4E6E9; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap"><b>Expected loss of each option</b><span class="chip c-grey">Calculated · your limit 20%</span></div>
+<sc-for list="{{jihoOpts}}" as="o" hint-placeholder-count="3">
+<button type="button" class="{{o.cls}}" onClick="{{o.pick}}" aria-pressed="{{o.on}}"><span>{{o.label}}</span><b>{{o.loss}}</b></button>
+</sc-for>
+<div style="font-size: 13px; color: #3F4144">She decides whether to accept. PayPal buyer protection stays the same. {{jihoNote}}</div>
+</div>
+<div><button type="button" class="btn b-black" onClick="{{askJiho}}" disabled="{{jihoDone}}">{{jihoBtn}}</button></div>
+</sc-if>
+
+<!-- buyer_m -->
+<sc-if value="{{sel.bm}}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size: 13px; color: #3F4144">Case PP-D-20003 · Beanie + Scarf Set $35</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">buyer_m*** · 3rd "not received" in 90 days</h1>
+<p style="margin: 6px 0 0; color: #3F4144">All three orders show delivery. This isn't a verdict on the buyer — it means a person decides, not autopilot.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px">
+<div style="display: flex; justify-content: space-between; padding: 12px 14px; border-radius: 12px; background: #F5F7FB"><span>Sep 20 · refunded in full</span><b>−$43</b></div>
+<div style="display: flex; justify-content: space-between; padding: 12px 14px; border-radius: 12px; background: #F5F7FB"><span>Oct 11 · won with delivery proof</span><b>$0</b></div>
+<div style="display: flex; justify-content: space-between; padding: 12px 14px; border-radius: 12px; background: #F5F7FB"><span>Now · delivered Nov 2, front door</span><b>$35 open</b></div>
+</div>
+<div><button type="button" class="btn b-black" onClick="{{runBm}}" disabled="{{bmBusy}}">{{bmBtn}}</button></div>
+</sc-if>
+
+<!-- Yuki -->
+<sc-if value="{{sel.yuki}}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size: 13px; color: #3F4144">Question · before purchase</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">Yuki T. · size question</h1>
+</div>
+<div class="bub-in"><div class="ja" lang="ja">Mサイズの着丈は何cmですか？</div><div style="font-size: 13px; color: #3F4144; margin-top: 4px">What is the length of size M in cm?</div></div>
+<sc-if value="{{yukiDone}}" hint-placeholder-val="{{ false }}">
+<div class="bub-out rise"><div class="ja" lang="ja">Mサイズの着丈は64cmです。ゆったりめのシルエットです。</div><div style="font-size: 13px; color: #C9E3FF; margin-top: 4px">Size M is 64 cm long, relaxed fit. · answered by autopilot from your size chart</div></div>
+</sc-if>
+<sc-if value="{{yukiWaiting}}" hint-placeholder-val="{{ true }}">
+<div style="font-size: 14px; color: #3F4144">Turn on Autopilot to answer routine questions like this from your size chart.</div>
+</sc-if>
+</sc-if>
+
+<!-- Cardigan shortcut -->
+<sc-if value="{{sel.card}}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size: 13px; color: #3F4144">Prevent · product check</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">Knit Cardigan, Oat is your riskiest item</h1>
+<p style="margin: 6px 0 0; color: #3F4144">120 left. Sold as-is, about {{cardBefore}} in disputes. 3 of its last 4 disputes were "color looks different".</p>
+</div>
+<div><button type="button" class="btn b-black" onClick="{{openCard}}">See what fixes it</button></div>
+</sc-if>
+
+<!-- Nothing selected / all done -->
+<sc-if value="{{sel.none}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 60px 0; text-align: center; color: #3F4144">Pick something on the left.</div>
+</sc-if>
+
+</section>
+</div>
+</sc-if>
+
+<!-- ============ PRODUCTS ============ -->
+<sc-if value="{{isProducts}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px; padding: 24px">
+
+<aside style="flex: 1 1 220px; max-width: 260px; display: flex; flex-direction: column; gap: 4px">
+<div style="font-size: 12px; font-weight: 700; color: #3F4144; text-transform: uppercase; letter-spacing: .4px; padding: 0 14px 6px">Stock left · likely loss</div>
+<sc-for list="{{prodList}}" as="p" hint-placeholder-count="4">
+<button type="button" class="{{p.cls}}" onClick="{{p.pick}}"><span>{{p.name}}<br><span style="font-size: 12px; font-weight: 400; color: #3F4144">{{p.left}} left</span></span><span>{{p.loss}}</span></button>
+</sc-for>
+<div style="margin: 12px 14px 0; padding-top: 12px; border-top: 1px solid #E4E6E9; font-size: 13px; color: #3F4144">All products: <b style="color: #000000">{{storeNow}}</b> with the fixes you have on (from {{storeBefore}}).</div>
+</aside>
+
+<section style="flex: 999 1 640px; min-width: 0; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 18px; border: 2px solid #E4E6E9; border-radius: 24px; padding: 24px">
+<div>
+<div style="font-size: 13px; color: #3F4144">Rehearsal · 500 possible futures for the {{prod.left}} you have left</div>
+<h1 style="margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">{{prod.name}}</h1>
+</div>
+<div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap">
+<span style="font-size: 55px; font-weight: 900; letter-spacing: -1.66px; line-height: 1">{{d.nowTxt}}</span>
+<span style="font-size: 15px; color: #3F4144">{{d.nowSub}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="height: 14px; border-radius: 1000px; background: #F1EFEA; overflow: hidden"><div style="{{d.barSt}}"></div></div>
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: #3F4144"><span>$0</span><span>As-is {{d.beforeTxt}}</span></div>
+</div>
+<div style="font-size: 15px">{{d.sentence}}</div>
+<div>
+<div style="font-size: 13px; font-weight: 700; margin-bottom: 8px">{{d.dotsTitle}}</div>
+<div style="display: grid; grid-template-columns: repeat(20, 10px); gap: 5px">
+<sc-for list="{{d.dots}}" as="x" hint-placeholder-count="120"><span class="{{x.cls}}"></span></sc-for>
+</div>
+<div style="font-size: 12px; color: #3F4144; margin-top: 8px">One dot = one order still to sell · red = likely dispute (average of 500 futures)</div>
+</div>
+<div style="border-top: 1px solid #E4E6E9; padding-top: 12px">
+<button type="button" class="lnk" onClick="{{toggleHist}}">{{histLabel}}</button>
+<sc-if value="{{showHist}}" hint-placeholder-val="{{ false }}">
+<div class="rise" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px">
+<div style="font-size: 13px; color: #3F4144">How many of the 500 futures land in each loss range</div>
+<div style="display: flex; gap: 6px; align-items: flex-end; height: 110px; border-bottom: 1px solid #CFD3D8">
+<sc-for list="{{d.hist}}" as="h" hint-placeholder-count="6">
+<div style="flex: 1; display: flex; gap: 2px; align-items: flex-end; height: 110px"><div style="{{h.b}}"></div><div style="{{h.a}}"></div></div>
+</sc-for>
+</div>
+<div style="display: flex; gap: 6px">
+<sc-for list="{{d.hist}}" as="h" hint-placeholder-count="6"><div style="flex: 1; font-size: 11px; color: #3F4144; text-align: center">{{h.lab}}</div></sc-for>
+</div>
+<div style="display: flex; gap: 16px; font-size: 12px; color: #3F4144"><span><span style="display: inline-block; width: 10px; height: 10px; background: #C9C6BE; border-radius: 2px"></span> As-is</span><span><span style="display: inline-block; width: 10px; height: 10px; background: #0066F5; border-radius: 2px"></span> With your fixes</span></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<h2 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.52px">Fixes</h2>
+<button type="button" class="lnk" onClick="{{allFixes}}">{{allLabel}}</button>
+</div>
+<sc-for list="{{fixes}}" as="f" hint-placeholder-count="4">
+<div style="{{f.cardSt}}">
+<div style="display: flex; gap: 14px; align-items: flex-start">
+<div style="flex: 1; min-width: 0">
+<div style="font-weight: 700">{{f.title}}</div>
+<div style="font-size: 13px; color: #3F4144">{{f.desc}}</div>
+</div>
+<button type="button" class="{{f.swCls}}" role="switch" aria-checked="{{f.on}}" aria-label="{{f.title}}" onClick="{{f.toggle}}"></button>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; height: 8px; border-radius: 1000px; background: #F1EFEA; overflow: hidden"><div style="{{f.barSt}}"></div></div>
+<span style="{{f.valSt}}">{{f.val}}</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap">
+<span class="{{f.whereCls}}">{{f.where}}</span>
+<sc-if value="{{f.isColor}}" hint-placeholder-val="{{ false }}"><button type="button" class="lnk" onClick="{{openNote}}">Write the note with AI</button></sc-if>
+</div>
+</div>
+</sc-for>
+<div style="font-size: 12px; color: #3F4144">Starts from knitwear averages and learns from your own cases. Rates are assumptions until you have enough history.</div>
+</div>
+
+</section>
+</div>
+</sc-if>
+
+</div>
+
+<!-- ============ ACTIVITY DRAWER ============ -->
+<sc-if value="{{showAct}}" hint-placeholder-val="{{ false }}">
+<aside class="drawer" aria-label="PayPal activity" style="position: sticky; top: 66px; flex: 0 0 360px; height: calc(100vh - 66px); overflow-y: auto; border-left: 1px solid #CFD3D8; background: #FFFFFF; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: center"><b style="font-size: 17px">PayPal activity</b><button type="button" class="btn b-tint" onClick="{{toggleAct}}" aria-label="Close activity">Close</button></div>
+<div style="font-size: 13px; color: #3F4144">Every call AfterLoop makes on your behalf. Sandbox.</div>
+<sc-for list="{{actList}}" as="a" hint-placeholder-count="3">
+<div class="rise" style="border: 1px solid #E4E6E9; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 13px; font-weight: 700">{{a.what}}</span><span class="chip c-ok">{{a.status}}</span></div>
+<code style="font-size: 12px; color: #3F4144; word-break: break-all">{{a.call}}</code>
+<span style="font-size: 12px; color: #3F4144">{{a.meta}}</span>
+</div>
+</sc-for>
+</aside>
+</sc-if>
+</div>
+
+<!-- ============ MODALS ============ -->
+<sc-if value="{{modal.on}}" hint-placeholder-val="{{ false }}">
+<div style="position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; padding: 24px">
+<div class="rise" role="dialog" aria-modal="true" aria-label="{{modal.title}}" style="width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; background: #FFFFFF; border-radius: 24px; padding: 28px; box-shadow: rgba(0,0,0,0.14) 4px 4px 28px 6px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 22px; font-weight: 900; letter-spacing: -0.4px">{{modal.title}}</div>
+<div style="font-size: 15px; color: #3F4144">{{modal.body}}</div>
+<sc-for list="{{modal.rows}}" as="r" hint-placeholder-count="3">
+<div style="{{r.st}}"><span style="font-size: 13px; color: #3F4144">{{r.k}}</span><span style="{{r.vst}}" lang="{{r.lang}}">{{r.v}}</span></div>
+</sc-for>
+<div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap">
+<button type="button" class="btn b-tint" onClick="{{closeModal}}">Cancel</button>
+<button type="button" class="btn b-black" onClick="{{modal.ok}}" disabled="{{modal.busy}}">{{modal.okLabel}}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ TOAST ============ -->
+<sc-if value="{{toastOn}}" hint-placeholder-val="{{ false }}">
+<div role="status" class="rise" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 30; background: #000000; color: #FFFFFF; border-radius: 1000px; padding: 12px 22px; font-size: 14px; font-weight: 700; box-shadow: rgba(0,0,0,0.14) 4px 4px 28px 6px">{{toast}}</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+// ---- Rehearsal model: identical to sim.js in the PRD (500 futures, common random numbers) ----
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var SIM_K=['A1','A2','B1','B2','X'];
+var PRODUCTS=[
+ {sku:'cardigan',name:'Knit Cardigan, Oat',price:48,stock:120,p:{A1:.0068,A2:.0068,B1:.0176,B2:.0034,X:.0014},story:'3 of your last 4 disputes on this item were "color looks different" — 2 from Korean buyers.'},
+ {sku:'sweater',name:'Wool Sweater, Navy',price:72,stock:80,p:{A1:.004,A2:.006,B1:.002,B2:.004,X:.001},story:'Its one dispute this quarter was a Korean customs hold.'},
+ {sku:'coat',name:'Cashmere Coat, Grey',price:189,stock:25,p:{A1:.004,A2:.006,B1:.003,B2:.004,X:.008},story:'Few units, high price: one dispute swings the result a lot.'},
+ {sku:'beanie',name:'Beanie + Scarf Set',price:35,stock:150,p:{A1:.008,A2:.006,B1:.001,B2:.0005,X:.001},story:'Most disputes here are "not received" — tracking matters most.'}
+];
+var SIM_RUNS=500, SIM_FEE=8, SIM_T=2, SIM_DRAWS={}, SIM_CACHE={};
+function simRates(p,rx){return {A1:p.A1*(rx.tracking?.25:1),A2:p.A2*(rx.customs?.5:1),B1:p.B1*(rx.color?.4:1),B2:p.B2,X:p.X};}
+function simWin(k,rx){return {A1:rx.tracking?.8:.15,A2:rx.tracking?.6:.3,B1:.3,B2:.35,X:.1}[k];}
+function simHandle(k,A,rx,v,w){
+  var pw=simWin(k,rx); var fight=function(){return w<pw?SIM_T:A+SIM_FEE+SIM_T;};
+  if(!rx.policy) return v<.5?A+SIM_T:fight();
+  var eF=(1-pw)*(A+SIM_FEE)+SIM_T, eR=A+SIM_T, isB=(k==='B1'||k==='B2');
+  var eO=isB? .72*(.15*A)+.28*eF+SIM_T : Infinity;
+  var m=Math.min(eF,eR,eO);
+  if(m===eO) return v<.72? .15*A+SIM_T : fight();
+  if(m===eF) return fight();
+  return A+SIM_T;
+}
+function simDraws(prod){
+  if(SIM_DRAWS[prod.sku]) return SIM_DRAWS[prod.sku];
+  var r=mulberry32(prod.sku.length*7919+prod.stock), n=SIM_RUNS*prod.stock*SIM_K.length;
+  var u=new Float32Array(n),v=new Float32Array(n),w=new Float32Array(n);
+  for(var i=0;i<n;i++){u[i]=r();v[i]=r();w[i]=r();}
+  return SIM_DRAWS[prod.sku]={u:u,v:v,w:w};
+}
+function simulate(prod,rx){
+  var key=prod.sku+'|'+(rx.tracking?1:0)+(rx.color?1:0)+(rx.customs?1:0)+(rx.policy?1:0);
+  if(SIM_CACHE[key]) return SIM_CACHE[key];
+  var d=simDraws(prod), q=simRates(prod.p,rx), losses=new Float64Array(SIM_RUNS), disp=0;
+  for(var run=0;run<SIM_RUNS;run++){var L=0;
+    for(var o=0;o<prod.stock;o++){
+      for(var j=0;j<SIM_K.length;j++){var i=(run*prod.stock+o)*SIM_K.length+j;
+        if(d.u[i]<q[SIM_K[j]]){disp++;L+=simHandle(SIM_K[j],prod.price,rx,d.v[i],d.w[i]);break;}}
+    }
+    losses[run]=L;}
+  var s=Array.from(losses).sort(function(a,b){return a-b;});
+  var mean=s.reduce(function(a,b){return a+b;},0)/SIM_RUNS;
+  return SIM_CACHE[key]={mean:mean,p10:s[Math.floor(SIM_RUNS*.1)],p90:s[Math.floor(SIM_RUNS*.9)],disputes:disp/SIM_RUNS,losses:s};
+}
+var NONE={tracking:false,color:false,customs:false,policy:false}, ALL={tracking:true,color:true,customs:true,policy:true};
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      view: 'today', sel: 'seo', sku: 'cardigan', rx: Object.assign({}, NONE), showHist: false, showAct: false, showWhy: false,
+      seo: 'idle', trk: 'idle', trkN: 0, kc: 'idle', lena: 'idle', jiho: 'idle', jihoPick: 'offer', bm: 'idle',
+      ap: 'off', apN: 0, note: 'idle', modal: null, toast: '', clock: 4,
+      act: [
+        { what: 'Read your open cases', call: 'GET /v1/customer/disputes', status: '200', meta: '9:00 AM · 3 cases' },
+        { what: 'Read sales by product (90 days)', call: 'GET /v1/reporting/transactions', status: '200', meta: '9:00 AM · 214 transactions · cached 1h' }
+      ]
+    };
+  }
+  later(fn, ms) { setTimeout(fn, ms); }
+  log(what, call, meta) {
+    const c = this.state.clock + 1;
+    this.setState({ clock: c, act: [{ what: what, call: call, status: '200', meta: '9:' + String(c).padStart(2, '0') + ' AM · ' + meta }].concat(this.state.act) });
+  }
+  toast(msg) { this.setState({ toast: msg }); this.later(() => { if (this.state.toast === msg) this.setState({ toast: '' }); }, 2800); }
+  renderVals() {
+    const s = this.state;
+    const set = (o) => () => this.setState(o);
+    const $ = (n) => '$' + Math.round(n);
+    const rx = s.rx, keys = ['tracking', 'color', 'customs', 'policy'], nOn = keys.filter((k) => rx[k]).length;
+    const storeSum = (r) => PRODUCTS.reduce((a, p) => a + Math.round(simulate(p, r).mean), 0);
+    const apDone = (n) => s.ap === 'on' && s.apN >= n;
+
+    // ---------- task list ----------
+    const T = {
+      seo: { title: 'Seo-yeon · customs hold', sub: 'Korean · mentions her card company', chip: s.seo === 'done' ? 'Replied' : 'High · 2 days', chipCls: s.seo === 'done' ? 'chip c-ok' : 'chip c-high', sev: s.seo === 'done' ? 'sev s-done' : 'sev s-high', done: s.seo === 'done' },
+      trk: { title: '5 orders without tracking', sub: 'Shipped 3+ days ago · 4× "not received" risk', chip: s.trk === 'done' ? 'Added' : 'Watch', chipCls: s.trk === 'done' ? 'chip c-ok' : 'chip c-watch', sev: s.trk === 'done' ? 'sev s-done' : 'sev s-watch', done: s.trk === 'done' },
+      lena: { title: 'Refund you promised Lena', sub: 'German · 4 days ago · $24', chip: s.lena === 'done' ? 'Refunded' : 'Watch', chipCls: s.lena === 'done' ? 'chip c-ok' : 'chip c-watch', sev: s.lena === 'done' ? 'sev s-done' : 'sev s-watch', done: s.lena === 'done' },
+      jiho: { title: 'Ji-ho · color case', sub: apDone(2) ? 'Autopilot prepared an option · needs your OK' : 'Korean · Knit Cardigan $48', chip: s.jiho === 'done' ? 'Sent' : (apDone(2) ? 'Needs you' : '9 days'), chipCls: s.jiho === 'done' ? 'chip c-ok' : (apDone(2) ? 'chip c-watch' : 'chip c-grey'), sev: s.jiho === 'done' ? 'sev s-done' : 'sev s-watch', done: s.jiho === 'done' },
+      kc: { title: '3 Korean orders missing customs code', sub: 'Could be held at customs like Seo-yeon’s', chip: s.kc === 'done' ? 'Sent' : 'Prevent', chipCls: s.kc === 'done' ? 'chip c-ok' : 'chip c-grey', sev: s.kc === 'done' ? 'sev s-done' : 'sev s-info', done: s.kc === 'done' },
+      card: { title: 'Knit Cardigan, Oat', sub: '120 left · your riskiest item', chip: 'Prevent', chipCls: 'chip c-grey', sev: 'sev s-info', done: false },
+      bm: { title: 'buyer_m*** · 3rd claim', sub: apDone(3) ? 'Skipped by autopilot · a person should look' : 'Beanie set $35 · delivered Nov 2', chip: s.bm === 'done' ? 'Proof sent' : (apDone(3) ? 'Skipped' : '6 days'), chipCls: s.bm === 'done' ? 'chip c-ok' : 'chip c-grey', sev: s.bm === 'done' ? 'sev s-done' : 'sev s-auto', done: s.bm === 'done' },
+      yuki: { title: 'Yuki · size question', sub: apDone(1) ? 'Answered in Japanese by autopilot' : 'Japanese · before purchase', chip: apDone(1) ? 'Answered' : 'Question', chipCls: apDone(1) ? 'chip c-ok' : 'chip c-grey', sev: apDone(1) ? 'sev s-done' : 'sev s-auto', done: apDone(1) }
+    };
+    const item = (id) => Object.assign({}, T[id], { cls: s.sel === id ? 'task on' : 'task', pick: set({ sel: id }) });
+    const needs = ['seo', 'trk', 'lena', 'jiho'].filter((id) => !T[id].done);
+    const prevent = ['kc', 'card'].filter((id) => !T[id].done);
+    const routine = ['bm', 'yuki'].filter((id) => !T[id].done);
+    const done = Object.keys(T).filter((id) => T[id].done);
+    const groups = [
+      { label: 'Needs you · ' + needs.length, items: needs.map(item) },
+      { label: 'Prevent before it happens', items: prevent.map(item) },
+      { label: s.ap === 'on' ? 'Autopilot' : 'Routine', items: routine.map(item) },
+      { label: 'Done today · ' + done.length, items: done.map(item) }
+    ].filter((g) => g.items.length);
+    const openCount = needs.length + prevent.length + routine.length;
+    const sel = { seo: s.sel === 'seo', trk: s.sel === 'trk', lena: s.sel === 'lena', jiho: s.sel === 'jiho', kc: s.sel === 'kc', card: s.sel === 'card', bm: s.sel === 'bm', yuki: s.sel === 'yuki', none: !T[s.sel] };
+
+    // ---------- tracking ----------
+    const rows = [['#1042', 'Chris D. · US', 'Cashmere Coat', 'Nov 5', 'SP100234567US'], ['#1045', 'Yuki T. · JP', 'Knit Cardigan', 'Nov 6', 'SP100234589US'], ['#1047', 'Sophie B. · UK', 'Beanie + Scarf Set', 'Nov 6', 'GE771203344US'], ['#1049', '정다은 Da-eun · KR', 'Wool Sweater', 'Nov 7', 'SP100234601US'], ['#1051', 'Mia L. · US', 'Knit Cardigan', 'Nov 7', 'GE771203391US']];
+    const trkRows = rows.map((r, i) => {
+      const ok = s.trk === 'done' || (s.trk === 'loading' && i < s.trkN);
+      return { id: r[0], buyer: r[1], item: r[2], shipped: r[3], trk: ok ? '✓ ' + r[4] : (s.trk === 'loading' ? 'Adding…' : r[4] + ' · not in PayPal'), cls: ok ? 'chip c-ok' : 'chip c-watch' };
+    });
+
+    // ---------- products ----------
+    const prod = PRODUCTS.find((p) => p.sku === s.sku);
+    const before = simulate(prod, NONE), now = simulate(prod, rx);
+    const bN = Math.round(before.disputes), aN = Math.round(now.disputes);
+    const top = Math.max(before.losses[Math.floor(SIM_RUNS * .97)], 60), bins = 6, bw = Math.ceil(top / bins / 10) * 10;
+    const count = (arr) => { const c = new Array(bins).fill(0); arr.forEach((x) => { c[Math.min(bins - 1, Math.floor(x / bw))]++; }); return c; };
+    const cb = count(before.losses), ca = count(now.losses), cmax = Math.max(...cb, ...ca);
+    const hist = cb.map((v, i) => ({ lab: i === bins - 1 ? '$' + (i * bw) + '+' : '$' + (i * bw) + '–' + ((i + 1) * bw), b: 'flex:1;border-radius:4px 4px 0 0;background:#C9C6BE;height:' + (v / cmax * 110) + 'px', a: 'flex:1;border-radius:4px 4px 0 0;transition:height .4s;background:#0066F5;height:' + (ca[i] / cmax * 110) + 'px' }));
+    const d = {
+      nowTxt: $(now.mean), beforeTxt: $(before.mean),
+      nowSub: nOn ? 'likely loss with ' + nOn + ' fix' + (nOn > 1 ? 'es' : '') + ' · was ' + $(before.mean) : 'likely dispute loss if you sell as-is',
+      barSt: 'height:100%;border-radius:1000px;transition:width .45s ease,background-color .3s;width:' + (now.mean / before.mean * 100) + '%;background:' + (nOn ? '#0066F5' : '#C9C6BE'),
+      sentence: nOn ? 'About ' + now.disputes.toFixed(1) + ' disputes instead of ' + before.disputes.toFixed(1) + '. In most futures the loss stays between ' + $(now.p10) + ' and ' + $(now.p90) + '.'
+        : 'About ' + before.disputes.toFixed(1) + ' disputes. In most futures the loss lands between ' + $(before.p10) + ' and ' + $(before.p90) + '. Turn on a fix to see it change.',
+      dotsTitle: prod.stock + ' orders to go · ' + aN + ' likely dispute' + (aN === 1 ? '' : 's') + (nOn ? ' (was ' + bN + ')' : ''),
+      dots: Array.from({ length: prod.stock }, (_, i) => ({ cls: i < aN ? 'dot hit' : 'dot' })),
+      hist: hist
+    };
+    const fixDefs = [
+      { k: 'tracking', title: 'Add tracking within 24 hours', desc: 'Orders without tracking are 4× more likely to become "not received" — and you rarely win those.', where: 'Runs in PayPal', whereCls: 'chip c-ok' },
+      { k: 'color', title: 'Add a color note to the listing', desc: 'Buyers say it "looks grey indoors". A note plus a daylight photo cuts color disputes by about 60%.', where: 'You add it · AI writes it', whereCls: 'chip c-ai' },
+      { k: 'customs', title: 'Ask Korean buyers for their customs code', desc: 'Parcels without it can sit at Korean customs. Asking at checkout halves those holds.', where: 'AfterLoop emails in Korean', whereCls: 'chip c-grey' },
+      { k: 'policy', title: 'Settle-first replies', desc: 'Answer each case with the option that loses least. Money moves still wait for your OK.', where: 'Runs in PayPal after your OK', whereCls: 'chip c-ok' }
+    ];
+    const fixes = fixDefs.map((f) => {
+      const on = rx[f.k];
+      const without = Object.assign({}, rx, { [f.k]: false }), withIt = Object.assign({}, rx, { [f.k]: true });
+      const gain = simulate(prod, without).mean - simulate(prod, withIt).mean;
+      return Object.assign({}, f, { on: on, isColor: f.k === 'color',
+        swCls: on ? 'sw on' : 'sw', toggle: () => this.setState({ rx: Object.assign({}, s.rx, { [f.k]: !s.rx[f.k] }) }),
+        val: (on ? 'saves ' : 'could save ') + $(gain), valSt: 'font-size:13px;font-weight:700;white-space:nowrap;color:' + (on ? '#0066F5' : '#3F4144'),
+        barSt: 'height:100%;border-radius:1000px;transition:width .4s;width:' + Math.min(100, gain / before.mean * 100) + '%;background:' + (on ? '#0066F5' : '#C9C6BE'),
+        cardSt: 'border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,background-color .2s;' + (on ? 'border:2px solid #0066F5;background:#F5F9FF' : 'border:2px solid #E4E6E9;background:#FFFFFF') });
+    });
+
+    // ---------- modals ----------
+    const row = (k, v, lang) => ({ k: k, v: v, lang: lang || 'en', st: 'display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:14px;background:#F5F7FB', vst: 'font-size:15px' + (lang === 'ko' ? ";font-family:'Noto Sans KR',Figtree,sans-serif" : (lang === 'ja' ? ";font-family:'Noto Sans JP',Figtree,sans-serif" : '')) });
+    const close = () => this.setState({ modal: null });
+    const busyModal = (m) => this.setState({ modal: Object.assign({}, m, { busy: true }) });
+    let modal = { on: false, rows: [] };
+    const M = s.modal;
+    if (M === 'lena') modal = { on: true, title: 'Refund $24.00 to Lena K.?', body: 'Money leaves your PayPal balance. This can’t be undone.', rows: [row('Amount', '$24.00 USD (shipping difference)'), row('To', 'Lena K. · order #1033'), row('Note she’ll see (German)', 'Wie versprochen: Ihre Rückerstattung über 24,00 USD.', 'de')], okLabel: 'Refund $24.00',
+      ok: () => { this.setState({ modal: null, lena: 'done' }); this.log('Refunded Lena K.', 'POST /v2/payments/captures/3TV97…/refund', 'COMPLETED · $24.00'); this.toast('Refunded $24.00 to Lena'); } };
+    if (M === 'jiho') { const pick = s.jihoPick === 'offer'; modal = { on: true, title: pick ? 'Offer Ji-ho 15% back ($7.20)?' : 'Send proof and contest?', body: pick ? 'She keeps the cardigan. If she declines, the case continues as normal.' : 'You send photos and the listing. PayPal reviews the case.', rows: pick ? [row('Offer', '$7.20 USD · keep the item'), row('Message she’ll see (Korean)', '사진과 색감이 달라 죄송해요. 상품은 그대로 두시고 7.20달러를 돌려드릴게요.', 'ko')] : [row('Evidence', 'Listing photos, product description')], okLabel: pick ? 'Send offer' : 'Send proof',
+      ok: () => { this.setState({ modal: null, jiho: 'done' }); this.log(pick ? 'Sent offer to Ji-ho' : 'Sent proof for Ji-ho', pick ? 'POST /v1/customer/disputes/PP-D-20001/make-offer' : 'POST /v1/customer/disputes/PP-D-20001/provide-evidence', pick ? 'REFUND · $7.20' : 'evidence attached'); this.toast(pick ? 'Offer sent to Ji-ho in Korean' : 'Proof sent'); } }; }
+    if (M === 'ap') modal = { on: true, title: 'Turn on Autopilot?', body: 'Here’s what it would do right now. Nothing that moves money happens without you.', rows: [row('Yuki · size question (Japanese)', 'Answer from your size chart'), row('Ji-ho · color case', 'Prepare the lowest-loss option, then wait for you'), row('buyer_m*** · 3rd claim', 'Skip — suspected abuse is always yours to decide')], okLabel: 'Turn on',
+      ok: () => { this.setState({ modal: null, ap: 'on', apN: 0 }); [700, 1500, 2300].forEach((ms, i) => this.later(() => { if (this.state.ap === 'on') { this.setState({ apN: i + 1 }); if (i === 0) this.log('Answered Yuki (Japanese)', 'email via AfterLoop', 'size chart'); if (i === 1) this.log('Read Ji-ho’s case', 'GET /v1/customer/disputes/PP-D-20001', 'waiting for your OK'); } }, ms)); this.toast('Autopilot is on'); } };
+    if (M === 'note') modal = { on: true, title: s.note === 'done' ? 'Color note · 4 languages' : 'Writing your color note…', body: s.note === 'done' ? 'From 3 color disputes (2 Korean, 1 English): buyers say it “looks grey indoors”. Your photos were all taken in daylight.' : 'Reading 3 color disputes and your listing…', rows: s.note === 'done' ? [row('English', 'Looks a little greyer under indoor light. The daylight photo shows the true color.'), row('한국어 · back-translation ✓', '실내 조명에서는 회색빛이 조금 더 돌 수 있어요. 실제 색은 자연광 사진에 가까워요.', 'ko'), row('日本語 · back-translation ✓', '室内の照明では少しグレーがかって見えます。実際の色は自然光の写真に近いです。', 'ja'), row('Deutsch · back-translation ✓', 'Wirkt bei Innenbeleuchtung etwas grauer. Die echte Farbe entspricht dem Tageslichtfoto.', 'de')] : [], okLabel: s.note === 'done' ? 'Copy all & turn on fix' : 'Writing…', busy: s.note !== 'done',
+      ok: () => { this.setState({ modal: null, rx: Object.assign({}, this.state.rx, { color: true }) }); this.toast('Copied · color note fix is on'); } };
+
+    // ---------- Ji-ho options ----------
+    const A = 48, eF = .7 * (A + 8) + 2, eO = .72 * (.15 * A) + .28 * eF + 2, eR = A + 2;
+    const jopt = (id, label, v) => ({ label: label, loss: '$' + v.toFixed(1) + (id === 'offer' ? ' · lowest' : ''), on: s.jihoPick === id, pick: set({ jihoPick: id }),
+      cls: 'prow' + (s.jihoPick === id ? ' on' : ''), });
+
+    const storeBefore = storeSum(NONE), storeAll = storeSum(ALL), storeNow = storeSum(rx);
+    return {
+      isToday: s.view === 'today', isProducts: s.view === 'products',
+      tabTodayCls: s.view === 'today' ? 'tab on' : 'tab', tabProdCls: s.view === 'products' ? 'tab on' : 'tab',
+      goToday: set({ view: 'today' }), goProducts: set({ view: 'products' }), openCount: openCount,
+      apOn: s.ap === 'on', apState: s.ap === 'on' ? (s.apN < 3 ? 'working…' : 'on') : 'off', apSwCls: s.ap === 'on' ? 'sw on' : 'sw',
+      apClick: () => { if (s.ap === 'on') { this.setState({ ap: 'off', apN: 0 }); this.toast('Autopilot is off'); } else this.setState({ modal: 'ap' }); },
+      showAct: s.showAct, toggleAct: set({ showAct: !s.showAct }), actCount: s.act.length, actList: s.act,
+
+      storeBefore: '$' + storeBefore, storeAll: '$' + storeAll, storeNow: '$' + storeNow,
+      groups: groups, sel: sel,
+
+      seoRisk: s.seo === 'done' ? '3 · Watch' : '6 · High', seoRiskSt: 'font-size:28px;font-weight:900;line-height:1.1;color:' + (s.seo === 'done' ? '#6B4700' : '#C4321F'),
+      showWhy: s.showWhy, toggleWhy: set({ showWhy: !s.showWhy }), whyLabel: s.showWhy ? 'Hide how the risk is scored' : 'How is the risk scored?',
+      why2: s.seo === 'done' ? 'cleared' : '+2', why3: s.seo === 'done' ? 'on hold' : '+1',
+      seoSent: s.seo === 'done', seoNotSent: s.seo !== 'done', seoBusy: s.seo !== 'idle', seoBtn: s.seo === 'loading' ? 'Sending…' : 'Send in Korean',
+      sendSeo: () => { if (s.seo !== 'idle') return; this.setState({ seo: 'loading' }); this.later(() => { this.setState({ seo: 'done' }); this.log('Replied to Seo-yeon (Korean)', 'POST /v1/customer/disputes/PP-D-20002/send-message', 'risk 6 → 3'); this.toast('Sent to Seo-yeon in Korean · risk 6 → 3'); }, 1100); },
+
+      trkRows: trkRows, trkBusy: s.trk !== 'idle',
+      trkTitle: s.trk === 'done' ? 'All 5 now have tracking in PayPal' : '5 orders shipped without tracking in PayPal',
+      trkSub: s.trk === 'done' ? 'Buyers can see where their parcel is. These orders are back to normal risk.' : 'You have the numbers from the carrier — PayPal just doesn’t. Buyers who can’t see tracking open “not received” cases.',
+      trkBtn: s.trk === 'loading' ? 'Adding ' + s.trkN + ' of 5…' : (s.trk === 'done' ? 'Added ✓' : 'Add all 5 to PayPal'),
+      runTrk: () => { if (s.trk !== 'idle') return; this.setState({ trk: 'loading', trkN: 0 }); [1, 2, 3, 4, 5].forEach((n) => this.later(() => this.setState({ trkN: n }), n * 260)); this.later(() => { this.setState({ trk: 'done' }); this.log('Added 5 trackers', 'POST /v1/shipping/trackers-batch', '5 added · 0 errors'); this.toast('5 tracking numbers added to PayPal'); }, 1500); },
+
+      lenaTitle: s.lena === 'done' ? 'Lena has her $24 refund' : 'You promised Lena a $24 refund 4 days ago', lenaDone: s.lena === 'done', lenaBtn: s.lena === 'done' ? 'Refunded ✓' : 'Refund $24…', askLena: set({ modal: 'lena' }),
+
+      kcTitle: s.kc === 'done' ? 'Asked 3 Korean buyers for their code' : '3 Korean orders don’t have a customs code yet', kcBusy: s.kc !== 'idle', kcBtn: s.kc === 'loading' ? 'Sending…' : (s.kc === 'done' ? 'Sent ✓' : 'Send in Korean to all 3'),
+      runKc: () => { if (s.kc !== 'idle') return; this.setState({ kc: 'loading' }); this.later(() => { this.setState({ kc: 'done' }); this.log('Emailed 3 Korean buyers', 'email via AfterLoop', 'customs code request'); this.toast('Customs notice sent to 3 buyers in Korean'); }, 1000); },
+
+      jihoOpts: [jopt('offer', 'Offer 15% back, she keeps it', eO), jopt('fight', 'Send proof and contest', eF), jopt('refund', 'Refund in full', eR)],
+      jihoNote: apDone(2) ? 'Autopilot picked the lowest and is waiting for you.' : '', jihoDone: s.jiho === 'done', jihoBtn: s.jiho === 'done' ? 'Sent ✓' : 'Review and send…', askJiho: set({ modal: 'jiho' }),
+
+      bmBusy: s.bm !== 'idle', bmBtn: s.bm === 'loading' ? 'Sending…' : (s.bm === 'done' ? 'Proof sent ✓' : 'Send delivery proof'),
+      runBm: () => { if (s.bm !== 'idle') return; this.setState({ bm: 'loading' }); this.later(() => { this.setState({ bm: 'done' }); this.log('Sent delivery proof', 'POST /v1/customer/disputes/PP-D-20003/provide-evidence', 'PROOF_OF_FULFILLMENT'); this.toast('Delivery proof sent to PayPal'); }, 1000); },
+
+      yukiDone: apDone(1), yukiWaiting: !apDone(1),
+      cardBefore: $(simulate(PRODUCTS[0], NONE).mean), openCard: set({ view: 'products', sku: 'cardigan' }),
+
+      prodList: PRODUCTS.map((p) => ({ name: p.name, left: p.stock, loss: $(simulate(p, rx).mean), cls: p.sku === s.sku ? 'prow on' : 'prow', pick: set({ sku: p.sku }) })),
+      prod: { name: prod.name, left: prod.stock }, d: d, fixes: fixes,
+      allFixes: () => this.setState({ rx: nOn === 4 ? Object.assign({}, NONE) : Object.assign({}, ALL) }), allLabel: nOn === 4 ? 'Turn all off' : 'Turn all on',
+      showHist: s.showHist, toggleHist: set({ showHist: !s.showHist }), histLabel: s.showHist ? 'Hide the 500 futures' : 'See all 500 futures',
+      openNote: () => { this.setState({ modal: 'note', note: s.note === 'done' ? 'done' : 'loading' }); if (s.note !== 'done') this.later(() => this.setState({ note: 'done' }), 1600); },
+
+      modal: modal, closeModal: close,
+      toastOn: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
