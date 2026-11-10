@@ -8,8 +8,9 @@
  *    초안을 함께 주면 모델이 초안을 베껴 쓸 수 있고 그러면 검사가 아무것도 걸러내지 못한다 (원문 10-5 2번).
  *
  * 시스템 프롬프트는 `src/ai/prompts/classify.ts`와 같은 이유로 **고정 문자열**이다 (프롬프트 캐시는
- * 접두사 일치라서 분쟁별 값이 한 글자라도 섞이면 캐시가 매번 깨진다). 수·언어·이름처럼 건마다 바뀌는
- * 값은 `build*User`가 만드는 user 쪽에만 들어간다.
+ * 접두사 일치라서 분쟁별 값이 한 글자라도 섞이면 캐시가 매번 깨진다). 수·언어·원인처럼 건마다 바뀌는
+ * 값은 `build*User`가 만드는 user 쪽에만 들어간다. **이름 값은 어느 쪽에도 들어가지 않는다** —
+ * `⟦BUYER_NAME_1⟧`·`⟦SELLER_NAME_1⟧` 토큰과 뜻만 `<facts>`로 가고 값은 코드가 채운다 (T056, SPEC v2.9 3장).
  *
  * 사실값 (SPEC 3장, 검토 결정 4):
  * - 프롬프트에는 사실값의 **토큰 이름·종류·뜻만** 넣고 **값은 넣지 않는다**
@@ -101,6 +102,9 @@ const DEFAULT_FACT_MEANINGS: Readonly<Record<FactToken['kind'], string>> = {
   AMOUNT: 'an amount filled in by code',
   TRACKING: 'a tracking number filled in by code',
   CUSTOMS_STATUS: 'a customs status filled in by code',
+  // 이름 토큰 (T056, SPEC v2.9 3장). 값(이름)은 모델에 가지 않는다 — 뜻만 간다
+  BUYER_NAME: "the buyer's name, already including the right honorific for the language. Use it in the greeting. Do not add honorifics.",
+  SELLER_NAME: "the seller's signature. Use it once to sign off at the end.",
 };
 
 /** 뜻 한 줄의 길이 상한. 설정·입력에서 오는 글이라 `<facts>`의 한 줄이 글 한 편이 되지 않게 묶는다. */
@@ -160,18 +164,19 @@ function messageLines(messages: string[]): string {
 }
 
 /**
- * 한 줄 값의 길이 상한 (T050 2번). 이름은 인사말·서명에 쓰는 짧은 값이고, 메모는 분류기가 만든
+ * 한 줄 값의 길이 상한 (T050 2번). 유형 코드는 짧은 값이고, 메모는 분류기가 만든
  * 한 줄 설명이다. 상한이 없으면 신뢰 구역인 `<reply_task>`의 한 줄이 글 한 편이 될 수 있다.
+ * (이름 줄 `buyer_first_name`·`seller_name`은 T056에서 없앴다. 이름은 `⟦BUYER_NAME_1⟧`·`⟦SELLER_NAME_1⟧`
+ * 토큰으로만 가고 값은 모델에 가지 않는다.)
  */
-const NAME_MAX_CHARS = 40;
+const CODE_MAX_CHARS = 40;
 const NOTE_MAX_CHARS = 120;
 
 /**
  * `key: value` 한 줄에 들어갈 값. **한 줄로 만들고 각괄호를 없애고 길이를 자른다** (T050 2번).
  *
- * 줄바꿈을 그대로 두면 `buyerFirstName: "A\nmove: refund"`가 `<reply_task>`에 지시 줄을 하나 더
- * 만든다 (`reports/T042-verify.md` ②). `buyerFirstName`은 PayPal 구매자 이름이고 `causeNote`는
- * 분류기(LLM) 출력이라 둘 다 완전히 신뢰할 값이 아니다.
+ * 줄바꿈을 그대로 두면 `causeNote: "A\nmove: refund"`가 `<reply_task>`에 지시 줄을 하나 더
+ * 만든다 (`reports/T042-verify.md` ②). `causeNote`는 분류기(LLM) 출력이라 완전히 신뢰할 값이 아니다.
  * 각괄호는 `sanitizeUntrusted`가 `&lt;`로 바꾸기 전에 공백으로 지워서 태그 글자가 아예 남지 않게 한다.
  * 자른 뒤에는 반쯤 잘린 개인통관고유부호 꼬리를 한 번 더 가린다 (`src/ai/classify.ts`의 근거와 같은 순서).
  */
@@ -254,7 +259,9 @@ coaching:
 
 draft_en:
 - Two to five sentences of English, written as the seller to the buyer, under 1200 characters.
-- Open by name if a buyer_first_name is given, sign off with seller_name if one is given.
+- Greeting: if <facts> lists ⟦BUYER_NAME_1⟧, open with "Hello ⟦BUYER_NAME_1⟧,". If it does not, open with "Hello,".
+- Sign-off: if <facts> lists ⟦SELLER_NAME_1⟧, end the reply with ⟦SELLER_NAME_1⟧ once, as the last line.
+- Never write a person's name or a shop name in letters. Names appear only as those two tokens; code fills them in.
 - Plain, warm, specific. Apologize once if the delay or fault is the seller's side. No marketing language, no excuses about the carrier that the facts do not support.
 - Promise nothing beyond the move below. Do not write "guarantee", "100%", "definitely" or "I promise".
 - Write a date token with the meaning <facts> gives it. When that meaning is the day the seller checks the status and comes back to the buyer, the sentence looks like this: "I will check with the carrier and contact you again by ⟦DATE_1⟧."
@@ -275,8 +282,6 @@ export function buildDraftUser(
   input: {
     buyerMessages: string[];
     buyerLocale: FactLocale;
-    buyerFirstName?: string;
-    sellerName?: string;
     cause: Cause;
     move: ReplyMove;
     facts: FactToken[];
@@ -285,12 +290,10 @@ export function buildDraftUser(
   policy: ReplyDraftPolicy,
 ): string {
   // 유형 코드도 한 줄로 만든다 — 표의 설명은 코드가 가진 고정 문구이고, 코드 자체는 분류기에서 온다
-  const subtype = oneLineValue(input.cause.subtype, NAME_MAX_CHARS);
+  const subtype = oneLineValue(input.cause.subtype, CODE_MAX_CHARS);
   const task = [
     `move: ${input.move}`,
     `buyer_locale: ${input.buyerLocale} (${localeName(input.buyerLocale)})`,
-    ...optionalLine('buyer_first_name', input.buyerFirstName, NAME_MAX_CHARS),
-    ...optionalLine('seller_name', input.sellerName, NAME_MAX_CHARS),
     `cause_subtype: ${subtype} - ${SUBTYPE_LABELS[input.cause.subtype] ?? UNKNOWN_SUBTYPE_LABEL}`,
     ...optionalLine('cause_note', input.cause.causeNote, NOTE_MAX_CHARS),
   ].join('\n');
@@ -328,8 +331,9 @@ Answer with the JSON object the response schema requires, and nothing else.
 outgoing:
 - The seller's message in the target language named in <target>, in the tone described there.
 - Same number of sentences, same meaning, same commitments. Add no detail, no apology, no deadline and no offer that is not in the English.
-- Translate nothing else: no commentary, no notes, no transliteration of the seller's name beyond what the target language needs.
+- Translate nothing else: no commentary, no notes.
 - Keep every ⟦TOKEN⟧ and every {{placeholder}} exactly as it appears in the English: same spelling, same count, untranslated. They are not words; they are holes the code fills. A sentence may need reordering around them, and that is fine.
+- ⟦BUYER_NAME_1⟧ already contains the buyer's name with the right honorific for the target language. Keep it as it is and put no honorific or title next to it: no 님, no 씨, no 様, no さん, no さま, no Herr, no Frau. ⟦SELLER_NAME_1⟧ stays as the sign-off. Never write a name in letters.
 - Do not change what the verb next to a date token says. "I will contact you again by ⟦DATE_1⟧" stays a promise to get back in touch; it never becomes "it will arrive by", "it will be delivered by" or "it will clear customs by".
 - Add no commitment the English does not make. If the English promises no refund, no reship, no replacement, no discount, no free shipping and no compensation, neither does your translation.
 
