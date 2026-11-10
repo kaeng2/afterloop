@@ -1,0 +1,71 @@
+{
+  "dispute_id": "PP-R-TST-20000002",
+  "create_time": "2026-11-09T23:40:09.334Z",
+  "update_time": "2026-11-10T00:02:11.512Z",
+  "disputed_transactions": [
+    {
+      "buyer_transaction_id": "TESTBUYERTXN0002",
+      "seller_transaction_id": "TESTCAPTURE00002",
+      "create_time": "2026-10-20T01:12:04.000Z",
+      "transaction_status": "HELD",
+      "gross_amount": {
+        "currency_code": "USD",
+        "value": "72.00"
+      },
+      "buyer": {
+        "email": "testbuyer2@example.com",
+        "payer_id": "TESTBUYER00001",
+        "name": "Test Buyer Two"
+      },
+      "seller": {
+        "email": "testseller@example.com",
+        "merchant_id": "TESTSELLER00001",
+        "name": "Test Seller"
+      },
+      "items": [
+        {
+          "item_name": "Merino Sweater",
+          "item_description": "Merino Sweater",
+          "item_quantity": "1",
+          "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+          "item_type": "PRODUCT"
+        }
+      ],
+      "seller_protection_eligible": false
+    }
+  ],
+  "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+  "status": "UNDER_REVIEW",
+  "dispute_amount": {
+    "currency_code": "USD",
+    "value": "72.00"
+  },
+  "dispute_state": "UNDER_PAYPAL_REVIEW",
+  "dispute_life_cycle_stage": "CHARGEBACK",
+  "dispute_channel": "INTERNAL",
+  "extensions": {
+    "merchant_contacted": true,
+    "buyer_contacted_time": "2026-11-09T23:39:40.117Z"
+  },
+  "evidences": [
+    {
+      "evidence_type": "CREATE",
+      "notes": "벌써 3주째인데 아직도 안 왔어요. 배송 조회를 해 봐도 며칠째 같은 단계에서 멈춰 있고, 판매자에게 메시지를 보냈는데 답도 없어요. 선물하려고 산 스웨터라 더 기다리기 어렵습니다. 이번 주 안에 연락 없으면 카드사에 이의제기할게요.",
+      "source": "SUBMITTED_BY_BUYER",
+      "date": "2026-11-09T23:40:09.334Z",
+      "dispute_life_cycle_stage": "CHARGEBACK"
+    }
+  ],
+  "links": [
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-TST-20000002",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-TST-20000002/provide-supporting-info",
+      "rel": "provide_supporting_info",
+      "method": "POST"
+    }
+  ]
+}

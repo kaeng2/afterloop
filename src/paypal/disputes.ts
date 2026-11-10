@@ -66,7 +66,19 @@ const commonFields = {
 export const disputeSummarySchema = z.object(commonFields);
 
 /**
- * 상세 1건. `messages[].content`는 구매자가 쓴 원문이다 (`toClassifyInput`에만 쓰고 로그에 남기지 않는다).
+ * 접수·보강 증빙 1건. 구매자가 접수할 때 쓴 글이 `notes`에 들어온다 (`messages`가 없는 분쟁도 있다 — T037).
+ * 모든 필드가 선택이다: 실제 응답에 어떤 키가 올지 보장되지 않는다. 모르는 키는 zod가 떼낸다.
+ */
+const evidenceSchema = z.object({
+  evidence_type: z.string().optional(),
+  notes: z.string().optional(),
+  source: z.string().optional(),
+  date: z.string().optional(),
+});
+
+/**
+ * 상세 1건. `messages[].content`와 `evidences[].notes`는 구매자가 쓴 원문이다
+ * (`toClassifyInput`에만 쓰고 로그에 남기지 않는다).
  */
 export const disputeDetailSchema = z.object({
   ...commonFields,
@@ -74,6 +86,7 @@ export const disputeDetailSchema = z.object({
     .array(z.object({ posted_by: z.string(), content: z.string(), time_posted: z.string().optional() }))
     .optional()
     .default([]),
+  evidences: z.array(evidenceSchema).optional().default([]),
 });
 
 const disputeListSchema = z.object({
