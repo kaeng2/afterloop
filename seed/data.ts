@@ -121,7 +121,7 @@ export const buyers: SeedBuyer[] = [
   { id: 'B01', name: '김서연 Seo-yeon Kim', country: 'KR', language: 'KO', sandbox: true, role: '대표 시나리오: 통관 보류 + "카드사에 이의제기" (SC4)' },
   { id: 'B02', name: '박지호 Ji-ho Park', country: 'KR', language: 'KO', sandbox: true, role: '색상 분쟁, 오토파일럿이 승인 대기로 올림 (SC5)' },
   { id: 'B03', name: 'Yuki T.', country: 'JP', language: 'JA', sandbox: true, role: '사이즈 문의 → 오토파일럿 자동 답변 (SC5)' },
-  { id: 'B04', name: 'buyer_m***', country: 'US', language: 'EN', sandbox: true, role: '반복 미수령 주장, 자동 처리 제외 (SC5)' },
+  { id: 'B04', name: 'Mike Morgan', country: 'US', language: 'EN', sandbox: true, role: '반복 미수령 주장, 자동 처리 제외 (SC5)' },
   { id: 'B05', name: 'Lena K.', country: 'DE', language: 'DE', sandbox: true, role: '환불 약속 4일 경과 (SC3, P1)' },
   { id: 'B06', name: '정다은 Da-eun Jung', country: 'KR', language: 'KO', sandbox: false, role: '개인통관고유부호 문의 (통관 신호)' },
   { id: 'B07', name: '이수민 Su-min Lee', country: 'KR', language: 'KO', sandbox: false, role: '색상 불만, 다투다 패소' },
@@ -519,7 +519,7 @@ const APPAREL_SKUS = ['FK-CD-OAT', 'FK-SW-NV', 'FK-CT-GR'] as const;
  */
 export const generatedInquirySpecs: GeneratedInquirySpec[] = [
   // ── 배송 12건 ──
-  // 원문 6-2: buyer_m***는 문의 4건 (표 1건 + 여기 3건), Mia L.은 2건
+  // 원문 6-2: Mike Morgan(원문 buyer_m***)은 문의 4건 (표 1건 + 여기 3건), Mia L.은 2건
   { type: 'shipping', lang: 'EN', buyerId: 'B04', date: '2026-09-20', signal: 'A1', original: 'My order never showed up. Can you check what happened?', english: 'My order never showed up. Can you check what happened?' },
   { type: 'shipping', lang: 'EN', buyerId: 'B04', date: '2026-10-02', signal: 'A1', original: 'Another order of mine is missing. I never got it.', english: 'Another order of mine is missing. I never got it.' },
   { type: 'shipping', lang: 'EN', buyerId: 'B04', date: '2026-10-28', signal: 'F1', original: 'Same problem again - the package is not here.', english: 'Same problem again - the package is not here.' },
