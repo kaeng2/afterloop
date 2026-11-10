@@ -18,6 +18,9 @@ import type { FixId, ParamsConfig, PolicyConfig, SimInput, SimResult, Subtype } 
 import { nonNegativeIntSchema, paramsConfigFromFile } from './params';
 import { simInputFor, simulate, simulatePass } from './sim';
 
+/** Today "Prevent" 항목으로 고른 상품 (센트 정수, 줄어드는 비율 %는 정수). */
+export type PreventPick = { sku: string; beforeCents: number; afterCents: number; cutPercent: number };
+
 /** 가게 합계의 상품 한 줄. `result`는 `simulate` 결과 그대로다. */
 export type StoreProductResult = { sku: string; result: SimResult };
 
@@ -90,6 +93,36 @@ export function simulateStore(
   const sorted = [...rows].sort((a, b) => b.result.before.meanLossCents - a.result.before.meanLossCents);
 
   return { beforeCents, afterCents, products: sorted };
+}
+
+/**
+ * 처방을 다 켰을 때 평균 손실이 줄어드는 비율 `(before − after) / before`이 가장 큰 상품 (DECISIONS v2.10).
+ * `before`가 0인 상품은 제외한다. 비교는 교차 곱(정수)으로 한다.
+ * 같으면 `before`가 큰 쪽, 그것도 같으면 입력 순서 앞. 대상이 없으면 null.
+ */
+export function pickPreventProduct(store: StoreTotal): PreventPick | null {
+  let best: { sku: string; before: number; after: number } | null = null;
+  for (const row of store.products) {
+    const before = row.result.before.meanLossCents;
+    const after = row.result.after.meanLossCents;
+    if (before <= 0) continue;
+    if (best === null) {
+      best = { sku: row.sku, before, after };
+      continue;
+    }
+    const left = (before - after) * best.before;
+    const right = (best.before - best.after) * before;
+    if (left > right || (left === right && before > best.before)) {
+      best = { sku: row.sku, before, after };
+    }
+  }
+  if (best === null) return null;
+  return {
+    sku: best.sku,
+    beforeCents: best.before,
+    afterCents: best.after,
+    cutPercent: Math.round(((best.before - best.after) * 100) / best.before),
+  };
 }
 
 /**
