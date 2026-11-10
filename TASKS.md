@@ -31,7 +31,7 @@
 | T030 | 주문 스크립트 보호: 캡처·승인된 주문을 덮어쓰지 않게, `--` 빠진 실행 막기, 캡처 결과 구분 | paypal | 완료 | v2.2 | T026, T029 | 병합 2026-11-10 00:28. 실호출 0회. 실제 manifest 사본 + 가짜 PayPal 확인 369개. 아침 실행 순서는 `reports/T030-verify.md`. `reports/T030-impl.md` |
 | T036 | 시드의 서연 분쟁 문장을 실제 접수 문장과 같게 (PayPal 120자 요구로 늘린 문장) | data | 완료 | v2.2 | T028 | 사람 지시 2026-11-10. AC17 기대 문장은 컨트롤 타워가 먼저 바꿈. 병합 2026-11-10 09:15. 바뀐 것은 서연 11/09 문의 1건의 두 칸뿐, 독립 검증 통과. `reports/T036-impl.md`, `reports/T036-verify.md` |
 | T037 | 구매자 글을 `evidences[].notes`에서도 읽기 (실제 INR 분쟁 2건은 `messages`가 없다) | paypal (클라이언트) | 완료 | v2.2 | T003 | 1차는 `lane/paypal`에 잘못 배분되어 `src/**` 잠금에 막힘 (배분 실수) → `lane/paypal-client`로 재시도. 병합 2026-11-10 09:27. 독립 검증 통과 (탐침 74항목). 실제 분쟁 3건에서 구매자 글 1건씩 읽힘 확인. `reports/T037-impl.md`, `reports/T037-verify.md` |
-| T038 | `sandbox:disputes` 출력에 `status`·`buyerTexts`·`otherActions` 칸 | paypal | 진행중 | v2.2 | T037 | 실호출 없음. `tasks/T038.md` |
+| T038 | `sandbox:disputes` 출력에 `status`·`buyerTexts`·`otherActions` 칸 | paypal | 완료 | v2.2 | T037 | 실호출 없음. 병합 2026-11-10 09:40. 독립 검증 통과 (탐침 36개). 실제 조회로 새 칸 확인. `reports/T038-impl.md`, `reports/T038-verify.md` |
 | T034 | 주문 생성 본문에 승인 뒤 돌아갈 주소 추가 (`return_url`·`cancel_url`·`user_action: PAY_NOW`), `payer-action` 링크 처리 | paypal | 완료 | v2.2 | T026, T030 | 병합 2026-11-10 08:39. 실호출 없이 검증 (지금 12건은 캡처 완료라 새 본문이 실제로 나간 적은 없음). `reports/T034-impl.md`, `reports/T034-verify.md` |
 | T011 | 추적번호 일괄 등록: 주문 상세로 미등록 판정 → `/track` 주문별 반복, 건별 결과 | paypal | 대기 | v2.2 | T002 | AC21 (작성 예정). M3 |
 | T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 완료 | v2.2 | T004 | 병합 2026-11-09 23:00. 가디건 $216 → $44, 합계 $718 → $254 (기획자 공유 필요). **AC22는 Q12 결정 뒤 작성·승인.** `reports/T015-impl.md`, `reports/T015-verify.md` |
