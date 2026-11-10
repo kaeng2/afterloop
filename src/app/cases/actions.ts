@@ -1,0 +1,58 @@
+'use server';
+
+/**
+ * S5 답장 전송 서버 액션 (T009 2부). 답장 칸의 [Send in …]·[Send offer · …] 버튼이 부른다.
+ *
+ * 브라우저가 보낸 값은 믿지 않는다: 받는 것은 분쟁 번호·준비해 둔 답장 번호·확인한 약속 범주뿐이고,
+ * 모양을 zod로 본 뒤 `_server/send.ts`의 `sendFromScreen`에 넘긴다. 글·계획·승인은 서버가 다시 만든다.
+ * 모양이 틀리면 호출 없이 거부한다. 기본은 가짜 전송이다 (`resolveSendMode`).
+ *
+ * 결과는 같은 화면, 같은 자리에 뜬다 (주소를 바꾸지 않는다. `redirect`·`revalidatePath`를 부르지 않는다).
+ */
+import { z } from 'zod';
+
+import { COMMITMENT_CATEGORIES } from '@/ai/commitments';
+
+import { t } from '../_shared/copy';
+import { sendFromScreen, resolveSendMode } from '../_server/send';
+import type { SendOutcome } from './reply-model';
+
+const SendFormSchema = z.object({
+  disputeId: z.string().regex(/^PP-[A-Z0-9-]{1,40}$/),
+  /** 보내는 수. 없으면 메시지. 금액·계획은 받지 않는다 (서버가 엔진으로 다시 만든다). */
+  kind: z.enum(['message', 'offer']).default('message'),
+  replyId: z.string().regex(/^r-[0-9a-f]{32}$/),
+  confirmedCommitments: z
+    .array(z.enum(COMMITMENT_CATEGORIES as unknown as [string, ...string[]]))
+    .max(COMMITMENT_CATEGORIES.length),
+});
+
+export async function sendReplyAction(form: unknown): Promise<SendOutcome> {
+  const parsed = SendFormSchema.safeParse(form);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      mode: resolveSendMode(),
+      failure: 'blocked',
+      error: t('case.send.error.badRequest'),
+      nextAction: t('case.send.next.reload'),
+    };
+  }
+  try {
+    return await sendFromScreen({
+      disputeId: parsed.data.disputeId,
+      kind: parsed.data.kind,
+      replyId: parsed.data.replyId,
+      confirmedCommitments: parsed.data.confirmedCommitments as (typeof COMMITMENT_CATEGORIES)[number][],
+    });
+  } catch {
+    // 예외 문장은 싣지 않는다 (PayPal 응답 문장이 섞일 수 있다)
+    return {
+      ok: false,
+      mode: resolveSendMode(),
+      failure: 'network',
+      error: t('case.send.error.unexpected'),
+      nextAction: t('case.send.next.tryLater'),
+    };
+  }
+}
