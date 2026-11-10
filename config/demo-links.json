@@ -1,0 +1,38 @@
+{
+  "version": "demo-links-2026-11-10.v1",
+  "note": "SPEC v2.5 9-4장. 실제 샌드박스 분쟁 ↔ 시드. 비밀값 아님. 연습용 분쟁(O04)이 걸리면 showOnScreen false · liveSendAllowed true로 추가한다",
+  "links": [
+    {
+      "paypalDisputeId": "PP-R-MBJ-10197650",
+      "seedDisputeId": "D1",
+      "carrierOrderId": "O02",
+      "showOnScreen": true,
+      "liveSendAllowed": true,
+      "note": "지호. 실제 전송은 녹화 때 한 번"
+    },
+    {
+      "paypalDisputeId": "PP-R-GMS-10197661",
+      "seedDisputeId": "D2",
+      "carrierOrderId": "O01",
+      "showOnScreen": true,
+      "liveSendAllowed": true,
+      "note": "서연 (실제 분쟁은 샌드박스 주문 O13에 걸려 있다). 실제 전송은 녹화 때 한 번"
+    },
+    {
+      "paypalDisputeId": "PP-R-FYT-10197651",
+      "seedDisputeId": "D3",
+      "carrierOrderId": "O08",
+      "showOnScreen": true,
+      "liveSendAllowed": false,
+      "note": "buyer_m. PayPal 심사 단계"
+    },
+    {
+      "paypalDisputeId": "PP-R-GAH-10197649",
+      "seedDisputeId": null,
+      "carrierOrderId": null,
+      "showOnScreen": false,
+      "liveSendAllowed": false,
+      "note": "옛 서연 분쟁. 시연 제외 — 아무 조치도 하지 않는다"
+    }
+  ]
+}

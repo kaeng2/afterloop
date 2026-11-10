@@ -4,7 +4,7 @@
  * 이 파일은 Claude Code 설정(.claude/settings.json permissions.deny)으로 편집이 막혀 있다.
  * 바꿔야 하면 SPEC.md·DECISIONS.md에 이유를 적고 사람 승인을 받은 뒤 컨트롤 타워가 고친다.
  *
- * 기준: SPEC v2.2 (v2 이후 바뀐 것은 8부 시드 필드 2개뿐). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
+ * 기준: SPEC v2.5 (v2 이후 바뀐 것: v2.2 8부 시드 필드 2개, v2.5 3부 `DemoLink`·`ReplyPolicy`, 8부 `SeedCarrierEvent`, 9부 `FollowUpDateFn`). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
  * 1부: 분쟁 보드와 기대 손실 (v2: 16개 세부 유형, V·c·p_acc 곡선 삭제)
  * 2부: 실행 계약 (v1.1 그대로)
  * 3부: 설정 파일 (v2)
@@ -174,6 +174,23 @@ export type PolicyConfig = {
   classification: { minConfidence: number };
 };
 
+/**
+ * 실제 샌드박스 분쟁 ↔ 시드 연결 (v2.5). 값은 config/demo-links.json. 비밀값이 아니다.
+ * 표에 없는 분쟁은 화면에 내지 않고 전송도 하지 않는다.
+ */
+export type DemoLink = {
+  paypalDisputeId: string; // 'PP-R-…'
+  seedDisputeId: string | null; // 시드 분쟁 (D1·D2·D3). 연습용·시연 제외 분쟁은 null
+  carrierOrderId: string | null; // 배송사 정보를 가져올 시드 주문 = 시드 분쟁의 orderId (D2 → O01). 시드 분쟁이 없으면 null
+  showOnScreen: boolean; // 화면에 보임
+  liveSendAllowed: boolean; // 실제 전송(send-message, make-offer) 허용
+  note?: string;
+};
+export type DemoLinksConfig = { version: string; links: DemoLink[] };
+
+/** 답장 정책 (v2.5). 값은 config/rules.json의 `reply` */
+export type ReplyPolicy = { followUpDays: number }; // 답장 후 확인 기한 (일). 7
+
 // ───────────────────────────── 4부: PayPal 클라이언트 (v1.1 그대로) ─────────────────────────────
 
 /** 서버에서만 만든다. baseUrl은 https://api-m.sandbox.paypal.com만 허용 */
@@ -285,6 +302,14 @@ export type SimResult = {
 
 export type SeedProduct = { sku: string; itemName: string; priceCents: number; stock: number; orders90d: number; disputes90d: number; checklistGaps: string[] };
 export type SeedBuyer = { id: string; name: string; country: string; language: 'KO' | 'EN' | 'JA' | 'DE'; sandbox: boolean; role: string };
+/** 시연용 배송사 추적 이벤트 (v2.5). PayPal 데이터가 아니다 — 화면에서 늘 'Demo data' 배지 */
+export type SeedCarrierEvent = {
+  orderId: string; // 시드 주문 (O01, O08 …)
+  date: string; // YYYY-MM-DD
+  status: 'shipped' | 'in_transit' | 'customs_hold' | 'out_for_delivery' | 'delivered';
+  text: string; // 배송사 표기 그대로. 분류 입력의 trackingEvents로 들어간다
+  isDemo: true;
+};
 export type SeedInquiry = { date: string; buyerId: string; original: string; english: string; signal?: Subtype; isDemo: true };
 export type SeedDispute = {
   id: string; // D1~D9
@@ -320,6 +345,13 @@ export type PlanMoveFn = (board: BoardState, evaluation: Evaluation, params?: Pa
 
 /** src/engine/escalation.ts */
 export type EscalationRiskFn = (signals: EscalationSignals, rules?: PolicyConfig) => EscalationRisk;
+
+/**
+ * src/engine/followup.ts (v2.5). 답장에 넣을 확인 기한 날짜를 코드가 만든다 (YYYY-MM-DD, UTC 날짜).
+ * now의 날짜 + followUpDays. 그 날짜가 disputeDueDate의 날짜보다 늦으면 기한 하루 전으로 당긴다 (now의 날짜보다 앞서지는 않는다).
+ * disputeDueDate가 빈 문자열이면 당기지 않는다. policy를 안 주면 config/rules.json의 `reply`.
+ */
+export type FollowUpDateFn = (input: { now: string; disputeDueDate: string }, policy?: ReplyPolicy) => string;
 
 /** src/engine/sim.ts. 같은 입력이면 같은 결과 (Math.random 금지) */
 export type SimulateFn = (input: SimInput, params?: ParamsConfig, rules?: PolicyConfig) => SimResult;

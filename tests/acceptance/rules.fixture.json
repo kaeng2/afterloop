@@ -2,15 +2,25 @@
   "version": "rules-2026-11-09.v2",
   "note": "SPEC v2 정책·오토파일럿·확대 위험. 엔진(src/engine/)과 분류(src/ai/)는 읽기만 한다. 값을 바꾸면 DECISIONS.md에 기록한다.",
   "offer": {
-    "eligibleSubtypes": ["B1", "B2"],
-    "maxRate": 0.20,
+    "eligibleSubtypes": [
+      "B1",
+      "B2"
+    ],
+    "maxRate": 0.2,
     "note": "부분 환불 제안은 색상·사이즈만 (원문 10-3). 제안률은 params.offerRate(0.15) 고정, 한도 20%를 넘으면 설정 오류"
   },
   "autopilot": {
-    "skipCategories": ["F"],
-    "skipChannels": ["EXTERNAL"],
+    "skipCategories": [
+      "F"
+    ],
+    "skipChannels": [
+      "EXTERNAL"
+    ],
     "minConfidence": 0.7,
-    "moneyMoves": ["offer", "refund"],
+    "moneyMoves": [
+      "offer",
+      "refund"
+    ],
     "note": "원문 10-6. 순서: 악용 의심(F) → 카드사 분쟁(EXTERNAL) → 확신도 미만 → 돈이 움직이는 수는 승인 대기 → 그 외 분쟁도 승인 대기. 자동 실행은 FAQ 답변만"
   },
   "abuse": {
@@ -29,5 +39,9 @@
   "classification": {
     "minConfidence": 0.7,
     "note": "미만이면 needsReview ('Check type' 배지)"
+  },
+  "reply": {
+    "followUpDays": 7,
+    "note": "SPEC v2.5 3장. 답장 후 확인 기한(일). 날짜는 코드가 만든다 (src/engine/followup.ts). 분쟁 응답 기한보다 늦으면 기한 하루 전"
   }
 }
