@@ -12,7 +12,7 @@ import { ZodError } from 'zod';
 
 import { paramsConfigFromFile } from '@/engine/params';
 import { DEFAULT_FUTURES, FIX_ORDER, simInputFor, simulate, simulatePass } from '@/engine/sim';
-import { pickRepresentativeFuture, simulateStore } from '@/engine/storefront';
+import { pickPreventProduct, pickRepresentativeFuture, simulateStore } from '@/engine/storefront';
 import type { FixId, ParamsConfig, PolicyConfig, SimInput } from '@/types';
 
 import paramsFixture from '../acceptance/params.fixture.json';
@@ -340,5 +340,34 @@ describe('결정론', () => {
     expect(code).not.toMatch(/performance\.now/);
     expect(code).not.toMatch(/toDollarsRounded/);
     expect(code).not.toMatch(/from ['"]@\/app/);
+  });
+});
+
+describe('pickPreventProduct (T066)', () => {
+  const row = (sku: string, before: number, after: number) => ({
+    sku,
+    result: { before: { meanLossCents: before }, after: { meanLossCents: after } },
+  });
+  const store = (rows: ReturnType<typeof row>[]) =>
+    ({ beforeCents: 0, afterCents: 0, products: rows }) as unknown as Parameters<typeof pickPreventProduct>[0];
+
+  it('현재 설정·시드: 가디건, 80%', () => {
+    const pick = pickPreventProduct(simulateStore(PRODUCTS, ALL_FIXES));
+    expect(pick?.sku).toBe('FK-CD-OAT');
+    expect(pick?.cutPercent).toBe(80);
+  });
+
+  it('비율이 같으면 before가 큰 쪽', () => {
+    expect(pickPreventProduct(store([row('A', 100, 50), row('B', 200, 100)]))?.sku).toBe('B');
+  });
+
+  it('비율·before가 같으면 입력 순서 앞', () => {
+    expect(pickPreventProduct(store([row('A', 100, 50), row('B', 100, 50)]))?.sku).toBe('A');
+  });
+
+  it('before 0은 제외, 대상 없으면 null', () => {
+    expect(pickPreventProduct(store([row('Z', 0, 0), row('A', 100, 90)]))?.sku).toBe('A');
+    expect(pickPreventProduct(store([row('Z', 0, 0)]))).toBeNull();
+    expect(pickPreventProduct(store([]))).toBeNull();
   });
 });
