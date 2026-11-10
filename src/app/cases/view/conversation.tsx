@@ -41,28 +41,39 @@ export function timeline(messages: CaseMessageView[], carrierLine: CarrierLineVi
 function Bubble({ message, locale, markTitle }: { message: CaseMessageView; locale: FactLocale | null; markTitle: string }) {
   // 같은 배지는 한 번만 (시연용 문의는 글 자체도, 시드 번역도 'Demo data'라 두 번 붙던 문제)
   const englishOnly = message.englishBadges.filter((kind) => !message.badges.includes(kind));
+  // 꼬리("Dispute message · From PayPal" / 날짜 + Demo data)는 따로 줄을 두지 않고 마지막 줄 끝에 붙인다 (T068 재시도 1번)
+  const meta = (
+    <span className="case-bubble-meta">
+      <span className="num">{message.date === null ? t('case.view.dateUnknown') : shortDate(message.date)}</span>
+      {message.sourceKey === null ? null : <span className="case-source">{t(message.sourceKey)}</span>}
+      {message.badges.map((kind) => (
+        <Badge key={kind} kind={kind} />
+      ))}
+    </span>
+  );
+  // 원문이 영어면(또는 번역이 원문과 같으면) 번역 줄을 두지 않는다 — 같은 글이 두 번 나오지 않게 (T068 재시도 2번)
+  const noEnglishLine = message.english === null && (locale === 'en' || message.originalIsEnglish);
   return (
     <li className={message.source === 'demo' ? 'case-bubble case-bubble-demo' : 'case-bubble'}>
-      <p className="case-bubble-original" lang={locale ?? undefined}>
+      <p className="case-bubble-original" lang={message.originalIsEnglish ? 'en' : (locale ?? undefined)}>
         <Segments segments={message.original} markTitle={markTitle} />
       </p>
-      {message.english === null ? (
-        locale === 'en' ? null : <p className="case-bubble-en muted">{t('case.view.englishUnavailable')}</p>
+      {noEnglishLine ? (
+        <p className="case-bubble-en">{meta}</p>
+      ) : message.english === null ? (
+        <p className="case-bubble-en">
+          <span>{t('case.view.englishUnavailable')}</span>
+          {meta}
+        </p>
       ) : (
         <p className="case-bubble-en" lang="en">
           <Segments segments={message.english} markTitle={markTitle} />
           {englishOnly.map((kind) => (
             <Badge key={`en-${kind}`} kind={kind} />
           ))}
+          {meta}
         </p>
       )}
-      <p className="case-bubble-meta">
-        <span className="num">{message.date === null ? t('case.view.dateUnknown') : shortDate(message.date)}</span>
-        {message.sourceKey === null ? null : <span className="case-source">{t(message.sourceKey)}</span>}
-        {message.badges.map((kind) => (
-          <Badge key={kind} kind={kind} />
-        ))}
-      </p>
     </li>
   );
 }
@@ -81,7 +92,8 @@ export function Conversation({
 
   return (
     <section className="case-conversation" aria-labelledby="case-conversation">
-      <h2 className="label" id="case-conversation">
+      {/* 제목 줄은 화면 읽기 전용 (T068 재시도 1번: 세로 자리를 줄인다) */}
+      <h2 className="case-sr-only" id="case-conversation">
         {t('case.view.conversation')}
       </h2>
 

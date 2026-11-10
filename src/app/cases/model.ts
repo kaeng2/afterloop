@@ -93,6 +93,11 @@ export type CaseMessageView = {
   english: TextSegment[] | null;
   /** 영어에 붙는 배지 (AI 번역 → 'AI suggests', 시드 번역 → 'Demo data'). */
   englishBadges: BadgeKind[];
+  /**
+   * 원문이 이미 영어인가 (T068 재시도 2번). 참이면 `english`는 `null`이고 번역 줄·그 배지를 두지 않는다.
+   * 판단: 구매자 언어가 EN · 번역이 원문과 같음 · 구매자 언어가 한글/가나 문자권(KO·JA)인데 원문에 그 문자가 없고 라틴 글자만 있음.
+   */
+  originalIsEnglish: boolean;
 };
 
 export type CarrierEventView = { date: string; statusKey: string; text: string };
@@ -358,13 +363,8 @@ export function summaryOf(before: CauseView | null, after: CauseView | null): Su
   };
 }
 
-/** 날짜 (`YYYY-MM-DD…`) → "Oct 30". 날짜 꼴이 아니면 받은 그대로. 시간대 영향 없이 UTC로 읽는다. */
-export function shortDate(ymd: string): string {
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymd);
-  if (match === null) return ymd;
-  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
-  return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' }).format(date);
-}
+/** 날짜 (`YYYY-MM-DD…`) → "Oct 30". 칩 날짜와 함께 쓰려고 `_shared/short-date.ts`로 옮겼다 (T068 재시도 4번). */
+export { shortDate } from '../_shared/short-date';
 
 function riskView(risk: EscalationRisk, demoSignals: ReadonlySet<keyof EscalationWeights>): RiskView {
   return {
@@ -379,8 +379,40 @@ function riskView(risk: EscalationRisk, demoSignals: ReadonlySet<keyof Escalatio
   };
 }
 
-function messageView(message: CaseMessageInput, terms: readonly string[] | null): CaseMessageView {
-  const english = message.english === null ? null : segmentsOf(maskPersonal(message.english), terms);
+/** 글 비교용: 공백·문장부호·대소문자를 무시한다. */
+const comparable = (text: string): string =>
+  text
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, '');
+
+/** 한글·가나·한자. KO·JA 구매자 원문에 이 글자가 하나도 없고 라틴 글자만 있으면 원문이 영어다. */
+const CJK = /[\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/u;
+const LATIN = /\p{Script=Latin}/u;
+
+/**
+ * 원문이 영어인가 (T068 재시도 2번: 지호처럼 PayPal 분쟁 글이 영어면 영어가 두 번 나오던 문제).
+ * 판단은 데이터만: 구매자 언어, 번역 결과(원문과 같음), 원문의 문자. 독일어처럼 라틴 문자권 언어는
+ * 문자로 가를 수 없으므로 번역이 원문과 같을 때만 영어로 본다.
+ */
+export function originalIsEnglish(
+  original: string,
+  english: string | null,
+  language: SeedBuyer['language'] | null,
+): boolean {
+  if (language === 'EN') return true;
+  if (english !== null && comparable(english) !== '' && comparable(english) === comparable(original)) return true;
+  if (language === 'KO' || language === 'JA') return !CJK.test(original) && LATIN.test(original);
+  return false;
+}
+
+function messageView(
+  message: CaseMessageInput,
+  terms: readonly string[] | null,
+  language: SeedBuyer['language'] | null,
+): CaseMessageView {
+  const isEnglish = originalIsEnglish(message.original, message.english, language);
+  const english = message.english === null || isEnglish ? null : segmentsOf(maskPersonal(message.english), terms);
   const englishBadges: BadgeKind[] =
     english === null ? [] : message.englishSource === 'ai' ? ['aiSuggests'] : message.englishSource === 'seed' ? ['demo'] : [];
   return {
@@ -391,6 +423,7 @@ function messageView(message: CaseMessageInput, terms: readonly string[] | null)
     original: segmentsOf(maskPersonal(message.original), terms),
     english,
     englishBadges,
+    originalIsEnglish: isEnglish,
   };
 }
 
@@ -409,7 +442,7 @@ export function buildCaseView(input: CaseViewInput, params?: Params, rules?: Pol
 
   // 카드사 언급은 엔진 신호가 참일 때만 표시한다 (T044가 준 근거가 있을 때만)
   const terms = input.signals?.mentionsCardCompany === true ? CARD_COMPANY_TERMS : null;
-  const messages = input.messages.map((message) => messageView(message, terms));
+  const messages = input.messages.map((message) => messageView(message, terms, input.buyer?.language ?? null));
 
   // 신호가 시연용 문의에 기대는지: 무응답은 시드 문의가 있으면 늘 기댄다 (T009 1부 6번).
   // 카드사 언급은 표시한 낱말이 시연용 글에만 있을 때 기댄다.

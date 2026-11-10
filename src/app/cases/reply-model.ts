@@ -26,6 +26,7 @@ import type { ActionPlan, BoardState, FactToken, TokenCheck } from '@/types';
 
 import type { BadgeKind } from '../_shared/badge-keys';
 import { toDollarsRounded } from '../_shared/money';
+import { shortDate } from '../_shared/short-date';
 import type { RiskView } from './model';
 
 /**
@@ -327,6 +328,22 @@ export function screenText(text: string, facts: FactToken[], locale: FactLocale,
   return filled.ok ? { text: filled.message, filled: true } : { text, filled: false };
 }
 
+/**
+ * 칩 글자 (T068 재시도 4번). 날짜 토큰만 **짧은 달 이름**("Nov 17")으로 먼저 채우고, 나머지는 영어 초안과
+ * 같은 길(`screenText`, 영어 벌)이다. 같은 날짜 값의 표시만 바꾼다 — 날짜를 계산하지 않고, 보내는 글·검사 줄의
+ * 날짜 꼴(`formatFact`)은 그대로다. 날짜 값이 ISO 꼴이 아니면 짧게 바꾸지 않는다 (`screenText`가 그대로 다룬다).
+ */
+export function chipText(chip: string, facts: FactToken[], money: MoneySource | null): string {
+  let text = chip;
+  for (const fact of facts) {
+    if (fact.kind !== 'DATE') continue;
+    const short = shortDate(fact.value);
+    if (short === fact.value) continue;
+    text = text.split(fact.token).join(short);
+  }
+  return screenText(text, facts, 'en', money).text;
+}
+
 /** 토큰을 채운 글 (금액 자리표시자 없음). 채울 수 없으면 원래 글을 `filled: false`로. */
 export function filledText(text: string, facts: FactToken[], locale: FactLocale): FilledText {
   return screenText(text, facts, locale, null);
@@ -398,7 +415,7 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
       ? null
       : screenText(translation.outgoing, input.facts, input.buyerLocale, money);
   const coaching = (draft?.coaching ?? []).map((line) => screenText(line, draftFacts, 'en', money).text);
-  const chips = replyChips(input.draft).map((chip) => screenText(chip, draftFacts, 'en', money).text);
+  const chips = replyChips(input.draft).map((chip) => chipText(chip, draftFacts, money));
   const backTranslationEn =
     translation === null ? null : screenText(translation.backTranslationEn, draftFacts, 'en', money).text;
   const nameProblems = translation?.nameProblems ?? [];

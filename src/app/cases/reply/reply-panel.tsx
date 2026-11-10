@@ -300,6 +300,23 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey, buyerShort =
             {t(view.modeKey)}
           </span>
 
+          {/* 메시지 보내기. 제안이 먼저인 건에서는 작은 조용한 버튼 + 그 아래 꺼짐 이유 (T068 재시도 3번) */}
+          <div className="reply-send">
+            <button
+              type="button"
+              className={view.offer === null ? 'reply-button' : 'reply-button-quiet'}
+              disabled={!gate.ok}
+              aria-describedby="reply-send-why"
+              onClick={() => send('message')}
+            >
+              {sendState === 'sending' && view.offer === null ? t('case.send.sending') : t('case.send.button', { language })}
+            </button>
+            <span id="reply-send-why" className="small muted reply-why">
+              {gate.ok || gate.reasonKey === null || (result !== null && view.offer === null) ? null : t(gate.reasonKey)}
+            </span>
+          </div>
+
+          {/* 주 버튼 "Send offer · $7"은 오른쪽 끝 (T068 재시도 3번) */}
           {view.offer === null || offerGate === null ? null : (
             <div className="reply-send">
               <button
@@ -316,21 +333,6 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey, buyerShort =
               </span>
             </div>
           )}
-
-          <div className="reply-send">
-            <button
-              type="button"
-              className={view.offer === null ? 'reply-button' : 'reply-button-quiet'}
-              disabled={!gate.ok}
-              aria-describedby="reply-send-why"
-              onClick={() => send('message')}
-            >
-              {sendState === 'sending' && view.offer === null ? t('case.send.sending') : t('case.send.button', { language })}
-            </button>
-            <span id="reply-send-why" className="small muted reply-why">
-              {gate.ok || gate.reasonKey === null || (result !== null && view.offer === null) ? null : t(gate.reasonKey)}
-            </span>
-          </div>
         </div>
       </div>
 

@@ -333,7 +333,10 @@ function render(input: ReplyViewInput, replyId: string | null = 'r-0123456789abc
 describe('답장 칸 그리기', () => {
   it('코칭·영어 초안·한국어 전송본·검사·[Send in Korean]·"Simulated send"', async () => {
     const { draft, translation } = await prepare(DRAFT_EN, OUTGOING);
-    const html = render(base(draft, translation));
+    // T069 이후 초안은 늘 `chips`(기본 [])를 준다. 코칭 줄이 칩으로 보이는 대체 경로는 `chips` 칸이 없을 때다 (T068)
+    const noChips = { ...draft } as Record<string, unknown>;
+    delete noChips.chips;
+    const html = render(base(noChips as ReplyDraft, translation));
     for (const line of COACHING) expect(html).toContain(line);
     expect(html).toContain('November 17');
     expect(html).toContain('11월 17일');
