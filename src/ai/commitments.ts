@@ -42,7 +42,7 @@ export const COMMITMENT_CATEGORIES: readonly CommitmentCategory[] = [
 
 /** 환불: `refund`, `money back`, `reimburse` / `환불`, `환급` / `返金` / `Rückerstattung`, `erstatten` */
 const REFUND_EN = ['refund', 'money back', 'reimburse', 'pay you back', 'return your money'];
-const REFUND_KO = ['환불', '환급', '돈을 돌려'];
+const REFUND_KO = ['환불', '환급', '돈을 돌려', '전액 돌려'];
 const REFUND_JA = ['返金', 'お返し'];
 const REFUND_DE = ['Rückerstatt', 'erstatt', 'zurückzahl', 'Geld zurück'];
 
@@ -143,8 +143,13 @@ const PATTERNS: readonly { category: CommitmentCategory; locale: FactLocale; sou
   { category: 'reship', locale: 'en', source: 'send(?:\\s{1,4}you)?\\s{1,4}(?:a|an)\\s{1,4}new(?![A-Za-z])' },
   { category: 'reship', locale: 'en', source: 'send\\s{1,4}(?:it|one|another)(?:\\s{1,4}out)?\\s{1,4}again(?![A-Za-z])' },
   { category: 'reship', locale: 'en', source: 'ship(?:\\s{1,4}you)?\\s{1,4}another(?![A-Za-z])' },
-  { category: 'reship', locale: 'ja', source: '新しい.{0,20}を送' },
-  { category: 'discount', locale: 'en', source: '\\d+(?:\\.\\d+)?\\s{0,2}percent\\s{1,4}off(?![A-Za-z])' },
+  { category: 'reship', locale: 'ja', source: '新しい.{0,20}をお?送' },
+  { category: 'reship', locale: 'de', source: 'schick[a-z]{0,3}\\s{1,4}(?:Ihnen\\s{1,4})?eine?[nsrm]?\\s{1,4}neue[nsrm]?(?![A-Za-z])' },
+  // 숫자 앞에 숫자가 오지 않는 자리에서만 시작하고 길이에 상한을 둔다 (입력 길이에 선형)
+  { category: 'discount', locale: 'en', source: '(?<![\\d.])\\d{1,9}(?:\\.\\d{1,9})?\\s{0,2}percent\\s{1,4}off(?![A-Za-z])' },
+  { category: 'discount', locale: 'en', source: '\\$\\s{0,2}\\d{1,9}(?:\\.\\d{1,9})?\\s{0,2}off(?![A-Za-z])' },
+  { category: 'free_shipping', locale: 'en', source: 'free\\s{1,4}return\\s{1,4}(?:label|shipping)(?![A-Za-z])' },
+  { category: 'free_shipping', locale: 'en', source: 'cover\\s{1,4}(?:the\\s{1,4})?(?:return\\s{1,4})?shipping(?![A-Za-z])' },
   { category: 'free_shipping', locale: 'en', source: 'pay\\s{1,4}(?:for\\s{1,4})?the\\s{1,4}shipping(?![A-Za-z])' },
   { category: 'free_shipping', locale: 'en', source: 'shipping\\s{1,4}is\\s{1,4}on\\s{1,4}(?:us|me)(?![A-Za-z])' },
   { category: 'free_shipping', locale: 'en', source: 'at\\s{1,4}no\\s{1,4}(?:extra\\s{1,4})?cost(?![A-Za-z])' },

@@ -274,3 +274,46 @@ describe('findCommitments: 경계', () => {
     expect(text).toBe('I will refund {{refundAmount}} by ⟦DATE_1⟧.');
   });
 });
+
+describe('findCommitments: T054 재시도 — 놓친 표현과 나쁜 입력', () => {
+  it('놓쳤던 약속 표현을 잡는다', () => {
+    expect(findCommitments('I can give you $5 off', 'en')).toEqual(['discount']);
+    expect(findCommitments('free return label', 'en')).toEqual(['free_shipping']);
+    expect(findCommitments("we'll cover return shipping", 'en')).toEqual(['free_shipping']);
+    expect(findCommitments('전액 돌려 드릴게요', 'ko')).toEqual(['refund']);
+    expect(findCommitments('新しい商品をお送りします', 'ja')).toEqual(['reship']);
+    expect(findCommitments('Wir schicken Ihnen ein neues Paket', 'de')).toEqual(['reship']);
+    expect(findCommitments('take 15 percent off', 'en')).toEqual(['discount']);
+  });
+
+  it('정상 글은 계속 빈 배열이다', () => {
+    expect(findCommitments('The price is $5. Total off the record: 5 items', 'en')).toEqual([]);
+    expect(findCommitments('Please send the code again. The return label is attached.', 'en')).toEqual([]);
+    expect(findCommitments('Wir schicken Ihnen den Code', 'de')).toEqual([]);
+  });
+
+  const BAD: [string, string][] = [
+    ['1×20000+percent', '1'.repeat(20000) + ' percent'],
+    ['"1 "×10000', '1 '.repeat(10000)],
+    ['공백×20000+off', ' '.repeat(20000) + 'off'],
+    ['send ×5000', 'send '.repeat(5000)],
+    ['a new ×5000', 'a new '.repeat(5000)],
+    ['$1×20000', '$' + '1'.repeat(20000)],
+    ['1.×10000+percent', '1.'.repeat(10000) + ' percent'],
+    ['schick ×5000', 'schick '.repeat(5000)],
+  ];
+  for (const [name, text] of BAD) {
+    it(`나쁜 입력 ${name}: 2만 자급 100ms, 20만 자급 1초 안`, () => {
+      for (const [input, limit] of [
+        [text, 100],
+        [text.repeat(10), 1000],
+      ] as const) {
+        for (const l of ['en', 'ko', 'ja', 'de'] as const) {
+          const t = performance.now();
+          findCommitments(input, l);
+          expect(performance.now() - t).toBeLessThan(limit);
+        }
+      }
+    });
+  }
+});
