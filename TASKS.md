@@ -61,7 +61,7 @@
 | T056 | 답장 이름 토큰 ⟦BUYER_NAME_1⟧·⟦SELLER_NAME_1⟧ (`nameFactsPair`, 프롬프트에 이름 값 없음, 호칭 겹침 막기) | ai | 완료 | v2.9 | 계약 v2.9 | AC32 | 모델 `claude-opus-5-5`. T009 2부 재시도 앞. `tasks/T056.md` |
 | T057 | 제안 답장 문장 꼴: "PayPal에서 제안을 수락하면 바로 환불" (답장으로 수락 금지) | ai | 완료 | v2.9 | T056 | 실제 AI 3회(컨트롤 타워) | 모델 `claude-sonnet-5-5`. `tasks/T057.md` |
 | T058 | 확인 칸: 초안에 쓰이지 않은 사실값 줄 숨기기 (지호 Follow-up date) | ui | 진행중 | v2.9 | T009 | — | 모델 `claude-sonnet-5-5`. `tasks/T058.md` |
-| T059 | 시드 B04 이름 "buyer_m***" → "Mike Morgan" | data | 진행중 | v2.10 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T059.md` |
+| T059 | 시드 B04 이름 "buyer_m***" → "Mike Morgan" | data | 완료 | v2.10 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T059.md` |
 | T060 | **공용 틀**: 위쪽 막대(Today(N)/Products, Autopilot, PayPal activity, 판매자 칩) + Today 목록·상세 틀 + 서랍 껍데기 | ui | 진행중 | v2.10 | T058, T059 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T060.md` |
 | T061 | **서연 상세 합치기** (머리글 → 비교 카드 → 한 줄 요약 → 말풍선+배송사 줄 → 답장 칩 → You write / 상대가 읽는 글 → 검사 한 줄·보내기), 지호·Mike 같은 틀 | ui | 보류 (1.5차 리뷰를 사람이 본 뒤) | v2.10 | T060 | 스크린샷 1440 | 모델 `claude-opus-5-5` |
 | T062 | **Products 탭**: AG Grid 상품 목록(as-is → with fixes, 셀 깜빡임) + 리허설(큰 숫자·전후 막대·점 그림·범위 문장) + 처방 카드 4개 + 거래 조회 한 줄 | ui | 보류 (1.5차 리뷰를 사람이 본 뒤) | v2.10 | T060 | 스크린샷 1440 | 모델 `claude-opus-5-5`. 옛 T013 규칙 참조 |
