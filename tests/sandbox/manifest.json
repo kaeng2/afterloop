@@ -131,6 +131,14 @@
       "previousOrderIds": [
         "8K5917389U7016629"
       ]
+    },
+    {
+      "key": "O13",
+      "orderId": "02C95899V2403943M",
+      "buyer": "seoyeon",
+      "sku": "FK-SW-NV",
+      "tracked": false,
+      "captureId": "2J918760HG520343S"
     }
   ],
   "disputes": [
@@ -141,15 +149,20 @@
     },
     {
       "key": "D2",
-      "disputeId": "PP-R-GAH-10197649",
-      "orderKey": "O01",
-      "demoExcluded": true,
-      "note": "시연 제외 (2026-11-10): 접수 몇 분 뒤 PayPal 심사 단계(CHARGEBACK)로 넘어감. 아무 조치도 하지 않는다 (환불 수락 금지)."
+      "disputeId": "PP-R-GMS-10197661",
+      "orderKey": "O13"
     },
     {
       "key": "D3",
       "disputeId": "PP-R-FYT-10197651",
       "orderKey": "O08"
+    },
+    {
+      "key": "D2-old",
+      "disputeId": "PP-R-GAH-10197649",
+      "orderKey": "O01",
+      "demoExcluded": true,
+      "note": "시연 제외 (2026-11-10): 접수 몇 분 뒤 PayPal 심사 단계(CHARGEBACK)로 넘어감. 아무 조치도 하지 않는다 (환불 수락 금지)."
     }
   ]
 }
