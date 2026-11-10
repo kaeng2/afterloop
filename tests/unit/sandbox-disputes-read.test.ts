@@ -5,6 +5,7 @@
  * 확인하는 것
  *  - `runDisputesRead`: 목록 → 건별 상세 → `toBoardState`, 조회(GET)만 보낸다
  *  - 0건이면 "0 disputes (empty list)"와 종료할 거리가 없음(문제 0건)
+ *  - `status`·`buyerTexts`(개수)·`otherActions`(rel 이름) 칸 (T038) — 실제 응답 fixture로 본다
  *  - 변환하지 못한 분쟁: ID와 **필드 이름만** 적고 나머지는 계속 읽는다
  *  - 출력·`last-run.md` 절에 구매자 이름·이메일·주소·메시지 원문·payer_id·비밀값이 없다
  *  - `mergeDisputes`·`missingDisputeKeys`: 한 건만 찾아도 이미 적힌 분쟁이 지워지지 않는다
@@ -63,6 +64,8 @@ const dispute = (
   disputeId: string,
   options: {
     reason?: string;
+    /** `''`를 주면 응답에 `status` 키가 아예 없는 분쟁이 된다 (출력은 `-`) */
+    status?: string;
     stage?: string;
     channel?: string;
     value?: string;
@@ -76,7 +79,7 @@ const dispute = (
 ) => ({
   dispute_id: disputeId,
   reason: options.reason ?? INR,
-  status: 'WAITING_FOR_SELLER_RESPONSE',
+  ...(options.status === '' ? {} : { status: options.status ?? 'WAITING_FOR_SELLER_RESPONSE' }),
   dispute_life_cycle_stage: options.stage ?? 'INQUIRY',
   dispute_channel: options.channel ?? 'INTERNAL',
   dispute_amount: { currency_code: options.currency ?? 'USD', value: options.value ?? '48.00' },
@@ -128,18 +131,24 @@ describe('runDisputesRead (분쟁 목록 읽기)', () => {
     expect(seen.slice(1).map((s) => s.path)).toEqual([`/v1/customer/disputes/${D1}`, `/v1/customer/disputes/${D2}`]);
   });
 
-  it('건마다 분쟁 ID·reason·단계·채널·금액(센트)·기한·허용된 수를 모은다', async () => {
+  it('건마다 분쟁 ID·reason·status·단계·채널·금액(센트)·기한·허용된 수·다른 링크·구매자 글 수를 모은다', async () => {
     const { client } = fakeClient({
       [LIST_PATH]: { status: 200, body: { items: [dispute(D1)], links: [] } },
       [detailPath(D1)]: {
         status: 200,
         body: dispute(D1, {
           reason: SNAD,
+          status: 'UNDER_REVIEW',
           stage: 'CHARGEBACK',
           channel: 'EXTERNAL',
           value: '72.50',
           sellerDue: '2026-11-16T00:00:00.000Z',
-          moves: ['send_message', 'accept_claim', 'escalate'],
+          moves: ['send_message', 'accept_claim', 'escalate', 'self', 'provide_supporting_info'],
+          messages: [
+            { posted_by: 'BUYER', content: '아직 못 받았어요' },
+            { posted_by: 'SELLER', content: '확인 중입니다' },
+            { posted_by: 'BUYER', content: '언제 오나요' },
+          ],
         }),
       },
     });
@@ -150,17 +159,36 @@ describe('runDisputesRead (분쟁 목록 읽기)', () => {
       {
         disputeId: D1,
         reason: SNAD,
+        status: 'UNDER_REVIEW',
         stage: 'CHARGEBACK',
         channel: 'EXTERNAL',
         amountCents: 7250,
         dueDate: '2026-11-16T00:00:00.000Z',
         allowedMoves: ['send_message', 'accept_claim'],
+        otherActions: ['escalate', 'provide_supporting_info'], // `self`와 수 4개는 뺀다 (응답 순서)
+        buyerTextCount: 2, // 판매자 글은 세지 않는다
         buyerPriorInrDisputes: 0,
       },
     ]);
     expect(disputeLine(rows[0])).toBe(
-      `${D1} · reason=${SNAD} · stage=CHARGEBACK · channel=EXTERNAL · amountCents=7250 · dueDate=2026-11-16T00:00:00.000Z · allowedMoves=send_message,accept_claim · buyerPriorInrDisputes=0`,
+      `${D1} · reason=${SNAD} · status=UNDER_REVIEW · stage=CHARGEBACK · channel=EXTERNAL · amountCents=7250 · dueDate=2026-11-16T00:00:00.000Z · allowedMoves=send_message,accept_claim · otherActions=escalate,provide_supporting_info · buyerTexts=2 · buyerPriorInrDisputes=0`,
     );
+  });
+
+  it('status가 없거나 다른 링크·구매자 글이 없으면 `-`·0으로 적는다 (칸을 비워 두지 않는다)', async () => {
+    const { client } = fakeClient({
+      [LIST_PATH]: { status: 200, body: { items: [dispute(D1)], links: [] } },
+      [detailPath(D1)]: { status: 200, body: dispute(D1, { status: '', moves: ['self', 'send_message'] }) },
+    });
+
+    const { rows } = await runDisputesRead(client);
+
+    expect([rows[0].status, rows[0].otherActions, rows[0].buyerTextCount]).toEqual(['', [], 0]);
+    const line = disputeLine(rows[0]);
+    expect(line).toContain('status=-');
+    expect(line).toContain('otherActions=-');
+    expect(line).toContain('buyerTexts=0');
+    expect(disputesSection({ listed: 1, rows, problems: [] })).toContain(`| ${D1} | ${INR} | - | INQUIRY |`);
   });
 
   it('판매자 기한이 없으면 구매자 기한을 쓰고, 둘 다 없으면 빈 값으로 둔다 (날짜를 지어내지 않는다)', async () => {
@@ -310,19 +338,83 @@ describe('출력에 개인정보·비밀값이 없다', () => {
     expect(section).not.toMatch(/Bearer\s|Basic\s/i);
   });
 
-  it('`BoardState`에 담기는 값만 돌려준다 (받은 응답을 그대로 끌고 오지 않는다)', async () => {
+  it('출력에 쓰는 칸만 돌려준다 (받은 응답을 그대로 끌고 오지 않는다)', async () => {
     const { rows } = await runDisputesRead(withPersonalData());
 
     expect(Object.keys(rows[0]).sort()).toEqual([
       'allowedMoves',
       'amountCents',
       'buyerPriorInrDisputes',
+      'buyerTextCount',
       'channel',
       'dueDate',
       'disputeId',
+      'otherActions',
       'reason',
       'stage',
+      'status',
     ].sort());
+    expect(rows[0].buyerTextCount).toBe(1); // 글은 셌지만 원문은 담지 않는다
+  });
+});
+
+/** 실제 샌드박스 응답을 담아 둔 fixture. 구매자 글 원문을 테스트 파일에 베끼지 않고 여기서 읽는다 */
+const fixture = (name: string): Record<string, unknown> =>
+  JSON.parse(readFileSync(path.resolve(__dirname, `../fixtures/${name}`), 'utf8')) as Record<string, unknown>;
+
+const CLAIM_FIXTURE = 'dispute-detail.claim-under-review.json';
+const WAITING_FIXTURE = 'dispute-detail.inquiry-waiting-seller.json';
+
+describe('status·buyerTexts·otherActions (실제 응답 fixture, T038)', () => {
+  /** 그 한 건만 든 목록 → 같은 몸통을 상세로 돌려준다 */
+  const readOne = async (detail: Record<string, unknown>): ReturnType<typeof runDisputesRead> => {
+    const { client } = fakeClient({
+      [LIST_PATH]: { status: 200, body: { items: [detail], links: [] } },
+      [detailPath(detail.dispute_id as string)]: { status: 200, body: detail },
+    });
+    return runDisputesRead(client);
+  };
+
+  it('검토 중인 CHARGEBACK(`messages` 키가 없는 건): status·글 1건·provide_supporting_info·허용된 수 없음', async () => {
+    const { rows } = await readOne(fixture(CLAIM_FIXTURE));
+
+    expect([rows[0].status, rows[0].buyerTextCount, rows[0].otherActions, rows[0].allowedMoves]).toEqual([
+      'UNDER_REVIEW',
+      1,
+      ['provide_supporting_info'],
+      [],
+    ]);
+    const line = disputeLine(rows[0]);
+    expect(line).toContain('status=UNDER_REVIEW');
+    expect(line).toContain('buyerTexts=1');
+    expect(line).toContain('otherActions=provide_supporting_info');
+    expect(line).toContain('allowedMoves=-');
+  });
+
+  it('판매자 응답 대기: 같은 글이 `messages`와 `evidences`에 있어도 1건, 다른 링크는 escalate뿐', async () => {
+    const { rows } = await readOne(fixture(WAITING_FIXTURE));
+
+    expect(rows[0].buyerTextCount).toBe(1);
+    expect(rows[0].otherActions).toEqual(['escalate']);
+    expect(rows[0].allowedMoves).toEqual(['send_message', 'make_offer', 'accept_claim']);
+    expect(disputeLine(rows[0])).toContain('otherActions=escalate');
+  });
+
+  it('출력·표 어디에도 구매자 글 원문이 없다 (개수만 적는다)', async () => {
+    for (const name of [CLAIM_FIXTURE, WAITING_FIXTURE]) {
+      const detail = fixture(name);
+      const note = (detail.evidences as { notes: string }[])[0].notes;
+      const outcome = await readOne(detail);
+      const text = [
+        disputeReadLines(outcome).join('\n'),
+        disputesSection(outcome, new Date('2026-11-09T14:30:00Z')),
+      ].join('\n');
+
+      expect(text).toContain('buyerTexts=1');
+      expect(text).not.toContain(note);
+      expect(text).not.toContain(note.slice(0, 12)); // 글 앞부분도 새어 나오지 않는다
+      expect(text).not.toContain('@'); // 구매자·판매자 이메일
+    }
   });
 });
 
