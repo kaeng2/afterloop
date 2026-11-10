@@ -58,10 +58,8 @@ export type ReplyInput = {
   /** 구매자 글 원문 (한국어 등). 신뢰하지 않는 입력 */
   buyerMessages: string[];
   buyerLocale: FactLocale;
-  /** 인사말용 이름. 이메일·주소·개인통관고유부호는 받지 않는다 */
-  buyerFirstName?: string;
-  /** 서명용 판매자 이름 */
-  sellerName?: string;
+  // 이름 칸(`buyerFirstName`·`sellerName`)은 T056에서 없앴다. 이름은 `facts`의 `⟦BUYER_NAME_1⟧`·
+  // `⟦SELLER_NAME_1⟧`로만 넘긴다 (`src/ai/names.ts`의 `nameFactsPair`). 값은 모델에 가지 않는다
   /** 분류 결과 (`subtype`, `causeNote`) */
   cause: Cause;
   /** 엔진이 추천한 수 = 답장의 목적 */
@@ -161,8 +159,17 @@ export type ReplyTranslation =
        * 판매자가 읽은 글에 없던 약속이므로 **확인으로도 풀리지 않는다** (SPEC v2.7 3장).
        */
       addedInTranslation: CommitmentCategory[];
+      /**
+       * 이름 토큰 둘레의 문제 (T056). 고정 사유 코드만 담는다. 비어 있지 않으면 `sendable`이 false다.
+       * `honorific_after_name`: 전송본이 `⟦BUYER_NAME_1⟧ 님`처럼 호칭을 덧붙였다 — 값에 이미 호칭이 있어
+       * 채우면 "서연 님 님"이 된다. 접어서 고치지 않는다 (판매자가 다시 번역한다).
+       */
+      nameProblems: ReplyNameProblem[];
     }
   | ReplyFailure;
+
+/** 이름 토큰 둘레의 문제 사유 코드 (T056). */
+export type ReplyNameProblem = 'honorific_after_name';
 
 export type ReplyDeps = { llm: LlmCaller };
 
@@ -476,8 +483,28 @@ function sendableNow(
   outside: CommitmentCategory[],
   added: CommitmentCategory[],
   confirmed: CommitmentCategory[],
+  nameProblems: ReplyNameProblem[],
 ): boolean {
-  return check.ok && added.length === 0 && outside.every((category) => confirmed.includes(category));
+  return (
+    check.ok &&
+    added.length === 0 &&
+    nameProblems.length === 0 &&
+    outside.every((category) => confirmed.includes(category))
+  );
+}
+
+/**
+ * 구매자 이름 토큰에 덧붙인 호칭 (T056 4번). 구매자 이름 값에는 그 언어의 호칭이 이미 들어 있다
+ * (`서연 님`). 토큰 **바로 뒤**(사이에 공백만)의 한국어 `님`·`씨`, 일본어 `様`·`さん`·`さま`·`殿`와
+ * 토큰 **바로 앞**의 독일어 `Herr`·`Frau`를 잡는다. 공백 길이에 상한을 둬서 역추적이 커지지 않게 한다.
+ * `님께`·`님이`처럼 조사가 붙은 꼴도 호칭이므로 뒤 경계를 두지 않는다.
+ */
+const HONORIFIC_AFTER_NAME = /⟦BUYER_NAME_[1-9][0-9]*⟧[ \t 　]{0,4}(?:님|씨|様|さん|さま|殿)/;
+const HONORIFIC_BEFORE_NAME = /(?<![A-Za-zÄÖÜäöüß])(?:Herr|Frau)[ \t ]{1,4}⟦BUYER_NAME_[1-9][0-9]*⟧/;
+
+/** 전송본의 이름 토큰 둘레 문제. */
+function nameProblemsOf(outgoing: string): ReplyNameProblem[] {
+  return HONORIFIC_AFTER_NAME.test(outgoing) || HONORIFIC_BEFORE_NAME.test(outgoing) ? ['honorific_after_name'] : [];
 }
 
 /**
@@ -511,14 +538,16 @@ export async function translateReply(
   if (input.buyerLocale === 'en') {
     // 영어는 번역이 없으므로 약속이 더해질 자리도 없다 (초안이 그대로 전송본이다)
     const check = checkTokens(draftEn, draftEn, input.facts);
+    const nameProblems = nameProblemsOf(draftEn);
     return {
       ok: true,
       outgoing: draftEn,
       backTranslationEn: draftEn,
       check,
-      sendable: sendableNow(check, outside, [], confirmed),
+      sendable: sendableNow(check, outside, [], confirmed, nameProblems),
       outsidePolicy: outside,
       addedInTranslation: [],
+      nameProblems,
     };
   }
 
@@ -567,13 +596,15 @@ export async function translateReply(
   const addedInTranslation = findCommitments(outgoing, input.buyerLocale).filter(
     (category) => !inDraft.includes(category),
   );
+  const nameProblems = nameProblemsOf(outgoing);
   return {
     ok: true,
     outgoing,
     backTranslationEn,
     check,
-    sendable: sendableNow(check, outside, addedInTranslation, confirmed),
+    sendable: sendableNow(check, outside, addedInTranslation, confirmed, nameProblems),
     outsidePolicy: outside,
     addedInTranslation,
+    nameProblems,
   };
 }
