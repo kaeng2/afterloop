@@ -53,9 +53,9 @@
 | T015 | 시뮬레이션 `sim` (원문 9장): 500개 미래, 같은 난수, P10~P90, 폭포 | engine | 완료 | v2.2 | T004 | 병합 2026-11-09 23:00. 가디건 $216 → $44, 합계 $718 → $254 (기획자 공유 필요). **AC22는 Q12 결정 뒤 작성·승인.** `reports/T015-impl.md`, `reports/T015-verify.md` |
 | T028 | 시드 v2.2: 종결 손실 재계산 (합 40800 → 41300¢), `SeedDispute.orderId`, `SeedOrder.date` | data | 완료 | v2.2 | T007 | AC17 통과 (56개). 병합 2026-11-09 22:52. `reports/T028-impl.md`, `reports/T028-verify.md` |
 | T018 | 확대 위험 점수 (원문 10-4 + M4) + `planMove` 보강 | engine | 완료 | v2.1 | T005 | AC7 통과 (5개). Q2 미확정 (임시 7 → 4). 병합 2026-11-09 22:31. `reports/T018-impl.md`, `reports/T018-verify.md` |
-| T019 | Transaction Search 조회 + 캐시 ('cached' 배지) | paypal | 대기 | v2.2 | T002 | AC25 (작성 예정). 실호출 4종 중 하나 (M7) |
-| T020 | AI 색상 문구: 분쟁 메시지에서 공통 불만 → EN·KO·JA·DE + 역번역 | ai | 대기 | v2.2 | T010 | AC26 (작성 예정). F5 |
-| T021 | FAQ 자동 답변 (오토파일럿 `common_questions`, Yuki 사이즈 문의) | ai | 대기 | v2.2 | T010 | AC27 (작성 예정). 이메일은 시뮬레이션 |
+| T019 | Transaction Search 조회 + 캐시 ('cached' 배지) | paypal | 진행중 | v2.8 | T002 | AC25 (작성 예정). 실호출 4종 중 하나 (M7) 모델 `claude-sonnet-5-5`, `lane/paypal-client`. `tasks/T019.md` |
+| T020 | AI 색상 문구: 분쟁 메시지에서 공통 불만 → EN·KO·JA·DE + 역번역 | ai | 진행중 | v2.8 | T010 | AC26 (작성 예정). F5 모델 `claude-opus-5-5`. 기본 문구 없음(실패 시 S2가 숨김). `tasks/T020.md` |
+| T021 | FAQ 자동 답변 (오토파일럿 `common_questions`, Yuki 사이즈 문의) | ai | 대기 (사람 결정) | v2.2 | T010 | AC27 (작성 예정). 이메일은 시뮬레이션 지시서 초안 `tasks/T021.md`. 판매자 정책 데이터와 FAQ 판정 코드가 없어 범위 결정 필요 |
 | T009 | **S5 Case** (서연 SC4): 대화 토글, AI 원인 ↔ 코드 점수, 코칭 → 영어 초안 → 한국어 전송본 → 토큰 검사 → send-message | ui | 진행중 (1부) | v2.2 | T003, T006, T008, T010, T018 | AC18 (작성 예정). 대표 시나리오 **v2.3**: 배송사 정보 반영 전(환불 추천) → 후(답장 추천) 두 값을 나란히 (SPEC 2장). 실제 전송은 시연 녹화 때 한 번만 (SPEC 9-4). |
 | T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대기 | v2.2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 확정 (P0). AG Grid Community만 |
 | T013 | **S2 Product check**: 리허설(점 그림·폭포·분포 막대), 처방 토글 0.5초 내 재계산, 색상 문구 | ui | 대기 | v2.2 | T015, T019, T020 | AC23 (작성 예정). F3·F4 |
