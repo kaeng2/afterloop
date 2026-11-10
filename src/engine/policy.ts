@@ -20,12 +20,17 @@ export function categoryOf(subtype: Subtype): Category {
 }
 
 /**
- * 다투기의 실행 API. 증빙 링크가 있으면 provide_evidence, 없으면 합의 단계의 증빙 안내 메시지.
+ * 다투기의 실행 API (SPEC v2.4 5장 "수 → API" 표 순서).
+ * 합의 단계(`INQUIRY`)에서는 `provide_evidence` 링크가 함께 있어도 메시지가 먼저다 (v2.4, Q15:
+ * 실제 합의 단계 분쟁에 두 링크가 함께 오고, 증빙 제출은 아직 실행하지 않는다).
+ * 그 밖의 단계에서는 증빙 링크가 있으면 provide_evidence, 없으면 send_message.
  * 둘 다 허용되지 않으면 다툴 방법이 없다 (null → `all`에서 뺀다).
  */
 export function fightApiMove(board: BoardState): MoveType | null {
+  const canSendMessage = board.allowedMoves.includes('send_message');
+  if (board.stage === 'INQUIRY' && canSendMessage) return 'send_message';
   if (board.allowedMoves.includes('provide_evidence')) return 'provide_evidence';
-  if (board.allowedMoves.includes('send_message')) return 'send_message';
+  if (canSendMessage) return 'send_message';
   return null;
 }
 

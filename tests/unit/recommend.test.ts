@@ -126,6 +126,46 @@ describe('수 → API와 허용된 수 필터 (SPEC 5장)', () => {
     expect(rec.best?.move).toBe('offer');
   });
 
+  // SPEC v2.4 5장 표 (Q15): 합의 단계(INQUIRY)에서는 증빙 링크가 함께 있어도 메시지가 먼저다.
+  // 링크 구성 4종 × 단계 4종을 모두 본다.
+  describe('fight의 실행 API: 링크 구성 × 단계 (v2.4, Q15)', () => {
+    const STAGES: readonly BoardState['stage'][] = ['INQUIRY', 'CHARGEBACK', 'PRE_ARBITRATION', 'ARBITRATION'];
+
+    function fightApiMoveVia(stage: BoardState['stage'], links: BoardState['allowedMoves']): string | null | undefined {
+      const rec = recommend(board({ stage, allowedMoves: [...links, 'make_offer', 'accept_claim'] }), P, R);
+      return byMove(rec.all, 'fight')?.apiMove;
+    }
+
+    it('두 링크가 함께 있으면: 합의 단계만 send_message, 나머지 단계는 provide_evidence', () => {
+      const both: BoardState['allowedMoves'] = ['send_message', 'provide_evidence'];
+      expect(fightApiMoveVia('INQUIRY', both)).toBe('send_message');
+      for (const stage of STAGES.filter((s) => s !== 'INQUIRY')) {
+        expect(fightApiMoveVia(stage, both)).toBe('provide_evidence');
+      }
+    });
+
+    it('증빙 링크만 있으면: 모든 단계에서 provide_evidence', () => {
+      for (const stage of STAGES) expect(fightApiMoveVia(stage, ['provide_evidence'])).toBe('provide_evidence');
+    });
+
+    it('메시지 링크만 있으면: 모든 단계에서 send_message', () => {
+      for (const stage of STAGES) expect(fightApiMoveVia(stage, ['send_message'])).toBe('send_message');
+    });
+
+    it('둘 다 없으면: 모든 단계에서 fight 평가가 없다', () => {
+      for (const stage of STAGES) expect(fightApiMoveVia(stage, [])).toBeUndefined();
+    });
+
+    it('단계만 다른 보드는 기대 손실이 같다 (이 변경으로 숫자는 바뀌지 않는다)', () => {
+      const losses = STAGES.map((stage) =>
+        recommend(board({ stage, allowedMoves: ['send_message', 'provide_evidence', 'make_offer', 'accept_claim'] }), P, R).all.map(
+          (e) => e.expectedLossCents,
+        ),
+      );
+      for (const loss of losses) expect(loss).toEqual(losses[0]);
+    });
+  });
+
   it('제안 대상이 아니면 차단만 하고 목록에는 남긴다 (OFFER_SCOPE)', () => {
     const offer = byMove(recommend(board(subtype('A1')), P, R).all, 'offer');
     expect(offer?.blockedBy).toBe(BLOCKED.offerScope);

@@ -73,9 +73,17 @@ describe('수별 계획 (SPEC 5장 표)', () => {
     expect(plan.messageRequired).toBe(true);
   });
 
-  it('증빙 링크가 있으면 fight는 provide_evidence로 계획한다', () => {
-    const b = board({ allowedMoves: ['provide_evidence', 'send_message'] });
+  // 합의 단계(INQUIRY)에서는 두 링크가 함께 와도 send_message가 먼저다 (v2.4, Q15). 그래서
+  // provide_evidence 계획을 보려면 합의 단계가 아닌 보드를 쓴다.
+  it('합의 단계가 아니고 증빙 링크가 있으면 fight는 provide_evidence로 계획한다', () => {
+    const b = board({ stage: 'CHARGEBACK', allowedMoves: ['provide_evidence', 'send_message'] });
     expect(planMove(b, evaluationFor(b, 'fight'), P, R).apiMove).toBe('provide_evidence');
+  });
+
+  it('합의 단계에 두 링크가 함께 있으면 fight는 send_message로 계획한다 (v2.4, Q15)', () => {
+    const b = board({ allowedMoves: ['provide_evidence', 'send_message'] });
+    expect(b.stage).toBe('INQUIRY');
+    expect(planMove(b, evaluationFor(b, 'fight'), P, R).apiMove).toBe('send_message');
   });
 });
 
@@ -157,7 +165,8 @@ describe('평가가 이 보드의 것인지 확인한다 (T018)', () => {
   });
 
   it('이 보드의 실행 API와 다른 평가를 넘기면 예외 (provide_evidence vs send_message)', () => {
-    const evidence = board({ allowedMoves: ['provide_evidence', 'send_message'] });
+    // 합의 단계가 아닌 보드여야 fight가 provide_evidence로 잡힌다 (v2.4, Q15).
+    const evidence = board({ stage: 'CHARGEBACK', allowedMoves: ['provide_evidence', 'send_message'] });
     const fight = evaluationFor(evidence, 'fight');
     expect(fight.apiMove).toBe('provide_evidence');
     expect(() => planMove(board(), fight, P, R)).toThrow(/send_message/);
@@ -279,7 +288,8 @@ describe('planId', () => {
   });
 
   it('실행 API가 다르면 다른 값 (fight: send_message vs provide_evidence)', () => {
-    const evidence = board({ allowedMoves: ['provide_evidence', 'send_message'] });
+    // 합의 단계가 아닌 보드여야 fight가 provide_evidence로 잡힌다 (v2.4, Q15).
+    const evidence = board({ stage: 'CHARGEBACK', allowedMoves: ['provide_evidence', 'send_message'] });
     expect(planMove(b, evaluationFor(b, 'fight'), P, R).planId).not.toBe(
       planMove(evidence, evaluationFor(evidence, 'fight'), P, R).planId,
     );
