@@ -245,3 +245,60 @@
 2. **AC18 초안 6번의 대역 글**: 영어 초안 끝 "If not, I'll refund you in full."은 v2.7(T053) 뒤로 **정책 밖 약속(refund, 수 = fight)** 이다. 그래서 그 글 그대로는 `canSend.ok`가 `false`(확인 필요)이고, 판매자가 `refund`를 확인해야 `true`다 (`app-case-reply` "AC18 대역 글…" 테스트). AC18을 `.test.ts`로 옮길 때 ① 6번에 "refund 확인 뒤 `canSend.ok === true`"를 적거나 ② 대역 글에서 환불 문장을 빼는 것 중 하나를 정해 달라. (근거: SPEC v2.7 3장 "정책 밖 약속 막기", `src/ai/reply.ts` `outsidePolicy`.) 단위 테스트는 환불 문장 없는 판(정책 안 약속 "운송사에 전달"·"확인해서 다시 연락")으로 6번을 확인했다.
 3. **`loadCaseDraft`의 인사말·서명 입력**: 지시서 2부 106행은 `buyerFirstName`·`sellerName`을 넘기라고 하지만 그 호출은 1부 파일(`view/load.ts`)에 있다. 고쳐도 되는지 (값의 출처: 구매자 이름 = 시드 `buyer.name`, 판매자 이름 = 문구 키 새로 필요).
 4. 스위치 변수 이름 `AFTERLOOP_REAL_SEND`·`AFTERLOOP_FIXED_DRAFT`는 지시서 제안 그대로 썼다 (사람 확인 필요 2번).
+
+---
+
+# 2부 재시도 (2026-11-10 14:46)
+
+- 기준 SPEC: v2.9   (시작할 때 SPEC.md 첫 줄과 같았는지: 예. 지시서 머리도 v2.9)
+- 브랜치 / 마지막 커밋: lane/ui / 1ecb305 (구현). 이 보고서는 그 다음 커밋
+
+## 결과
+완료 — 지시서 "2부 재시도" 1~4번. main 병합 뒤 생긴 `tsc` 오류 2개(`send.ts`의 `nameProblems`, `reply-model.ts`의 토큰 종류 표)도 해결. 실제 AI·실제 PayPal 호출 0회 (가짜 `LlmCaller`·가짜 호출기만), 개발 서버 미기동, `.env` 열지 않음. `src/ai`·`src/exec`·`src/types.ts`·`config/rules.json`·`tests/acceptance`·엔진·시드는 읽기만 했다.
+
+## 바뀐 파일
+| 파일 | 내용 |
+|---|---|
+| `src/app/cases/reply-facts.ts` (새) | `caseReplyFacts({now, dueDate, buyerId, buyerLocale})` = `replyFacts` + T056 `nameFactsPair` → `{draft(영어 꼴), outgoing(구매자 언어 꼴)}`. `buyerLocaleOf(buyer)`. 이름 값은 `loadReplyNames()`(설정)에서만 |
+| `src/app/cases/view/load.ts` (사람 승인) | `loadCaseDraft`가 `draftReply`의 `facts`로 `caseReplyFacts(...).draft`를 넘긴다 (구매자 ID = 시드 연결 `loaded.buyer.id`). 만들 수 없으면 "AI unavailable" |
+| `src/app/cases/reply/load.ts` | 같은 함수로 두 벌을 만들어 `translateReply`에 `outgoing` 벌. 보기용 입력에 `draftFacts`·`board`("후" 보드)·`statusCode`, 서버 기억에 `nameProblems` |
+| `src/app/cases/reply-model.ts` | `fillFactTokens`(사실값 토큰) + `screenText`(= `fillFactTokens` → 실행 층 `fillMessage`). 코칭·영어 초안·전송본·역번역 모두 채운 글. `FACT_LABEL`에 `BUYER_NAME`·`SELLER_NAME`. 검사 줄 4번째 "이름 호칭"(`nameProblems`). `GateFacts`에 `nameProblems`·`planIsOffer`·`statusAllowsOffer`. `canSendOffer` 추가, 두 버튼이 같은 글 검사(`contentGate`)를 쓴다. `OFFER_STATUS`, `OfferView`(`amountCents` + `toDollarsRounded` 표기) |
+| `src/app/_server/send.ts` | `kind: 'message' \| 'offer'`. 사실값은 `caseReplyFacts(...).outgoing`으로 서버가 다시 만든다 (이름 = 시드 구매자 ID + 설정, 브라우저에서 받지 않음). 채우기는 `fillFactTokens` (미리보기와 같은 함수). `nameProblems`가 있으면 호출 0회 거부. 제안: `offerComesFirst` 참 + 상태 `WAITING_FOR_SELLER_RESPONSE` + `planMove`가 make_offer일 때만 → `executeMove` 1회 (본문 `note` = 채운 전송본, `src/exec/request.ts` 그대로). 나머지 관문(연결 표·live 허용·판매자 글·승인·토큰·약속·중복 방지)은 메시지와 같은 줄을 지난다. `fixedTranslation`도 `nameProblems`를 채운다 (전송본을 영어 경로에 한 번 더 넣어 그 칸만 읽음, LLM 0회) |
+| `src/app/cases/actions.ts` | 폼에 `kind`(zod enum, 기본 `message`)만 추가. 금액·계획은 여전히 받지 않는다 |
+| `src/app/cases/reply/reply-panel.tsx` | 제안이 먼저인 분쟁: 주 버튼 "Send offer · $7"(`case.send.offerButton`) + 이유 줄, 그 아래 "Send in Korean"은 조용한 버튼으로 꺼진 채 `case.view.offerFirst` 안내 유지. 실제 전송 확인 창은 제안용 문구. 결과는 같은 자리·같은 모양 |
+| `src/app/cases/view/case-view.tsx`, `case.css` | `.case-columns`(auto-fit 격자) → `.case-stack`(세로 flex). 순서: 머리글 → 비교 → 원인 → 대화 → 배송사. 왼쪽 열 폭 전체 |
+| `config/copy.en.json`·`copy.ko.json` | `case.` 키만 12개씩 추가 (두 파일 같은 키): `case.reply.fact.BUYER_NAME`·`SELLER_NAME`, `case.reply.check.nameHonorific`, `case.send.offerButton`·`confirmLiveOffer`, `case.send.blocked.nameHonorific`·`noOffer`·`offerStatus`, `case.send.error.offerNotRecommended`·`offerStatus`·`nameHonorific` |
+| `tests/unit/app-case-reply-retry.test.ts` (새, 20개) | 아래 완료 기준 대조 |
+| `tests/unit/app-send.test.ts` | 시험 사실값을 `caseReplyFacts(...).outgoing`로 (서버가 다시 만드는 값과 같게 — 서명 토큰이 늘 있다), 준비 답장에 `nameProblems` |
+| `tests/unit/app-case-reply.test.ts` | "검사 줄은 세 가지" → 네 가지 (이름 호칭 줄 추가). 기대값을 바꾼 것은 이것뿐 |
+
+## 테스트 결과
+| 명령 | 통과 | 실패 | 비고 |
+|---|---|---|---|
+| npm run test:acceptance | 158 | 0 | 9 건너뜀 = AC13 실제 샌드박스. AC32 포함 13 파일 |
+| npm test | 1822 | 0 | 39 파일 |
+| npx tsc --noEmit | 통과 | 0 | 병합 뒤 오류 2개 해결 |
+| npm run lint | 통과 | 0 | 경고 0 |
+| npm run build | 통과 | 0 | `/cases/[disputeId]` (ƒ). `.next/static`에 `Fernwood`·비밀값 이름·`AFTERLOOP_REAL_SEND`·`api-m.sandbox` 0건 |
+
+완료 기준 대조 (`app-case-reply-retry.test.ts`):
+- [x] 배치: 그린 HTML에 `case-columns` 없음, `case-stack` 안에 대화 → 배송사 순서. CSS `.case-stack`은 `flex-direction: column`, `grid` 없음
+- [x] 서버 경로(`loadReply` → `loadCaseDraft` → `translateReply`, PayPal·LLM만 가짜) 세 호출의 system·user에 "Seo-yeon"·"서연"·"Ji-ho"·"지호"·"Hannah"·"Fernwood" 없음. 초안·번역 호출의 `<facts>`에 `⟦BUYER_NAME_1⟧ (BUYER_NAME)`·`⟦SELLER_NAME_1⟧ (SELLER_NAME)`
+- [x] 가짜 초안 "Hello ⟦BUYER_NAME_1⟧, … ⟦SELLER_NAME_1⟧" → 영어 미리보기 "Hello Seo-yeon," · 끝 "Hannah, Fernwood Knits" / 한국어 "안녕하세요 서연 님," (`님 님` 없음), 보내기 켜짐. 사실값 줄에 "서연 님"·서명
+- [x] 이름 토큰이 전송본에서 빠지면 `missing`에 있고 `sendable: false`
+- [x] "⟦BUYER_NAME_1⟧ 님" → 이름 호칭 검사 줄 ✕, 버튼 이유 `case.send.blocked.nameHonorific`, 서버 `sendReply` 호출 0회
+- [x] buyer_m(B04)·구매자 없음 → 사실값 종류 `DATE`·`SELLER_NAME`뿐
+- [x] 미리보기(코칭·초안·전송본·역번역)에 `{{`·`⟦` 없음. 서연 전송본 미리보기 = 가짜 호출기가 받은 send-message 본문 `message` (글자까지 `toEqual`, `{{disputeAmount}}` → `$72.00` 포함)
+- [x] 지호: `view.offer = { amountCents: planMove(...).amountCents, amountDisplay: '$7' }`, 그린 답장 칸에 "Send offer · $7", "Send in Korean"은 `disabled` + "Send the offer first …". 스위치 꺼짐 → 실제 0회(가짜 1회) / live → `make-offer` 1회, `note` = 화면 전송본 미리보기, `offer_amount.value` "7.20", send-message 0회 / 같은 입력 두 번 → 1회 / `liveSendAllowed: false`·연습용·옛 서연·표 밖 → 0회 / 상태 `UNDER_REVIEW` → 0회(화면 버튼도 꺼짐 + 이유) / 승인 없음·판매자 글 있음·토큰 변조 → 0회 / 서연 분쟁에 제안 → 0회 / 지호에 메시지 → 0회
+- [x] 화면 코드·서버 코드에 이름 값·제안 금액(700·720·$7) 리터럴 없음 (테스트로 확인)
+
+## 남은 문제
+- "filled by code" 표시(밑줄 점선)는 넣지 않았다 (지시서 "해도 된다"). 채운 글은 보통 글자로 보인다.
+- 코칭 줄도 실행 층 표기(`$7.20`)로 채운다 (지시서: 코칭은 달러 반올림을 "따라도 된다" — 한 함수로 맞추는 쪽을 골랐다).
+- 미리보기용으로 "후" 보드(`BoardState`)를 답장 칸(브라우저)에 넘긴다 — `fillMessage`가 `board.amountCents`를 읽기 때문. 개인정보는 없지만(원인 근거 단어·기한·금액) 브라우저로 가는 값이 늘었다.
+- 고정 초안의 호칭 검사는 전송본을 `translateReply` 영어 경로(LLM 0회)에 한 번 더 넣어 `nameProblems`만 읽는다. 그 경로가 전송본을 거부하면 보낼 수 없는 글로 본다 (막는 쪽). 고정 초안은 아직 `null`이라 실제로는 돌지 않는다.
+- 실제 모델이 이름 토큰을 지키는지, 실제 지호 분쟁의 상태가 `WAITING_FOR_SELLER_RESPONSE`인지, 실제 D1에 판매자 글이 이미 있는지는 확인하지 못했다 (PayPal·LLM 미호출). 판매자 글이 있으면 녹화 때 제안도 "already replied"로 막힌다.
+- 스크린샷 확인 필요 (컨트롤 타워): 서연 1440 밝은, 지호 1440 밝은. 특히 1440에서 배송사 이벤트 글이 한 줄에 들어가는지.
+
+## 컨트롤 타워에 요청할 결정
+- 없음 (앞 절의 결정 요청 2·3번은 이번 지시서로 정리됐다)
