@@ -5,7 +5,7 @@
 <!-- afterloop:last-run:check -->
 ## 조회 (`npm run sandbox:check`)
 
-- 시각: 2026-11-10 08:25 KST
+- 시각: 2026-11-10 09:00 KST
 - 토큰 발급: 성공
 
 | 엔드포인트 | 상태 | 비고 |
@@ -24,6 +24,9 @@
 | GET /v2/checkout/orders/{O10} | 200 | ok |
 | GET /v2/checkout/orders/{O11} | 200 | ok |
 | GET /v2/checkout/orders/{O12} | 200 | ok |
+| GET /v1/customer/disputes/{D1} | 200 | ok |
+| GET /v1/customer/disputes/{D2} | 200 | ok |
+| GET /v1/customer/disputes/{D3} | 200 | ok |
 
 ### 주문
 | 키 | 주문 ID | 상태 | 캡처 ID | 추적 |
@@ -40,6 +43,13 @@
 | O10 | 3Y154370758458431 | COMPLETED | 2B206465U2185293S | 등록 |
 | O11 | 8CW55649ER1719626 | COMPLETED | 1JM434082D896493B | 등록 |
 | O12 | 2AJ52151YM544454G | COMPLETED | 514617893J4519255 | 등록 |
+
+### 분쟁
+| 키 | 분쟁 ID | reason | 단계 | 상태 | 캡처 ID |
+| --- | --- | --- | --- | --- | --- |
+| D1 | PP-R-MBJ-10197650 | MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED | INQUIRY | WAITING_FOR_SELLER_RESPONSE | 9KU39751DX242312R |
+| D2 | PP-R-GAH-10197649 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | UNDER_REVIEW | 26293576ME0859205 |
+| D3 | PP-R-FYT-10197651 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | UNDER_REVIEW | 8HD61398JA389940N |
 
 <!-- afterloop:last-run:probe -->
 ## 요청 ID 길이 확인 (`npm run sandbox:check -- --probe-request-id`)
@@ -59,8 +69,14 @@
 <!-- afterloop:last-run:disputes -->
 ## 분쟁 읽기 (`npm run sandbox:disputes`)
 
-- 시각: 2026-11-09 23:30 KST
+- 시각: 2026-11-10 08:57 KST
 - 엔드포인트: GET /v1/customer/disputes → GET /v1/customer/disputes/{id} (조회만)
-- 분쟁 0건 · 변환 성공 0건 · 변환 실패 0건
+- 분쟁 3건 · 변환 성공 3건 · 변환 실패 0건
 
-0 disputes (empty list)
+| 분쟁 ID | reason | 단계 | 채널 | 금액(센트) | 기한 | 허용된 수 | 이전 INR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| PP-R-FYT-10197651 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | INTERNAL | 3500 | - | - | 0 |
+| PP-R-MBJ-10197650 | MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED | INQUIRY | INTERNAL | 4800 | 2026-11-29T23:45:07.079Z | send_message,make_offer,accept_claim | 0 |
+| PP-R-GAH-10197649 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | INTERNAL | 7200 | - | - | 0 |
+
+> 추적·배송 기록(hasTracking·hasDeliveredTracking)은 주문 상세에서 오는 값이라 여기서는 false로 두고 변환했다 (`npm run sandbox:check`가 읽는다).
