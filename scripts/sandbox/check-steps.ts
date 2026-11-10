@@ -1,5 +1,9 @@
 /**
- * `sandbox:check`가 하는 일 (T001, SPEC v2.2 9-5장). **조회와 요청 ID 길이 확인만** 한다.
+ * `sandbox:check`가 하는 일 (T001·T039, SPEC v2.3 9-5장). **조회와 요청 ID 길이 확인만** 한다.
+ *
+ * 보고(`CheckReport`)의 `orders`·`disputes`는 manifest에 적힌 전부다 — 시연 제외 분쟁도 조회해
+ * 항목에 `demoExcluded`를 붙이고 `last-run.md`에 ID와 함께 "시연 제외"로 적는다.
+ * 고정 숫자(주문 12건·추적 7건)와 비교하지 않는다. manifest가 기준이다.
  *
  * 여기에는 진입점이 없다 (단위 테스트가 그대로 import한다). 명령줄 처리는 `check.ts`가 한다.
  * 분쟁·주문 상태를 바꾸는 호출은 만들지 않는다.
@@ -41,6 +45,8 @@ export type DisputeRow = {
   stage: string;
   status: string;
   captureIds: string[];
+  /** 시연 제외 분쟁일 때만 `true` (SPEC v2.3 9-5). 조회만 하고 아무 조치도 하지 않는다. */
+  demoExcluded?: boolean;
 };
 
 /** `--json`이 한 줄로 내보내는 모양 (AC13이 읽는다). */
@@ -83,8 +89,11 @@ export function readOrder(key: string, orderId: string, body: unknown): OrderRow
   };
 }
 
-/** 분쟁 상세에서 필요한 값만 뽑는다 (구매자 정보는 읽지 않는다). */
-export function readDispute(key: string, disputeId: string, body: unknown): DisputeRow {
+/**
+ * 분쟁 상세에서 필요한 값만 뽑는다 (구매자 정보는 읽지 않는다).
+ * `demoExcluded`는 manifest가 그렇게 적은 항목에만 붙는다 (응답에서 읽는 값이 아니다).
+ */
+export function readDispute(key: string, disputeId: string, body: unknown, demoExcluded = false): DisputeRow {
   const dispute = asRecord(body);
   const captureIds = asArray(dispute.disputed_transactions)
     .map((txn) => asText(asRecord(txn).seller_transaction_id))
@@ -96,6 +105,7 @@ export function readDispute(key: string, disputeId: string, body: unknown): Disp
     stage: asText(dispute.dispute_life_cycle_stage),
     status: asText(dispute.status),
     captureIds,
+    ...(demoExcluded ? { demoExcluded: true } : {}),
   };
 }
 
@@ -181,7 +191,7 @@ export async function runCheck(client: PayPalClient, manifest: Manifest, now: Da
         problems.push(`${entry.key} 분쟁 조회 → ${res.status}: ${errorSummary(res.body)}`);
         continue;
       }
-      report.disputes.push(readDispute(entry.key, entry.disputeId, res.body));
+      report.disputes.push(readDispute(entry.key, entry.disputeId, res.body, entry.demoExcluded === true));
     } catch (error) {
       const line = failureLine(error);
       calls.push({ endpoint: label, status: null, note: line });
@@ -274,6 +284,9 @@ export async function probeRequestId(client: PayPalClient): Promise<{ rows: Prob
 
 const row = (cells: (string | number)[]): string => `| ${cells.join(' | ')} |`;
 
+/** 시연에서 뺀 분쟁을 last-run.md에 적는 말 (SPEC v2.3 9-5). */
+export const DEMO_EXCLUDED_CELL = '시연 제외';
+
 export function checkSection(outcome: CheckOutcome, manifest: Manifest, now: Date = new Date()): string {
   const lines = [
     `- 시각: ${kstStamp(now)}`,
@@ -290,16 +303,39 @@ export function checkSection(outcome: CheckOutcome, manifest: Manifest, now: Dat
       lines.push(row([order.key, order.orderId, order.status, order.captureId || '-', order.tracked ? '등록' : '미등록']));
     }
   }
-  if (outcome.report.disputes.length > 0) {
+  if (manifest.disputes.length > 0) {
+    // manifest의 분쟁 전부를 적는다 (시연 제외 포함). 조회가 실패한 항목도 ID는 남긴다.
+    const byKey = new Map(outcome.report.disputes.map((dispute) => [dispute.key, dispute]));
     lines.push(
       '',
       '### 분쟁',
-      row(['키', '분쟁 ID', 'reason', '단계', '상태', '캡처 ID']),
-      row(['---', '---', '---', '---', '---', '---']),
+      row(['키', '분쟁 ID', 'reason', '단계', '상태', '캡처 ID', '시연']),
+      row(['---', '---', '---', '---', '---', '---', '---']),
     );
-    for (const dispute of outcome.report.disputes) {
+    for (const entry of manifest.disputes) {
+      const dispute = byKey.get(entry.key);
+      const demo = entry.demoExcluded === true ? DEMO_EXCLUDED_CELL : '포함';
       lines.push(
-        row([dispute.key, dispute.disputeId, dispute.reason, dispute.stage, dispute.status, dispute.captureIds.join(' ') || '-']),
+        row([
+          entry.key,
+          dispute?.disputeId ?? entry.disputeId,
+          dispute?.reason || '-',
+          dispute?.stage || '-',
+          dispute?.status || '-',
+          dispute?.captureIds.join(' ') || '-',
+          demo,
+        ]),
+      );
+    }
+    const excluded = manifest.disputes.filter((entry) => entry.demoExcluded === true);
+    if (excluded.length > 0) {
+      lines.push(
+        '',
+        ...excluded.map(
+          (entry) =>
+            `- ${entry.key} (${entry.disputeId}): ${DEMO_EXCLUDED_CELL} — 조회만 하고 아무 조치도 하지 않는다` +
+            `${entry.note === undefined ? '.' : ` (${entry.note})`}`,
+        ),
       );
     }
   }
