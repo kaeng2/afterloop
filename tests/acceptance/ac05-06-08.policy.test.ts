@@ -51,10 +51,25 @@ describe('AC6 오토파일럿 건너뜀 규칙', () => {
   });
 });
 
-// 기대값 출처: SPEC v2 5장 (사전 확인: 합의 단계에는 provide_evidence 링크가 없음) / 기획자 승인 2026-11-09
+// 기대값 출처: SPEC v2.4 5장 / 기획자 승인 2026-11-09 + 사람 결정 2026-11-10 (Q15)
+// 실제 샌드박스 확인 (2026-11-10): 합의 단계 분쟁 중 D1(SNAD)에는 provide_evidence 링크가 없고, D2(INR)에는 send_message와 함께 있다.
 describe('AC8 수 → API', () => {
   it('합의 단계(증빙 링크 없음): fight는 send_message', () => {
     expect(byMove(recommend(D1_JIHO, P, R).all, 'fight').apiMove).toBe('send_message');
+  });
+
+  it('합의 단계에 증빙 링크와 메시지 링크가 함께 있으면: fight는 send_message (실제 D2의 링크 구성)', () => {
+    const board: BoardState = {
+      ...D1_JIHO,
+      stage: 'INQUIRY',
+      allowedMoves: ['send_message', 'make_offer', 'provide_evidence', 'accept_claim'],
+    };
+    expect(byMove(recommend(board, P, R).all, 'fight').apiMove).toBe('send_message');
+  });
+
+  it('합의 단계에 증빙 링크만 있으면: fight는 provide_evidence', () => {
+    const board: BoardState = { ...D1_JIHO, stage: 'INQUIRY', allowedMoves: ['provide_evidence', 'make_offer', 'accept_claim'] };
+    expect(byMove(recommend(board, P, R).all, 'fight').apiMove).toBe('provide_evidence');
   });
 
   it('클레임 단계(증빙 링크 있음): fight는 provide_evidence', () => {
