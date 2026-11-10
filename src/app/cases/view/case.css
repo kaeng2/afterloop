@@ -158,11 +158,12 @@
   border-top: var(--card-border);
 }
 
-.case-columns {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+/* 대화 → 배송사: 나란히 두지 않고 왼쪽 열 폭 전체로 위아래로 쌓는다 (T009 2부 재시도 1번).
+   1440에서 배송사 이벤트 글이 한 줄에 들어가게. 390에서도 같은 한 열 */
+.case-stack {
+  display: flex;
+  flex-direction: column;
   gap: var(--card-gap);
-  align-items: start;
   min-width: 0;
 }
 

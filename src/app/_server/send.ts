@@ -18,6 +18,13 @@
  *  3. `executeMove`가 같은 요청 번호의 두 번째 실행을 호출 없이 이전 결과로 돌려준다. 그 기억은 호출기
  *     함수별이므로 호출기를 프로세스에 하나만 둔다 (`liveCaller`, `SIMULATED_CALLER`).
  *
+ * 제안 (T009 2부 재시도 4번): `kind: 'offer'`면 제안이 먼저인 분쟁(`offerComesFirst`)에서만, PayPal 상태가
+ * `OFFER_STATUS`일 때만, `planMove`의 make-offer 계획으로 **호출 1회**를 보낸다 (전송본은 `note`.
+ * send-message 없음 — `src/exec/request.ts`). 위 관문 셋과 승인·토큰·약속 검사는 메시지와 같다.
+ *
+ * 이름 (SPEC v2.9 3장): 사실값은 `caseReplyFacts`(날짜 + 이름 토큰)로 서버가 다시 만든다. 이름 값은
+ * 설정과 시드 구매자 ID에서만 온다.
+ *
  * 비상용 고정 초안: `AFTERLOOP_FIXED_DRAFT`가 정확히 `"1"`일 때만 `resolveDraftSource`가 `'fixed'`다.
  * 초안을 읽는 자리는 `loadFixedDraft()` 한 곳이고, 사람이 파일 위치와 문장을 정하기 전까지 "없음"이다.
  *
@@ -28,9 +35,14 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 
 import { findCommitments } from '@/ai/commitments';
-import { translateReply, type CommitmentCategory, type ReplyMove, type ReplyTranslation } from '@/ai/reply';
-import { checkTokens, fillTokens, formatFact, type FactLocale } from '@/ai/tokens';
-import { replyFacts } from '@/engine/followup';
+import {
+  translateReply,
+  type CommitmentCategory,
+  type ReplyMove,
+  type ReplyNameProblem,
+  type ReplyTranslation,
+} from '@/ai/reply';
+import { checkTokens, type FactLocale } from '@/ai/tokens';
 import { planMove } from '@/engine/plan';
 import { offerComesFirst } from '@/engine/policy';
 import { recommend } from '@/engine/recommend';
@@ -40,14 +52,23 @@ import { ENDPOINTS } from '@/exec/request';
 import { getDispute, type DisputeDetail } from '@/paypal/disputes';
 import type { ActionPlan, Approval, DemoLink, FactToken, Params, PayPalCaller, PayPalClient, PolicyConfig } from '@/types';
 
-import type { DraftSource, SendFailure, SendMode, SendOutcome } from '../cases/reply-model';
+import { caseReplyFacts } from '../cases/reply-facts';
+import {
+  fillFactTokens,
+  OFFER_STATUS,
+  type DraftSource,
+  type SendFailure,
+  type SendKind,
+  type SendMode,
+  type SendOutcome,
+} from '../cases/reply-model';
 import { t } from '../_shared/copy';
 import { demoLinks, linkFor } from '../_shared/demo-links';
 import { pickBoard } from '../_shared/dispute-view';
 import { loadDemoDisputes, type LoadDemoDisputesResult } from './disputes';
 import { getPayPalClient } from './paypal';
 
-export type { DraftSource, SendFailure, SendMode, SendOutcome };
+export type { DraftSource, SendFailure, SendKind, SendMode, SendOutcome };
 
 // ───────────────────────────── 스위치 (순수) ─────────────────────────────
 
@@ -101,14 +122,23 @@ export async function fixedTranslation(
   const check = checkTokens(fixed.draftEn.trim(), outgoing, input.facts);
   const inDraft = findCommitments(fixed.draftEn, 'en');
   const added = input.buyerLocale === 'en' ? [] : findCommitments(outgoing, input.buyerLocale).filter((c) => !inDraft.includes(c));
+  // 이름 호칭 검사(T056)는 답장 모듈만 한다 — 전송본을 영어 경로(호출 0회)에 한 번 더 넣어 그 칸만 읽는다.
+  // 그 경로가 글을 거부하면(전송본에 직접 쓴 값 등) 보낼 수 없는 글로 본다 (막는 쪽으로 틀린다)
+  const outgoingNames = await translateReply(
+    { draftEn: outgoing, buyerLocale: 'en', facts: input.facts, move: input.move },
+    { llm: NO_LLM },
+  );
+  const nameProblems: ReplyNameProblem[] = outgoingNames.ok ? outgoingNames.nameProblems : [];
   return {
     ok: true,
     outgoing,
     backTranslationEn: fixed.backTranslationEn,
     check,
-    sendable: check.ok && added.length === 0 && english.outsidePolicy.length === 0,
+    sendable:
+      check.ok && added.length === 0 && english.outsidePolicy.length === 0 && outgoingNames.ok && nameProblems.length === 0,
     outsidePolicy: english.outsidePolicy,
     addedInTranslation: added,
+    nameProblems,
   };
 }
 
@@ -164,7 +194,12 @@ export type PreparedReply = {
   outgoing: string;
   outsidePolicy: CommitmentCategory[];
   addedInTranslation: CommitmentCategory[];
-  /** 화면을 그릴 때의 사실값 (원래 값). 보낼 때 다시 만든 값과 다르면 거부한다. */
+  /** 이름 토큰 둘레 문제 (`translateReply(...).nameProblems`, T056). 비어 있지 않으면 거부한다. */
+  nameProblems: ReplyNameProblem[];
+  /**
+   * 화면을 그릴 때의 **전송본용** 사실값 (원래 값, 날짜 + 이름 = `caseReplyFacts(...).outgoing`).
+   * 보낼 때 다시 만든 값과 다르면 거부한다.
+   */
   facts: FactToken[];
   buyerLocale: FactLocale;
 };
@@ -205,6 +240,8 @@ export function recallReply(id: string): PreparedReply | null {
 
 export type SendReplyInput = {
   disputeId: string;
+  /** 보내는 수. 없으면 `message` (send-message). `offer`는 make-offer 1회 (글은 `note`). */
+  kind?: SendKind;
   /** 서버가 기억해 둔 답장. 없으면(서버를 다시 켰거나 번호가 틀림) 거부한다. */
   reply: PreparedReply | null;
   confirmedCommitments: CommitmentCategory[];
@@ -252,8 +289,10 @@ function failureOf(nextAction: string, endpoint: string): SendFailure {
  */
 export async function sendReply(input: SendReplyInput, deps: SendReplyDeps): Promise<SendOutcome> {
   const { mode } = deps;
+  const kind: SendKind = input.kind ?? 'message';
   const links = deps.links ?? demoLinks;
-  const endpoint = ENDPOINTS.send_message ?? 'send-message';
+  const apiMove = kind === 'offer' ? 'make_offer' : 'send_message';
+  const endpoint = ENDPOINTS[apiMove] ?? apiMove;
 
   // 1. 화면에 내는 분쟁만. 실제 전송은 허용 목록에 있는 분쟁만 (호출 0회)
   const link = linkFor(input.disputeId, links);
@@ -277,6 +316,10 @@ export async function sendReply(input: SendReplyInput, deps: SendReplyDeps): Pro
   if (!reply.outsidePolicy.every((category) => input.confirmedCommitments.includes(category))) {
     return fail(mode, 'blocked', 'case.send.error.unconfirmed', 'case.send.next.confirm');
   }
+  // 이름 호칭 겹침 ("⟦BUYER_NAME_1⟧ 님") — 답장 모듈(T056)이 준 값. 확인으로 풀리지 않는다
+  if (reply.nameProblems.length > 0) {
+    return fail(mode, 'blocked', 'case.send.error.nameHonorific', 'case.send.next.regenerate');
+  }
 
   // 4. 분쟁 다시 읽기 → 보드 → 추천 (같은 보드로 방금 만든 추천)
   let loaded: LoadDemoDisputesResult;
@@ -292,29 +335,44 @@ export async function sendReply(input: SendReplyInput, deps: SendReplyDeps): Pro
   const board = pickBoard(dispute);
   const recommendation = recommend(board, deps.params, deps.rules);
 
-  // 5. 제안이 먼저면 메시지만 보내지 않는다 (화면만 믿지 않는다)
-  if (offerComesFirst(board, recommendation)) {
+  // 5. 제안이 먼저면 메시지만 보내지 않는다 (화면만 믿지 않는다). 제안은 제안이 먼저인 분쟁에서만
+  const offerFirst = offerComesFirst(board, recommendation);
+  if (kind === 'message' && offerFirst) {
     return fail(mode, 'blocked', 'case.send.error.offerFirst', 'case.view.offerFirst');
   }
+  if (kind === 'offer') {
+    if (!offerFirst) return fail(mode, 'blocked', 'case.send.error.offerNotRecommended', 'case.send.next.reload');
+    // make-offer는 판매자 답을 기다리는 상태에서만 된다 (방금 다시 읽은 상태로 본다)
+    if (dispute.statusCode !== OFFER_STATUS) {
+      return fail(mode, 'blocked', 'case.send.error.offerStatus', 'case.send.next.checkPayPal');
+    }
+  }
 
-  // 6. 답장 계획 (실행 API가 send_message일 때만)
+  // 6. 계획 (메시지 = 다투기 + send_message, 제안 = 제안 + make_offer. 금액은 엔진 계획의 것)
   const best = recommendation.best;
+  const wantMove = kind === 'offer' ? 'offer' : 'fight';
   let plan: ActionPlan | null = null;
-  if (best !== null && best.move === 'fight' && best.apiMove === 'send_message') {
+  if (best !== null && best.move === wantMove && best.apiMove === apiMove) {
     try {
       plan = planMove(board, best, deps.params, deps.rules);
     } catch {
       plan = null;
     }
   }
-  if (plan === null || plan.apiMove !== 'send_message') {
+  if (plan === null || plan.apiMove !== apiMove) {
     return fail(mode, 'blocked', 'case.send.error.noPlan', 'case.send.next.handleOnPayPal');
   }
 
-  // 7. 사실값: 서버가 다시 만들고, 화면을 그릴 때의 값과 같아야 한다 (날짜가 바뀌었으면 다시 읽게)
+  // 7. 사실값 (날짜 + 이름): 서버가 다시 만들고, 화면을 그릴 때의 값과 같아야 한다 (날짜가 바뀌었으면 다시 읽게).
+  //    이름은 시드 연결의 구매자 ID와 설정(`reply.names`)에서만 — 브라우저에서 받지 않는다
   let facts: FactToken[];
   try {
-    facts = replyFacts({ now: deps.now, disputeDueDate: board.dueDate });
+    facts = caseReplyFacts({
+      now: deps.now,
+      dueDate: board.dueDate,
+      buyerId: dispute.buyer?.id ?? null,
+      buyerLocale: reply.buyerLocale,
+    }).outgoing;
   } catch {
     return fail(mode, 'blocked', 'case.send.error.replyExpired', 'case.send.next.reload');
   }
@@ -328,11 +386,11 @@ export async function sendReply(input: SendReplyInput, deps: SendReplyDeps): Pro
     return fail(mode, 'blocked', 'case.send.error.checkFailed', 'case.send.next.regenerate');
   }
 
-  // 9. 채우기: 원래 값 → 구매자 언어 표기 → 전송본의 토큰 자리
+  // 9. 채우기: 원래 값 → 구매자 언어 표기 → 전송본의 토큰 자리. 화면 미리보기(`screenText`)와 같은 함수다.
+  //    금액 자리표시자는 `executeMove`가 실행 층(`fillMessage`)에서 채운다 — 미리보기도 같은 함수를 지난다
   let messageTemplate: string;
   try {
-    const local = facts.map((fact) => ({ ...fact, value: formatFact(fact.kind, fact.value, reply.buyerLocale) }));
-    messageTemplate = fillTokens(reply.outgoing, local);
+    messageTemplate = fillFactTokens(reply.outgoing, facts, reply.buyerLocale);
   } catch {
     return fail(mode, 'blocked', 'case.send.error.checkFailed', 'case.send.next.regenerate');
   }
@@ -383,6 +441,7 @@ export async function sendReply(input: SendReplyInput, deps: SendReplyDeps): Pro
  */
 export async function sendFromScreen(form: {
   disputeId: string;
+  kind: SendKind;
   replyId: string;
   confirmedCommitments: CommitmentCategory[];
 }): Promise<SendOutcome> {
@@ -391,6 +450,7 @@ export async function sendFromScreen(form: {
   return sendReply(
     {
       disputeId: form.disputeId,
+      kind: form.kind,
       reply: recallReply(form.replyId),
       confirmedCommitments: form.confirmedCommitments,
       approved: true,

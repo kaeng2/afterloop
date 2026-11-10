@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * S5 답장 전송 서버 액션 (T009 2부). 답장 칸의 [Send in …] 버튼이 부른다.
+ * S5 답장 전송 서버 액션 (T009 2부). 답장 칸의 [Send in …]·[Send offer · …] 버튼이 부른다.
  *
  * 브라우저가 보낸 값은 믿지 않는다: 받는 것은 분쟁 번호·준비해 둔 답장 번호·확인한 약속 범주뿐이고,
  * 모양을 zod로 본 뒤 `_server/send.ts`의 `sendFromScreen`에 넘긴다. 글·계획·승인은 서버가 다시 만든다.
@@ -19,6 +19,8 @@ import type { SendOutcome } from './reply-model';
 
 const SendFormSchema = z.object({
   disputeId: z.string().regex(/^PP-[A-Z0-9-]{1,40}$/),
+  /** 보내는 수. 없으면 메시지. 금액·계획은 받지 않는다 (서버가 엔진으로 다시 만든다). */
+  kind: z.enum(['message', 'offer']).default('message'),
   replyId: z.string().regex(/^r-[0-9a-f]{32}$/),
   confirmedCommitments: z
     .array(z.enum(COMMITMENT_CATEGORIES as unknown as [string, ...string[]]))
@@ -39,6 +41,7 @@ export async function sendReplyAction(form: unknown): Promise<SendOutcome> {
   try {
     return await sendFromScreen({
       disputeId: parsed.data.disputeId,
+      kind: parsed.data.kind,
       replyId: parsed.data.replyId,
       confirmedCommitments: parsed.data.confirmedCommitments as (typeof COMMITMENT_CATEGORIES)[number][],
     });

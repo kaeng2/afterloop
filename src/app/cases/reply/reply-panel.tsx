@@ -22,7 +22,10 @@ import {
   BLOCK_KEYS,
   buildReplyView,
   canSend,
+  canSendOffer,
   type ReplyViewInput,
+  type SendGate,
+  type SendKind,
   type SendOutcome,
   type SendState,
 } from '../reply-model';
@@ -51,25 +54,33 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey }: ReplyPanel
   const inFlight = useRef(false);
 
   const view = buildReplyView({ ...base, confirmed, sendState, outcome });
-  const gate = replyId === null && view.gate.hasDraft ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSend(view);
+  const noReply = replyId === null && view.gate.hasDraft;
+  const gate: SendGate = noReply ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSend(view);
+  const offerGate: SendGate | null =
+    view.offer === null ? null : noReply ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSendOffer(view);
   const language = languageKey === null ? t('case.send.languageUnknown') : t(languageKey);
 
   function toggle(category: CommitmentCategory) {
     setConfirmed((now) => (now.includes(category) ? now.filter((c) => c !== category) : [...now, category]));
   }
 
-  async function send() {
-    if (!gate.ok || replyId === null || inFlight.current) return;
+  async function send(kind: SendKind) {
+    const allowed = kind === 'offer' ? offerGate?.ok === true : gate.ok;
+    if (!allowed || replyId === null || inFlight.current) return;
     inFlight.current = true;
     setSendState('sending');
-    if (view.mode === 'live' && !window.confirm(t('case.send.confirmLive', { disputeId }))) {
+    const confirmText =
+      kind === 'offer' && view.offer !== null
+        ? t('case.send.confirmLiveOffer', { disputeId, amount: view.offer.amountDisplay })
+        : t('case.send.confirmLive', { disputeId });
+    if (view.mode === 'live' && !window.confirm(confirmText)) {
       inFlight.current = false;
       setSendState('idle');
       return;
     }
     let next: SendOutcome;
     try {
-      next = await sendReplyAction({ disputeId, replyId, confirmedCommitments: confirmed });
+      next = await sendReplyAction({ disputeId, kind, replyId, confirmedCommitments: confirmed });
     } catch {
       next = {
         ok: false,
@@ -216,12 +227,35 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey }: ReplyPanel
         </>
       ) : null}
 
+      {view.offer === null || offerGate === null ? null : (
+        <div className="reply-send">
+          <button
+            type="button"
+            className="reply-button"
+            disabled={!offerGate.ok}
+            aria-describedby="reply-offer-why"
+            onClick={() => send('offer')}
+          >
+            {sendState === 'sending' ? t('case.send.sending') : t('case.send.offerButton', { amount: view.offer.amountDisplay })}
+          </button>
+          <span id="reply-offer-why" className="small muted">
+            {offerGate.ok || offerGate.reasonKey === null || result !== null ? null : t(offerGate.reasonKey)}
+          </span>
+        </div>
+      )}
+
       <div className="reply-send">
-        <button type="button" className="reply-button" disabled={!gate.ok} aria-describedby="reply-send-why" onClick={send}>
-          {sendState === 'sending' ? t('case.send.sending') : t('case.send.button', { language })}
+        <button
+          type="button"
+          className={view.offer === null ? 'reply-button' : 'reply-button-quiet'}
+          disabled={!gate.ok}
+          aria-describedby="reply-send-why"
+          onClick={() => send('message')}
+        >
+          {sendState === 'sending' && view.offer === null ? t('case.send.sending') : t('case.send.button', { language })}
         </button>
         <span id="reply-send-why" className="small muted">
-          {gate.ok || gate.reasonKey === null || result !== null ? null : t(gate.reasonKey)}
+          {gate.ok || gate.reasonKey === null || (result !== null && view.offer === null) ? null : t(gate.reasonKey)}
         </span>
       </div>
 

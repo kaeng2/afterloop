@@ -11,8 +11,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { draftReply, translateReply, type ReplyDraft, type ReplyTranslation } from '@/ai/reply';
 import { checkTokens } from '@/ai/tokens';
 import type { LoadDemoDisputesResult } from '@/app/_server/disputes';
+import { caseReplyFacts } from '@/app/cases/reply-facts';
 import { buildReplyView, canSend } from '@/app/cases/reply-model';
-import { replyFacts } from '@/engine/followup';
 import { planMove } from '@/engine/plan';
 import { recommend } from '@/engine/recommend';
 import { parseDisputeDetail, type DisputeDetail } from '@/paypal/disputes';
@@ -71,7 +71,8 @@ const D2_AFTER: BoardState = {
 };
 
 const NOW = '2026-11-10T03:00:00Z';
-const FACTS: FactToken[] = replyFacts({ now: NOW, disputeDueDate: D2_BASE.dueDate });
+// 서버가 보낼 때 다시 만드는 값과 같은 벌 (날짜 + 서명 토큰. 이 시험의 분쟁은 시드 구매자가 없다 → 구매자 이름 없음)
+const FACTS: FactToken[] = caseReplyFacts({ now: NOW, dueDate: D2_BASE.dueDate, buyerId: null, buyerLocale: 'ko' }).outgoing;
 
 /** 연결 표 (시험용): 서연 꼴 · 지호 꼴 · 연습용 · 옛 분쟁(시연 제외) · 화면에는 있지만 실제 전송 불가. */
 const LINKS: DemoLink[] = [
@@ -128,6 +129,7 @@ function preparedFrom(draftEn: string, translation: ReplyTranslation, overrides:
     outgoing: translation.outgoing,
     outsidePolicy: translation.outsidePolicy,
     addedInTranslation: translation.addedInTranslation,
+    nameProblems: translation.nameProblems,
     facts: FACTS,
     buyerLocale: 'ko',
     ...overrides,

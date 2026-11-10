@@ -155,7 +155,7 @@ export function CaseView({ view, llmOk }: { view: CaseViewData; llmOk: boolean }
 
       <CauseCard view={view} />
 
-      <div className="case-columns">
+      <div className="case-stack">
         <Conversation messages={view.messages} />
 
         {carrier === null ? null : (

@@ -19,12 +19,23 @@
  * 사실값 (지시서 "사실값 토큰 쓰는 법"): `facts`는 서버가 `replyFacts`로 만든 **원래 값**(ISO 날짜)이다.
  * 보여 줄 글만 `formatFact`로 현지 표기한 사본을 `fillTokens`에 넣어 채운다.
  */
-import type { CommitmentCategory, ReplyDraft, ReplyTranslation } from '@/ai/reply';
+import type { CommitmentCategory, ReplyDraft, ReplyNameProblem, ReplyTranslation } from '@/ai/reply';
 import { fillTokens, formatFact, type FactLocale } from '@/ai/tokens';
-import type { ActionPlan, FactToken, TokenCheck } from '@/types';
+import { fillMessage } from '@/exec/message';
+import type { ActionPlan, BoardState, FactToken, TokenCheck } from '@/types';
 
 import type { BadgeKind } from '../_shared/badge-keys';
+import { toDollarsRounded } from '../_shared/money';
 import type { RiskView } from './model';
+
+/**
+ * make-offer는 이 PayPal 상태에서만 된다 (실제로 확인한 사실, 지시서 2부 재시도 4번).
+ * PayPal API의 상태 코드라 정책값이 아니다 — 화면과 서버(`send.ts`)가 이 한 값을 함께 쓴다.
+ */
+export const OFFER_STATUS = 'WAITING_FOR_SELLER_RESPONSE';
+
+/** 보내는 수 두 가지. `message` = send-message, `offer` = make-offer (메시지는 `note`에 담는다). */
+export type SendKind = 'message' | 'offer';
 
 // ───────────────────────────── 전송 방식·결과 (서버와 함께 쓰는 꼴) ─────────────────────────────
 
@@ -60,8 +71,17 @@ export type ReplyViewInput = {
   draft: ReplyDraft;
   /** 전송본 + 역번역 + 검사 (T042 `translateReply`). 부르지 못했으면 `null`. */
   translation: ReplyTranslation | null;
-  /** 서버가 만든 사실값 (원래 값). */
+  /** 서버가 만든 사실값 (원래 값). **전송본용** 벌 (이름은 구매자 언어 꼴, `caseReplyFacts(...).outgoing`). */
   facts: FactToken[];
+  /** 영어 초안·코칭·역번역용 벌 (이름은 영어 꼴, `caseReplyFacts(...).draft`). 없으면 `facts`. */
+  draftFacts?: FactToken[];
+  /**
+   * "후" 보드. 미리보기의 금액 자리표시자(`{{disputeAmount}}`)를 실행 층과 같은 함수(`fillMessage`)로
+   * 채우는 데만 쓴다. 없으면 금액 자리표시자를 채우지 않는다.
+   */
+  board?: BoardState | null;
+  /** PayPal 상태 코드 (`OFFER_STATUS`일 때만 제안 버튼이 켜진다). */
+  statusCode?: string;
   /** 구매자 언어. 모르면 `null` (전송본을 만들 수 없다). */
   buyerLocale: FactLocale | null;
   /** "후" 보드의 답장 계획 (`planMove`). 만들 수 없으면 `null`. */
@@ -113,9 +133,12 @@ export type ReplyView = {
   coaching: string[];
   /** 영어 초안 (영어 표기로 채움). */
   draftEn: FilledText | null;
-  /** 구매자 언어 전송본 (구매자 언어 표기로 채움). */
+  /** 구매자 언어 전송본 (구매자 언어 표기로 채움). 실제로 나갈 글자와 같다 (`screenText`). */
   outgoing: FilledText | null;
+  /** 역번역 (영어 표기로 채움). */
   backTranslationEn: string | null;
+  /** 제안이 먼저인 분쟁의 주 버튼 ("Send offer · $7"). 제안 계획이 없으면 `null`. */
+  offer: OfferView | null;
   /** 전송본을 만들지 못했으면 참 (초안은 있는데 번역이 없음). */
   translationUnavailable: boolean;
   /** 코드 검사 결과 그대로 + 줄 셋. 'Code decides'. */
@@ -153,10 +176,19 @@ export type GateFacts = {
   /** 정책 밖 약속 범주 수 / 그 가운데 확인하지 않은 수. */
   outsidePolicy: number;
   unconfirmed: number;
+  /** 이름 토큰 둘레 문제 수 (`translateReply(...).nameProblems`, T056). 확인으로 풀리지 않는다. */
+  nameProblems: number;
   planIsReply: boolean;
+  /** 계획이 make-offer이고 금액이 있다 (제안 버튼). */
+  planIsOffer: boolean;
+  /** PayPal 상태가 `OFFER_STATUS`다. */
+  statusAllowsOffer: boolean;
   offerFirst: boolean;
   sendState: SendState;
 };
+
+/** 제안 버튼. 금액은 엔진 계획(`planMove` → `recommend`의 제안)의 `amountCents`를 달러 반올림한 표기. */
+export type OfferView = { amountDisplay: string; amountCents: number };
 
 // ───────────────────────────── 문구 키 ─────────────────────────────
 
@@ -173,7 +205,10 @@ export const BLOCK_KEYS = {
   noTranslation: 'case.send.blocked.noTranslation',
   offerFirst: 'case.view.offerFirst',
   noPlan: 'case.send.blocked.noPlan',
+  noOffer: 'case.send.blocked.noOffer',
+  offerStatus: 'case.send.blocked.offerStatus',
   addedInTranslation: 'case.send.blocked.addedInTranslation',
+  nameHonorific: 'case.send.blocked.nameHonorific',
   checkFailed: 'case.send.blocked.checkFailed',
   unconfirmed: 'case.send.blocked.unconfirmed',
   sending: 'case.send.blocked.sending',
@@ -189,6 +224,13 @@ const FACT_LABEL: Record<FactToken['kind'], string> = {
   AMOUNT: 'case.reply.fact.AMOUNT',
   TRACKING: 'case.reply.fact.TRACKING',
   CUSTOMS_STATUS: 'case.reply.fact.CUSTOMS_STATUS',
+  BUYER_NAME: 'case.reply.fact.BUYER_NAME',
+  SELLER_NAME: 'case.reply.fact.SELLER_NAME',
+};
+
+/** 이름 토큰 둘레 문제 → 검사 줄에 보일 글자 키. */
+const NAME_PROBLEM_KEY: Record<ReplyNameProblem, string> = {
+  honorific_after_name: 'case.reply.check.nameHonorific',
 };
 
 // ───────────────────────────── 조각 ─────────────────────────────
@@ -202,22 +244,55 @@ export function localizedFacts(facts: FactToken[], locale: FactLocale): FactToke
   }
 }
 
-/** 토큰을 채운 글. 채울 수 없으면(토큰 형식 오류·없는 토큰) 원래 글을 `filled: false`로. */
-export function filledText(text: string, facts: FactToken[], locale: FactLocale): FilledText {
-  const local = localizedFacts(facts, locale);
-  if (local === null) return { text, filled: false };
+/**
+ * 사실값 토큰만 채운다: 원래 값 → `formatFact`(그 언어 표기) → `fillTokens`. 이름 값은 그대로 들어간다.
+ * 서버의 전송 코드(`send.ts`)도 이 함수로 `messageTemplate`을 만든다. 채울 수 없으면 예외.
+ */
+export function fillFactTokens(text: string, facts: FactToken[], locale: FactLocale): string {
+  const local = facts.map((fact) => ({ ...fact, value: formatFact(fact.kind, fact.value, locale) }));
+  return fillTokens(text, local);
+}
+
+/** 금액 자리표시자를 채울 출처 (`fillMessage`가 `plan.amountCents`·`board.amountCents`만 읽는다). */
+export type MoneySource = { plan: ActionPlan; board: BoardState };
+
+/**
+ * 화면에 보이는 글. **보내는 글(전송본)이면 실제로 나갈 글자와 똑같다** — 전송 경로와 같은 두 단계다:
+ *  1. `fillFactTokens` (사실값 토큰)
+ *  2. 실행 층의 `fillMessage` (금액 자리표시자 → `$7.00`, 남은 토큰·직접 쓴 금액 거부). `executeMove`가
+ *     `messageTemplate`에 하는 것과 같은 함수다.
+ * 금액 출처가 없으면 2단계를 건너뛰고, 그때 `{{…}}`가 남으면 채우지 못한 것으로 본다.
+ * 채우지 못하면 원래 글을 `filled: false`로 (보내기도 같은 자리에서 막힌다).
+ */
+export function screenText(text: string, facts: FactToken[], locale: FactLocale, money: MoneySource | null): FilledText {
+  let withFacts: string;
   try {
-    return { text: fillTokens(text, local), filled: true };
+    withFacts = fillFactTokens(text, facts, locale);
   } catch {
     return { text, filled: false };
   }
+  if (money === null) {
+    return /\{\{|\}\}|⟦|⟧/.test(withFacts) ? { text, filled: false } : { text: withFacts, filled: true };
+  }
+  const filled = fillMessage(withFacts, money.plan, money.board);
+  return filled.ok ? { text: filled.message, filled: true } : { text, filled: false };
 }
 
-function checkRows(check: TokenCheck): CheckRowView[] {
+/** 토큰을 채운 글 (금액 자리표시자 없음). 채울 수 없으면 원래 글을 `filled: false`로. */
+export function filledText(text: string, facts: FactToken[], locale: FactLocale): FilledText {
+  return screenText(text, facts, locale, null);
+}
+
+/**
+ * 검사 줄. 코드가 하는 검사만 줄이 된다: 토큰 셋(`checkTokens`) + 이름 호칭(`nameProblems`, T056).
+ * 이름 줄은 문제 코드마다 이름 키가 다르다 (지금은 `honorific_after_name` 하나).
+ */
+function checkRows(check: TokenCheck, nameProblems: ReplyNameProblem[]): CheckRowView[] {
   return [
     { labelKey: 'case.reply.check.tokens', ok: check.missing.length === 0 && check.extra.length === 0, items: [...check.missing, ...check.extra] },
     { labelKey: 'case.reply.check.literal', ok: check.literalFacts.length === 0, items: [...check.literalFacts] },
     { labelKey: 'case.reply.check.promises', ok: check.newPromises.length === 0, items: [...check.newPromises] },
+    { labelKey: NAME_PROBLEM_KEY.honorific_after_name, ok: !nameProblems.includes('honorific_after_name'), items: [] },
   ];
 }
 
@@ -253,9 +328,25 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
   const translation = input.translation !== null && input.translation.ok ? input.translation : null;
   const fixed = input.draftSource === 'fixed';
 
-  const draftEn = draft === null ? null : filledText(draft.draftEn, input.facts, 'en');
+  const draftFacts = input.draftFacts ?? input.facts;
+  const money: MoneySource | null =
+    input.plan === null || input.board === undefined || input.board === null ? null : { plan: input.plan, board: input.board };
+
+  // 미리보기는 모두 채운 글 (지시서 2부 재시도 3번). 영어 글은 영어 벌, 전송본은 전송본 벌
+  const draftEn = draft === null ? null : screenText(draft.draftEn, draftFacts, 'en', money);
   const outgoing =
-    translation === null || input.buyerLocale === null ? null : filledText(translation.outgoing, input.facts, input.buyerLocale);
+    translation === null || input.buyerLocale === null
+      ? null
+      : screenText(translation.outgoing, input.facts, input.buyerLocale, money);
+  const coaching = (draft?.coaching ?? []).map((line) => screenText(line, draftFacts, 'en', money).text);
+  const backTranslationEn =
+    translation === null ? null : screenText(translation.backTranslationEn, draftFacts, 'en', money).text;
+  const nameProblems = translation?.nameProblems ?? [];
+  const planIsOffer = input.plan !== null && input.plan.apiMove === 'make_offer' && input.plan.amountCents !== null;
+  const offer: OfferView | null =
+    input.offerFirst && planIsOffer && input.plan !== null && input.plan.amountCents !== null
+      ? { amountCents: input.plan.amountCents, amountDisplay: toDollarsRounded(input.plan.amountCents) }
+      : null;
 
   const localFacts = input.buyerLocale === null ? null : localizedFacts(input.facts, input.buyerLocale);
   const factRows: FactRowView[] =
@@ -282,11 +373,14 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
     hasTranslation: translation !== null && outgoing !== null,
     checkOk,
     sendable: translation?.sendable ?? false,
-    commitmentsCleared: checkOk && added.length === 0 && unconfirmed === 0,
+    commitmentsCleared: checkOk && added.length === 0 && unconfirmed === 0 && nameProblems.length === 0,
     addedInTranslation: added.length,
     outsidePolicy: outside.length,
     unconfirmed,
+    nameProblems: nameProblems.length,
     planIsReply: input.plan !== null && input.plan.apiMove === 'send_message',
+    planIsOffer,
+    statusAllowsOffer: input.statusCode === OFFER_STATUS,
     offerFirst: input.offerFirst,
     sendState: input.sendState,
   };
@@ -297,13 +391,14 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
     draftSource: input.draftSource,
     sourceBadges: draftOk && !fixed ? ['aiSuggests'] : [],
     fixedDraftKey: draftOk && fixed ? REPLY_KEYS.fixedDraft : null,
-    coaching: draft?.coaching ?? [],
+    coaching,
     draftEn,
     outgoing,
-    backTranslationEn: translation?.backTranslationEn ?? null,
+    backTranslationEn,
+    offer,
     translationUnavailable: draftOk && (translation === null || outgoing === null),
     check: translation?.check ?? null,
-    checkRows: translation === null ? [] : checkRows(translation.check),
+    checkRows: translation === null ? [] : checkRows(translation.check, nameProblems),
     factRows,
     commitments,
     addedInTranslation: added.map((category) => ({ category, labelKey: commitmentKey(category) })),
@@ -329,10 +424,29 @@ export function canSend(view: Pick<ReplyView, 'gate'>): SendGate {
   // 분쟁 자체가 메시지를 받을 수 없는 이유가 먼저다 (초안이 없어도 그 이유가 보이게)
   if (g.offerFirst) return blocked(BLOCK_KEYS.offerFirst);
   if (!g.planIsReply) return blocked(BLOCK_KEYS.noPlan);
+  return contentGate(g);
+}
+
+/**
+ * 제안 버튼("Send offer · $7")을 켜도 되는가. 메시지 보내기와 **같은 글 검사**를 지난다 (`contentGate`).
+ * 앞에 둘을 더 본다: 제안이 먼저인 분쟁 + make-offer 계획이 있는가, PayPal 상태가 `OFFER_STATUS`인가.
+ * 서버(`send.ts`)도 같은 판정을 다시 한다.
+ */
+export function canSendOffer(view: Pick<ReplyView, 'gate'>): SendGate {
+  const g = view.gate;
+  if (!g.offerFirst || !g.planIsOffer) return { ok: false, reasonKey: BLOCK_KEYS.noOffer };
+  if (!g.statusAllowsOffer) return { ok: false, reasonKey: BLOCK_KEYS.offerStatus };
+  return contentGate(g);
+}
+
+/** 두 버튼이 함께 쓰는 글 검사 + 전송 상태. 순서: 초안 → 전송본 → 번역이 더한 약속 → 토큰 → 이름 → 약속 확인 → 상태. */
+function contentGate(g: GateFacts): SendGate {
+  const blocked = (reasonKey: string): SendGate => ({ ok: false, reasonKey });
   if (!g.hasDraft) return blocked(BLOCK_KEYS.noDraft);
   if (!g.hasTranslation) return blocked(BLOCK_KEYS.noTranslation);
   if (g.addedInTranslation > 0) return blocked(BLOCK_KEYS.addedInTranslation);
   if (!g.checkOk) return blocked(BLOCK_KEYS.checkFailed);
+  if (g.nameProblems > 0) return blocked(BLOCK_KEYS.nameHonorific);
   if (g.unconfirmed > 0) return blocked(BLOCK_KEYS.unconfirmed);
   // 확인할 약속이 없으면 모듈의 `sendable`이 그대로 답이다. 확인한 뒤에는 다시 맞춘 값이 답이다
   const sendableNow = g.outsidePolicy === 0 ? g.sendable : g.commitmentsCleared;

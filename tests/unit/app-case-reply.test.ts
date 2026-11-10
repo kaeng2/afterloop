@@ -182,12 +182,13 @@ describe('AC18 7번: 전송본이 바뀌면 버튼이 꺼지고 이유가 보인
     }
   });
 
-  it('검사 줄은 코드가 하는 세 가지뿐이다 (없는 검사를 체크 표시로 그리지 않는다)', async () => {
+  it('검사 줄은 코드가 하는 네 가지뿐이다: 토큰 셋 + 이름 호칭(T056) (없는 검사를 체크 표시로 그리지 않는다)', async () => {
     const { draft, translation } = await prepare(DRAFT_EN, OUTGOING);
     expect(buildReplyView(base(draft, translation)).checkRows.map((row) => row.labelKey)).toEqual([
       'case.reply.check.tokens',
       'case.reply.check.literal',
       'case.reply.check.promises',
+      'case.reply.check.nameHonorific',
     ]);
   });
 });

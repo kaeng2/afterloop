@@ -16,8 +16,8 @@ import 'server-only';
 import { cache } from 'react';
 
 import { draftReply, type ReplyDraft } from '@/ai/reply';
-import { replyFacts } from '@/engine/followup';
 import { recommend } from '@/engine/recommend';
+import type { FactToken } from '@/types';
 
 import { seedInquiries } from '../../../../seed/index';
 import type { Availability } from '../../_shared/availability';
@@ -26,6 +26,7 @@ import { pickBoard, type LoadedDispute } from '../../_shared/dispute-view';
 import { loadDemoDisputesForRequest } from '../../_server/disputes';
 import { getLlm } from '../../_server/llm';
 import { caseMessages, type CaseViewInput } from '../model';
+import { buyerLocaleOf, caseReplyFacts } from '../reply-facts';
 
 export type CaseLoad =
   | { kind: 'not_found' }
@@ -43,8 +44,6 @@ export type CaseLoad =
 export function isOnScreen(disputeId: string): boolean {
   return linkFor(disputeId)?.showOnScreen === true;
 }
-
-const LOCALE = { KO: 'ko', EN: 'en', JA: 'ja', DE: 'de' } as const;
 
 /**
  * T042 초안 (구매자 글 영어 + 코칭 + 영어 초안). 한 요청 안에서 분쟁마다 한 번만 부른다.
@@ -65,14 +64,22 @@ export const loadCaseDraft = cache(async (disputeId: string): Promise<ReplyDraft
   const best = recommend(board).best;
   if (board.cause === undefined || best === null) return unavailable;
 
+  // 사실값 = 날짜 + 이름 토큰 (초안은 영어 꼴). 이름 값은 AI에 가지 않는다 — 토큰 이름·뜻만 간다 (T056)
+  const buyerLocale = buyerLocaleOf(loaded.buyer) ?? 'en';
+  let facts: FactToken[];
+  try {
+    facts = caseReplyFacts({
+      now: new Date().toISOString(),
+      dueDate: board.dueDate,
+      buyerId: loaded.buyer?.id ?? null,
+      buyerLocale,
+    }).draft;
+  } catch {
+    return unavailable; // 날짜를 만들 수 없거나 이름 설정이 깨졌다 → 초안 없음 (지어내지 않는다)
+  }
+
   return draftReply(
-    {
-      buyerMessages: loaded.buyerMessages,
-      buyerLocale: loaded.buyer === null ? 'en' : LOCALE[loaded.buyer.language],
-      cause: board.cause,
-      move: best.move,
-      facts: replyFacts({ now: new Date().toISOString(), disputeDueDate: board.dueDate }),
-    },
+    { buyerMessages: loaded.buyerMessages, buyerLocale, cause: board.cause, move: best.move, facts },
     { llm: resolved.llm },
   );
 });

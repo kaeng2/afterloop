@@ -4,7 +4,7 @@
  * 순서:
  *  1. 1부의 `loadCase` (같은 요청 안에서 PayPal 읽기·`draftReply`는 한 번만 — 1부 화면과 함께 쓴다)
  *  2. "후" 보드(`pickBoard`)로 `recommend` → `planMove` (답장 계획. 만들 수 없으면 `null`)
- *  3. 사실값 `replyFacts` (원래 값. 날짜의 뜻은 "판매자가 확인해서 다시 연락하는 날")
+ *  3. 사실값 `caseReplyFacts` (원래 값. 날짜 = "판매자가 확인해서 다시 연락하는 날" + 이름 토큰. 영어 벌·전송본 벌)
  *  4. 초안: 기본은 AI(`loadCaseDraft`). `AFTERLOOP_FIXED_DRAFT`가 켜졌을 때만 `loadFixedDraft()`
  *  5. 전송본: `translateReply` (LLM 2회. 초안이 있고 구매자 언어를 알 때만)
  *  6. 전송할 수 있는 글을 서버 기억에 두고 번호만 브라우저에 준다 (`rememberReply`)
@@ -16,7 +16,6 @@ import 'server-only';
 import { cache } from 'react';
 
 import { translateReply, type ReplyDraft, type ReplyTranslation } from '@/ai/reply';
-import { replyFacts } from '@/engine/followup';
 import { planMove } from '@/engine/plan';
 import { recommend } from '@/engine/recommend';
 import type { ActionPlan, FactToken } from '@/types';
@@ -31,6 +30,7 @@ import {
   resolveSendMode,
 } from '../../_server/send';
 import { buildCaseView } from '../model';
+import { caseReplyFacts } from '../reply-facts';
 import type { ReplyViewInput } from '../reply-model';
 import { loadCase } from '../view/load';
 
@@ -64,14 +64,25 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
     }
   }
 
+  const buyerLocale = caseView.header.buyerLocale;
+
+  // 사실값 = 날짜 + 이름 토큰 (SPEC v2.9 3장). 초안·코칭은 영어 벌, 전송본은 구매자 언어 벌.
+  // 1부 `loadCaseDraft`와 같은 함수로 같은 값을 만든다 (초안 검사와 전송본 검사가 같은 토큰을 보게)
+  let draftFacts: FactToken[] = [];
   let facts: FactToken[] = [];
   try {
-    facts = replyFacts({ now: new Date().toISOString(), disputeDueDate: board.dueDate });
+    const both = caseReplyFacts({
+      now: new Date().toISOString(),
+      dueDate: board.dueDate,
+      buyerId: loaded.loaded.buyer?.id ?? null,
+      buyerLocale: buyerLocale ?? 'en',
+    });
+    draftFacts = both.draft;
+    facts = both.outgoing;
   } catch {
+    draftFacts = [];
     facts = [];
   }
-
-  const buyerLocale = caseView.header.buyerLocale;
   const draftSource = resolveDraftSource();
   const move = best?.move ?? null;
 
@@ -108,6 +119,7 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
           outgoing: translation.outgoing,
           outsidePolicy: translation.outsidePolicy,
           addedInTranslation: translation.addedInTranslation,
+          nameProblems: translation.nameProblems,
           facts,
           buyerLocale,
         })
@@ -119,6 +131,9 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
       draft,
       translation,
       facts,
+      draftFacts,
+      board,
+      statusCode: loaded.loaded.statusCode,
       buyerLocale,
       plan,
       offerFirst: caseView.messageSend.blocked,
