@@ -122,6 +122,8 @@ export type ReplyDraft =
       ok: true;
       buyerMessageEn: string;
       coaching: string[];
+      /** 코칭 줄을 짧은 이름으로 줄인 칩 (T069). 3개 미만이 남으면 `[]` — 화면이 코칭 줄로 대신한다. */
+      chips?: string[];
       draftEn: string;
       /**
        * 영어 초안에서 찾은 **정책 밖** 돈이 드는 약속 (T053, SPEC v2.7 3장).
@@ -223,6 +225,11 @@ export const COACHING_MAX = 5;
 /** 코칭 한 줄의 길이 상한. 프롬프트는 60자쯤을 요구하고, 넘으면 자른다 (화면 한 줄에 들어갈 만큼). */
 export const COACHING_LINE_MAX = 80;
 
+/** 칩 개수와 길이 (T069). 길이는 `⟦…⟧` 토큰 하나를 한 글자로 세어 24자 이내. */
+export const CHIPS_MIN = 3;
+export const CHIPS_MAX = 5;
+export const CHIP_MAX_CHARS = 24;
+
 /**
  * 초안이 쓸 수 있는 실행 자리표시자. 이름은 `src/exec/message.ts`의 `SOURCES`와 같아야 한다 —
  * 거기 없는 이름은 실행 층이 거부하므로 여기서 먼저 막는다.
@@ -262,6 +269,7 @@ const EXEC_PLACEHOLDER = /\{\{([^{}]{0,200})\}\}/g;
 const DraftSchema = z.object({
   buyer_message_en: z.string(),
   coaching: z.array(z.string()),
+  chips: z.array(z.string()).default([]),
   draft_en: z.string(),
 });
 
@@ -367,6 +375,28 @@ function outsidePolicy(text: string, locale: FactLocale, move: ReplyMove): Commi
   return findCommitments(text, locale).filter((category) => !allowed.includes(category));
 }
 
+const TOKEN_GLYPHS = /⟦[^⟦⟧]*⟧/g;
+
+/**
+ * 칩 걸러내기 (T069). 한 줄로 접은 뒤 빈 칩·길이 초과(토큰은 한 글자로 센다)·마침표로 끝나는 문장꼴·
+ * 자리표시자·숫자·글자로 쓴 사실값·`facts`에 없는 토큰·돈이 드는 약속 낱말(어느 수에서도)이 든 칩을 버린다.
+ * 3개 미만이 남으면 빈 배열이다 (초안은 실패가 아니다).
+ */
+function cleanChips(raw: string[], facts: FactToken[]): string[] {
+  const chips = raw
+    .map((chip) => oneLine(chip, 200))
+    .filter((chip) => {
+      if (chip === '' || /[.。]$/.test(chip)) return false;
+      const bare = chip.replace(TOKEN_GLYPHS, 'x');
+      if (bare.length > CHIP_MAX_CHARS || chip.includes('{{') || /\d/.test(bare)) return false;
+      if (hasLiteralFacts(chip, facts)) return false;
+      if (checkTokens(chip, chip, facts).extra.length > 0) return false;
+      return findCommitments(chip, 'en').length === 0;
+    })
+    .slice(0, CHIPS_MAX);
+  return chips.length >= CHIPS_MIN ? chips : [];
+}
+
 // ───────────────────────────── 1. 초안 ─────────────────────────────
 
 /**
@@ -435,6 +465,8 @@ export async function draftReply(
     .slice(0, COACHING_MAX);
   if (coaching.length < COACHING_MIN) return failure('invalid_output', 'coaching_too_few');
 
+  const chips = cleanChips(asked.value.chips ?? [],input.facts);
+
   // 구매자 글 번역은 판매자가 읽기만 하는 글이다 (구매자에게 가지 않는다). 구매자가 쓴 날짜·금액이
   // 그대로 들어 있어야 하므로 사실값 검사를 하지 않는다. 길이와 개인정보만 본다
   const buyerMessageEn = clean(asked.value.buyer_message_en);
@@ -446,7 +478,7 @@ export async function draftReply(
 
   // 정책 밖 약속은 초안을 거부하는 사유가 아니다 (SPEC v2.7 3장: 전송 가능으로 두지 않고 판매자가
   // 확인한다). 판매자가 초안을 고쳐 지울 수도 있으므로, 전송을 가르는 판정은 `translateReply`가 다시 한다
-  return { ok: true, buyerMessageEn, coaching, draftEn, outsidePolicy: outsidePolicy(draftEn, 'en', input.move) };
+  return { ok: true, buyerMessageEn, coaching, chips, draftEn, outsidePolicy: outsidePolicy(draftEn, 'en', input.move) };
 }
 
 // ───────────────────────────── 2. 전송본 + 역번역 ─────────────────────────────

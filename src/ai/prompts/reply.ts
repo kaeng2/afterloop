@@ -237,9 +237,10 @@ export const DRAFT_OUTPUT_SCHEMA: Record<string, unknown> = {
   properties: {
     buyer_message_en: { type: 'string' },
     coaching: { type: 'array', items: { type: 'string' } },
+    chips: { type: 'array', items: { type: 'string' } },
     draft_en: { type: 'string' },
   },
-  required: ['buyer_message_en', 'coaching', 'draft_en'],
+  required: ['buyer_message_en', 'coaching', 'chips', 'draft_en'],
   additionalProperties: false,
 };
 
@@ -257,6 +258,11 @@ coaching:
 - Imperative, under about 60 characters each, in the order the seller should write them. Fit them to the cause subtype and to the move.
 - When the move is offer, a line about acceptance says where to accept: "Explain how to accept the offer in PayPal". Never write a line that has the buyer accept by reply or message.
 - The commitment rules below hold for these lines too: never write a line like "Offer a refund" or "Promise a reship" unless the move itself is offer or refund.
+
+chips:
+- Three to five tiny labels that name the same points as the coaching lines, shown as small tags on screen. Each is one to three words, at most 24 characters, not a sentence, no full stop. Shape of the examples: "Apology", "Customs hold", "Ask for code", "Follow-up: ⟦DATE_1⟧", and "Offer in PayPal" when the move is offer.
+- A follow-up chip may use only a date token that <facts> lists. If <facts> lists no date token, leave the follow-up chip out.
+- Never put an amount in a chip: no number with a currency, no {{...}} placeholder. Never write a refund, reship, exchange, discount or compensation label as a chip.
 
 draft_en:
 - Two to five sentences of English, written as the seller to the buyer, under 1200 characters.
