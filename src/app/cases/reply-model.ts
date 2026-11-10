@@ -228,7 +228,7 @@ export function sendModeKey(mode: SendMode, liveAllowed: boolean): string {
 /**
  * "Suggested reply covers:" 칩 글자 (T068). **화면은 칩 글자를 짓지 않는다.**
  * - 초안에 `chips`(T069, AI가 만든 짧은 칩)가 있으면 그것을 그대로.
- * - 없으면(T069 병합 전, 또는 고정 초안) 코칭 줄을 그대로 칩으로 쓴다 (긴 글자도 줄이지 않는다).
+ * - 비었거나 없으면(걸러져 `chips: []`, T069 병합 전, 고정 초안) 코칭 줄을 그대로 칩으로 쓴다 (긴 글자도 줄이지 않는다).
  * - 초안이 없으면 빈 배열 (칩 줄을 숨긴다).
  * 토큰(⟦DATE_1⟧ …)은 여기서 채우지 않는다 — `buildReplyView`가 영어 초안과 같은 길(`screenText`)로 채운다.
  */
@@ -236,7 +236,8 @@ export function replyChips(draft: ReplyDraft): string[] {
   if (!draft.ok) return [];
   const chips = (draft as { chips?: unknown }).chips;
   if (Array.isArray(chips) && chips.every((chip): chip is string => typeof chip === 'string')) {
-    return chips.map((chip) => chip.trim()).filter((chip) => chip !== '');
+    const kept = chips.map((chip) => chip.trim()).filter((chip) => chip !== '');
+    if (kept.length > 0) return kept;
   }
   return draft.coaching.map((line) => line.trim()).filter((line) => line !== '');
 }

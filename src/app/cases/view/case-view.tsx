@@ -26,7 +26,7 @@ function sideCaption(side: CompareSideView): string {
   return t('case.view.sideCaption', { source: t(side.sourceKey), action: t(side.actionKey) });
 }
 
-/** 머리글 첫 줄: "Case PP-R-… · Wool Sweater, Navy $72.00 · Waiting for your reply". */
+/** 머리글 첫 줄: "Case PP-R-… · Wool Sweater, Navy $72 · Waiting for your reply". */
 export function headLine(header: CaseViewData['header']): string {
   const status =
     header.statusCode === ''

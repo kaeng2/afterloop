@@ -146,16 +146,6 @@ function replyBase(draft: ReplyDraft, translation: ReplyTranslation | null, over
 
 const VIEW = buildCaseView(caseInput(), P, R);
 
-/**
- * T069 이전 꼴의 초안 (`chips` 칸 없음). T069가 병합된 뒤 `draftReply`는 늘 `chips`(기본 `[]`)를 주므로,
- * 코칭 줄 대체 경로를 보려면 칸을 지운 사본을 쓴다.
- */
-function withoutChips(draft: ReplyDraft): ReplyDraft {
-  const copy = { ...draft } as Record<string, unknown>;
-  delete copy.chips;
-  return copy as ReplyDraft;
-}
-
 async function fullMarkup(over: Partial<ReplyViewInput> = {}, draftOverride?: ReplyDraft): Promise<string> {
   const { draft, translation } = await prepare();
   const reply = createElement(ReplyPanel, {
@@ -338,10 +328,14 @@ describe('칩: replyChips(draft)', () => {
     expect(replyChips(withChips)).toEqual(['Apology', 'Customs hold', 'Follow-up: ⟦DATE_1⟧']);
   });
 
-  it('`chips`가 없으면 코칭 줄을 그대로 (줄이지 않는다)', async () => {
+  it('`chips`가 없거나 빈 배열이면 코칭 줄을 그대로 (줄이지 않는다)', async () => {
     const { draft } = await prepare();
     if (!draft.ok) throw new Error('draft failed');
-    expect(replyChips(withoutChips(draft))).toEqual(draft.coaching);
+    expect(replyChips(draft)).toEqual(draft.coaching);
+    expect(replyChips({ ...draft, chips: [] } as ReplyDraft)).toEqual(draft.coaching);
+    const noField = { ...draft } as Record<string, unknown>;
+    delete noField.chips;
+    expect(replyChips(noField as ReplyDraft)).toEqual(draft.coaching);
   });
 
   it('초안이 없으면 빈 배열', () => {
@@ -372,15 +366,21 @@ describe('칩: replyChips(draft)', () => {
 
   it('코칭 줄 대체에서도 토큰은 채운다', async () => {
     const { draft, translation } = await prepare();
-    const view = buildReplyView({ ...replyBase(withoutChips(draft), translation), confirmed: [], sendState: 'idle', outcome: null });
+    const view = buildReplyView({ ...replyBase(draft, translation), confirmed: [], sendState: 'idle', outcome: null });
     expect(view.chips.length).toBeGreaterThan(0);
     expect(view.chips.join(' ')).not.toMatch(/⟦|⟧/);
   });
 
-  it('빈 배열이면 칩 줄을 숨긴다', async () => {
+  it('빈 chips면 코칭 줄이 칩으로 보인다', async () => {
     const { draft } = await prepare();
     if (!draft.ok) throw new Error('draft failed');
     const markup = await fullMarkup({}, { ...draft, chips: [] } as ReplyDraft);
+    expect(markup).toContain('class="reply-chips"');
+    expect(markup).toContain('Suggested reply covers:');
+  });
+
+  it('칩도 코칭 줄도 없으면(초안 실패) 칩 줄을 숨긴다', async () => {
+    const markup = await fullMarkup({}, { ok: false, reason: 'ai_unavailable', detail: 'test' } as ReplyDraft);
     expect(markup).not.toContain('class="reply-chips"');
     expect(markup).not.toContain('Suggested reply covers:');
   });

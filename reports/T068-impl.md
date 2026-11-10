@@ -142,3 +142,10 @@
 
 ### 컨트롤 타워에 요청할 결정
 - 없음.
+
+## 재시도 보충 (칩이 비었을 때)
+- SPEC v2.10 = 지시서 기준과 일치.
+- `replyChips`: `chips`가 1개 이상이면 그것, 빈 배열이거나 없으면 코칭 줄. 칩 줄 숨김은 초안 실패(칩도 코칭 줄도 없음)뿐.
+- 테스트: `app-t068.test.ts`(빈 chips → 코칭 줄 보임, 초안 실패 → 숨김 추가, `withoutChips` 우회 제거), `app-case-reply.test.ts`(우회 제거). 기본 초안(`chips: []`)을 그대로 쓴다.
+- `case-view.tsx` 머리글 예시 주석 `$72.00` → `$72`.
+- 결과: npm test 1972 통과, tsc·lint 오류 0, acceptance 통과(9 skipped는 기존), build 성공. 실제 AI·PayPal 호출 없음.
