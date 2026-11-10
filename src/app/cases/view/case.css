@@ -1,0 +1,187 @@
+/*
+ * S5 Case 화면 (T009 1부). 색·글자 크기·간격은 `globals.css`의 변수만 쓴다 (새 색 값을 만들지 않는다).
+ * 비교 카드 자체의 배치는 `_shared/compare-card.css`.
+ */
+
+.case-head {
+  gap: var(--space-2);
+}
+
+.case-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+}
+
+.case-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  min-width: 0;
+}
+
+.case-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  min-width: 0;
+}
+
+.case-meta > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.case-meta dd {
+  font-weight: 600;
+}
+
+/* 주인공 줄: 비교 카드(크게) + 원인 (작게) */
+.case-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--card-gap);
+  min-width: 0;
+}
+
+.case-cause-list {
+  flex: 1 1 18rem;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) 0;
+}
+
+.case-cause {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.case-subtype {
+  font-weight: 650;
+}
+
+.case-note {
+  min-width: 0;
+}
+
+.case-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: var(--card-gap);
+  align-items: start;
+  min-width: 0;
+}
+
+.case-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.case-toggle {
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+}
+
+.case-toggle:hover {
+  border-color: var(--color-accent);
+}
+
+.case-messages,
+.case-events,
+.case-parts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  min-width: 0;
+}
+
+.case-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--color-accent);
+  min-width: 0;
+}
+
+.case-message-demo {
+  border-left-style: dashed;
+  border-left-color: var(--color-border);
+}
+
+.case-message-text {
+  white-space: pre-wrap;
+}
+
+.case-source {
+  font-weight: 600;
+}
+
+.case-mark {
+  color: inherit;
+  background: transparent;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: var(--color-risk-high);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.case-events {
+  gap: var(--space-2);
+}
+
+.case-event {
+  display: grid;
+  grid-template-columns: max-content max-content minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.case-event-status {
+  font-weight: 600;
+}
+
+.case-parts {
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.case-points {
+  display: inline-block;
+  min-width: var(--space-5);
+}
+
+.case-details summary {
+  cursor: pointer;
+  color: var(--color-muted);
+}
+
+@media (max-width: 30rem) {
+  .case-event {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  .case-event > :last-child {
+    grid-column: 1 / -1;
+  }
+}

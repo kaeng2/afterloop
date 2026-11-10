@@ -379,50 +379,7 @@ a {
   color: var(--color-danger);
 }
 
-/* ── 비교 카드 (`_shared/compare-card.tsx`): 왼쪽 → 오른쪽(주인공) ──────── */
-
-.compare {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: end;
-  gap: var(--space-4);
-  margin-top: var(--space-3);
-}
-
-.compare-side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
-.compare-value {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-muted);
-}
-
-.compare-arrow {
-  padding-bottom: var(--space-2);
-  font-size: var(--text-lg);
-  color: var(--color-muted);
-}
-
-.compare-hero .hero-number {
-  color: var(--color-text);
-}
-
-@media (max-width: 30rem) {
-  .compare {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .compare-arrow {
-    display: none;
-  }
-}
+/* 비교 카드 스타일은 `_shared/compare-card.css`에 있다. */
 
 /* ── 견본 화면 (`/preview/styleguide`) ───────────────────────────────────── */
 

@@ -1,0 +1,129 @@
+/*
+ * 비교 카드 (`compare-card.tsx`, T009 1부 "비교 카드 다듬기"). 색은 `globals.css`의 변수만 쓴다.
+ *
+ * 줄 3개짜리 격자: 1줄 칸 이름 · 2줄 숫자 · 3줄 칸 아래 한 줄. 두 칸은 subgrid로 같은 줄을 나눠 쓰므로
+ * 두 숫자가 한 줄에 놓이고 화살표(2줄)가 숫자 줄 가운데에 맞는다. 두 칸은 같은 폭(1fr)이고
+ * 카드 폭은 내용에 맞춘다 (`fit-content`).
+ *
+ * 세 요소의 열은 반드시 명시한다 (왼쪽 1열 · 화살표 2열 · 오른쪽 3열). 화살표만 줄(grid-row: 2)이
+ * 정해져 있으면 격자 자동 배치가 화살표를 1열에 먼저 놓고 두 칸을 오른쪽으로 밀어
+ * "→ $74 $37" 순서가 되고 카드 왼쪽에 빈칸이 생긴다 (T009 1부 재시도, 1440 스크린샷).
+ */
+
+.cc-card {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  column-gap: var(--space-5);
+  row-gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.cc-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.cc-before {
+  grid-column: 1;
+}
+
+.cc-after {
+  grid-column: 3;
+}
+
+.cc-side {
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-1);
+  min-width: 0;
+}
+
+.cc-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: end;
+}
+
+.cc-value {
+  align-self: center;
+  white-space: nowrap;
+}
+
+.cc-previous {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.cc-after .hero-number,
+.cc-single .hero-number {
+  color: var(--color-text);
+}
+
+.cc-arrow {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  justify-self: center;
+  font-size: var(--text-lg);
+  color: var(--color-muted);
+}
+
+.cc-note {
+  align-self: start;
+}
+
+.cc-footer {
+  margin-top: var(--space-3);
+}
+
+/* 화면에는 보이지 않고 화면 읽기에서만 읽힌다 */
+.cc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 좁은 폭: 왼쪽 → 화살표 → 오른쪽 순서로 세로로 쌓는다 */
+@media (max-width: 30rem) {
+  .cc-card {
+    width: auto;
+  }
+
+  .cc-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    row-gap: var(--space-2);
+  }
+
+  .cc-before,
+  .cc-after {
+    grid-column: 1;
+  }
+
+  .cc-side {
+    grid-row: auto;
+    grid-template-rows: none;
+  }
+
+  .cc-arrow {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+    transform: rotate(90deg);
+  }
+}
