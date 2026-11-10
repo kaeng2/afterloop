@@ -1,0 +1,51 @@
+[
+  {
+    "orderId": "O01",
+    "date": "2026-10-18",
+    "status": "shipped",
+    "text": "Shipment picked up",
+    "isDemo": true
+  },
+  {
+    "orderId": "O01",
+    "date": "2026-10-21",
+    "status": "in_transit",
+    "text": "In transit to destination country",
+    "isDemo": true
+  },
+  {
+    "orderId": "O01",
+    "date": "2026-10-30",
+    "status": "customs_hold",
+    "text": "Customs hold – recipient customs ID missing",
+    "isDemo": true
+  },
+  {
+    "orderId": "O08",
+    "date": "2026-10-17",
+    "status": "shipped",
+    "text": "Shipment picked up",
+    "isDemo": true
+  },
+  {
+    "orderId": "O08",
+    "date": "2026-10-19",
+    "status": "in_transit",
+    "text": "In transit to destination facility",
+    "isDemo": true
+  },
+  {
+    "orderId": "O08",
+    "date": "2026-10-21",
+    "status": "out_for_delivery",
+    "text": "Out for delivery",
+    "isDemo": true
+  },
+  {
+    "orderId": "O08",
+    "date": "2026-10-22",
+    "status": "delivered",
+    "text": "Delivered – left at front door",
+    "isDemo": true
+  }
+]

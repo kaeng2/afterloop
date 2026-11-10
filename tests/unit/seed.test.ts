@@ -1,7 +1,8 @@
 /**
- * T007·T028 단위 테스트: 시드 데이터가 원문 6장과 기획자 결정과 같은지.
+ * T007·T028·T045 단위 테스트: 시드 데이터가 원문 6장과 기획자 결정과 같은지.
  *
  * 기대값 출처: PRD v2 (inbox/2026-11-09-prd-v2.md) 4-1, 6-1 ~ 6-5. SPEC v2.2 9-5·13장 Q8·Q10.
+ * 배송사 이벤트(T045)는 SPEC v2.5 12장·2장 + 원문 S5 화면 예시.
  * 아래 표는 원문에서 따로 옮겨 적은 것이다. `seed/data.ts`를 가져다 쓰지 않고 값을 그대로 비교한다.
  * 국가는 원문의 한글 표기를 ISO 코드로 옮긴다 (한국 KR · 미국 US · 일본 JP · 독일 DE · 영국 GB).
  */
@@ -16,10 +17,13 @@ import {
   generatedInquirySpecs,
   type InquiryType,
 } from '../../seed/data';
+import { carrierEventsFor, seedCarrierEvents } from '../../seed/index';
 import {
   ORDER_DATE_WINDOW,
+  carrierEventProblems,
   disputeOrderProblems,
   seedBuyersSchema,
+  seedCarrierEventsSchema,
   seedDisputesSchema,
   seedInquiriesSchema,
   seedOrdersSchema,
@@ -34,6 +38,7 @@ const buyers = seedBuyersSchema.parse(readSeed('buyers.json'));
 const inquiries = seedInquiriesSchema.parse(readSeed('inquiries.json'));
 const disputes = seedDisputesSchema.parse(readSeed('disputes.json'));
 const orders = seedOrdersSchema.parse(readSeed('orders.json'));
+const carrierEvents = seedCarrierEventsSchema.parse(readSeed('carrier-events.json'));
 
 const countBy = <T>(rows: readonly T[], key: (t: T) => string): Record<string, number> =>
   rows.reduce<Record<string, number>>((acc, r) => ({ ...acc, [key(r)]: (acc[key(r)] ?? 0) + 1 }), {});
@@ -626,6 +631,86 @@ describe('T007 자동 생성 문의와 주문의 맞물림', () => {
   });
 });
 
+// ─────────────── 시연용 배송사 데이터 (T045, SPEC v2.5 12장 / 원문 S5) ───────────────
+
+/**
+ * SPEC v2.5 12장 + `tasks/T045.md`에서 따로 옮겨 적은 표. 통관 보류 글은 원문 S5 화면 예시
+ * 그대로다 (가운데 줄표는 en dash `–`).
+ */
+const TABLE_CARRIER_EVENTS = [
+  { orderId: 'O01', date: '2026-10-18', status: 'shipped' },
+  { orderId: 'O01', date: '2026-10-21', status: 'in_transit' },
+  { orderId: 'O01', date: '2026-10-30', status: 'customs_hold', text: 'Customs hold – recipient customs ID missing' },
+  { orderId: 'O08', date: '2026-10-17', status: 'shipped' },
+  { orderId: 'O08', date: '2026-10-19', status: 'in_transit' },
+  { orderId: 'O08', date: '2026-10-21', status: 'out_for_delivery' },
+  { orderId: 'O08', date: '2026-10-22', status: 'delivered' },
+];
+
+/** buyer_m의 10/28 문의 "Same problem again - the package is not here." (`data.ts`의 자동 생성 문의) */
+const BUYER_M_THIRD_COMPLAINT = '2026-10-28';
+
+describe('T045 시연용 배송사 데이터 (SPEC v2.5 12장)', () => {
+  const orderDate = (id: string) => orders.find((o) => o.id === id)!.date;
+
+  it('스키마를 통과하고, 주문 2건(O01·O08)의 이벤트 7건뿐이며 전부 isDemo: true다', () => {
+    expect(carrierEvents).toHaveLength(TABLE_CARRIER_EVENTS.length);
+    expect(seedCarrierEventsSchema.parse(carrierEvents)).toEqual(carrierEvents);
+    expect([...new Set(carrierEvents.map((e) => e.orderId))]).toEqual(['O01', 'O08']);
+    for (const e of carrierEvents) expect(e.isDemo, `${e.orderId} ${e.status}`).toBe(true);
+  });
+
+  it('주문·날짜·상태가 표와 같고, 통관 보류 글이 원문 S5 예시 그대로다', () => {
+    TABLE_CARRIER_EVENTS.forEach((row, i) => {
+      const e = carrierEvents[i];
+      expect(e.orderId, `${i}`).toBe(row.orderId);
+      expect(e.date, `${i}`).toBe(row.date);
+      expect(e.status, `${i}`).toBe(row.status);
+      if (row.text) expect(e.text, `${i}`).toBe(row.text);
+    });
+  });
+
+  it('주문 맞물림 검사(schemas.carrierEventProblems)가 깨끗하다 — 주문일 이후, 날짜 오름차순', () => {
+    expect(carrierEventProblems(carrierEvents, orders)).toEqual([]);
+    for (const e of carrierEvents) {
+      expect(e.date >= orderDate(e.orderId), `${e.orderId} ${e.date}`).toBe(true);
+      expect(e.date <= ORDER_DATE_WINDOW.to, `${e.orderId} ${e.date}`).toBe(true);
+    }
+  });
+
+  it('O01(서연)은 발송 → 이동 중 → 통관 보류(10/30)로 끝나고 배송 완료가 없다', () => {
+    expect(carrierEventsFor('O01').map((e) => e.status)).toEqual(['shipped', 'in_transit', 'customs_hold']);
+    const shipped = carrierEventsFor('O01')[0];
+    expect(shipped.date >= '2026-10-17' && shipped.date <= '2026-10-19', shipped.date).toBe(true);
+  });
+
+  it('O01의 글을 ClassifyInput.trackingEvents로 넣으면 "customs hold"가 들어 있다 (규칙 4 → A2)', () => {
+    // 분류기(ai 레인)를 import하지 않는다. SPEC 4장 규칙 4의 입력이 되는 글자만 확인한다
+    const trackingEvents: string[] = carrierEventsFor('O01').map((e) => e.text);
+    expect(trackingEvents.some((t) => t.toLowerCase().includes('customs hold'))).toBe(true);
+  });
+
+  it('O08(buyer_m)은 배송 완료로 끝나고, 그 날짜가 10/28 "같은 문제가 또" 문의보다 앞이다', () => {
+    const events = carrierEventsFor('O08');
+    expect(events[0].status).toBe('shipped');
+    expect(events[events.length - 1].status).toBe('delivered');
+    expect(events.map((e) => e.status)).not.toContain('customs_hold');
+    expect(events[events.length - 1].date < BUYER_M_THIRD_COMPLAINT).toBe(true);
+    // 그 문의가 실제로 시드에 있고 날짜가 같다 (F1 반복 주장 흐름의 근거)
+    expect(inquiries.some((q) => q.date === BUYER_M_THIRD_COMPLAINT && q.buyerId === 'B04')).toBe(true);
+  });
+
+  it('이벤트가 없는 주문은 빈 배열이다 (없는 주문 ID도 빈 배열)', () => {
+    expect(carrierEventsFor('O02')).toEqual([]);
+    expect(carrierEventsFor('SO001')).toEqual([]);
+    expect(carrierEventsFor('없는-주문')).toEqual([]);
+  });
+
+  it('seedCarrierEvents가 파일 그대로다 (index.ts는 옮기기만 한다)', () => {
+    expect(seedCarrierEvents).toEqual(carrierEvents);
+  });
+});
+
 // ───────────────────────────── 결정성·개인정보 ─────────────────────────────
 
 describe('T007 결정성과 개인정보', () => {
@@ -640,10 +725,11 @@ describe('T007 결정성과 개인정보', () => {
     expect(JSON.parse(JSON.stringify(built.inquiries))).toEqual(inquiries);
     expect(JSON.parse(JSON.stringify(built.disputes))).toEqual(disputes);
     expect(JSON.parse(JSON.stringify(built.orders))).toEqual(orders);
+    expect(JSON.parse(JSON.stringify(built.carrierEvents))).toEqual(carrierEvents);
   });
 
   it('이메일·주소·개인통관고유부호 값이 없다', () => {
-    const text = ['products', 'buyers', 'inquiries', 'disputes', 'orders']
+    const text = ['products', 'buyers', 'inquiries', 'disputes', 'orders', 'carrier-events']
       .map((f) => readFileSync(path.join(SEED_DIR, `${f}.json`), 'utf8'))
       .join('\n');
     expect(text).not.toMatch(/[\w.+-]+@[\w-]+\.[\w.]+/); // 이메일
