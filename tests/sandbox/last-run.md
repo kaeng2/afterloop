@@ -5,7 +5,7 @@
 <!-- afterloop:last-run:check -->
 ## 조회 (`npm run sandbox:check`)
 
-- 시각: 2026-11-10 10:26 KST
+- 시각: 2026-11-10 12:58 KST
 - 토큰 발급: 성공
 
 | 엔드포인트 | 상태 | 비고 |
@@ -29,13 +29,14 @@
 | GET /v1/customer/disputes/{D2} | 200 | ok |
 | GET /v1/customer/disputes/{D3} | 200 | ok |
 | GET /v1/customer/disputes/{D2-old} | 200 | ok |
+| GET /v1/customer/disputes/{P1} | 200 | ok |
 
 ### 주문
 | 키 | 주문 ID | 상태 | 캡처 ID | 추적 |
 | --- | --- | --- | --- | --- |
 | O01 | 18F52416PA5694135 | COMPLETED | 26293576ME0859205 | 등록 |
 | O02 | 87436118KN796644C | COMPLETED | 9KU39751DX242312R | 미등록 |
-| O03 | 0JN52716E5842762V | COMPLETED | 37J49051UW395951T | 미등록 |
+| O03 | 0JN52716E5842762V | COMPLETED | 37J49051UW395951T | 등록 |
 | O04 | 41X347446X091012H | COMPLETED | 6R443601WV1920918 | 미등록 |
 | O05 | 2C989125PP696130D | COMPLETED | 5XB31780D18665716 | 미등록 |
 | O06 | 0RY57472G86366311 | COMPLETED | 738093067J894224T | 등록 |
@@ -54,8 +55,10 @@
 | D2 | PP-R-GMS-10197661 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | INQUIRY | WAITING_FOR_SELLER_RESPONSE | 2J918760HG520343S | 포함 |
 | D3 | PP-R-FYT-10197651 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | UNDER_REVIEW | 8HD61398JA389940N | 포함 |
 | D2-old | PP-R-GAH-10197649 | MERCHANDISE_OR_SERVICE_NOT_RECEIVED | CHARGEBACK | UNDER_REVIEW | 26293576ME0859205 | 시연 제외 |
+| P1 | PP-R-HEY-10197767 | MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED | INQUIRY | WAITING_FOR_BUYER_RESPONSE | 6R443601WV1920918 | 시연 제외 |
 
 - D2-old (PP-R-GAH-10197649): 시연 제외 — 조회만 하고 아무 조치도 하지 않는다 (시연 제외 (2026-11-10): 접수 몇 분 뒤 PayPal 심사 단계(CHARGEBACK)로 넘어감. 아무 조치도 하지 않는다 (환불 수락 금지).)
+- P1 (PP-R-HEY-10197767): 시연 제외 — 조회만 하고 아무 조치도 하지 않는다 (연습용, 시연 제외 (2026-11-10): 녹화 전 실제 전송 시험용. 화면에 내지 않는다. 제안은 보내기만 하고 수락하지 않는다.)
 
 <!-- afterloop:last-run:probe -->
 ## 요청 ID 길이 확인 (`npm run sandbox:check -- --probe-request-id`)
