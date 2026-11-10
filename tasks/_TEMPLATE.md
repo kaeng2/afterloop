@@ -4,6 +4,7 @@
 |---|---|
 | 기준 SPEC | v? (시작할 때 `SPEC.md` 첫 줄과 비교. 다르면 작업하지 말고 보고) |
 | 레인 | engine / paypal / ai / ui / data |
+| 모델 | `claude-opus-5-5` (화면·엔진 같은 어려운 코드) / `claude-sonnet-5-5` (스크립트·시드·작은 수정). Fable은 쓰지 않는다 (CLAUDE.md "모델 배정") |
 | 브랜치 / worktree | `lane/<레인>` / `../afterloop-wt/<레인>` |
 | 예상 시간 | 2시간 이내 |
 | 의존 | T0xx (완료되어 있어야 시작) |
