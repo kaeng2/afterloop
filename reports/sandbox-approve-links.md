@@ -35,3 +35,5 @@
 | 주문번호 | 구매자 | 금액 | approve URL |
 | --- | --- | --- | --- |
 | O13 | seoyeon = Seoyeon Kim | $72.00 (Wool Sweater, Navy) | https://www.sandbox.paypal.com/checkoutnow?token=02C95899V2403943M |
+
+> **O13 승인·캡처 완료 (2026-11-10 09:28 KST).** 주문 `COMPLETED`, 캡처 `COMPLETED` (보류 아님). 이 링크는 더 쓰지 않는다. 다음: 서연 계정으로 이 주문에 미수령 분쟁 접수 (추적번호는 등록하지 않았다).
