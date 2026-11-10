@@ -179,11 +179,12 @@ describe('1번: 대화·배송사 카드는 왼쪽 열에 위아래로', () => {
     expect(carrierLine).toBeGreaterThan(conversation);
   });
 
-  it('CSS: 대화 | 답장 두 칸은 오른쪽 칸 폭이 넉넉할 때만 (컨테이너 질의), 기본은 한 열', () => {
+  // T068: 대화 | 답장 두 칸을 없애고 폭과 상관없이 한 열 (위에서 아래로 한 줄기)
+  it('CSS: 대화 → 답장은 늘 한 열 (두 칸으로 바꾸는 컨테이너 질의 없음)', () => {
     const css = readFileSync(path.join(ROOT, 'src/app/cases/view/case.css'), 'utf8');
     const block = css.match(/\.case-body\s*\{([^}]*)\}/)?.[1] ?? '';
     expect(block).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\);/);
-    expect(css).toMatch(/@container \(min-width: [0-9.]+rem\)/);
+    expect(css).not.toMatch(/@container/);
     expect(css).not.toContain('.case-columns');
   });
 });

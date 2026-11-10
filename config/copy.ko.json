@@ -312,6 +312,7 @@
   "case.view.carrierLine": "{{date}} · 배송사: {{text}}",
   "case.view.riskScoreAfter": "점수 {{before}} → {{after}}",
   "case.reply.coachingToggle": "답장 요령 {{count}}가지",
+  "case.reply.covers": "추천 답장에 담긴 내용:",
   "case.reply.youWrite": "판매자가 쓴 글 (영어)",
   "case.reply.buyerReads": "{{name}}이(가) 읽는 글 ({{language}})",
   "case.reply.buyerReadsUnknown": "구매자가 읽는 글 ({{language}})",

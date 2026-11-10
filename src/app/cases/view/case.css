@@ -1,16 +1,16 @@
 /*
- * 분쟁 상세 (T061). 색·글자 크기·간격은 `globals.css`의 변수만 쓴다 (새 색 값을 만들지 않는다).
+ * 분쟁 상세 (T061 → T068). 색·글자 크기·간격은 `globals.css`의 변수만 쓴다 (새 색 값을 만들지 않는다).
  * 비교 카드 자체의 배치는 `_shared/compare-card.css`.
  *
- * 1920×1080 한 프레임 기준 (T061 가장 중요한 규칙 1): 머리글 두 줄 → [비교 카드 | 한 줄 요약] 한 줄 →
- * [대화 | 답장 칸] 두 칸. 오른쪽 칸 폭이 좁으면(아래 70rem 컨테이너 기준) 한 열로 쌓는다.
- * 말풍선 모양은 시안(mockup v3)을 따른다: 둥근 18px + 한쪽 모서리 6px, 옅은 바탕(보조 바탕 `--color-bg`).
+ * 1920×1080 한 프레임 기준 (T068 가장 중요한 규칙 1): 한 열, 위에서 아래로 — 머리글 두 줄 →
+ * 비교 카드(가로 전체 폭, 카드 안 아래쪽 한 줄 요약) → 대화 → 답장 칸(칩 · 두 칸 · 검사 + 보내기).
+ * 말풍선 모양은 시안(mockup v3)을 따른다: 둥근 18px + 한쪽 모서리 6px, 옅은 바탕, 폭은 내용만큼.
  */
 
 .case-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
   min-width: 0;
   container-type: inline-size;
 }
@@ -113,32 +113,52 @@
   min-width: var(--space-5);
 }
 
-/* ── 주인공 줄: 비교 카드 + 한 줄 요약 ─────────────────────────────────────── */
+/* ── 주인공: 비교 카드 (가로 전체 폭) + 카드 안 아래쪽 한 줄 요약 (T068) ─────── */
 
 .case-hero {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: var(--space-4);
   min-width: 0;
 }
 
+/* 상세에서는 카드가 가로 전체 폭 (시안의 파란 AI 상자 자리). 숫자 격자는 내용 폭 그대로 */
+.case-hero .cc-card {
+  width: auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.case-hero .cc-grid {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: var(--space-2);
+}
+
+.case-hero .cc-footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--card-border);
+  color: var(--color-text);
+}
+
+/* 따로 있던 회색 요약 상자는 없앴다 — 바탕·테두리 없는 한 줄 */
 .case-summary {
   display: flex;
-  flex: 1 1 18rem;
   flex-direction: column;
-  justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   min-width: 0;
-  padding: var(--space-4);
-  background: var(--color-bg);
-  border-radius: var(--card-radius);
+}
+
+.case-summary-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
 }
 
 .case-summary-text {
   font-size: var(--text-md);
   font-weight: 700;
   line-height: 1.4;
+  color: var(--color-heading);
 }
 
 .case-summary-meta {
@@ -152,22 +172,29 @@
 
 .case-summary-codes {
   font-size: var(--text-xs);
+  color: var(--color-muted);
 }
 
-/* ── 아래 두 칸: 대화 | 답장 ───────────────────────────────────────────── */
+/* Mike(Routine) 상태 한 줄은 지금 꼴 그대로 (옅은 바탕 상자) */
+.case-routine {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border-radius: var(--card-radius);
+}
+
+/* ── 한 열: 대화 → 답장 (T068. 폭과 상관없이 늘 한 열) ──────────────────── */
 
 .case-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4) var(--space-5);
+  gap: var(--space-3);
   align-items: start;
   min-width: 0;
-}
-
-@container (min-width: 60rem) {
-  .case-body:not(.case-body-single) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  }
 }
 
 .case-body-reply {

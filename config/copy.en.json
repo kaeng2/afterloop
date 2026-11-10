@@ -312,6 +312,7 @@
   "case.view.carrierLine": "{{date}} · Carrier: {{text}}",
   "case.view.riskScoreAfter": "Score {{before}} → {{after}}",
   "case.reply.coachingToggle": "{{count}} coaching tips",
+  "case.reply.covers": "Suggested reply covers:",
   "case.reply.youWrite": "You write (English)",
   "case.reply.buyerReads": "{{name}} reads ({{language}})",
   "case.reply.buyerReadsUnknown": "The buyer reads ({{language}})",

@@ -40,7 +40,7 @@ import type {
 import type { BadgeKind, RiskBand } from '../_shared/badge-keys';
 import { copyTables } from '../_shared/copy';
 import type { DemoField } from '../_shared/dispute-view';
-import { toDollarsCents, toDollarsRounded } from '../_shared/money';
+import { toDollarsRounded } from '../_shared/money';
 
 // ───────────────────────────── 입력 ─────────────────────────────
 
@@ -182,8 +182,9 @@ export type CaseView = {
      */
     statusKey: string | null;
     buyerName: string | null;
+    /** 상품 이름의 쉼표 앞 부분 (`productShortName`, T068: "Wool Sweater, Navy" → "Wool Sweater"). */
     productName: string | null;
-    /** 분쟁 금액 (센트까지). */
+    /** 분쟁 금액. 표시는 달러 반올림 (T068 머리글 "$72"). 센트 값은 그대로. */
     amount: MoneyView;
     /** 언어 문구 키 (`case.view.lang.KO` …). 모르면 `null`. */
     languageKey: string | null;
@@ -228,6 +229,15 @@ export function actionKeyFor(move: Evaluation['move'] | null): string {
 const LOCALE: Record<SeedBuyer['language'], FactLocale> = { KO: 'ko', EN: 'en', JA: 'ja', DE: 'de' };
 
 export const OFFER_FIRST_KEY = 'case.view.offerFirst';
+
+/**
+ * 머리글용 상품 이름: 시드 상품 이름의 쉼표 앞 부분 (T068. "Wool Sweater, Navy" → "Wool Sweater").
+ * 쉼표가 없거나 앞 부분이 비면 이름 그대로.
+ */
+export function productShortName(itemName: string): string {
+  const head = itemName.split(',')[0]?.trim() ?? '';
+  return head === '' ? itemName.trim() : head;
+}
 
 /** PayPal 상태 코드 → 쉬운 말 키. 문구 파일(`case.status.*`)에 있는 상태만. 없으면 `null`. */
 export function statusKeyFor(statusCode: string): string | null {
@@ -443,8 +453,8 @@ export function buildCaseView(input: CaseViewInput, params?: Params, rules?: Pol
       statusCode: input.statusCode,
       statusKey: statusKeyFor(input.statusCode),
       buyerName: input.buyer?.name ?? null,
-      productName: input.product?.itemName ?? null,
-      amount: { cents: input.boardReal.amountCents, display: toDollarsCents(input.boardReal.amountCents) },
+      productName: input.product === null || input.product === undefined ? null : productShortName(input.product.itemName),
+      amount: { cents: input.boardReal.amountCents, display: toDollarsRounded(input.boardReal.amountCents) },
       languageKey: input.buyer === null ? null : `case.view.lang.${input.buyer.language}`,
       buyerLocale: input.buyer === null ? null : LOCALE[input.buyer.language],
     },

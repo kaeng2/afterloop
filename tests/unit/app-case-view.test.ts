@@ -172,8 +172,9 @@ describe('AC18 1번: 전·후 칸은 같은 보드로 부른 recommend 결과다
     expect(copyTables.en[actionKeyFor(null)]).toBe('Handle manually');
   });
 
-  it('머리글: 분쟁 금액은 센트까지 ($72.00), 분쟁 번호·상태·언어', () => {
-    expect(view.header.amount).toEqual({ cents: 7200, display: '$72.00' });
+  // T068: 머리글 금액은 달러 반올림 ("Wool Sweater $72"). 센트 값은 그대로
+  it('머리글: 분쟁 금액은 달러 반올림 ($72), 분쟁 번호·상태·언어', () => {
+    expect(view.header.amount).toEqual({ cents: 7200, display: '$72' });
     expect(view.header.disputeId).toBe('PP-R-TEST-D2');
     expect(view.header.statusCode).toBe('WAITING_FOR_SELLER_RESPONSE');
     expect(copyTables.en[view.header.languageKey ?? '']).toBe('Korean');

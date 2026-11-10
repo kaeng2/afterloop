@@ -121,8 +121,9 @@ const CASE_HTML = html(createElement(CaseView, { view: VIEW, llmOk: true }));
 
 describe('1번: 머리글 두 줄 + 작은 위험 배지', () => {
   it('첫 줄 "Case <번호> · <상품> <금액> · <상태 쉬운 말>", 둘째 줄 "<이름> · writes in Korean"', () => {
+    // T068: 상품은 쉼표 앞 부분, 금액은 달러 반올림 (둘 다 데이터에서)
     expect(headLine(VIEW.header)).toBe(
-      `Case ${ID} · ${SWEATER.itemName} ${VIEW.header.amount.display} · ${copyTables.en['case.status.WAITING_FOR_SELLER_RESPONSE']}`,
+      `Case ${ID} · ${SWEATER.itemName.split(',')[0].trim()} ${toDollarsRounded(D2_BASE.amountCents)} · ${copyTables.en['case.status.WAITING_FOR_SELLER_RESPONSE']}`,
     );
     const name = CASE_HTML.match(/<h2 class="case-name">([\s\S]*?)<\/h2>/)?.[1] ?? '';
     expect(text(name).trim()).toBe(`${SEOYEON.name} · writes in Korean`);
@@ -273,16 +274,17 @@ function replyBase(draft: ReplyDraft, translation: ReplyTranslation | null, over
 }
 
 describe('5~6번: 답장 칸 — 접기와 검사 줄', () => {
-  it('코칭은 "5 coaching tips ▸" 한 줄 접기, 구매자 글이 영어 글보다 먼저 (이름은 데이터에서)', async () => {
+  // T068: 코칭 접기는 칩 줄로 바뀌었고, 답장은 "You write (English)" | "<이름> reads (Korean)" 좌우 두 칸
+  it('코칭 접기 없음(칩으로 대체), 왼쪽 영어 → 오른쪽 구매자 글 (이름은 데이터에서)', async () => {
     const { draft, translation } = await prepare();
     const markup = html(
       createElement(ReplyPanel, { disputeId: ID, base: replyBase(draft, translation), replyId: null, languageKey: 'case.view.lang.KO', buyerShort: 'Seo-yeon' }),
     );
-    expect(markup).toMatch(/<details class="reply-fold"><summary class="reply-fold-summary"><span>5 coaching tips<\/span>/);
+    expect(markup).not.toContain('coaching tips');
     const reads = markup.indexOf('Seo-yeon reads (Korean)');
     const write = markup.indexOf('You write (English)');
-    expect(reads).toBeGreaterThan(0);
-    expect(write).toBeGreaterThan(reads);
+    expect(write).toBeGreaterThan(0);
+    expect(reads).toBeGreaterThan(write);
     expect(markup).toContain('class="reply-text reply-outgoing" lang="ko"');
     expect(markup).toContain('class="reply-text reply-english" lang="en"');
     // 역번역은 접기 안
@@ -337,7 +339,8 @@ describe('전송 상태 표시: 모드 글자는 서버 모드에서', () => {
     expect(liveSendAllowedFor('PP-R-NOT-IN-TABLE', LINKS)).toBe(false);
   });
 
-  it('답장 칸 맨 위에 그 글자가 보인다', async () => {
+  // T068: 모드 글자는 답장 칸 맨 위가 아니라 보내기 버튼 옆 작은 글씨
+  it('보내기 버튼 옆에 그 글자가 보인다', async () => {
     const { draft, translation } = await prepare();
     for (const [mode, liveAllowed, key] of [
       ['simulated', true, 'case.send.mode.simulated'],
@@ -347,8 +350,8 @@ describe('전송 상태 표시: 모드 글자는 서버 모드에서', () => {
       const markup = html(
         createElement(ReplyPanel, { disputeId: ID, base: replyBase(draft, translation, { mode, liveAllowed }), replyId: null, languageKey: 'case.view.lang.KO' }),
       );
-      const head = markup.slice(0, markup.indexOf('</div>'));
-      expect(head).toContain(t(key));
+      const actions = markup.slice(markup.indexOf('class="reply-actions"'), markup.indexOf('Send in Korean'));
+      expect(actions).toContain(`class="reply-mode${key === 'case.send.mode.live' ? ' reply-mode-live' : ''}">${t(key)}`);
     }
   });
 

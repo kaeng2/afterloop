@@ -1,11 +1,12 @@
 /**
- * 분쟁 상세 (T061 "서연 상세 합치기" — Today 오른쪽 칸 한 프레임). 위에서 아래로:
+ * 분쟁 상세 (T061 → T068 "위에서 아래로 한 줄기"). 한 열, 위에서 아래로:
  *
  *  1. 머리글 두 줄 — "Case … · 상품 금액 · 상태" / "구매자 이름 · writes in <언어>" + 오른쪽 작은 위험 배지(펼침)
- *  2. 비교 카드(주인공) — 전 칸 아래 "incl. $N of your time"(가정값 대응 시간 비용) + 한 줄 요약(옛 원인 칸 대체)
- *  3. 아래 두 칸 (넓은 폭): 왼쪽 대화(말풍선, 배송사 줄 포함) · 오른쪽 답장 칸(`reply`로 받는다)
+ *  2. 비교 카드(주인공, 가로 전체 폭) — 전 칸 아래 "incl. $N of your time" + **카드 안 아래쪽** 한 줄 요약
+ *  3. 대화(말풍선, 배송사 줄 포함)
+ *  4. 답장 칸(`reply`로 받는다: 칩 줄 → 답장 두 칸 → 검사 줄 + 보내기)
  *
- * 1920×1080에서 비교 카드와 보내기 버튼이 스크롤 없이 함께 보이게, 따로 있던 원인 카드·배송사 카드는 없앴다.
+ * 1920×1080에서 비교 카드와 보내기 버튼이 스크롤 없이 함께 보이게 한다 (T068 가장 중요한 규칙 1).
  *
  * **계산하지 않는다.** 모든 숫자·판정은 `buildCaseView`(엔진 결과를 옮긴 값)에서 온다.
  * 글자는 모두 `case.*`·`badge.*`·`common.*` 문구에서 읽는다.
@@ -62,28 +63,29 @@ export function CaseHeader({ view }: { view: CaseViewData }) {
   );
 }
 
-/** 한 줄 요약 + 판정 배지. 세부 유형 코드는 보조 글자. */
+/**
+ * 한 줄 요약 + 판정 배지 (T068: 비교 카드 **안** 아래쪽 한 줄. 따로 있던 회색 요약 상자는 없앴다).
+ * 세부 유형 코드("A1 → A2")는 보조 글자.
+ */
 function Summary({ summary, noCarrier }: { summary: SummaryView | null; noCarrier: boolean }) {
   return (
-    <section className="case-summary" aria-label={t('case.view.summaryLabel')}>
-      {summary === null ? (
-        <p className="case-summary-text">{t('case.view.causeNone')}</p>
-      ) : (
-        <>
-          <p className="case-summary-text">{t(summary.key)}</p>
-          <p className="case-summary-meta">
+    <div className="case-summary" role="group" aria-label={t('case.view.summaryLabel')}>
+      <p className="case-summary-line">
+        <span className="case-summary-text">{summary === null ? t('case.view.causeNone') : t(summary.key)}</span>
+        {summary === null ? null : (
+          <>
             <Badge kind={summary.badge} />
             <span className="case-summary-codes num">
               {summary.codes.before === null
                 ? summary.codes.after
                 : t('case.view.causeCodes', { before: summary.codes.before, after: summary.codes.after })}
             </span>
-            {summary.needsReview ? <span>{t('board.needsReview')}</span> : null}
-          </p>
-        </>
-      )}
+            {summary.needsReview ? <span className="case-summary-meta">{t('board.needsReview')}</span> : null}
+          </>
+        )}
+      </p>
       {noCarrier ? <p className="case-summary-meta">{t('case.view.noCarrier')}</p> : null}
-    </section>
+    </div>
   );
 }
 
@@ -98,7 +100,7 @@ export function CaseView({ view, llmOk, reply }: { view: CaseViewData; llmOk: bo
 
       {llmOk ? null : <p className="notice">{t('common.llmUnavailable')}</p>}
 
-      {/* 주인공: 전 → 후 비교 + 한 줄 요약 */}
+      {/* 주인공: 전 → 후 비교 (가로 전체 폭), 카드 안 아래쪽에 한 줄 요약 */}
       <div className="case-hero">
         <CompareCard
           label={t(compare.labelKey)}
@@ -120,13 +122,14 @@ export function CaseView({ view, llmOk, reply }: { view: CaseViewData; llmOk: bo
                   badge: compare.after.badges.map((kind) => <Badge key={kind} kind={kind} />),
                 }
           }
+          footer={<Summary summary={view.summary} noCarrier={compare.after === null} />}
           arrowLabel={t('case.view.arrow')}
           previousLabel={t('case.view.previous')}
         />
-        <Summary summary={view.summary} noCarrier={compare.after === null} />
       </div>
 
-      <div className={reply === undefined ? 'case-body case-body-single' : 'case-body'}>
+      {/* 한 열: 대화 → 답장 (T068, 시안의 위에서 아래로 한 줄기) */}
+      <div className="case-body">
         <Conversation messages={view.messages} carrierLine={view.carrierLine} locale={view.header.buyerLocale} />
         {reply === undefined ? null : <div className="case-body-reply">{reply}</div>}
       </div>

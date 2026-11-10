@@ -1,14 +1,16 @@
 'use client';
 
 /**
- * 답장 칸 (T009 2부 → T061 5~7번 + 전송 상태 표시). 위에서 아래로:
+ * 답장 칸 (T009 2부 → T061 → T068 한 줄기). 위에서 아래로:
  *
- *  - 전송 모드 글자 (서버가 정한 모드: "Simulated send — nothing goes to PayPal" / "Live · PayPal sandbox")
- *  - 코칭: "5 coaching tips ▸" 한 줄로 접는다 (펼치면 내용)
- *  - 본문: 구매자가 받는 글(구매자 언어)을 크게, 판매자가 쓴 영어는 작게. 역번역은 접어 둔다
- *  - 검사: 늘 보이는 줄(Facts match · No new promises · 확인 기한 날짜) + "More checks ▸" 접기.
- *    **실패한 검사는 접기와 상관없이 늘 보인다** (`visibleChecks`)
- *  - 보내기 버튼 · 결과 한 줄 · 답장 후 위험
+ *  - 칩 줄: "Suggested reply covers:" + 알약 칩 + AI suggests (`view.chips` = `replyChips`. 빈 배열이면 숨김).
+ *    코칭 접기("5 coaching tips ▸")는 칩으로 대체했다
+ *  - 본문 두 칸 나란히: 왼쪽 "You write (English)" · 오른쪽 "<이름> reads (<언어>)". 두 칸 글자 크기 같다
+ *    (`--reply-text-size`). 역번역은 두 칸 아래 "Back-translation ▸" 접기
+ *  - 맨 아래 한 줄: 왼쪽 검사(Facts match · No new promises · 확인 기한 날짜 + "More checks ▸" 접기.
+ *    **실패한 검사는 접기와 상관없이 늘 보인다** — `visibleChecks`), 오른쪽 끝 전송 모드 작은 글씨
+ *    ("Simulated send — nothing goes to PayPal" / "Live · PayPal sandbox") + 보내기 버튼
+ *  - 결과 한 줄 · 답장 후 위험
  *
  * - **판정하지 않는다.** 보기용 값은 `buildReplyView`, 버튼은 `canSend`가 정한다 (확인 상자·전송 상태가
  *   바뀔 때마다 다시 부른다). 서버 액션도 같은 판정을 서버에서 다시 한다.
@@ -31,6 +33,7 @@ import {
   buildReplyView,
   canSend,
   canSendOffer,
+  REPLY_KEYS,
   visibleChecks,
   type CheckRowView,
   type FactRowView,
@@ -164,15 +167,10 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey, buyerShort =
   const result = view.result;
 
   return (
-    <section className="card reply" aria-labelledby="reply-title">
-      <div className="reply-head">
-        <h2 className="label" id="reply-title">
-          {t('case.reply.title')}
-        </h2>
-        <span className={view.modeKey === 'case.send.mode.live' ? 'reply-mode reply-mode-live' : 'reply-mode'}>
-          {t(view.modeKey)}
-        </span>
-      </div>
+    <section className="reply" aria-labelledby="reply-title">
+      <h2 className="reply-sr-only" id="reply-title">
+        {t('case.reply.title')}
+      </h2>
 
       {view.unavailableKey === null ? null : <p className="notice">{t(view.unavailableKey)}</p>}
 
@@ -180,36 +178,29 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey, buyerShort =
         <>
           {view.fixedDraftKey === null ? null : <p className="notice reply-fixed">{t(view.fixedDraftKey)}</p>}
 
-          {view.coaching.length === 0 ? null : (
-            <details className="reply-fold">
-              <FoldSummary label={t('case.reply.coachingToggle', { count: view.coaching.length })} />
-              <ol className="reply-coaching small">
-                {view.coaching.map((line, index) => (
-                  <li key={index}>{line}</li>
+          {/* 4. "Suggested reply covers:" 칩 줄 (칩 글자는 `replyChips` — AI 칩 또는 코칭 줄 그대로) */}
+          {view.chips.length === 0 ? null : (
+            <div className="reply-chips">
+              <h3 className="reply-chips-title">{t('case.reply.covers')}</h3>
+              <ul className="reply-chip-list">
+                {view.chips.map((chip, index) => (
+                  <li key={index} className="reply-chip">
+                    {chip}
+                  </li>
                 ))}
-              </ol>
-            </details>
+              </ul>
+              {view.sourceBadges.map((kind) => (
+                <Badge key={kind} kind={kind} />
+              ))}
+            </div>
           )}
 
+          {/* 5. 답장 두 칸 나란히: 왼쪽 판매자 영어 · 오른쪽 구매자가 받는 글. 두 칸 글자 크기 같다 */}
           <div className="reply-pair">
-            <div className="reply-block">
-              <div className="row">
-                <h3 className="label">{readsLabel}</h3>
-                {view.outgoing === null ? null : view.sourceBadges.map((kind) => <Badge key={kind} kind={kind} />)}
-              </div>
-              {view.outgoing === null ? (
-                <p className="small muted">{t('case.reply.outgoingUnavailable')}</p>
-              ) : (
-                <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined}>
-                  {view.outgoing.text}
-                </p>
-              )}
-            </div>
-
             {view.draftEn === null ? null : (
-              <div className="reply-block">
+              <div className="reply-block reply-box">
                 <div className="row">
-                  <h3 className="label">{t('case.reply.youWrite')}</h3>
+                  <h3 className="reply-box-title">{t('case.reply.youWrite')}</h3>
                   {view.sourceBadges.map((kind) => (
                     <Badge key={kind} kind={kind} />
                   ))}
@@ -220,42 +211,26 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey, buyerShort =
               </div>
             )}
 
-            {view.backTranslationEn === null ? null : (
-              <details className="reply-fold">
-                <FoldSummary label={t('case.reply.backTranslation')} />
-                <p className="reply-text small">{view.backTranslationEn}</p>
-              </details>
-            )}
+            <div className="reply-block reply-box">
+              <div className="row">
+                <h3 className="reply-box-title">{readsLabel}</h3>
+                {view.outgoing === null ? null : view.sourceBadges.map((kind) => <Badge key={kind} kind={kind} />)}
+              </div>
+              {view.outgoing === null ? (
+                <p className="small muted">{t('case.reply.outgoingUnavailable')}</p>
+              ) : (
+                <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined}>
+                  {view.outgoing.text}
+                </p>
+              )}
+            </div>
           </div>
 
-          {view.checkRows.length === 0 ? null : (
-            <div className="reply-block reply-checks">
-              <div className="row">
-                <h3 className="label">{t('case.reply.checks')}</h3>
-                <Badge kind="codeDecides" />
-              </div>
-              <ul className="reply-list small">
-                {checks.shown.map((row) => (
-                  <CheckRow key={row.labelKey} row={row} />
-                ))}
-                {shownFacts.map((fact) => (
-                  <FactRow key={fact.token} fact={fact} />
-                ))}
-              </ul>
-              {hasFolded ? (
-                <details className="reply-fold">
-                  <FoldSummary label={t('case.reply.moreChecks')} />
-                  <ul className="reply-list small">
-                    {checks.folded.map((row) => (
-                      <CheckRow key={row.labelKey} row={row} />
-                    ))}
-                    {foldedFacts.map((fact) => (
-                      <FactRow key={fact.token} fact={fact} />
-                    ))}
-                  </ul>
-                </details>
-              ) : null}
-            </div>
+          {view.backTranslationEn === null ? null : (
+            <details className="reply-fold">
+              <FoldSummary label={t('case.reply.backTranslation')} />
+              <p className="reply-text small">{view.backTranslationEn}</p>
+            </details>
           )}
 
           {view.addedInTranslation.length === 0 ? null : (
@@ -288,36 +263,75 @@ export function ReplyPanel({ disputeId, base, replyId, languageKey, buyerShort =
         </>
       ) : null}
 
-      {view.offer === null || offerGate === null ? null : (
-        <div className="reply-send">
-          <button
-            type="button"
-            className="reply-button"
-            disabled={!offerGate.ok}
-            aria-describedby="reply-offer-why"
-            onClick={() => send('offer')}
-          >
-            {sendState === 'sending' ? t('case.send.sending') : t('case.send.offerButton', { amount: view.offer.amountDisplay })}
-          </button>
-          <span id="reply-offer-why" className="small muted">
-            {offerGate.ok || offerGate.reasonKey === null || result !== null ? null : t(offerGate.reasonKey)}
-          </span>
-        </div>
-      )}
+      {/* 6. 맨 아래 한 줄: 왼쪽 검사(Code decides) · 오른쪽 끝 전송 모드 작은 글씨 + 보내기 버튼 */}
+      <div className="reply-foot">
+        {view.available && view.checkRows.length > 0 ? (
+          <div className="reply-checks">
+            <h3 className="reply-sr-only">{t('case.reply.checks')}</h3>
+            <ul className="reply-inline small">
+              {checks.shown.map((row) => (
+                <CheckRow key={row.labelKey} row={row} />
+              ))}
+              {shownFacts.map((fact) => (
+                <FactRow key={fact.token} fact={fact} />
+              ))}
+            </ul>
+            <Badge kind="codeDecides" />
+            {hasFolded ? (
+              <details className="reply-fold">
+                <FoldSummary label={t('case.reply.moreChecks')} />
+                <ul className="reply-list small">
+                  {checks.folded.map((row) => (
+                    <CheckRow key={row.labelKey} row={row} />
+                  ))}
+                  {foldedFacts.map((fact) => (
+                    <FactRow key={fact.token} fact={fact} />
+                  ))}
+                </ul>
+              </details>
+            ) : null}
+          </div>
+        ) : (
+          <span className="reply-checks" />
+        )}
 
-      <div className="reply-send">
-        <button
-          type="button"
-          className={view.offer === null ? 'reply-button' : 'reply-button-quiet'}
-          disabled={!gate.ok}
-          aria-describedby="reply-send-why"
-          onClick={() => send('message')}
-        >
-          {sendState === 'sending' && view.offer === null ? t('case.send.sending') : t('case.send.button', { language })}
-        </button>
-        <span id="reply-send-why" className="small muted">
-          {gate.ok || gate.reasonKey === null || (result !== null && view.offer === null) ? null : t(gate.reasonKey)}
-        </span>
+        <div className="reply-actions">
+          <span className={view.modeKey === REPLY_KEYS.modeLive ? 'reply-mode reply-mode-live' : 'reply-mode'}>
+            {t(view.modeKey)}
+          </span>
+
+          {view.offer === null || offerGate === null ? null : (
+            <div className="reply-send">
+              <button
+                type="button"
+                className="reply-button"
+                disabled={!offerGate.ok}
+                aria-describedby="reply-offer-why"
+                onClick={() => send('offer')}
+              >
+                {sendState === 'sending' ? t('case.send.sending') : t('case.send.offerButton', { amount: view.offer.amountDisplay })}
+              </button>
+              <span id="reply-offer-why" className="small muted reply-why">
+                {offerGate.ok || offerGate.reasonKey === null || result !== null ? null : t(offerGate.reasonKey)}
+              </span>
+            </div>
+          )}
+
+          <div className="reply-send">
+            <button
+              type="button"
+              className={view.offer === null ? 'reply-button' : 'reply-button-quiet'}
+              disabled={!gate.ok}
+              aria-describedby="reply-send-why"
+              onClick={() => send('message')}
+            >
+              {sendState === 'sending' && view.offer === null ? t('case.send.sending') : t('case.send.button', { language })}
+            </button>
+            <span id="reply-send-why" className="small muted reply-why">
+              {gate.ok || gate.reasonKey === null || (result !== null && view.offer === null) ? null : t(gate.reasonKey)}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="reply-result" aria-live="polite">

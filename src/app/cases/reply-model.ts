@@ -142,6 +142,8 @@ export type ReplyView = {
   sourceBadges: BadgeKind[];
   fixedDraftKey: string | null;
   coaching: string[];
+  /** "Suggested reply covers:" 칩 (`replyChips` + 토큰 채움). 빈 배열이면 칩 줄을 숨긴다. */
+  chips: string[];
   /** 영어 초안 (영어 표기로 채움). */
   draftEn: FilledText | null;
   /** 구매자 언어 전송본 (구매자 언어 표기로 채움). 실제로 나갈 글자와 같다 (`screenText`). */
@@ -220,6 +222,22 @@ export const REPLY_KEYS = {
 export function sendModeKey(mode: SendMode, liveAllowed: boolean): string {
   if (mode !== 'live') return REPLY_KEYS.modeSimulated;
   return liveAllowed ? REPLY_KEYS.modeLive : REPLY_KEYS.modeLiveNotAllowed;
+}
+
+/**
+ * "Suggested reply covers:" 칩 글자 (T068). **화면은 칩 글자를 짓지 않는다.**
+ * - 초안에 `chips`(T069, AI가 만든 짧은 칩)가 있으면 그것을 그대로.
+ * - 없으면(T069 병합 전, 또는 고정 초안) 코칭 줄을 그대로 칩으로 쓴다 (긴 글자도 줄이지 않는다).
+ * - 초안이 없으면 빈 배열 (칩 줄을 숨긴다).
+ * 토큰(⟦DATE_1⟧ …)은 여기서 채우지 않는다 — `buildReplyView`가 영어 초안과 같은 길(`screenText`)로 채운다.
+ */
+export function replyChips(draft: ReplyDraft): string[] {
+  if (!draft.ok) return [];
+  const chips = (draft as { chips?: unknown }).chips;
+  if (Array.isArray(chips) && chips.every((chip): chip is string => typeof chip === 'string')) {
+    return chips.map((chip) => chip.trim()).filter((chip) => chip !== '');
+  }
+  return draft.coaching.map((line) => line.trim()).filter((line) => line !== '');
 }
 
 /** 검사 줄 나누기: 보이는 줄(늘 보이는 줄 + 실패한 줄)과 접기 안의 줄(통과한 나머지). */
@@ -380,6 +398,7 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
       ? null
       : screenText(translation.outgoing, input.facts, input.buyerLocale, money);
   const coaching = (draft?.coaching ?? []).map((line) => screenText(line, draftFacts, 'en', money).text);
+  const chips = replyChips(input.draft).map((chip) => screenText(chip, draftFacts, 'en', money).text);
   const backTranslationEn =
     translation === null ? null : screenText(translation.backTranslationEn, draftFacts, 'en', money).text;
   const nameProblems = translation?.nameProblems ?? [];
@@ -442,6 +461,7 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
     sourceBadges: draftOk && !fixed ? ['aiSuggests'] : [],
     fixedDraftKey: draftOk && fixed ? REPLY_KEYS.fixedDraft : null,
     coaching,
+    chips,
     draftEn,
     outgoing,
     backTranslationEn,

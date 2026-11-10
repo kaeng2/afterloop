@@ -455,7 +455,8 @@ describe('2번: PayPal 상태를 쉬운 말로', () => {
 // T061 3번: 옛 원인 칸("PayPal data only: A1 … → …")은 없애고 한 줄 요약으로 바꿨다
 describe('3번 (T061): 원인 칸 대신 한 줄 요약', () => {
   const summary = (html: string) => {
-    const match = html.match(/<section class="case-summary"[\s\S]*?<\/section>/);
+    // T068: 요약은 비교 카드 안의 한 줄 (회색 상자 section 대신 div)
+    const match = html.match(/<div class="case-summary"[\s\S]*?<\/div>/);
     expect(match).not.toBeNull();
     return match![0];
   };
