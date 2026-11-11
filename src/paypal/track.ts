@@ -137,32 +137,49 @@ export type UntrackedRow = {
   note?: string;
 };
 
+/**
+ * `listUntracked`가 동시에 보내는 주문 조회 수 상한 (T083).
+ * 클라이언트의 속도 제한(60초 30회, 자리를 동기적으로 잡는다)·토큰 발급 합치기와 충돌하지 않는다.
+ */
+export const LIST_UNTRACKED_CONCURRENCY = 6;
+
+/** 입력 순서대로 결과를 담으며 최대 `limit`개씩 동시에 돌린다. `fn`은 던지지 않는다 (행 단위로 오류를 잡는다). */
+async function mapInOrder<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i] as T);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
+
 export async function listUntracked(
   client: PayPalClient,
   orders: TrackOrders['orders'],
   disputes: TrackDispute[],
 ): Promise<UntrackedRow[]> {
   const disputed = disputedOrderKeys(disputes);
-  const rows: UntrackedRow[] = [];
-  for (const order of orders) {
+  // 분쟁 주문은 GET 없이 행을 만든다. 나머지는 동시에 조회하고, 한 건 실패는 그 행만 unknown. 순서는 입력 그대로.
+  return mapInOrder(orders, LIST_UNTRACKED_CONCURRENCY, async (order): Promise<UntrackedRow> => {
     const base = { key: order.key, orderId: order.orderId };
     const found = disputed.get(order.key);
     if (found !== undefined) {
-      rows.push({ ...base, state: 'unknown', excluded: true, disputeKeys: found.map((d) => d.key), note: TRACK_DISPUTED_NOTE });
-      continue;
+      return { ...base, state: 'unknown', excluded: true, disputeKeys: found.map((d) => d.key), note: TRACK_DISPUTED_NOTE };
     }
     try {
       const res = await client.get(`/v2/checkout/orders/${encodeURIComponent(order.orderId)}`);
       if (res.status !== 200) {
-        rows.push({ ...base, state: 'unknown', excluded: false, note: `주문 조회 → ${errorSummary(res.body)}` });
-      } else {
-        rows.push({ ...base, state: isOrderUntracked(res.body) ? 'untracked' : 'tracked', excluded: false });
+        return { ...base, state: 'unknown', excluded: false, note: `주문 조회 → ${errorSummary(res.body)}` };
       }
+      return { ...base, state: isOrderUntracked(res.body) ? 'untracked' : 'tracked', excluded: false };
     } catch (error) {
-      rows.push({ ...base, state: 'unknown', excluded: false, note: thrownSummary(error).note });
+      return { ...base, state: 'unknown', excluded: false, note: thrownSummary(error).note };
     }
-  }
-  return rows;
+  });
 }
 
 // ── 등록 ──
