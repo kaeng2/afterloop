@@ -38,6 +38,8 @@ import type { FixId, LlmCaller, ParamsConfig, PayPalClient, PolicyConfig, SeedPr
 import { seedDisputes, seedInquiries, seedProducts } from '../../seed/index';
 
 vi.mock('server-only', () => ({}));
+// T065: 상품 표(`product-grid.tsx`)가 행 선택에 앱 라우터를 쓴다 (테스트에는 라우터가 없다)
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => undefined }) }));
 (globalThis as { React?: typeof React }).React = React;
 
 const { loadTransactionLine, TRANSACTION_DAYS } = await import('@/app/products/transactions-line');

@@ -18,7 +18,7 @@
 
 @media (min-width: 64rem) {
   .products {
-    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr) minmax(0, 22rem);
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr) minmax(0, 22rem);
     min-height: calc(100vh - 4.5rem);
     align-items: stretch;
   }
@@ -84,6 +84,34 @@
 
 .products-row-values {
   font-weight: 700;
+}
+
+/* ── 상품 표 (T065, AG Grid. 색·글꼴은 grid.ts 테마가 디자인 변수로 넣는다) ── */
+
+.products-grid {
+  width: 100%;
+}
+
+.products-grid .ag-row {
+  cursor: pointer;
+}
+
+.products-grid .products-grid-name {
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.products-grid .products-grid-values {
+  font-weight: 700;
+}
+
+/* 고른 상품: 강조색을 옅게 깐 바탕 + 이름을 강조색으로 (AG Grid 선택 기능은 쓰지 않는다) */
+.products-grid .products-grid-row-selected {
+  background-color: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+.products-grid .products-grid-row-selected .products-grid-name {
+  color: var(--color-accent);
 }
 
 /* ── 가운데 리허설 ───────────────────────────────────────────────────────── */
