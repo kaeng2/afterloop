@@ -1,13 +1,16 @@
 /**
- * Products 탭 `/products` (T060 최소판). 같은 틀 안에 가게 상품 목록만 보인다 — 상품별 진단은 T062가 채운다.
+ * Products 탭 `/products` (T062, PRD v3 8장 S2). 세 칸: 왼쪽 상품 목록 · 가운데 리허설 · 오른쪽 처방 카드 4개.
  *
- * - 목록은 시드 상품 (이름 · SKU · 남은 재고). 숫자를 만들지 않는다 (재고는 시드 값 그대로).
- * - `?sku=`가 있으면 그 상품을 고른 것으로 표시한다 (Today의 Prevent 항목이 여기로 온다).
- * - 이 화면은 PayPal·LLM을 부르지 않는다.
+ * - 고른 상품은 주소에 둔다 (`/products?sku=FK-CD-OAT`). 없거나 모르는 값이면 Today의 Prevent 상품 (`selectSku`).
+ * - 숫자는 모두 엔진 결과 (`model.ts`). 처방 토글은 브라우저에서 다시 계산한다 (`products-screen.tsx`).
+ * - 서버가 하는 일: 거래 조회 한 줄(GET만, 실패하면 숨김)과 색상 문구 서버 액션 연결. POST를 보내지 않는다.
  */
-import { seedProducts } from '../../../seed/index';
-import { DemoBadge } from '../_shared/badges';
-import { t } from '../_shared/copy';
+import { seedDisputes, seedInquiries, seedProducts } from '../../../seed/index';
+
+import { writeColorNoteAction } from './actions';
+import { colorComplaintsFor, selectSku } from './model';
+import { ProductsScreen } from './products-screen';
+import { loadTransactionLine } from './transactions-line';
 
 import './products.css';
 
@@ -17,27 +20,22 @@ type Props = { searchParams: Promise<{ sku?: string | string[] }> };
 
 export default async function ProductsPage({ searchParams }: Props) {
   const { sku } = await searchParams;
-  const selected = Array.isArray(sku) ? sku[0] : sku;
+  const requested = Array.isArray(sku) ? sku[0] : sku;
+  const selected = selectSku(seedProducts, requested);
+  if (selected === null) return null;
+
+  const txLine = await loadTransactionLine();
+  const colorNoteSkus = seedProducts
+    .map((product) => product.sku)
+    .filter((productSku) => colorComplaintsFor(productSku, seedDisputes, seedInquiries).length > 0);
 
   return (
-    <div className="stack products">
-      <div className="row">
-        <h1 className="products-title">{t('shell.products.title')}</h1>
-        <DemoBadge />
-      </div>
-      <ul className="products-list" aria-label={t('shell.products.listLabel')}>
-        {seedProducts.map((product) => (
-          <li
-            key={product.sku}
-            className="products-item"
-            aria-current={product.sku === selected ? 'true' : undefined}
-          >
-            <span className="products-name">{product.itemName}</span>
-            <span className="small muted num">{product.sku}</span>
-            <span className="small num">{t('shell.products.stockLeft', { stock: product.stock })}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ProductsScreen
+      products={seedProducts}
+      selectedSku={selected}
+      txLine={txLine}
+      colorNoteSkus={colorNoteSkus}
+      writeColorNote={writeColorNoteAction}
+    />
   );
 }
