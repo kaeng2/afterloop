@@ -77,6 +77,10 @@ async function main(): Promise<number> {
   for (const item of built.cases) {
     console.log(`  ${item.disputeId}: 초안 ${item.draft ? 'O' : 'X'} · 번역·역번역 ${item.reply ? 'O' : 'X'}`);
   }
+  for (const locale of ['en', 'ko'] as const) {
+    const fixes = built.listingFixes[locale];
+    console.log(`  listing fixes ${locale}: ${fixes === null ? 'AI 없음' : `칸별 ok ${fixes.ok}/${fixes.total}`}`);
+  }
   if (entries === 0) {
     console.error('기록된 항목이 없다. 파일을 쓰지 않았다.');
     return 1;
