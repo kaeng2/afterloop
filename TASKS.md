@@ -90,13 +90,13 @@
 | T087 | 화면: /listing Scene 3 (점검 모달·고치기·다시 계산·등록, /api/listing-check) | ui | 완료 | v2.12 | T085, T086, T084, T081 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T087.md` | 병합. 독립 검증 통과(Sonnet): 화면 무계산, 진행 = step, 정직성 문구, /api/listing-check = checkListing. 스크린샷은 색 병합 뒤 |
 | T088 | 속도 ③: 지난 값 먼저 보여 주고 뒤에서 새로 읽기(최대 10분), 쓰기 뒤 바로 지움, 서버 뜰 때 데우기(선택) | ui | 완료 | v2.12 | T084, T082 | 시간 재기 | 모델 `claude-opus-5-5`. `tasks/T088.md`. 병합. 검증 통과(Sonnet). 95초·5분 쉰 뒤 첫 클릭 0.05~0.10초 |
 | T089 | 디자인 1단계: 색을 시안 v4 그대로 (토큰), 남보라 제거 | ui | 완료 | v2.13 | — | 스크린샷 | 병합. 검증 1회 실패(#002991 미연결) → 재시도 → 재검증 통과. 모델 `claude-sonnet-5-5`. 임시 worktree ui-color. 먼저 병합 → 재배포. `tasks/T089.md` |
-| T090 | 시안 맞추기 A: 배치·작은 UI (위쪽 막대, 배지 3종, Details, 검사 실패 시 Send 막기) | ui | 진행중 | v2.15 | T089, T087 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T090.md` |
-| T091 | 시안 맞추기 B: 누르면 일어나는 일 (카드 재계산·Add/Remove 칩·Details %p·지호 카드·Add all N·+$N·상품 필터) | ui | 대기 (T090·T093 뒤) | v2.14 | T090, T093 | Playwright 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T091.md` |
-| T092 | 시안 맞추기 C: Send 뒤 "What happens next · Simulated" | ui | 대기 (T090·T093 뒤, B와 병렬) | v2.14 | T090, T093 | Playwright 스크린샷 | 모델 `claude-opus-5-5`. worktree ui-perf, 브랜치 lane/ui-progress. 10:00 미완이면 빼고 재배포. `tasks/T092.md` |
+| T090 | 시안 맞추기 A: 배치·작은 UI (위쪽 막대, 배지 3종, Details, 검사 실패 시 Send 막기) | ui | 검증중 | v2.15 | T089, T087 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T090.md` |
+| T091 | 시안 맞추기 B: 누르면 일어나는 일 (카드 재계산·Add/Remove 칩·Details %p·지호 카드·Add all N·+$N·상품 필터) | ui | 진행중 | v2.14 | T090, T093 | Playwright 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T091.md` |
+| T092 | 시안 맞추기 C: Send 뒤 "What happens next · Simulated" | ui | 진행중 | v2.14 | T090, T093 | Playwright 스크린샷 | 모델 `claude-opus-5-5`. worktree ui-perf, 브랜치 lane/ui-progress. 10:00 미완이면 빼고 재배포. `tasks/T092.md` |
 | T093 | 엔진: 칩 효과 %p·Send 뒤 시나리오 위험·절감액(+$N)·reply-snippets.json | engine | 완료 | v2.14 | 계약 v2.14 | — | 모델 `claude-opus-5-5`. `tasks/T093.md` | 병합. 검증 통과(Sonnet): 기존 함수 68개 결과 바이트 동일, 서연 fight 절감 3720¢, rushed blame −9.4%p·vague −4.8%p, trackingSavings ≈ simulate 평균 |
 | T094 | Scene 3 모션 시안 그대로 (진행 표시는 시안 속도·설정, 계산은 실제) | ui | 완료 | v2.15 | T089 | 녹화 | 모델 `claude-sonnet-5-5`. `tasks/T094.md` | 병합. 검증 통과(시안과 다른 2곳은 후속으로 맞춤) |
 | T095 | AI 캐시 스크립트에 Scene 3 고칠 문구(en·ko 기본값) 더하기 | ops | 완료 | v2.15 | T086, T087 | — | 모델 `claude-sonnet-5-5`. `tasks/T095.md` | 병합. 실제 AI 캐시 17개(listing en 6/6·ko 6/6) |
-| T096 | 화면 진입점 정정: 탭 없애기, /listing·/products 링크 없애기 (주소로만) | ui | 대기 (T090 뒤) | v2.15 | T090 | — | 모델 `claude-sonnet-5-5`. `tasks/T096.md` |
+| T096 | 화면 진입점 정정: 탭 없애기, /listing·/products 링크 없애기 (주소로만) | ui | 진행중 | v2.15 | T090 | — | 모델 `claude-sonnet-5-5`. `tasks/T096.md` |
 | T097 | 시안 목록 자동 추출 → reports/design-match/inventory.md (색·모션·동작·접힘·조건부 스타일, 상태·근거 칸) | ops | 완료 | v2.15 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T097.md` | 병합. 316행 (Desk 162·Scene1 35·Scene3 119). 독립 검증은 생략(도구 스크립트, 자체 시험 + 컨트롤 타워가 출력 확인) |
 | T098 | 시안 맞추기 마무리: inventory.md 빈칸 0 + Playwright 나란히 스크린샷·녹화 | ui | 대기 (T091·T092·T096 뒤) | v2.15 | T097, T091, T092, T096 | design-match | 모델 `claude-opus-5-5`. 지시서는 그때 |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
