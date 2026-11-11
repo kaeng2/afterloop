@@ -5,6 +5,7 @@
   "mockBand": "데모용 화면 — 실제 PayPal 페이지가 아닙니다",
   "brand": "Seller dashboard",
   "biz": "비즈니스",
+  "mock": "데모용 화면",
   "nav": { "home": "홈", "activity": "활동", "reports": "보고서", "money": "자금", "rc": "분쟁 해결 센터", "label": "메인" },
   "openCount": "2",
   "bell": "알림",

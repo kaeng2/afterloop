@@ -416,7 +416,8 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
       '--ls-accent-deep: #002991',
       '--ls-accent-soft: #e3f3ff',
       '--ls-accent-pale: #f5f9ff',
-      '--ls-accent-line: #99c2ff',
+      // T098a: 시안 L52 .ins는 border가 아니라 box-shadow inset 0 0 0 2px #99C2FF
+      '--ls-shadow-ins: inset 0 0 0 2px #99c2ff',
       '--ls-navy: #0a1b3d',
       '--ls-focus: #097ff5',
     ]) {

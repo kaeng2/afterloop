@@ -64,3 +64,9 @@
 
 ## 컨트롤 타워에 요청할 결정
 1. **Done today (`s.done` 두 행)**: 시안은 처리한 항목을 화면 상태로 "Done today" 묶음에 옮기고 흐리게·회색 점으로 그린다. 앱 목록은 실제 분쟁 상태를 읽고 공개 모드 Send는 Simulated라서, 22:55 "데이터: 실제 시드·샌드박스 사건만"을 근거로 **예외**로 적었다. 화면 상태로라도 Done 표시를 원하면 지시서로 알려 달라 (Today 목록이 서버 컴포넌트라 클라이언트 상태 연결이 필요).
+
+## main 병합 (T098a·T100)
+- main을 lane/ui-desk에 병합. 충돌은 `tests/unit/app-shared-design.test.ts` 한 파일뿐이었고 두 쪽 뜻을 모두 살려 풀었다.
+- 합친 그림자 규칙: `intro/`·`listing/` css는 `var(--shadow-*)` 또는 자기 화면 변수(`--i-shadow-*`, `--ls-shadow-*`) 또는 `none`, 그 밖 css는 `var(--shadow-*)`만. `var(--shadow-*)`는 모두 light 변수에 정의돼 있어야 한다.
+- 두 쪽의 새 시험 블록('T098b: 시안 그림자 자리마다', 'T098a 시안 그림자')은 모두 남겼다. 다른 파일은 바꾸지 않았다.
+- 확인: `npx tsc --noEmit` 0, `npm run lint` 0, `npm run test:acceptance` 177 통과(9 skip), `npm run build` 성공, `npm test` 2472/2473 — 실패 1건은 `storefront.test.ts` '같은 입력 100회'가 병렬 실행 중 5초 시간 초과(단독 재실행은 31/31 통과). 첫 실행에서 한 건이 더 실패했으나 이후 3회 재실행에서는 재현되지 않았다(내용 미확인 — 병렬 부하 시간 초과로 추정).

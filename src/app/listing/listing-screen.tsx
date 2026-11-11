@@ -6,7 +6,7 @@
  * - AI 고칠 문구: Publish 때 서버 액션을 **한 번** 부른다 (상품명 + 그때 설명). 같은 상품명·설명이면 다시 부르지 않는다.
  * - Today 읽기·PayPal 조회 없음. 언어는 T081 공용 값(루트 layout이 쿠키·?lang에서 읽어 내려 준다).
  */
-import { useEffect, useMemo, useReducer } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { useLocale } from '../_shared/locale-context';
 import type { ListingFixDrafts, ListingFixKey } from '@/types';
@@ -24,6 +24,15 @@ export function ListingScreen({ draftFixes = draftListingFixesAction, timer = br
   const locale = useLocale();
   const reducer = useMemo(() => makeReducer(locale), [locale]);
   const [state, dispatch] = useReducer(reducer, locale, initialState);
+  // 시안 addPhoto: 고른 사진은 blob URL로 이 브라우저에서만 보여 준다 (서버로 보내지 않는다)
+  const [userPhotos, setUserPhotos] = useState<string[]>([]);
+  const photoUrls = useRef<string[]>([]);
+  useEffect(
+    () => () => {
+      for (const url of photoUrls.current) URL.revokeObjectURL(url);
+    },
+    [],
+  );
 
   const run = state.run;
   const runId = run?.id ?? null;
@@ -62,7 +71,17 @@ export function ListingScreen({ draftFixes = draftListingFixesAction, timer = br
     backEdit: () => dispatch({ type: 'backEdit' }),
     restart: () => dispatch({ type: 'restart' }),
     insert: (fix: ListingFixKey) => dispatch({ type: 'insert', fix }),
+    addPhoto: (file: File) => {
+      let url = '';
+      try {
+        url = URL.createObjectURL(file);
+      } catch {
+        return;
+      }
+      photoUrls.current.push(url);
+      setUserPhotos((prev) => [...prev, url]);
+    },
   };
 
-  return <ListingScreenView view={buildView(state, locale)} handlers={handlers} />;
+  return <ListingScreenView view={buildView(state, locale)} handlers={handlers} userPhotos={userPhotos} />;
 }
