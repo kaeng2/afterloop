@@ -64,7 +64,7 @@
 | T059 | 시드 B04 이름 "buyer_m***" → "Mike Morgan" | data | 완료 | v2.10 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T059.md` |
 | T060 | **공용 틀**: 위쪽 막대(Today(N)/Products, Autopilot, PayPal activity, 판매자 칩) + Today 목록·상세 틀 + 서랍 껍데기 | ui | 완료 | v2.10 | T058, T059 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T060.md` |
 | T061 | **서연 상세 합치기** (오른쪽 칸 한 프레임 1920×1080: 머리글 → 비교 카드(+incl. $2) → 한 줄 요약 → 한국어 말풍선+배송사 줄 → 코칭 접기·한국어 크게 → 검사 3줄 → 보내기), 전송 모드 표시, 연습용 실패 화면, Mike 한 줄, Autopilot 토글 숨김 | ui | 완료 | v2.10 | T060 | 스크린샷 1440·1920 | 모델 `claude-opus-5-5`. `tasks/T061.md` |
-| T062 | **Products**: 큰 숫자($216 → $44) + 점 그림(4 → 2) + 처방 카드 4개(통관 안내 Simulated) + 거래 조회 한 줄. 폭포·분포 막대 없음 | ui | 검토 (검증 중) | v2.10 | T061 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T062.md` |
+| T062 | **Products**: 큰 숫자($216 → $44) + 점 그림(4 → 2) + 처방 카드 4개(통관 안내 Simulated) + 거래 조회 한 줄. 폭포·분포 막대 없음 | ui | 완료 | v2.10 | T061 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T062.md` |
 | T063 | **추적 항목 상세**: [Add both to PayPal], O05·O07은 녹화 때만 실제, 분쟁 주문 회색 | ui | 대기 (T065 뒤) | v2.10 | T065 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T063.md` 등록 버튼은 T067로 당김 — 남은 것은 등록 뒤 목록 갱신·기록 연결 확인 |
 | T066 | 엔진: Today Prevent 상품 고르기 `pickPreventProduct` (줄어드는 비율 최대) | engine | 완료 | v2.10 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T066.md` |
 | T067 | **공용 틀 디자인 = 시안 값** (전체 폭, 목록 #F1EFEA·상세 흰색, Figtree+Noto Sans KR, 카드 2px·16~24px, 알약, 점=위험 등급·배지=상태, 고른 항목 그림자, 로고 마크) + 추적 표 "Add both to PayPal" 버튼(T063에서 당김) | ui | 완료 | v2.10 | T061, T066 | 스크린샷 1920·1440 | 모델 `claude-opus-5-5`. `tasks/T067.md` |
