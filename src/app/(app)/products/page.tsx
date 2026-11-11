@@ -7,6 +7,7 @@
  */
 import { seedDisputes, seedInquiries, seedProducts } from '../../../../seed/index';
 
+import { applyLangParam } from '@/app/_server/locale';
 import { writeColorNoteAction } from '@/app/products/actions';
 import { colorComplaintsFor, selectSku } from '@/app/products/model';
 import { ProductsScreen } from '@/app/products/products-screen';
@@ -16,10 +17,12 @@ import '@/app/products/products.css';
 
 export const dynamic = 'force-dynamic';
 
-type Props = { searchParams: Promise<{ sku?: string | string[] }> };
+type Props = { searchParams: Promise<{ sku?: string | string[]; lang?: string | string[] }> };
 
 export default async function ProductsPage({ searchParams }: Props) {
-  const { sku } = await searchParams;
+  const params = await searchParams;
+  await applyLangParam('/products', params);
+  const { sku } = params;
   const requested = Array.isArray(sku) ? sku[0] : sku;
   const selected = selectSku(seedProducts, requested);
   if (selected === null) return null;

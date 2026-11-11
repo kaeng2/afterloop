@@ -413,8 +413,15 @@ describe('T084 5: 로딩 표시 · Today (N) Suspense · 처방 토글 startTran
   it('(app)/layout은 Today (N)을 Suspense로 뗀다', () => {
     const layout = read('src/app/(app)/layout.tsx');
     expect(layout).toMatch(/<Suspense fallback=\{<TopBar /);
-    expect(layout).toMatch(/await loadTodayForRequest\(\)/);
-    expect(layout).not.toMatch(/export default async function/);
+    // T081 때문에 layout은 initLocale()을 await하는 async다. 뜻은 "layout 본문이 Today를 기다리지 않는다".
+    const barStart = layout.indexOf('async function TopBarWithCount');
+    const layoutStart = layout.indexOf('export default async function AppLayout');
+    expect(barStart).toBeGreaterThan(-1);
+    expect(layoutStart).toBeGreaterThan(barStart);
+    const barBody = layout.slice(barStart, layoutStart);
+    const layoutBody = layout.slice(layoutStart);
+    expect(barBody).toMatch(/await loadTodayForRequest\(\)/);
+    expect(layoutBody).not.toMatch(/loadTodayForRequest/);
   });
 
   it('처방 토글 다시 계산은 startTransition 안에서', () => {

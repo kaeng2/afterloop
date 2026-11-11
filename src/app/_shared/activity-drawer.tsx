@@ -15,7 +15,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { loadActivityView } from './activity-actions';
 import type { ActivityRow } from './activity-view';
-import { t } from './copy';
+import { useT } from './locale-context';
 
 export type { ActivityRow };
 
@@ -27,6 +27,7 @@ const OPEN_REFRESH_MS = 3000;
 const countOf = (rows: readonly ActivityRow[]) => rows.reduce((sum, row) => sum + row.calls, 0);
 
 function ActivityLine({ row }: { row: ActivityRow }) {
+  const t = useT();
   return (
     <li className="activity-row">
       <div className="activity-row-head">
@@ -49,6 +50,7 @@ function ActivityLine({ row }: { row: ActivityRow }) {
 }
 
 export function ActivityDrawer({ records = [] }: { records?: readonly ActivityRow[] }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<readonly ActivityRow[]>(records);
   const pathname = usePathname();

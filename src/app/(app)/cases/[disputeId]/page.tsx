@@ -6,7 +6,12 @@
  */
 import { redirect } from 'next/navigation';
 
-type Props = { params: Promise<{ disputeId: string }> };
+import { applyLangParam } from '@/app/_server/locale';
+
+type Props = {
+  params: Promise<{ disputeId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
 function decode(raw: string): string {
   try {
@@ -16,7 +21,8 @@ function decode(raw: string): string {
   }
 }
 
-export default async function CaseRedirect({ params }: Props) {
+export default async function CaseRedirect({ params, searchParams }: Props) {
   const { disputeId } = await params;
+  await applyLangParam(`/cases/${encodeURIComponent(decode(disputeId))}`, await searchParams);
   redirect(`/?item=${encodeURIComponent(decode(disputeId))}`);
 }

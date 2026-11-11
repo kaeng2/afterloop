@@ -523,7 +523,8 @@ describe('예측 칸에 Assumption 배지', () => {
 describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 그룹 (app))', () => {
   it('정적: 루트 layout에 Today 읽기·위쪽 막대 없음, (app)/layout에 있음, intro는 그룹 밖', () => {
     const root = strip(read('src/app/layout.tsx'));
-    expect(root).not.toMatch(/loadTodayForRequest|_server|TopBar|loadReplyNames/);
+    // 언어 읽기(`_server/locale`, T081)만 허용 — 쿠키 한 값을 읽을 뿐 데이터·PayPal을 부르지 않는다
+    expect(root.replace(/_server\/locale/g, '')).not.toMatch(/loadTodayForRequest|_server|TopBar|loadReplyNames/);
     const app = strip(read('src/app/(app)/layout.tsx'));
     expect(app).toMatch(/await loadTodayForRequest\(\)/);
     expect(app).toMatch(/<TopBar/);
@@ -540,7 +541,8 @@ describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 
     const { default: IntroPage } = await import('@/app/intro/page');
     calls.disputes = 0;
     calls.paypal = 0;
-    const markup = html(RootLayout({ children: IntroPage() }) as React.ReactElement);
+    const page = await IntroPage({ searchParams: Promise.resolve({}) });
+    const markup = html((await RootLayout({ children: page })) as React.ReactElement);
     expect(calls.disputes).toBe(0);
     expect(calls.paypal).toBe(0);
     expect(markup).not.toContain('class="skip-link"');

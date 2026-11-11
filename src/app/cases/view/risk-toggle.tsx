@@ -13,11 +13,12 @@ import { useId, useState } from 'react';
 
 import { RISK_LEVEL } from '../../_shared/badge-keys';
 import { Badge, RiskLevel } from '../../_shared/badges';
-import { t } from '../../_shared/copy';
+import { useT } from '../../_shared/locale-context';
 import type { RiskView } from '../model';
 import { useSent } from './sent-state';
 
 export function RiskToggle({ risk, riskAfterReply }: { risk: RiskView | null; riskAfterReply: RiskView | null }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const panelId = useId();
   // 이 화면에서 보낸 뒤에는 배지가 엔진의 답장 뒤 값으로 바뀐다 ("Score 6 → 3")

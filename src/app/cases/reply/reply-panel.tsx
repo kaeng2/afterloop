@@ -31,7 +31,7 @@ import type { CommitmentCategory } from '@/ai/reply';
 import type { EscalationSignals, ReplyForecast } from '@/types';
 
 import { Badge, RiskLevel } from '../../_shared/badges';
-import { t } from '../../_shared/copy';
+import { useT } from '../../_shared/locale-context';
 import { toDollarsCents } from '../../_shared/money';
 import { toPercentRounded } from '../../_shared/percent';
 import { sendReplyAction } from '../actions';
@@ -92,6 +92,7 @@ function CheckGlyph({ ok }: { ok: boolean }) {
 }
 
 function CheckRow({ row }: { row: CheckRowView }) {
+  const t = useT();
   return (
     <li className={row.ok ? 'reply-check' : 'reply-check reply-check-failed'}>
       <CheckGlyph ok={row.ok} />
@@ -103,6 +104,7 @@ function CheckRow({ row }: { row: CheckRowView }) {
 }
 
 function FactRow({ fact }: { fact: FactRowView }) {
+  const t = useT();
   return (
     <li className="reply-check">
       <span className="reply-glyph muted" aria-hidden="true">
@@ -128,6 +130,7 @@ function FoldSummary({ label }: { label: string }) {
 
 /** "As you type" 칩 (엔진 특징 판정). */
 export function FeatureChips({ chips }: { chips: FeatureChipView[] }) {
+  const t = useT();
   const good = chips.filter((chip) => chip.good).length;
   return (
     <div className="reply-tray-chips">
@@ -152,6 +155,7 @@ export function FeatureChips({ chips }: { chips: FeatureChipView[] }) {
 
 /** "Her likely reaction" 막대 + Expected cost + Her mood next. 값은 `reactionView`(엔진 예측) 그대로. */
 export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: string | null }) {
+  const t = useT();
   return (
     <div className="reaction" role="group" aria-labelledby="reaction-title">
       <div className="reaction-main">
@@ -189,6 +193,7 @@ export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: 
 
 /** 맨 아래 검사 줄 (Code decides). */
 function ChecksLine({ view }: { view: ReplyView }) {
+  const t = useT();
   const checks = visibleChecks(view.checkRows);
   const shownFacts = view.factRows.filter((fact) => fact.primary);
   const foldedFacts = view.factRows.filter((fact) => !fact.primary);
@@ -234,6 +239,7 @@ export function ReplyPanel({
   forecaster = forecastReplyClient,
   detector = detectReplyFeaturesClient,
 }: ReplyPanelProps) {
+  const t = useT();
   const [confirmed, setConfirmed] = useState<CommitmentCategory[]>([]);
   const [sendState, setSendState] = useState<SendState>('idle');
   const [outcome, setOutcome] = useState<SendOutcome | null>(null);

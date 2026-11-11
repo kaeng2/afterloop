@@ -62,9 +62,10 @@ describe('T078 /intro', () => {
 
   it('서버·fetch·엔진·AI import가 없다 (정적 검사)', () => {
     for (const file of ['src/app/intro/intro-screen.tsx', 'src/app/intro/page.tsx']) {
-      const text = read(file);
+      const text = read(file).replace(/_server\/locale/g, '');
       expect(/\bfetch\s*\(/.test(text), file).toBe(false);
       expect(/from\s+['"]@\/(engine|ai|exec|paypal)/.test(text), file).toBe(false);
+      // 언어 쿠키 읽기(`_server/locale`, T081)만 허용 — 데이터·PayPal을 부르지 않는다
       expect(/_server|server-only|\.\.\/\.\.\/(engine|ai|exec|paypal)/.test(text), file).toBe(false);
     }
   });

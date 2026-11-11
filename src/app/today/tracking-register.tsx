@@ -7,7 +7,7 @@
  */
 import { useState, useTransition } from 'react';
 
-import { t } from '../_shared/copy';
+import { useT } from '../_shared/locale-context';
 import type { TrackingOutcome } from './tracking-result';
 
 export function TrackingRegister({
@@ -20,6 +20,7 @@ export function TrackingRegister({
   /** 테스트·견본용 처음 결과. */
   initial?: TrackingOutcome | null;
 }) {
+  const t = useT();
   const [outcome, setOutcome] = useState<TrackingOutcome | null>(initial);
   const [pending, startTransition] = useTransition();
 

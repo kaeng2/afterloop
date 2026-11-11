@@ -1,8 +1,9 @@
 /**
  * 화면 문구 읽기 (T047, SPEC v2.6 12장).
  *
- * 화면에 찍히는 글자는 모두 `config/copy.en.json`에서 온다 (화면은 영어). 코드에 글자를 직접 쓰지 않는다.
- * `config/copy.ko.json`은 키를 똑같이 맞춰 두기만 한다 (화면에서 고르지 않는다 — 번역은 AI 레인의 일).
+ * 화면에 찍히는 글자는 모두 `config/copy.<언어>.json`에서 온다 (T081: EN | 한국어, 기본 영어). 코드에 글자를 직접 쓰지 않는다.
+ * `t(key, params, locale)`의 `locale`을 안 주면 요청의 언어(서버: `_server/locale.ts`가 등록한 읽기 함수, 클라이언트:
+ * `useT()`가 내려받은 언어)를 쓰고, 그런 것이 없으면 영어다. 언어는 **글자만** 바꾼다 — 숫자·AI 글·구매자 원문·계산·전송은 무관.
  *
  * 없는 키는 **예외**다. 빈 글자를 내면 화면에 빈 칸이 생기고 아무도 모른 채 넘어간다.
  * 자리표시자(`{{이름}}`)도 채우지 못하면 예외다 — 숫자가 빠진 문장이 그대로 나가지 않게 한다.
@@ -33,16 +34,41 @@ export function copyKeys(table: CopyTable = EN): string[] {
 /** 영어·한국어 문구 표 (시험과 정적 검사용. 화면은 `t`만 쓴다). */
 export const copyTables = { en: EN, ko: KO } as const;
 
+export type Locale = 'en' | 'ko';
+export const LOCALES: readonly Locale[] = ['en', 'ko'];
+export const LOCALE_COOKIE = 'afterloop_lang';
+
+/** 모르는 값·없는 값은 영어. */
+export function parseLocale(value: unknown): Locale {
+  return value === 'ko' ? 'ko' : 'en';
+}
+
+/**
+ * 클라이언트 묶음(브라우저·서버 렌더의 클라이언트 층)의 언어. `LocaleProvider`가 렌더 맨 앞에서 정한다 — 컴포넌트 밖
+ * 순수 함수(`desk-model` 등)가 `t(key)`만 불러도 같은 언어가 나오게 하려는 것이다. 서버 층은 아래 resolver가 따로 정한다.
+ */
+let clientLocale: Locale = 'en';
+export function setClientLocale(locale: Locale): void {
+  clientLocale = locale;
+}
+
+let resolveAmbient: () => Locale = () => clientLocale;
+/** 서버가 요청 언어 읽는 함수를 등록한다 (`_server/locale.ts`). 등록이 없으면 영어. */
+export function setLocaleResolver(fn: () => Locale): void {
+  resolveAmbient = fn;
+}
+
 export type CopyParams = Record<string, string | number>;
 
 /**
  * 문구 1개. 없는 키면 예외, 채우지 못한 자리표시자가 남으면 예외.
  * `params`에 남는 값이 있어도 예외다 (키를 잘못 짚은 것을 조용히 넘기지 않는다).
  */
-export function t(key: string, params?: CopyParams): string {
-  const template = EN[key];
+export function t(key: string, params?: CopyParams, locale: Locale = resolveAmbient()): string {
+  const table = locale === 'ko' ? KO : EN;
+  const template = table[key];
   if (typeof template !== 'string' || META_KEYS.includes(key)) {
-    throw new Error(`화면 문구가 없다: ${key} (config/copy.en.json에 키를 더한다)`);
+    throw new Error(`화면 문구가 없다: ${key} (config/copy.${locale}.json에 키를 더한다)`);
   }
 
   const used = new Set<string>();

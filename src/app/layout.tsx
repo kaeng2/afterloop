@@ -11,27 +11,32 @@
 import type { Metadata, Viewport } from 'next';
 import { Figtree, Noto_Sans_KR } from 'next/font/google';
 
+import { initLocale } from './_server/locale';
 import { t } from './_shared/copy';
+import { LocaleProvider } from './_shared/locale-context';
 import './globals.css';
 
 const figtree = Figtree({ subsets: ['latin'], display: 'swap', variable: '--font-figtree' });
 // 한국어 글자는 Google이 나눈 unicode-range 조각으로 함께 제공된다. 미리 받기는 라틴만 (preload: false)
 const notoSansKr = Noto_Sans_KR({ subsets: ['latin'], display: 'swap', variable: '--font-noto-kr', preload: false });
 
-export const metadata: Metadata = {
-  title: t('nav.appName'),
-  description: t('nav.sandboxNote'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await initLocale();
+  return { title: t('nav.appName', undefined, locale), description: t('nav.sandboxNote', undefined, locale) };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await initLocale();
   return (
-    <html lang="en" className={`${figtree.variable} ${notoSansKr.variable}`}>
-      <body>{children}</body>
+    <html lang={locale} className={`${figtree.variable} ${notoSansKr.variable}`}>
+      <body>
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }
