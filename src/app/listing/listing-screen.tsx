@@ -1,6 +1,6 @@
 'use client';
 /**
- * /listing 화면 (T087, Scene 3). 상태는 `model.ts`의 reducer, 진행은 `progress.ts`(requestAnimationFrame마다 step),
+ * /listing 화면 (T087, Scene 3). 상태는 `model.ts`의 reducer, 진행은 `progress.ts`(config/motion.json 속도로 타이머마다 step),
  * 그림은 `listing-view.tsx`. 엔진은 브라우저에서 돈다 (같은 함수가 `POST /api/listing-check`에도 열려 있다).
  *
  * - AI 고칠 문구: Publish 때 서버 액션을 **한 번** 부른다 (상품명 + 그때 설명). 같은 상품명·설명이면 다시 부르지 않는다.
@@ -14,13 +14,13 @@ import type { ListingFixDrafts, ListingFixKey } from '@/types';
 import { draftListingFixesAction } from './actions';
 import { ListingScreenView, type ListingHandlers } from './listing-view';
 import { buildView, draftsKey, initialState, makeReducer, needsDrafts, type FormKey } from './model';
-import { browserFrames, runListingCheck, type FrameApi } from './progress';
+import { browserTimer, paceFor, runListingCheck, type TimerApi } from './progress';
 
 import './listing.css';
 
 type DraftFn = (input: { productTitle: string; productDescription: string }) => Promise<ListingFixDrafts | null>;
 
-export function ListingScreen({ draftFixes = draftListingFixesAction, frames = browserFrames }: { draftFixes?: DraftFn; frames?: FrameApi }) {
+export function ListingScreen({ draftFixes = draftListingFixesAction, timer = browserTimer }: { draftFixes?: DraftFn; timer?: TimerApi }) {
   const locale = useLocale();
   const reducer = useMemo(() => makeReducer(locale), [locale]);
   const [state, dispatch] = useReducer(reducer, locale, initialState);
@@ -36,11 +36,12 @@ export function ListingScreen({ draftFixes = draftListingFixesAction, frames = b
         onProgress: (done, total) => dispatch({ type: 'progress', id, done, total }),
         onDone: (calc) => dispatch({ type: 'finished', id, calc }),
       },
-      frames,
+      timer,
+      paceFor(run.purpose),
     );
     // 계산은 run이 새로 생길 때(id)만 시작한다 — 진행 숫자가 바뀔 때마다 다시 시작하지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [runId, frames]);
+  }, [runId, timer]);
 
   const handlers: ListingHandlers = {
     edit: (key: FormKey, value: string) => dispatch({ type: 'edit', key, value }),

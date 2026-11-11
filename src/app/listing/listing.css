@@ -617,6 +617,16 @@
   border-radius: 50%;
   background: var(--ls-live);
   outline: 3px solid var(--ls-live-ring);
+  animation: ls-pulse 1.2s ease-in-out infinite;
+}
+@keyframes ls-pulse {
+  0%,
+  100% {
+    outline-color: var(--ls-live-ring);
+  }
+  50% {
+    outline-color: transparent;
+  }
 }
 
 .ls-btn {
@@ -1392,5 +1402,14 @@
   }
   .ls-done {
     padding: 24px 16px;
+  }
+}
+
+/* 움직임 줄이기 (T094): 모든 움직임을 끈다. 진행은 바로 결과 (progress.ts) */
+@media (prefers-reduced-motion: reduce) {
+  [class^='ls-'],
+  [class*=' ls-'] {
+    animation: none !important;
+    transition: none !important;
   }
 }

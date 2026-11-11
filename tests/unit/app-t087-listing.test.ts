@@ -12,7 +12,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { checkListing, createListingSim, listingFixGains, listingModelFromConfig } from '@/engine/listing';
+import { checkListing, createListingSim, listingFixGains } from '@/engine/listing';
 import type { ListingCheckInput, ListingFixKey, LlmCaller } from '@/types';
 
 import listingEn from '../../config/listing.en.json';
@@ -36,7 +36,8 @@ vi.mock('@/app/_server/llm', () => ({ getLlm: () => ({ ok: true, llm: (req: unkn
 (globalThis as { React?: typeof React }).React = React;
 const { ListingScreenView } = await import('@/app/listing/listing-view');
 const { buildView, initialState, makeReducer, toCheckInput } = await import('@/app/listing/model');
-const { runListingCheck } = await import('@/app/listing/progress');
+const { runListingCheck, paceFor } = await import('@/app/listing/progress');
+const { default: MOTION } = await import('../../config/motion.json');
 const { pct1, pts1 } = await import('@/app/listing/format');
 const { listingFixesFor } = await import('@/app/listing/fixes');
 const { POST } = await import('@/app/api/listing-check/route');
@@ -46,7 +47,6 @@ type ListingAction = Parameters<ReturnType<typeof makeReducer>>[1];
 const ROOT = path.resolve(__dirname, '../..');
 const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
 const strip = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*(\/\/|\*).*$/gm, '');
-const MODEL = listingModelFromConfig();
 
 /** AC34의 기본 입력과 같은 값 (시안 기본, 영어) */
 const BASE: ListingCheckInput = {
@@ -83,19 +83,28 @@ function fakeLlm(): { calls: unknown[]; llm: LlmCaller } {
   };
 }
 
-/** 가짜 프레임: 부를 때마다 쌓인 콜백 하나를 돌린다. setInterval·setTimeout을 쓰지 않는다 */
+/** 가짜 타이머: tick()마다 켜진 타이머 콜백을 한 번 돌린다 (진짜 시간은 기다리지 않는다). 부른 간격(ms)도 기록한다 */
 function fakeFrames() {
-  const queue: (() => void)[] = [];
+  const active = new Map<number, () => void>();
+  const intervals: number[] = [];
   let handle = 0;
   return {
-    api: { request: (cb: () => void) => (queue.push(cb), ++handle), cancel: () => queue.splice(0, queue.length) },
-    pending: () => queue.length,
-    tick: () => queue.shift()?.(),
+    api: {
+      every: (cb: () => void, ms: number) => {
+        intervals.push(ms);
+        active.set(++handle, cb);
+        return handle;
+      },
+      clear: (h: number) => void active.delete(h),
+    },
+    intervals,
+    pending: () => active.size,
+    tick: () => [...active.values()].forEach((cb) => cb()),
   };
 }
 
 /** 화면과 같은 짜임: reducer + 진행 + 그림 */
-function harness(locale: 'en' | 'ko' = 'en') {
+function harness(locale: 'en' | 'ko' = 'en', opts: { reduced?: boolean; pace?: (p: 'check' | 'recalc' | 'publish') => { intervalMs: number; step: number } } = {}) {
   const reducer = makeReducer(locale);
   let state: ListingState = initialState(locale);
   const frames = fakeFrames();
@@ -118,6 +127,8 @@ function harness(locale: 'en' | 'ko' = 'en') {
           onDone: (calc) => dispatch({ type: 'finished', id, calc }),
         },
         frames.api,
+        (opts.pace ?? paceFor)(run.purpose),
+        opts.reduced ?? false,
       );
     }
   };
@@ -156,7 +167,8 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
     expect(html).toContain('data-action="publish"');
   });
 
-  it('진행 n은 step 결과 그대로 (한 프레임에 progressChunkRuns회), 500에서 결과, 결과 숫자 = checkListing(기본 입력)', () => {
+  it('진행 n은 step 결과 그대로 (config/motion.json: 70ms마다 +5), 500에서 결과, 결과 숫자 = checkListing(기본 입력)', () => {
+    const CHUNK = MOTION.scene3.check.step;
     const h = harness();
     h.dispatch({ type: 'publish' });
     expect(h.state.screen).toBe('sheet');
@@ -166,21 +178,27 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
     expect(html).toContain('Applying assumed dispute rates by type');
     expect(html).not.toContain('Comparing with your PayPal dispute history');
 
-    // 한 프레임만: 20 / 500
+    // 타이머 간격은 설정값 (시안 70ms)
+    expect(h.frames.intervals).toEqual([70]);
+    expect(MOTION.scene3.check).toEqual({ intervalMs: 70, step: 5 });
+    expect(MOTION.scene3.recalc).toEqual({ intervalMs: 70, step: 25 });
+
+    // 한 번 울리면 5 / 500
     h.frames.tick();
-    expect(h.state.run?.done).toBe(MODEL.progressChunkRuns);
+    expect(h.state.run?.done).toBe(CHUNK);
     html = h.html();
-    expect(html).toContain(`data-progress="${MODEL.progressChunkRuns}/500"`);
-    expect(html).toContain(`Simulated ${MODEL.progressChunkRuns} / 500 sale periods`);
+    expect(html).toContain(`data-progress="${CHUNK}/500"`);
+    expect(html).toContain(`Simulated ${CHUNK} / 500 sale periods`);
 
     // 같은 입력으로 따로 step한 값과 같다
     const ref = createListingSim(BASE);
     const expected: number[] = [];
-    while (!ref.done()) expected.push(ref.step(MODEL.progressChunkRuns));
+    while (!ref.done()) expected.push(ref.step(CHUNK));
     const { progress, frames } = h.drain();
-    expect([MODEL.progressChunkRuns, ...progress]).toEqual(expected);
+    expect([CHUNK, ...progress]).toEqual(expected);
     expect(frames).toBe(expected.length - 1);
     expect(expected.at(-1)).toBe(500);
+    expect(expected).toHaveLength(100);
 
     const want = checkListing(BASE);
     expect(h.state.base?.result).toEqual(want);
@@ -258,7 +276,8 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
     h.dispatch({ type: 'recalc' });
     expect(h.state.run?.purpose).toBe('recalc');
     h.frames.tick();
-    expect(h.html()).toContain(`Recalculating… ${MODEL.progressChunkRuns} / 500`);
+    expect(h.frames.intervals.at(-1)).toBe(70);
+    expect(h.html()).toContain(`Recalculating… ${MOTION.scene3.recalc.step} / 500`);
     h.drain();
     const after = checkListing(toCheckInput(h.state.form));
     expect(h.state.current?.result).toEqual(after);
@@ -332,15 +351,35 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
 
 describe('T087 진행 표시: setInterval·가짜 카운터 없음 (정적 검사)', () => {
   const files = readdirSync(path.join(ROOT, 'src/app/listing')).map((f) => `src/app/listing/${f}`);
-  it('listing 폴더에 setInterval·setTimeout이 없고 requestAnimationFrame + step을 쓴다', () => {
+  it('타이머는 progress.ts에서만, 진행은 sim.step(설정 step)이 돌려준 값, 속도는 config/motion.json에서 읽는다', () => {
     for (const file of files) {
+      if (file.endsWith('progress.ts')) continue;
       const text = strip(read(file));
       expect(/setInterval|setTimeout/.test(text), file).toBe(false);
     }
     const progress = strip(read('src/app/listing/progress.ts'));
-    expect(progress).toMatch(/requestAnimationFrame/);
-    expect(progress).toMatch(/sim\.step\(chunk\)/);
-    expect(progress).toMatch(/progressChunkRuns/);
+    expect(progress).toMatch(/setInterval/);
+    expect(progress).toMatch(/sim\.step\(pace\.step\)/);
+    expect(progress).toMatch(/config\/motion\.json/);
+  });
+
+  it('설정값을 바꾸면 속도가 바뀐다 (+25 / 25ms → 20번)', () => {
+    const h = harness('en', { pace: () => ({ intervalMs: 25, step: 25 }) });
+    h.dispatch({ type: 'publish' });
+    expect(h.frames.intervals).toEqual([25]);
+    const { progress } = h.drain();
+    expect(progress).toHaveLength(20);
+    expect(progress.at(-1)).toBe(500);
+    expect(h.state.base?.result).toEqual(checkListing(BASE));
+  });
+
+  it('움직임 줄이기면 기다리지 않고 바로 결과 (결과 = checkListing)', () => {
+    const h = harness('en', { reduced: true });
+    h.dispatch({ type: 'publish' });
+    expect(h.frames.pending()).toBe(0);
+    expect(h.frames.intervals).toEqual([]);
+    expect(h.state.run).toBeNull();
+    expect(h.state.base?.result).toEqual(checkListing(BASE));
   });
 
   it('진행 숫자는 progress 액션(= step 반환값)으로만 바뀐다', () => {
