@@ -50,12 +50,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <a className="skip-link" href="#main">
           {t('nav.skipToContent')}
         </a>
-        <TopBar todayCount={today.view.count} seller={seller} />
-        {mode === 'public' ? (
-          <p className="muted small mode-note" role="note">
-            {t('mode.public')}
-          </p>
-        ) : null}
+        <TopBar
+          todayCount={today.view.count}
+          seller={seller}
+          modeNote={mode === 'public' ? t('mode.public') : undefined}
+        />
         <main className="main" id="main">
           {children}
         </main>

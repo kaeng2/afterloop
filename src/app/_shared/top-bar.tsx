@@ -41,7 +41,16 @@ function LogoMark() {
   );
 }
 
-export function TopBar({ todayCount, seller }: { todayCount: number; seller: { initial: string; shop: string } }) {
+export function TopBar({
+  todayCount,
+  seller,
+  modeNote,
+}: {
+  todayCount: number;
+  seller: { initial: string; shop: string };
+  /** 공개 모드 한 줄 (public일 때만). PayPal activity 버튼 왼쪽에 작은 글씨로 */
+  modeNote?: string;
+}) {
   const pathname = usePathname() ?? '/';
   return (
     <header className="shell-bar">
@@ -65,6 +74,11 @@ export function TopBar({ todayCount, seller }: { todayCount: number; seller: { i
         </nav>
 
         <div className="shell-actions">
+          {modeNote ? (
+            <span className="shell-mode-note muted small" role="note">
+              {modeNote}
+            </span>
+          ) : null}
           {SHOW_AUTOPILOT ? <AutopilotToggle /> : null}
           <ActivityDrawer records={NO_RECORDS} />
           <span className="shell-seller" title={t('shell.seller', { shop: seller.shop })}>

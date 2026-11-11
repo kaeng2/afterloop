@@ -84,6 +84,10 @@
   border-color: var(--color-border);
 }
 
+.shell-mode-note {
+  white-space: nowrap;
+}
+
 .shell-actions {
   display: flex;
   flex-wrap: wrap;
