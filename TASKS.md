@@ -89,12 +89,12 @@
 | T086 | AI: 새 상품 고칠 문구 6개 (약속 금지, 숫자 자리표시자, 정규식 판정) | ai | 완료 | v2.12 | 계약 v2.12 | — | 모델 `claude-sonnet-5-5`. `tasks/T086.md`. 병합. 독립 검증 통과(Sonnet). 실제 AI 1회: 5칸 통과, color만 rule_mismatch → 후속: color 칸을 "Color note:"로 시작 |
 | T087 | 화면: /listing Scene 3 (점검 모달·고치기·다시 계산·등록, /api/listing-check) | ui | 완료 | v2.12 | T085, T086, T084, T081 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T087.md` | 병합. 독립 검증 통과(Sonnet): 화면 무계산, 진행 = step, 정직성 문구, /api/listing-check = checkListing. 스크린샷은 색 병합 뒤 |
 | T088 | 속도 ③: 지난 값 먼저 보여 주고 뒤에서 새로 읽기(최대 10분), 쓰기 뒤 바로 지움, 서버 뜰 때 데우기(선택) | ui | 완료 | v2.12 | T084, T082 | 시간 재기 | 모델 `claude-opus-5-5`. `tasks/T088.md`. 병합. 검증 통과(Sonnet). 95초·5분 쉰 뒤 첫 클릭 0.05~0.10초 |
-| T089 | 디자인 1단계: 색을 시안 v4 그대로 (토큰), 남보라 제거 | ui | 진행중 | v2.13 | — | 스크린샷 | 모델 `claude-sonnet-5-5`. 임시 worktree ui-color. 먼저 병합 → 재배포. `tasks/T089.md` |
-| T090 | 시안 맞추기 A: 배치·작은 UI (위쪽 막대, 배지 3종, Details, 검사 실패 시 Send 막기) | ui | 대기 (T089·T087 뒤) | v2.14 | T089, T087 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T090.md` |
+| T089 | 디자인 1단계: 색을 시안 v4 그대로 (토큰), 남보라 제거 | ui | 완료 | v2.13 | — | 스크린샷 | 병합. 검증 1회 실패(#002991 미연결) → 재시도 → 재검증 통과. 모델 `claude-sonnet-5-5`. 임시 worktree ui-color. 먼저 병합 → 재배포. `tasks/T089.md` |
+| T090 | 시안 맞추기 A: 배치·작은 UI (위쪽 막대, 배지 3종, Details, 검사 실패 시 Send 막기) | ui | 진행중 | v2.15 | T089, T087 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T090.md` |
 | T091 | 시안 맞추기 B: 누르면 일어나는 일 (카드 재계산·Add/Remove 칩·Details %p·지호 카드·Add all N·+$N·상품 필터) | ui | 대기 (T090·T093 뒤) | v2.14 | T090, T093 | Playwright 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T091.md` |
 | T092 | 시안 맞추기 C: Send 뒤 "What happens next · Simulated" | ui | 대기 (T090·T093 뒤, B와 병렬) | v2.14 | T090, T093 | Playwright 스크린샷 | 모델 `claude-opus-5-5`. worktree ui-perf, 브랜치 lane/ui-progress. 10:00 미완이면 빼고 재배포. `tasks/T092.md` |
 | T093 | 엔진: 칩 효과 %p·Send 뒤 시나리오 위험·절감액(+$N)·reply-snippets.json | engine | 진행중 | v2.14 | 계약 v2.14 | — | 모델 `claude-opus-5-5`. `tasks/T093.md` |
-| T094 | Scene 3 모션 시안 그대로 (진행 표시는 시안 속도·설정, 계산은 실제) | ui | 대기 (T089 뒤, ui-color) | v2.15 | T089 | 녹화 | 모델 `claude-sonnet-5-5`. `tasks/T094.md` |
+| T094 | Scene 3 모션 시안 그대로 (진행 표시는 시안 속도·설정, 계산은 실제) | ui | 진행중 | v2.15 | T089 | 녹화 | 모델 `claude-sonnet-5-5`. `tasks/T094.md` |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
 | T065 | **Products 상품 표 AG Grid** (As-is → With fixes, 처방 토글 시 셀 깜빡임) | ui | 대기 (T064 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T065.md` |
 | T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대체됨 | v2.2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 확정 (P0). AG Grid Community만 **2026-11-10 화면 구조 변경으로 T060~T064로 다시 쪼갬.** 이 지시서의 세부 규칙(리허설·색상 문구·거래 조회 한 줄·추적 등록 안전 규칙·로그 규칙)은 새 지시서가 참조한다 |
