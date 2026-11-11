@@ -18,7 +18,7 @@ import { t } from '../_shared/copy';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
 import { decideFor, routineLine } from '../today/model';
 import { buildCaseDesk, historyView, type CaseDesk } from './desk-model';
-import { loadMoveForecasts, loadRiskCurve } from './forecast-source';
+import { loadMoveForecasts, loadRiskCurve, replyTranslated, type ForecastAnchor } from './forecast-source';
 import { daysBetween, historySpanDays, unansweredDays } from './history';
 import { buildCaseView, type CaseView as CaseViewData } from './model';
 import { loadReply } from './reply/load';
@@ -74,15 +74,16 @@ export async function CaseDetail({ disputeId }: { disputeId: string }) {
   const caseView = buildCaseView(loaded.input);
   const reply = await loadReply(disputeId);
 
-  // 예측 자리 (어댑터 — 지금은 null → 칸이 숨는다)
+  // 예측 (어댑터 → 엔진). 곡선·선택지·답장 칸이 **같은 기준 상황**(같은 보정)을 쓴다. 쓸 수 없으면 null → 칸이 숨는다
   const delayDays = unansweredDays(loaded.events, now);
-  const curvePoints = loadRiskCurve(loaded.events, board);
-  const moveForecasts = loadMoveForecasts({
-    board,
+  const anchor: ForecastAnchor = {
     signals: loaded.loaded.signals,
     delayDays,
     anchorText: reply?.anchorText ?? null,
-  });
+    translated: replyTranslated(reply?.base.buyerLocale),
+  };
+  const curvePoints = loadRiskCurve(loaded.events, board, anchor);
+  const moveForecasts = loadMoveForecasts({ board, ...anchor });
   const openedAt = loaded.loaded.timeline?.openedAt ?? null;
 
   const desk = buildCaseDesk({
@@ -114,7 +115,9 @@ export async function CaseDetail({ disputeId }: { disputeId: string }) {
                 languageKey={reply.languageKey}
                 buyerShort={reply.buyerShort}
                 forecastBase={
-                  loaded.loaded.signals === null ? null : { signals: loaded.loaded.signals, delayDays }
+                  loaded.loaded.signals === null
+                    ? null
+                    : { signals: loaded.loaded.signals, delayDays, translated: anchor.translated }
                 }
                 offerRate={reply.offerRate}
               />

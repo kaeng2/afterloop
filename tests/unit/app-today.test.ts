@@ -573,7 +573,7 @@ const strip = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^
 
 describe('T060 옛 주소와 정적 검사', () => {
   it('/cases/<id>는 /?item=<id>로 보낸다 (PayPal을 읽지 않는다)', () => {
-    const code = strip(readFileSync(path.join(ROOT, 'src/app/cases/[disputeId]/page.tsx'), 'utf8'));
+    const code = strip(readFileSync(path.join(ROOT, 'src/app/(app)/cases/[disputeId]/page.tsx'), 'utf8'));
     expect(code).toMatch(/redirect\(`\/\?item=\$\{encodeURIComponent\(decode\(disputeId\)\)\}`\)/);
     expect(code).not.toMatch(/loadCase|loadDemoDisputes|_server/);
   });
@@ -585,14 +585,15 @@ describe('T060 옛 주소와 정적 검사', () => {
     expect(detail).toMatch(/<RoutineDetail\b/);
     const routine = readFileSync(path.join(ROOT, 'src/app/cases/routine-detail.tsx'), 'utf8');
     expect(routine).not.toMatch(/ReplyPanel|loadReply/);
-    const page = readFileSync(path.join(ROOT, 'src/app/page.tsx'), 'utf8');
+    const page = readFileSync(path.join(ROOT, 'src/app/(app)/page.tsx'), 'utf8');
     expect(page).toMatch(/<CaseDetail /);
   });
 
   const screenFiles = [
-    'src/app/page.tsx',
+    'src/app/(app)/page.tsx',
     'src/app/layout.tsx',
-    'src/app/products/page.tsx',
+    'src/app/(app)/layout.tsx',
+    'src/app/(app)/products/page.tsx',
     'src/app/cases/case-detail.tsx',
     ...filesUnder(path.join(ROOT, 'src/app/today')).map((f) => path.relative(ROOT, f)),
     'src/app/_server/today.ts',

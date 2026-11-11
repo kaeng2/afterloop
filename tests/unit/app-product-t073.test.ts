@@ -33,6 +33,7 @@ describe('T073: 열 최소 폭·말줄임 없음·공개 모드 줄', () => {
 
   it('공개 모드 줄은 위쪽 막대 안에 있고 layout 본문 앞에 따로 없다', () => {
     expect(read('src/app/layout.tsx')).not.toContain('mode-note');
+    expect(read('src/app/(app)/layout.tsx')).not.toContain('mode-note');
     expect(read('src/app/_shared/top-bar.tsx')).toContain('shell-mode-note');
   });
 });

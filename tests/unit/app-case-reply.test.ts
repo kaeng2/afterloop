@@ -326,7 +326,15 @@ function render(input: ReplyViewInput, replyId: string | null = 'r-0123456789abc
     riskAfterReply: input.riskAfterReply,
   };
   return renderToStaticMarkup(
-    createElement(ReplyPanel, { disputeId: 'PP-R-TEST-D2', base: rest, replyId, languageKey: 'case.view.lang.KO' }),
+    // 예측 어댑터가 쓸 수 없을 때의 칩(코칭·AI 칩)을 본다. 엔진 칩은 app-t079 시험
+    createElement(ReplyPanel, {
+      disputeId: 'PP-R-TEST-D2',
+      base: rest,
+      replyId,
+      languageKey: 'case.view.lang.KO',
+      forecaster: () => null,
+      detector: () => null,
+    }),
   );
 }
 

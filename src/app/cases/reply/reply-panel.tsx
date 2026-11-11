@@ -71,8 +71,11 @@ export type ReplyPanelProps = {
   languageKey: string | null;
   /** "<이름> reads (<언어>)"의 이름 (데이터에서). 모르면 `null` (대명사를 쓰지 않고 "The buyer"). */
   buyerShort?: string | null;
-  /** 예측 입력의 나머지 (엔진 신호 + 늦은 날 수). 없으면 예측을 부르지 않는다. */
-  forecastBase?: { signals: EscalationSignals; delayDays: number } | null;
+  /**
+   * 예측 입력의 나머지 (엔진 신호 + 늦은 날 수 + 보낼 때 번역되는지). 없으면 예측을 부르지 않는다.
+   * 서버의 위험 곡선·선택지 예측과 같은 값이어야 보정이 같다 (`case-detail.tsx`가 한 번 정한다).
+   */
+  forecastBase?: { signals: EscalationSignals; delayDays: number; translated?: boolean } | null;
   /** 제안 비율 (엔진 가정값, 제안 카드 표시만). */
   offerRate?: number | null;
   /** 시험용 주입 (기본 = 브라우저 어댑터). */
@@ -258,16 +261,27 @@ export function ReplyPanel({
       ? t('case.reply.buyerReadsUnknown', { language })
       : t('case.reply.buyerReads', { name: buyerShort, language });
 
-  // 예측 (어댑터. 지금은 null → 칸이 숨는다). 입력 글이 바뀔 때마다 다시 받는다
+  // 예측 (브라우저 어댑터 = 엔진 순수 함수. 쓸 수 없으면 null → 칸이 숨는다). 입력 글이 바뀔 때마다 다시 받는다
   const board = base.board ?? null;
+  const translated = forecastBase?.translated === true;
   const forecast: ReplyForecast | null = useMemo(() => {
     if (forecastBase === null || anchor === null || board === null || view.offer !== null) return null;
-    return forecaster({ text, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays });
-  }, [forecaster, forecastBase, anchor, board, text, view.offer]);
+    return forecaster({
+      text,
+      anchorText: anchor,
+      board,
+      signals: forecastBase.signals,
+      delayDays: forecastBase.delayDays,
+      translated,
+    });
+  }, [forecaster, forecastBase, anchor, board, text, view.offer, translated]);
   useEffect(() => {
     setForecast(forecast);
   }, [forecast, setForecast]);
-  const chips = useMemo(() => (anchor === null ? null : featureChips(detector(text))), [detector, text, anchor]);
+  const chips = useMemo(
+    () => (anchor === null ? null : featureChips(detector(text, { translated }))),
+    [detector, text, anchor, translated],
+  );
   const reaction = reactionView(forecast, forecastBase?.signals.angryTone ?? null);
 
   function toggle(category: CommitmentCategory) {
@@ -522,7 +536,7 @@ export function ReplyPanel({
                     />
                     {reaction === null ? null : (
                       <span className="reply-editor-pill num">
-                        {t('case.choice.chargeback', { percent: reaction.chargeback })}
+                        {t('case.choice.chargeback', { percent: reaction.chargeback })} <Badge kind="assumption" />
                       </span>
                     )}
                   </div>

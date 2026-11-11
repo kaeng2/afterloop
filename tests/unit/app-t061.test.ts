@@ -666,7 +666,7 @@ describe('정적 검사 (T061)', () => {
   const screen = [
     ...filesUnder(path.join(ROOT, 'src/app/cases')),
     ...filesUnder(path.join(ROOT, 'src/app/today')),
-    path.join(ROOT, 'src/app/page.tsx'),
+    path.join(ROOT, 'src/app/(app)/page.tsx'),
     path.join(ROOT, 'src/app/_shared/top-bar.tsx'),
   ].filter((f) => /\.(ts|tsx)$/.test(f));
 

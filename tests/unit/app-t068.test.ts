@@ -171,6 +171,9 @@ async function fullMarkup(over: Partial<ReplyViewInput> = {}, draftOverride?: Re
     replyId: null,
     languageKey: 'case.view.lang.KO',
     buyerShort: 'Seo-yeon',
+    // 예측 어댑터가 쓸 수 없을 때의 칩(AI 칩 "Suggested reply covers")을 본다. 엔진 칩은 app-t079 시험
+    forecaster: () => null,
+    detector: () => null,
   });
   return html(createElement(CaseView, { view: VIEW, desk: DESK, llmOk: true, reply }));
 }
