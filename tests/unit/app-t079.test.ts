@@ -66,6 +66,11 @@ vi.mock('@/app/_server/paypal', () => ({
     calls.paypal += 1;
     return { ok: false, reason: 'not_configured' };
   },
+  // T084: 화면 읽기는 요청 사이 캐시가 붙은 입구를 쓴다
+  getPayPalReadClient: () => {
+    calls.paypal += 1;
+    return { ok: false, reason: 'not_configured' };
+  },
 }));
 (globalThis as { React?: typeof React }).React = React;
 
@@ -547,8 +552,18 @@ describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 
     const { default: AppLayout } = await import('@/app/(app)/layout');
     calls.disputes = 0;
     calls.paypal = 0;
-    const element = await AppLayout({ children: createElement('p', null, 'x') });
-    html(element as React.ReactElement);
+    const element = (await AppLayout({ children: createElement('p', null, 'x') })) as React.ReactElement<{
+      children: React.ReactNode[];
+    }>;
+    html(element);
+    // T084: Today (N)은 Suspense 안 막대가 읽는다 — 그 자식을 그려 Today 읽기를 센다
+    const suspense = React.Children.toArray(element.props.children).find(
+      (child): child is React.ReactElement<{ children: React.ReactElement }> =>
+        React.isValidElement(child) && child.type === React.Suspense,
+    );
+    expect(suspense).toBeDefined();
+    const bar = suspense!.props.children as React.ReactElement<Record<string, unknown>>;
+    html((await (bar.type as (props: unknown) => Promise<React.ReactElement>)(bar.props)) as React.ReactElement);
     expect(calls.disputes).toBeGreaterThan(0);
     expect(calls.paypal).toBeGreaterThan(0);
   });

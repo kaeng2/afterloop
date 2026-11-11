@@ -47,7 +47,7 @@ import type { Availability } from '../_shared/availability';
 import { demoLinks, screenLinks, withoutDemoExcluded } from '../_shared/demo-links';
 import type { DemoField, DisputeTimeline, LoadedDispute } from '../_shared/dispute-view';
 import { getLlm, unavailableLlm } from './llm';
-import { getPayPalClient } from './paypal';
+import { getPayPalReadClient } from './paypal';
 
 /** 추적 정보 (실제 값). 분쟁 응답에는 없어서 밖에서 받는다. */
 export type RealTracking = { hasTracking: boolean; hasDeliveredTracking: boolean };
@@ -253,7 +253,8 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
   if (deps.client !== undefined) {
     client = deps.client;
   } else {
-    const resolved = getPayPalClient();
+    // 요청 사이 90초 읽기 캐시 (T084). 보내기·제안이 끝나면 분쟁 목록과 그 분쟁 상세의 캐시가 지워진다
+    const resolved = getPayPalReadClient();
     if (!resolved.ok) return { disputes: [], paypal: { ok: false, reason: resolved.reason }, llm: llmAvailability };
     client = resolved.client;
   }
@@ -269,15 +270,22 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
 
   // 표에 있는 분쟁의 상세를 번호로 읽는다 (목록에 아직 없는 분쟁도 바로 나온다, SPEC 9-4).
   // 연습용·시연 제외 분쟁은 `wanted`에 없으므로 상세를 읽지도 않는다.
+  // 상세는 함께 읽는다 (T084). 결과는 연결 표 순서대로 모은다 (순차일 때와 같은 Map 순서)
   const details = new Map<string, DisputeDetail>();
   const failed: string[] = [];
-  for (const link of wanted) {
-    try {
-      details.set(link.paypalDisputeId, await getDispute(client, link.paypalDisputeId));
-    } catch {
-      // 한 건을 읽지 못해도 나머지는 보여 준다 (번호만 적는다 — 응답 값은 싣지 않는다)
-      failed.push(link.paypalDisputeId);
-    }
+  const read = await Promise.all(
+    wanted.map(async (link) => {
+      try {
+        return { id: link.paypalDisputeId, detail: await getDispute(client, link.paypalDisputeId) };
+      } catch {
+        return { id: link.paypalDisputeId, detail: null };
+      }
+    }),
+  );
+  for (const { id, detail } of read) {
+    // 한 건을 읽지 못해도 나머지는 보여 준다 (번호만 적는다 — 응답 값은 싣지 않는다)
+    if (detail === null) failed.push(id);
+    else details.set(id, detail);
   }
 
   // 2. 이전 미수령 분쟁을 셀 목록: 걸러 낸 목록 + 목록에 없던 상세 (상세도 목록 항목의 모양을 담고 있다)
@@ -287,10 +295,10 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
     ...[...details.values()].filter((detail) => !seenInList.has(detail.dispute_id)),
   ];
 
-  const disputes: LoadedDispute[] = [];
-  for (const link of wanted) {
+  // 분쟁마다 함께 만든다 (T084: 보드·어조 판정을 `Promise.all`로). 결과는 연결 표 순서 그대로 (D1 → D2 → D3)
+  const built = await Promise.all(wanted.map(async (link): Promise<LoadedDispute | null> => {
     const detail = details.get(link.paypalDisputeId);
-    if (detail === undefined) continue;
+    if (detail === undefined) return null;
 
     const seed = seedDisputeOf(link.seedDisputeId);
     const buyer = buyerOf(seed?.buyerId);
@@ -305,7 +313,7 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
     }
 
     const trackingReal = realTracking(detail.dispute_id);
-    const boardReal = await buildBoard(
+    const boardRealPending = buildBoard(
       detail,
       { tracking: trackingReal, priorInr: priorInrReal, trackingEvents: [], isDemo: false },
       llm,
@@ -326,20 +334,19 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
     if (trackingDemo.hasDeliveredTracking !== trackingReal.hasDeliveredTracking) demoFields.push('hasDeliveredTracking');
     if (priorInrDemo !== priorInrReal) demoFields.push('buyerPriorInrDisputes');
 
-    let boardDemo: BoardState | null = null;
-    if (demoFields.length > 0) {
-      boardDemo = await buildBoard(
-        detail,
-        {
-          tracking: trackingDemo,
-          priorInr: priorInrDemo,
-          trackingEvents: carrierEvents.map((event) => event.text),
-          isDemo: true,
-        },
-        llm,
-      );
-      if (boardDemo.cause?.subtype !== boardReal.cause?.subtype) demoFields.push('cause');
-    }
+    const boardDemoPending: Promise<BoardState | null> =
+      demoFields.length > 0
+        ? buildBoard(
+            detail,
+            {
+              tracking: trackingDemo,
+              priorInr: priorInrDemo,
+              trackingEvents: carrierEvents.map((event) => event.text),
+              isDemo: true,
+            },
+            llm,
+          )
+        : Promise.resolve(null);
 
     // 구매자 글: 화면·어조 판정에 쓰는 것은 가린 글이다 (원문은 분류 입력에만 들어간다)
     const buyerMessages = toClassifyInput(detail, {
@@ -349,6 +356,14 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
       trackingEvents: [],
     }).buyerMessages.map(maskPersonal);
 
+    // 보드 두 벌과 어조 판정은 서로 기다리지 않는다 (입력이 겹치지 않는다)
+    const [boardReal, boardDemo, tone] = await Promise.all([
+      boardRealPending,
+      boardDemoPending,
+      judgeTone({ buyerMessages }, { llm }),
+    ]);
+    if (boardDemo !== null && boardDemo.cause?.subtype !== boardReal.cause?.subtype) demoFields.push('cause');
+
     // 확대 위험 신호: 실제 분쟁 글 + 이 구매자의 시연용 이전 문의 (SPEC 10장 ②)
     const earlierInquiries = seed === undefined ? [] : seedInquiries.filter((inquiry) => inquiry.buyerId === seed.buyerId);
     if (earlierInquiries.length > 0) demoFields.push('earlierInquiries');
@@ -357,7 +372,7 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
       ...earlierInquiries.map((inquiry) => ({ text: inquiry.english, at: inquiry.date })),
       ...buyerMessagesWithTime(detail).map(({ text, at }) => ({ text: maskPersonal(text), at })),
     ];
-    const { angryTone } = await judgeTone({ buyerMessages }, { llm });
+    const { angryTone } = tone;
     const { signals, signalsAfterReply } = buildSignalPair(
       signalMessages,
       sellerRepliesWithTime(detail),
@@ -375,7 +390,7 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
       orderDate: seedOrder?.date ?? null,
     };
 
-    disputes.push({
+    return {
       timeline,
       key: link.seedDisputeId ?? link.paypalDisputeId,
       disputeId: detail.dispute_id,
@@ -390,8 +405,9 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
       signals,
       signalsAfterReply,
       liveSendAllowed: link.liveSendAllowed,
-    });
-  }
+    };
+  }));
+  const disputes = built.filter((dispute): dispute is LoadedDispute => dispute !== null);
 
   const paypal: Availability = failed.length === 0 ? { ok: true } : { ok: true, reason: 'partial' };
 
