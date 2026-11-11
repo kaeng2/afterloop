@@ -83,7 +83,7 @@
 | T080 | 엔진: 한국어 답장 특징 정규식 보강(격식체·탓하기) | engine | 완료 | v2.11 | T075 | AC33 | 모델 `claude-sonnet-5-5`. `tasks/T080.md` |
 | T081 | 화면 언어 바꾸기 EN \| 한국어 (1단계: 화면 글자만, 쿠키·?lang, 기본 영어) | ui | 진행중 | v2.11 | T079 | — | 모델 `claude-sonnet-5-5`. `tasks/T081.md` |
 | T082 | 사건 기록 "추적 없음"은 실제 확인한 경우만 (Mike O08은 등록됨 — 요약이 틀린 사실을 씀) | ui | 대기 (T081 뒤) | v2.11 | T081 | — | 모델 `claude-sonnet-5-5`. `tasks/T082.md` |
-| T083 | 속도 ①: listUntracked 주문 조회 병렬 (결과 같게) | paypal | 진행중 | v2.11 | — | — | 모델 `claude-opus-5-5`. worktree paypal-client. `tasks/T083.md` |
+| T083 | 속도 ①: listUntracked 주문 조회 병렬 (결과 같게) | paypal | 완료 | v2.11 | — | — | 모델 `claude-opus-5-5`. worktree paypal-client. 병합. 독립 검증 통과(Sonnet, 이전 구현과 21가지 입력 toEqual). `tasks/T083.md` |
 | T084 | 속도 ②: 요청 사이 캐시 90초·클라이언트 하나·병렬·Suspense·loading·startTransition | ui | 진행중 | v2.11 | — | 시간 재기 | 모델 `claude-opus-5-5`. 임시 worktree ui-perf (lane/ui-perf). 병합 T084 → T081. `tasks/T084.md` |
 | T085 | 엔진: 새 상품 등록 전 점검 계산 (listing) | engine | 대기 (속도 작업 뒤) | v2.12 | 계약 v2.12 | AC34 | 모델 `claude-opus-5-5`. `tasks/T085.md` |
 | T086 | AI: 새 상품 고칠 문구 6개 (약속 금지, 숫자 자리표시자, 정규식 판정) | ai | 대기 (속도 작업 뒤) | v2.12 | 계약 v2.12 | — | 모델 `claude-sonnet-5-5`. `tasks/T086.md` |
