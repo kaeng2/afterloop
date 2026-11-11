@@ -18,7 +18,7 @@
 
 @media (min-width: 64rem) {
   .products {
-    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr) minmax(0, 22rem);
+    grid-template-columns: minmax(0, clamp(20rem, 26vw, 28rem)) minmax(0, 1fr) minmax(0, 22rem);
     min-height: calc(100vh - 4.5rem);
     align-items: stretch;
   }
