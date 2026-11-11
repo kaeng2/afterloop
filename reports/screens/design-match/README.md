@@ -15,7 +15,7 @@
 
 ## 남은 차이 (inventory 예외 외에 눈으로 본 것)
 1. 앱의 AI 초안에 "Vague timing" 칩(−13 pts)이 하나 뜬다 — 초안의 "as soon as I receive it"을 엔진 정규식이 모호함으로 본다. 시안의 AI 초안은 "5 good"만. (엔진 정규식 문제, 숫자 일치 AC33에는 영향 없음)
-2. 시안은 처리한 항목을 "Done today" 묶음으로 옮긴다 — 앱은 예외로 뺌 (사람 결정 대기).
+2. ~~"Done today" 묶음~~ → T102로 반영 (화면 상태만, "Done today · Simulated").
 3. 위험 % 큰 숫자 40px (시안 44px), 판매자 점 색(앱은 강조색, 시안은 빨강) — T098b가 의도적으로 남김.
 4. Scene 3 점검 결과에 Assumption 배지가 8곳 (시안 0) — "최소한" 규칙에 비해 많다 (사람 결정 대기).
 5. 데이터 차이(예외): 사건 번호·이름·날짜·숫자는 실제/엔진 값, 시안의 "Nov 5 promise"·Refund backup·Expected delivery·Yuki·Lena 없음, 수수료 $15.

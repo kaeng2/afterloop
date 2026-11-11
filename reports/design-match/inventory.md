@@ -190,7 +190,7 @@
 | `pf[k].p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'` | 1 | L781 ~color |  | 구현함 | T091 선택지 카드 "Chargeback N%" `.choice-cb-high/-low` (`ChoiceView.chargebackTone`, 엔진 `forecastMoves` 값) |
 | `resBg: resKey === 'cb' ? '#FBE7E4' : 'linear-gradient(120deg,#E3F3FF,#F5F9FF)'` | 1 | L851 ~resKey |  | 예외 | DECISIONS 22:55 데이터: 결과 상자 없음 (resOn 행과 같은 이유) |
 | `resKey === 'cb' ? '#9E2414' : '#002991'` | 1 | L851 ~resKey |  | 예외 | DECISIONS 22:55 데이터: 결과 상자 없음 (resOn 행과 같은 이유) |
-| `s.done[i.id] ? ' done' : ''` | 1 | L709 ~sel |  | 예외 | DECISIONS 11/11 22:55 데이터 "실제 시드·샌드박스 사건만": 시안은 처리한 항목을 화면 상태로 "Done today" 묶음에 옮기고 흐리게(.it.done opacity .55) 한다. 앱 목록은 실제 분쟁 상태를 읽고, 공개 모드 Send는 Simulated라 분쟁이 끝나지 않는다 — 끝난 것처럼 보이게 하지 않는다. (컨트롤 타워 확인 요청: 보고서 참조) |
+| `s.done[i.id] ? ' done' : ''` | 1 | L709 ~sel | `today-item-done` (opacity .55), 점·막대 #CFD3D8, 맨 아래 "Done today" 묶음 | 반영 (T102) | 사람 결정 11/12 "Yes, show it": 화면 상태만. 모두 Simulated면 제목 "Done today · Simulated" |
 | `s.done[i.id] ? '#CFD3D8' : sevCol[i.risk]` | 1 | L708 ~background |  | 예외 | 위 `s.done` 행과 같은 이유 (Done 회색 점 없음). sevCol 자체는 구현함: T098b `today.css .today-dot-high`(#C4321F)·`.today-dot-watch`(#002991, 시안 med)·`.today-dot-low`(#9AA0A6). tests/unit/app-t098b ③ |
 | `s.goodsOpen ? 'transform:rotate(180deg)' : ''` | 1 | L838 ~transition |  | 구현함 | `reply.css .reply-details-caret-open` + T091 transition .2s |
 | `s.histOpen ? 'transform:rotate(180deg)' : ''` | 1 | L829 ~transition |  | 구현함 | T091 `case.css .desk-caret-open` (전에는 규칙이 없어 돌지 않았다) |
