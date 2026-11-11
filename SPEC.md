@@ -1,4 +1,4 @@
-# SPEC v2.14 (2026-11-11 23:35 KST)
+# SPEC v2.15 (2026-11-12 00:05 KST)
 
 > **계약 변경 규칙.** 이 문서, `src/types.ts`, `tests/acceptance/`는 계약이다. 바꿔야 하면 컨트롤 타워가 변경 내용·이유·영향받는 작업을 `DECISIONS.md`에 먼저 적고, 사람이 승인한 뒤에만 바꾼다. 바꿀 때마다 위 버전을 올린다. 작업 세션은 이 세 곳과 `DECISIONS.md`, `TASKS.md`, `tasks/`를 고치지 않는다 (`.claude/settings.json`에서 편집이 막혀 있다).
 
@@ -138,11 +138,12 @@
 - **시뮬레이션 절차 (고정 — 인수 테스트 AC34의 숫자가 이것에 묶인다)**: 난수는 `src/engine/rng.ts`의 `mulberry32(seedBase + units)` 하나. 횟수 run = 0..runs−1, 주문 o = 0..units−1, 유형 j = 0..types.length−1 순서로 **매 (run, o, j)마다 난수 3개 u, v, w를 이 순서로 뽑는다** (이미 그 주문에 분쟁이 났어도 뽑는다 — 같은 난수 원칙). 그 주문에 아직 분쟁이 없고 u < q[k]이면 분쟁 1건: v < refundShare면 환불 손실 = price + t, 아니면 다툼: w < 승률이면 t, 아니면 price + f + t. 실수(double) 그대로 비교한다.
 - f·t·refundShare는 `config/params.json`의 feeCents·timeCostCents·habitRefundShare (시안의 $8·$2 대신).
 - 결과: 평균 분쟁 수(총 건수 / runs), 주문당 확률(= 평균 분쟁 수 / units), 평균 손실(반올림 정수 센트), P10·P90(횟수별 손실을 오름차순 정렬해 floor(runs×0.1)·floor(runs×0.9)번째), 유형별 평균 건수·주문당 확률·평균 손실.
-- **진행 표시**: `createListingSim`의 `step(n)`으로 나눠 계산하고, 화면의 "n / 500"은 **실제로 끝낸 횟수**다. 한 프레임에 `progressChunkRuns`회. 타이머로 늘이거나 가짜로 세지 않는다.
+- **진행 표시 (v2.15, 사람 결정 2026-11-11 22:30으로 바뀜)**: 계산은 엔진이 실제로 끝낸다(`createListingSim`·`checkListing`). 화면의 "n / 500" 진행은 **시안 속도**로 보여 준다(점검 70ms마다 +5 ≈ 7초, Recalculate 70ms마다 +25). 속도는 `config/motion.json`에서 바꿀 수 있다(기획자가 2~3초로 줄일 수 있음). 결과는 계산이 끝나고 진행이 500에 닿았을 때 함께 보인다.
 - **고칠 점별 줄어드는 양** (`listingFixGains`): 지금 입력에 그 고칠 점 하나만 참으로 더했을 때의 주문당 확률 차이 (같은 난수). 이미 참이면 0, 성수기가 아닌데 bf면 null.
 - **AI 고칠 문구** (`src/ai/listing-fixes.ts`): 6개를 한 번에 영어로 쓴다. 숫자(치수·일수·날짜)는 판매자가 채울 자리표시자 `[__]`로 두고 글에 숫자를 쓰지 않는다. "반드시 도착"·무료·보장 같은 새 약속 금지 (T020 검사 재사용). **코드 판정**: 각 문구는 자기 고칠 점의 정규식에 걸려야 한다 — 안 걸리거나 검사에 걸리면 그 칸만 `ok:false` (기본 문구 없음, 화면은 넣기 버튼을 숨김). 입력은 상품명과 Publish 시점의 설명뿐 (캐시가 맞게).
 
-### 8-4. 시안 동작 (v2.14, 사람 결정 2026-11-11 22:20)
+### 8-4. 시안 동작 (v2.14, 사람 결정 2026-11-11 22:20) + 모션 (v2.15, 22:30)
+- **모션**: 시안 파일의 `@keyframes`·`animation`·`transition`·`setTimeout`/`setInterval` 값을 그대로 쓴다 (`config/motion.json`에 모은다). `prefers-reduced-motion`이면 모두 끈다 (타이핑은 바로 전체 표시). 타이핑 중에는 Send를 막는다.
 - 시안 `docs/design/mockup-v4/Desk.dc.html`의 Component 로직(setState·phase·paths)을 기준으로 "누르면 일어나는 일"을 맞춘다. 데이터·안전장치만 예외.
 - **선택지 카드**: 누르면 그 수로 바뀌고 초안·위험 %·곡선 끝점·반응 막대·칩이 다시 계산된다. 숫자는 엔진에서만. 환불 카드는 "Refund done · Simulated"(실제 환불 없음). 막힌 수는 회색·누를 수 없음.
 - **칩**: 빠진 것 "Missing: … + Add" → `config/reply-snippets.json`의 정한 문장을 넣는다(자리표시자는 코드가 채움). 나쁜 것(탓하기·모호함) "! … Remove" → 그 문장을 지운다. 칩마다 %p는 `replyFeatureEffects`(엔진). 환불 약속("Refund backup")·도착 보장("Expected delivery") 문장은 넣지 않는다.
