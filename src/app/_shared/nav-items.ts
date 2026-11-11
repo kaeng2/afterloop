@@ -11,7 +11,6 @@ export type TabItem = { href: string; copyKey: string };
 /** 탭 주소와 문구 키. 순서가 탭 순서다. */
 export const NAV_ITEMS: readonly TabItem[] = [
   { href: '/', copyKey: 'nav.today' },
-  { href: '/products', copyKey: 'nav.products' },
 ];
 
 /** 지금 주소가 그 탭에 속하는지. `/`는 정확히 같을 때만 (모든 주소가 `/`로 시작한다). */

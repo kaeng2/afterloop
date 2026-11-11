@@ -437,7 +437,9 @@ describe('만들 것 2~5·10: 사례 화면', () => {
   it('8: 한국어 미리보기 — 바탕 #F6F7F9(--color-panel), 테두리 없음, 제목 "She’ll see (Korean)" (언어는 데이터에서)', async () => {
     const markup = await fullCase();
     const box = markup.slice(markup.indexOf('class="reply-block reply-box"'));
-    expect(box).toContain(t('case.reply.sheSees', { language: t('case.view.lang.KO') }));
+    expect(box).toContain(t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') }));
+    expect(box).toContain('Seo-yeon will see (Korean)');
+    expect(box).not.toMatch(/\b(She|He)[’']ll see/);
     expect(read('src/app/globals.css')).toMatch(/--color-panel:\s*#f6f7f9/i);
     const rule = read('src/app/cases/reply/reply.css').match(/\.reply-box\s*\{([^}]*)\}/)?.[1] ?? '';
     expect(rule).toMatch(/background:\s*var\(--color-panel\)/);

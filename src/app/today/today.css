@@ -448,6 +448,23 @@
   letter-spacing: -0.02em;
 }
 
+/* Prevent 짧은 카드 (T099) */
+.prevent-fixes {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+}
+.prevent-fix {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  font-size: var(--text-sm);
+}
+.prevent-fix + .prevent-fix {
+  border-top: 1px solid var(--color-border);
+}
+
 /* 추적 표: 머리 줄·보통 줄·회색 줄이 한 표의 같은 열을 쓴다 (T061, T060 스크린샷 2번) */
 .tracking-table {
   width: 100%;

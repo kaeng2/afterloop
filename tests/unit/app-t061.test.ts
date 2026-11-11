@@ -310,7 +310,7 @@ describe('5~6번: 답장 칸 — 접기와 검사 줄', () => {
     );
     expect(markup).not.toContain('coaching tips');
     // T090 시안: 오른쪽 제목 "She'll see (Korean)" (언어 이름은 데이터에서)
-    const reads = markup.indexOf(t('case.reply.sheSees', { language: t('case.view.lang.KO') }));
+    const reads = markup.indexOf(t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') }));
     const write = markup.indexOf('class="reply-textarea"');
     expect(write).toBeGreaterThan(0);
     expect(reads).toBeGreaterThan(write);
