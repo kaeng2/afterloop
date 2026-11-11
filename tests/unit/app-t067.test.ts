@@ -328,35 +328,59 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
     expect(t('nav.forSellers')).toBe('for PayPal sellers');
   });
 
-  it('#0066F5·#0070E0·#003087 계열 파랑이 css 어디에도 없다 (RGB 거리 60 미만 금지)', () => {
-    const rgb = (hex: string) => {
+  it('T089: 남보라 계열(색상 250°~290°, 채도 있음)이 src/app 어디에도 없다', () => {
+    const hsl = (hex: string) => {
       const h = hex.replace('#', '');
       const full = h.length === 3 ? [...h].map((c) => c + c).join('') : h.slice(0, 6);
-      return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
+      const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const d = max - min;
+      if (d === 0) return { hue: 0, sat: 0 };
+      const hue = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      const l = (max + min) / 2;
+      return { hue: (hue * 60 + 360) % 360, sat: d / (1 - Math.abs(2 * l - 1)) };
     };
-    const distance = (a: string, b: string) => Math.hypot(...rgb(a).map((x, i) => x - rgb(b)[i]));
-    // T076 강화: 시안 v4의 파랑(그라데이션 끝 #60CDFF·#0B48C4·#001C64, 포커스 #097FF5, 로고 #00A8EA)도 금지
-    const BLUES = [
-      '#0066F5',
-      '#0070E0',
-      '#003087',
-      '#0070BA',
-      '#002991',
-      '#60CDFF',
-      '#001C64',
-      '#0B48C4',
-      '#097FF5',
-      '#00A8EA',
-      '#009CDE',
-    ];
-    // css만이 아니라 화면 코드(tsx·ts)도 본다 (인라인 색·SVG 속성)
     for (const file of [...filesUnder(APP, '.css'), ...filesUnder(APP, '.tsx'), ...filesUnder(APP, '.ts')]) {
-      // 주석(금지 색 이름을 적어 둔 설명)은 빼고 본다
-      for (const [hex] of strip(readFileSync(file, 'utf8')).matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)) {
-        for (const blue of BLUES) {
-          expect(distance(hex, blue), `${path.relative(ROOT, file)} ${hex} vs ${blue}`).toBeGreaterThanOrEqual(60);
-        }
+      const text = strip(readFileSync(file, 'utf8'));
+      for (const [hex] of text.matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)) {
+        const { hue, sat } = hsl(hex);
+        const violet = sat > 0.15 && hue >= 250 && hue <= 300;
+        expect(violet, `${path.relative(ROOT, file)} ${hex} (hue ${Math.round(hue)})`).toBe(false);
       }
+      for (const name of ['#5b3cc4', '#a996f0', 'rgba(91, 60, 196']) {
+        expect(text.toLowerCase(), `${path.relative(ROOT, file)} ${name}`).not.toContain(name);
+      }
+    }
+  });
+
+  it('T089: 주요 토큰 값이 시안 v4 값과 같다', () => {
+    const css = readFileSync(path.join(APP, 'globals.css'), 'utf8');
+    const light = /^:root\s*\{([\s\S]*?)\n\}/m.exec(css)?.[1] ?? '';
+    const val = (name: string) => new RegExp(`${name}:\\s*([^;]+);`).exec(light)?.[1].trim();
+    expect(val('--color-accent')).toBe('#0066f5');
+    expect(val('--color-accent-deep')).toBe('#002991');
+    expect(val('--color-navy-ink')).toBe('#0a1b3d');
+    expect(val('--color-accent-soft')).toBe('#e3f3ff');
+    expect(val('--color-accent-pale')).toBe('#f5f9ff');
+    expect(val('--color-bar-wait')).toBe('#0066f5');
+    expect(val('--color-bar-refund')).toBe('#99c2ff');
+    expect(val('--color-bar-chargeback')).toBe('#c4321f');
+    expect(val('--gradient-week')).toBe('linear-gradient(150deg, #001c64 0%, #002991 55%, #0b48c4 100%)');
+    expect(val('--gradient-ai')).toBe('linear-gradient(120deg, #002991, #0066f5 60%, #60cdff)');
+    expect(val('--gradient-ai-line')).toBe('linear-gradient(90deg, #002991, #0066f5 60%, #60cdff)');
+    expect(val('--gradient-soft')).toBe('linear-gradient(120deg, #e3f3ff, #f5f9ff)');
+    for (const [name, hex] of [
+      ['--color-pill-high-bg', '#fbe7e4'],
+      ['--color-pill-high-text', '#9e2414'],
+      ['--color-dot-high', '#c4321f'],
+      ['--color-text', '#3f4144'],
+      ['--color-border', '#e4e6e9'],
+      ['--color-line', '#cfd3d8'],
+      ['--color-panel', '#f6f7f9'],
+      ['--color-ink', '#000000'],
+    ] as const) {
+      expect(val(name), name).toBe(hex);
     }
   });
 });

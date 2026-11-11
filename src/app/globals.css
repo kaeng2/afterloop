@@ -1,9 +1,8 @@
 /*
  * AfterLoop 디자인 기준 (T047 보완 → T067 시안 v3 값, 2026-11-10 사람 결정). 화면이 모두 이 파일의 변수만 쓴다.
  *
- * - 색: 차분한 바탕 + 강조색 1개(보라 계열 남색). "PayPal과 잘 어울리는 별개의 제품" —
- *   PayPal 공식 파랑(#003087·#0070E0 계열)과 시안의 #0066F5 파랑·PayPal 글꼴·로고를 쓰지 않는다.
- *   링크·로고 마크·주 버튼·포커스 색은 강조색 하나. 위험 단계·성공·실패 색은 강조색과 따로 둔다.
+ * - 색 (T089, SPEC v2.13): 시안 v4 파랑 계열 그대로(#0066F5 강조, #002991 남색, #0A1B3D 먹색). 남보라는 쓰지 않는다.
+ *   PayPal 글꼴·로고·화면 흉내는 쓰지 않는다. 위험 단계·성공·실패 색은 강조색과 따로 둔다.
  * - 색 값(#…)·그림자 값은 아래 변수 정의 자리에만 쓴다. 화면 코드·다른 규칙은 var(--…)만 쓴다
  *   (단위 테스트 `tests/unit/app-shared-design.test.ts`가 파일을 읽어 검사한다).
  * - 글꼴 (T067): Figtree + Noto Sans KR. `layout.tsx`가 Next 글꼴 도구로 빌드 때 받아 자체 제공한다
@@ -24,15 +23,26 @@
   --color-border: #e4e6e9; /* 카드 테두리 (시안 값) */
   --color-divider: #e4e6e9; /* 위쪽 막대 아래 선 (시안 값) */
   --color-list-bg: #f1efea; /* Today 목록 영역 (시안 값) */
-  --color-accent: #5b3cc4;
+  --color-accent: #0066f5; /* 시안 v4: 로고 Less·링크·위험 %·곡선 점선·Best 알약 */
 
-  /* 강조색의 옅은·짙은 단계 (T076 시안 v4. 시안의 파랑 대신 — PayPal 파랑과 RGB 거리 60 이상) */
-  --color-accent-soft: #f1edfc; /* 고른 줄·알약 바탕 */
-  --color-accent-tint: #e6e0fa; /* 옅은 버튼 바탕 */
-  --color-accent-deep: #4a2499; /* 이번 주 카드 바탕 (그라데이션 시작) */
-  --color-accent-strong: #6a46d6; /* 이번 주 카드 바탕 (그라데이션 끝) */
+  /* 파랑 단계 (T089: 시안 v4 값 그대로. 남보라 없음) */
+  --color-accent-soft: #e3f3ff; /* 고른 목록 줄·꼬리표·사건 요약 줄 바탕 */
+  --color-accent-pale: #f5f9ff; /* 가장 옅은 파랑 바탕 */
+  --color-accent-tint: #c9e3ff; /* 옅은 버튼 바탕 */
+  --color-accent-deep: #002991; /* 남색 글자·꼬리표 글자·예방 막대·고른 상품 칩 */
+  --color-accent-strong: #0b48c4; /* 이번 주 카드 그라데이션 끝 */
+  --color-accent-night: #001c64; /* 이번 주 카드 그라데이션 시작 */
+  --color-accent-sky: #60cdff; /* AI 알약·위쪽 선 그라데이션 끝 */
+  --color-navy-ink: #0a1b3d; /* 고른 선택지 테두리·라디오·단계 번호 원·Chargeback 알약 */
+  --color-bar-wait: #0066f5; /* 손님 반응 막대: 기다림 */
+  --color-bar-refund: #99c2ff; /* 손님 반응 막대: 환불 */
+  --color-bar-chargeback: #c4321f; /* 손님 반응 막대: 차지백 */
+  --gradient-week: linear-gradient(150deg, #001c64 0%, #002991 55%, #0b48c4 100%); /* 이번 주 카드 */
+  --gradient-ai: linear-gradient(120deg, #002991, #0066f5 60%, #60cdff); /* AI 알약 */
+  --gradient-ai-line: linear-gradient(90deg, #002991, #0066f5 60%, #60cdff); /* 지금 대응 위쪽 선 */
+  --gradient-soft: linear-gradient(120deg, #e3f3ff, #f5f9ff); /* 연한 바탕 그라데이션 */
   --color-on-accent: #ffffff; /* 짙은 강조색 위 글자 */
-  --color-on-accent-muted: #ddd5f7; /* 짙은 강조색 위 작은 글자 */
+  --color-on-accent-muted: #c9e3ff; /* 짙은 강조색 위 작은 글자 */
   --color-on-accent-fill: rgba(255, 255, 255, 0.14); /* 짙은 강조색 위 채운 배지 바탕 (Demo data) */
   --color-panel: #f6f7f9; /* 칸 안 회색 상자 (시안 값) */
   --color-zone: #eef0f3; /* 구매자 메시지 구역 (시안 값, 파랑기 뺀 회색) */
@@ -107,14 +117,25 @@
     --color-border: #2e3136;
     --color-divider: #2e3136;
     --color-list-bg: #141517;
-    --color-accent: #a996f0;
+    --color-accent: #60a5ff;
 
-    --color-accent-soft: #2a2235;
-    --color-accent-tint: #3a2f4a;
-    --color-accent-deep: #3b2a7a;
-    --color-accent-strong: #4a35a8;
+    --color-accent-soft: #14283f;
+    --color-accent-pale: #101e30;
+    --color-accent-tint: #1f3a5c;
+    --color-accent-deep: #1a3fa8;
+    --color-accent-strong: #2a5fd6;
+    --color-accent-night: #0d2563;
+    --color-accent-sky: #60cdff;
+    --color-navy-ink: #8fb4f5;
+    --color-bar-wait: #60a5ff;
+    --color-bar-refund: #3f6aa8;
+    --color-bar-chargeback: #f97066;
+    --gradient-week: linear-gradient(150deg, #0d2563 0%, #1a3fa8 55%, #2a5fd6 100%);
+    --gradient-ai: linear-gradient(120deg, #1a3fa8, #3b82f6 60%, #60cdff);
+    --gradient-ai-line: linear-gradient(90deg, #1a3fa8, #3b82f6 60%, #60cdff);
+    --gradient-soft: linear-gradient(120deg, #14283f, #101e30);
     --color-on-accent: #ffffff;
-    --color-on-accent-muted: #d8cff7;
+    --color-on-accent-muted: #cfe3ff;
     --color-on-accent-fill: rgba(255, 255, 255, 0.12);
     --color-panel: #202226;
     --color-zone: #1d1f23;

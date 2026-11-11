@@ -268,7 +268,7 @@
   font-weight: 900;
   color: var(--color-on-accent);
   white-space: nowrap;
-  background: linear-gradient(120deg, var(--color-accent-deep) 0%, var(--color-accent) 60%, var(--color-accent-strong) 100%);
+  background: var(--gradient-ai);
   border-radius: var(--radius-pill);
 }
 
