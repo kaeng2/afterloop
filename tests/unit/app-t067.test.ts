@@ -69,6 +69,7 @@ function fakeClient(options: { postStatus?: (key: string) => number } = {}): Fak
 
 const OFF: Record<string, string | undefined> = {};
 const ON: Record<string, string | undefined> = {
+  DEMO_MODE: 'recording',
   AFTERLOOP_TRACK_LIVE: '1',
   AFTERLOOP_TRACK_LIVE_ORDERS: 'O05,O07',
   AFTERLOOP_TRACK_RECORDING: '1',
@@ -102,7 +103,7 @@ describe('T067 추적 등록 (가짜 호출기)', () => {
     const client = fakeClient();
     const outcome = await registerTrackingFromScreen({
       paypal: { ok: true, client },
-      env: { AFTERLOOP_TRACK_LIVE: '1', AFTERLOOP_TRACK_LIVE_ORDERS: 'O05,O07' },
+      env: { DEMO_MODE: 'recording', AFTERLOOP_TRACK_LIVE: '1', AFTERLOOP_TRACK_LIVE_ORDERS: 'O05,O07' },
     });
     expect(client.posts).toHaveLength(0);
     expect(outcome.kind).toBe('failed');

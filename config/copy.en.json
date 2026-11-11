@@ -16,6 +16,7 @@
   "approve.button": "Approve and run",
   "nav.appName": "AfterLoop",
   "nav.sandboxNote": "PayPal sandbox only",
+  "mode.public": "Public demo · simulated sends",
   "nav.today": "Today",
   "nav.products": "Products",
   "nav.case": "Case",

@@ -1,0 +1,34 @@
+# Render Blueprint (T070). 공개 데모 배포용 Node 웹 서비스 1개.
+#
+# - 비밀값은 여기에 쓰지 않는다. 이름만 두고 `sync: false` → 값은 사람이 Render 화면에서 넣는다.
+# - DEMO_MODE 기본은 public: PayPal 쓰기 호출 0회 (버튼은 "Simulated" 결과만), AI는 캐시 + 시간당 한도.
+# - 녹화용 스위치(실제 전송·추적 등록)는 이 파일에 넣지 않는다. 녹화 날에만 사람이 화면에서 잠시 넣는다
+#   (`reports/deploy.md` "녹화 날").
+# - region·plan은 자리만 둔다. 요금제는 사람이 정한다.
+services:
+  - type: web
+    name: afterloop
+    runtime: node
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start -- -p $PORT
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DEMO_MODE
+        value: public
+      - key: AI_LIVE_LIMIT_PER_HOUR
+        value: "20"
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      # 비밀값 아님. 샌드박스 주소만 허용한다 (다른 주소면 앱이 PayPal을 쓰지 않는다)
+      - key: PAYPAL_BASE_URL
+        value: https://api-m.sandbox.paypal.com
+      - key: LLM_API_KEY
+        sync: false

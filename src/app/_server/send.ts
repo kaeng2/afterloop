@@ -66,17 +66,22 @@ import { t } from '../_shared/copy';
 import { demoLinks, linkFor } from '../_shared/demo-links';
 import { pickBoard } from '../_shared/dispute-view';
 import { loadDemoDisputes, type LoadDemoDisputesResult } from './disputes';
+import { resolveDemoMode } from './mode';
 import { getPayPalClient } from './paypal';
 
 export type { DraftSource, SendFailure, SendKind, SendMode, SendOutcome };
 
 // ───────────────────────────── 스위치 (순수) ─────────────────────────────
 
-/** 두 스위치. 사람이 `.env`에 직접 넣는다 (ui 레인은 `.env`·`.env.example`을 고치지 않는다). */
-export type SendEnv = Partial<Record<'AFTERLOOP_REAL_SEND' | 'AFTERLOOP_FIXED_DRAFT', string>>;
+/** 두 스위치 + 모드. 사람이 `.env`에 직접 넣는다 (ui 레인은 `.env`·`.env.example`을 고치지 않는다). */
+export type SendEnv = Partial<Record<'AFTERLOOP_REAL_SEND' | 'AFTERLOOP_FIXED_DRAFT' | 'DEMO_MODE', string>>;
 
-/** 실제 전송은 `AFTERLOOP_REAL_SEND`가 **정확히** `"1"`일 때만. 없음·`"true"`·`"0"`·빈 값·공백은 가짜 전송. */
+/**
+ * 실제 전송은 `AFTERLOOP_REAL_SEND`가 **정확히** `"1"`일 때만. 없음·`"true"`·`"0"`·빈 값·공백은 가짜 전송.
+ * 그 앞에 모드 관문 (T070): `DEMO_MODE`가 `recording`이 아니면(public) 스위치 값과 무관하게 가짜 전송.
+ */
 export function resolveSendMode(env: SendEnv = process.env as SendEnv): SendMode {
+  if (resolveDemoMode(env) !== 'recording') return 'simulated';
   return env.AFTERLOOP_REAL_SEND === '1' ? 'live' : 'simulated';
 }
 
