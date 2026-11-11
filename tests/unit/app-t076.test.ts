@@ -601,15 +601,16 @@ describe('완료 기준 4: CaseEvent[]는 실제 데이터에서만 (서연)', (
 // ───────────────────────────── 5. 입력칸 글 ≠ 초안 → 보내기 꺼짐 ─────────────────────────────
 
 describe('완료 기준 5: 입력칸 글이 초안과 다르면 [Send]가 꺼지고, 같으면 지금 관문 그대로', () => {
-  it('editGate: 같으면 받은 관문 그대로, 다르면 "Edited text can\'t be sent — use AI draft"', () => {
+  // T100: "고친 글은 보낼 수 없음" → "고친 글은 번역·검사를 거쳐야 보낼 수 있음" (검사 전에는 그대로 꺼짐)
+  it('editGate: 같으면 받은 관문 그대로, 다르면 검사 전까지 꺼짐 ("Edited — translate and check it before sending")', () => {
     const ok = { ok: true, reasonKey: null };
     const blocked = { ok: false, reasonKey: 'case.send.blocked.checkFailed' };
-    expect(editGate(ok, 'same', 'same')).toBe(ok);
-    expect(editGate(blocked, 'same', 'same')).toBe(blocked);
-    expect(editGate(ok, 'edited', 'same')).toEqual({ ok: false, reasonKey: EDITED_KEY });
-    expect(editGate(ok, '', 'same')).toEqual({ ok: false, reasonKey: EDITED_KEY });
-    expect(editGate(ok, 'anything', null)).toBe(ok); // 초안이 없으면(입력칸 없음) 관문 그대로
-    expect(t(EDITED_KEY)).toBe("Edited text can't be sent — use AI draft");
+    expect(editGate(ok, 'same', 'same')).toEqual({ ...ok, translate: false });
+    expect(editGate(blocked, 'same', 'same')).toEqual({ ...blocked, translate: false });
+    expect(editGate(ok, 'edited', 'same')).toEqual({ ok: false, reasonKey: EDITED_KEY, translate: true });
+    expect(editGate(ok, '', 'same')).toEqual({ ok: false, reasonKey: EDITED_KEY, translate: false }); // 빈 글은 번역하지 않는다
+    expect(editGate(ok, 'anything', null)).toEqual({ ...ok, translate: false }); // 초안이 없으면(입력칸 없음) 관문 그대로
+    expect(t(EDITED_KEY)).toBe('Edited — translate and check it before sending');
   });
 
   it('처음 그림(입력칸 = 초안): 보내기 버튼은 지금 관문(canSend) 그대로 — 계획이 있으면 켜짐', async () => {
@@ -632,10 +633,11 @@ describe('완료 기준 5: 입력칸 글이 초안과 다르면 [Send]가 꺼지
     expect(markup).not.toContain(t(EDITED_KEY));
   });
 
-  it('보내는 경로는 그대로: 버튼은 서버가 기억한 답장 번호만 보낸다 (입력칸 글은 서버 액션으로 가지 않는다)', () => {
+  it('보내는 경로는 그대로: 버튼은 서버가 기억한 답장 번호만 보낸다 (입력칸 글은 보내기 서버 액션으로 가지 않는다)', () => {
     const panel = read('src/app/cases/reply/reply-panel.tsx');
-    expect(panel).toMatch(/sendReplyAction\(\{ disputeId, kind, replyId, confirmedCommitments: confirmed \}\)/);
-    expect(panel).toMatch(/const gate: SendGate = editGate\(/);
+    // T100: 고친 글이면 서버가 검사하고 기억한 번호(sendId), 아니면 AI 초안 번호 — 어느 쪽이든 번호만
+    expect(panel).toMatch(/sendReplyAction\(\{ disputeId, kind, replyId: sendId, confirmedCommitments: confirmed \}\)/);
+    expect(panel).toMatch(/const gate: EditedGate = editGate\(/);
     // 보내기 관문·모드 파일은 이 작업에서 바뀌지 않는다 (판정 함수 이름 그대로)
     expect(read('src/app/_server/send.ts')).toMatch(/export async function sendReply/);
   });

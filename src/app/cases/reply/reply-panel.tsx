@@ -9,7 +9,9 @@
  *    "Details ⌄" · 오른쪽 칸 "She'll see (<언어>)" = **검사받은 전송본** (회색 바탕, 테두리 없음)
  *  - Details 안 (T090): "PayPal data only" 한 줄 → 역번역(영어) → 검사 3개(Facts match · No new promises · Follow-up date).
  *    **검사가 하나라도 실패하면 자동으로 펼치고**(`detailsMustOpen`) [Send]는 관문(`canSend`)이 끈다.
- *  - 입력칸 글이 초안과 다르면 "Edited text can't be sent — use AI draft" (보내기 꺼짐, `editGate`)
+ *  - 입력칸 글이 초안과 다르면 [Translate & check] → 서버가 토큰으로 되돌려 번역·역번역·검사(T100, `prepareEditedAction`).
+ *    번역 중 "Translating…" + Send 꺼짐, 끝나면 전송본·역번역·검사가 고친 글 기준. 통과하면 Send (`editGate`)
+ *  - 환불 카드 상태에서는 Send 꺼짐 ("Refund is simulated in this demo — nothing is sent", T100 6번)
  *  - "Her likely reaction" 막대(기다림·환불·차지백) + Expected cost + Her mood next (예측 어댑터, Assumption. 없으면 숨김)
  *  - 맨 아래 한 줄: 전송 모드 작은 글씨("Simulated send …") · 보내기 버튼 (검사 줄은 T090부터 Details 안)
  *  - 결과 한 줄 · 답장 후 위험
@@ -17,8 +19,9 @@
  * 제안이 먼저인 분쟁은 시안의 짧은 카드: "Offer N% back ($X), the buyer keeps it" + 한 줄 + 전송본 접기 +
  * 검사 줄 + [Send offer · $7] (금액·비율은 엔진 값, 관문은 그대로).
  *
- * **보내는 글은 바뀌지 않는다.** 버튼은 서버가 기억한 답장 번호(`replyId`)만 보낸다 — 입력칸 글은 서버로 가지 않고
- * 예측을 바꾸는 데만 쓴다. 관문(`canSend`·`canSendOffer`)·확인 창·전송 모드·서버 액션은 T068 그대로다.
+ * **보내기 버튼은 서버가 기억한 답장 번호만 보낸다.** AI 초안이면 `replyId`, 고친 글이면 서버가 그 글을 검사하고 기억한
+ * 번호다 (T100). 입력칸 글은 번역·검사 서버 액션으로만 가고, 보내기 관문(`canSend`·`canSendOffer`)·확인 창·전송 모드·
+ * 보내기 서버 액션은 T068 그대로다.
  *
  * - **판정하지 않는다.** 보기용 값은 `buildReplyView`, 버튼은 `canSend`(+ `editGate`)가 정한다.
  * - 예측은 브라우저 어댑터(`../forecast-client.ts`)만 부른다. 지금은 `null` → 예측 칸이 숨는다.
@@ -38,7 +41,7 @@ import { toDollarsCents } from '../../_shared/money';
 import { chipPopDelay, prefersReducedMotion, typeOutTiming } from '../../_shared/motion';
 import { toPercentRounded } from '../../_shared/percent';
 import { useSavings } from '../../today/savings';
-import { sendReplyAction } from '../actions';
+import { prepareEditedAction, sendReplyAction } from '../actions';
 import {
   applyChip,
   draftForMove,
@@ -71,7 +74,9 @@ import {
   detailsChecks,
   detailsMustOpen,
   editGate,
+  EDIT_KEYS,
   REPLY_KEYS,
+  type EditedGate,
   type CheckRowView,
   type FactRowView,
   type ReplyView,
@@ -80,6 +85,8 @@ import {
   type SendKind,
   type SendOutcome,
   type SendState,
+  type EditStatus,
+  type EditedPrepareOutcome,
 } from '../reply-model';
 import { CaseProgress } from '../progress/case-progress';
 import { useDeskSelection } from '../view/desk-selection';
@@ -466,6 +473,8 @@ export function ReplyPanel({
   const [confirmed, setConfirmed] = useState<CommitmentCategory[]>([]);
   const [sendState, setSendState] = useState<SendState>('idle');
   const [outcome, setOutcome] = useState<SendOutcome | null>(null);
+  /** T100: 고친 글 하나의 번역·검사 결과 (그 글자에 묶인다). */
+  const [editRun, setEditRun] = useState<{ text: string; result: EditedPrepareOutcome | 'translating' } | null>(null);
   const inFlight = useRef(false);
   const { setSent } = useSent();
   const { setForecast } = useDraftForecast();
@@ -538,6 +547,12 @@ export function ReplyPanel({
     };
   });
 
+  // 글 특징 (엔진 규칙). 환불 상태 판정과 칩이 함께 쓴다
+  const detectedNow = useMemo(
+    () => (anchor === null ? null : detector(text, { translated: forecastBase?.translated === true })),
+    [detector, text, anchor, forecastBase?.translated],
+  );
+
   const noReply = replyId === null && view.gate.hasDraft;
   // T091: 타이핑 중에는 Send를 막는다 (시안 `sendOff: s.busy || …`). 이유 글은 내지 않는다 (곧 끝난다)
   const screenGate: SendGate = typing
@@ -545,7 +560,43 @@ export function ReplyPanel({
     : noReply
       ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation }
       : canSend(view);
-  const gate: SendGate = editGate(screenGate, text, view.offer === null ? anchor : null);
+  // T100: 고친 글은 서버에서 토큰 되돌리기 → 번역·역번역·검사를 지나야 보낼 수 있다. 결과는 그 글자에만 묶인다
+  // (한 글자라도 다시 바꾸면 검사 전으로 돌아간다). 보기용 값은 같은 함수(`buildReplyView`)로 고친 글 기준으로 다시 낸다
+  const run = editRun !== null && editRun.text === text ? editRun : null;
+  const editedView: ReplyView | null =
+    edited && run !== null && run.result !== 'translating' && run.result.ok && base.draft.ok
+      ? buildReplyView({
+          ...base,
+          draft: { ...base.draft, draftEn: run.result.draftEn },
+          translation: run.result.translation,
+          confirmed,
+          sendState,
+          outcome,
+        })
+      : null;
+  const editStatus: EditStatus =
+    run === null
+      ? { state: 'idle' }
+      : run.result === 'translating'
+        ? { state: 'translating' }
+        : !run.result.ok
+          ? { state: 'failed', reasonKey: run.result.reasonKey }
+          : editedView === null
+            ? { state: 'failed', reasonKey: EDIT_KEYS.aiUnavailable }
+            : {
+                state: 'ready',
+                // 서버가 검사 통과 글로 기억하지 않았으면(번호 없음) 화면 관문과 상관없이 끈다
+                gate: run.result.replyId === null && canSend(editedView).ok ? { ok: false, reasonKey: BLOCK_KEYS.checkFailed } : canSend(editedView),
+              };
+  const editedReplyId = run !== null && run.result !== 'translating' && run.result.ok ? run.result.replyId : null;
+  // T100 6번: 환불 카드 상태(또는 고친 글이 "환불했다"고 말함)에서는 보내지 않는다 — 환불은 시뮬레이션뿐이다
+  const refundState = desk.path === 'refund' || (edited && detectedNow?.features.refundNow === true);
+  const gate: EditedGate = editGate(screenGate, text, view.offer === null ? anchor : null, {
+    refund: view.offer === null && refundState,
+    status: editStatus,
+  });
+  // 보이는 값(전송본·Details·검사·약속 확인)은 고친 글이면 고친 글 기준
+  const shownView: ReplyView = editedView ?? view;
   const offerGate: SendGate | null =
     view.offer === null ? null : noReply ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSendOffer(view);
   const language = languageKey === null ? t('case.send.languageUnknown') : t(languageKey);
@@ -554,7 +605,7 @@ export function ReplyPanel({
     buyerShort === null ? t('case.reply.buyerReadsUnknown', { language }) : t('case.reply.sheSees', { language });
 
   // Details ⌄ (T090): 검사가 하나라도 실패하면 자동으로 펼친다 (닫을 수 없다). [Send]는 관문이 이미 끈다
-  const detailsForced = detailsMustOpen(view);
+  const detailsForced = detailsMustOpen(shownView);
   const detailsShown = detailsOpen || detailsForced;
   const detailsToggle = view.available ? (
     <DetailsToggle
@@ -566,7 +617,7 @@ export function ReplyPanel({
   ) : null;
   const detailsPanel = (goods: EffectRowView[]) =>
     view.available ? (
-      <DetailsPanel id={detailsId} view={view} paypalOnly={paypalOnly} hidden={!detailsShown} goods={goods} />
+      <DetailsPanel id={detailsId} view={shownView} paypalOnly={paypalOnly} hidden={!detailsShown} goods={goods} />
     ) : null;
 
   // 예측 (브라우저 어댑터 = 엔진 순수 함수. 쓸 수 없으면 null → 칸이 숨는다). 입력 글이 바뀔 때마다 다시 받는다
@@ -593,10 +644,7 @@ export function ReplyPanel({
   useEffect(() => {
     setForecast(forecast);
   }, [forecast, setForecast]);
-  const detected = useMemo(
-    () => (anchor === null ? null : detector(text, { translated })),
-    [detector, text, anchor, translated],
-  );
+  const detected = detectedNow;
   const chips = useMemo(() => featureChips(detected), [detected]);
   // T091: 칩마다 효과 (엔진 replyFeatureEffects). 넣을 문장 = config/reply-snippets.json (자리표시자는 영어 초안과 같은 채움)
   const subtype = board?.cause?.subtype ?? null;
@@ -626,7 +674,9 @@ export function ReplyPanel({
 
   async function send(kind: SendKind) {
     const allowed = kind === 'offer' ? offerGate?.ok === true : gate.ok;
-    if (!allowed || replyId === null || inFlight.current) return;
+    // 고친 글이면 서버가 그 글을 검사하고 기억한 번호, 아니면 AI 초안의 번호 (글자는 보내지 않는다 — 번호만)
+    const sendId = kind === 'message' && edited ? editedReplyId : replyId;
+    if (!allowed || sendId === null || inFlight.current) return;
     inFlight.current = true;
     setSendState('sending');
     const confirmText =
@@ -640,7 +690,7 @@ export function ReplyPanel({
     }
     let next: SendOutcome;
     try {
-      next = await sendReplyAction({ disputeId, kind, replyId, confirmedCommitments: confirmed });
+      next = await sendReplyAction({ disputeId, kind, replyId: sendId, confirmedCommitments: confirmed });
     } catch {
       next = {
         ok: false,
@@ -658,6 +708,20 @@ export function ReplyPanel({
     if (next.ok) report(savings);
   }
 
+  /** T100: 고친 글을 서버에서 번역·검사한다 (보내지 않는다). 결과는 지금 글자에 묶는다. */
+  async function translateEdited() {
+    if (!gate.translate || replyId === null || typing || sendState !== 'idle') return;
+    const sentFor = text;
+    setEditRun({ text: sentFor, result: 'translating' });
+    let result: EditedPrepareOutcome;
+    try {
+      result = await prepareEditedAction({ disputeId, replyId, text: sentFor });
+    } catch {
+      result = { ok: false, reasonKey: EDIT_KEYS.aiUnavailable };
+    }
+    setEditRun((now) => (now !== null && now.text === sentFor ? { text: sentFor, result } : now));
+  }
+
   function again() {
     setOutcome(null);
     setSendState('idle');
@@ -669,21 +733,21 @@ export function ReplyPanel({
 
   const commitmentsBlock = (
     <>
-      {view.addedInTranslation.length === 0 ? null : (
+      {shownView.addedInTranslation.length === 0 ? null : (
         <div className="notice reply-alert" role="alert">
           <p>{t('case.reply.addedInTranslation')}</p>
           <ul className="reply-list">
-            {view.addedInTranslation.map((item) => (
+            {shownView.addedInTranslation.map((item) => (
               <li key={item.category}>{t(item.labelKey)}</li>
             ))}
           </ul>
         </div>
       )}
 
-      {view.commitments.length === 0 ? null : (
+      {shownView.commitments.length === 0 ? null : (
         <fieldset className="notice reply-commitments">
           <legend className="small">{t('case.reply.outsidePolicy')}</legend>
-          {view.commitments.map((commitment) => (
+          {shownView.commitments.map((commitment) => (
             <label key={commitment.category} className="reply-confirm small">
               <input
                 type="checkbox"
@@ -819,7 +883,7 @@ export function ReplyPanel({
         live={outcome.mode === 'live'}
         language={language}
         buyerShort={buyerShort}
-        sentText={view.outgoing?.text ?? null}
+        sentText={shownView.outgoing?.text ?? null}
         sentLocale={base.buyerLocale ?? null}
         scenarioInput={
           forecastBase === null || anchor === null || board === null
@@ -965,10 +1029,20 @@ export function ReplyPanel({
 
               <div className="reply-block reply-box">
                 <h3 className="reply-box-title">{readsLabel}</h3>
-                {edited ? (
+                {edited && editedView !== null && editedView.outgoing !== null ? (
+                  // T100: 고친 글을 서버가 번역·검사했다 → 그 전송본 (실제로 나갈 글자와 같은 채움 `screenText`)
+                  <>
+                    <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined} data-edited-outgoing="true">
+                      {editedView.outgoing.text}
+                    </p>
+                    {gate.ok ? <p className="small muted reply-edited-checked">{t('case.reply.editedChecked')}</p> : null}
+                  </>
+                ) : edited ? (
                   // 시안 koTxt: 글을 바꾸면(카드·Add·Remove·직접 입력) "Translated to Korean when you send." (회색).
-                  // 보내는 글은 바뀌지 않는다 — 관문(editGate)이 Send를 끄고 이유를 보인다
-                  <p className="reply-text reply-outgoing reply-auto-tr">{t('case.reply.autoTr', { language })}</p>
+                  // 번역 중이면 "Translating…". 검사 전·중에는 관문(editGate)이 Send를 끄고 이유를 보인다
+                  <p className="reply-text reply-outgoing reply-auto-tr" aria-busy={editStatus.state === 'translating' ? 'true' : undefined}>
+                    {editStatus.state === 'translating' ? t('case.reply.translating') : t('case.reply.autoTr', { language })}
+                  </p>
                 ) : view.outgoing === null ? (
                   <p className="small muted">{t('case.reply.outgoingUnavailable')}</p>
                 ) : (
@@ -998,6 +1072,17 @@ export function ReplyPanel({
           <div className="reply-actions">
             {modeLine}
             <div className="reply-send">
+              {/* T100: 고친 글은 먼저 서버에서 번역·검사 (보내지 않는다). 검사 전일 때만 보인다 */}
+              {gate.translate ? (
+                <button
+                  type="button"
+                  className="reply-button-quiet reply-translate"
+                  disabled={busy || typing || replyId === null}
+                  onClick={() => void translateEdited()}
+                >
+                  {t('case.reply.translateCheck')}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="reply-button"

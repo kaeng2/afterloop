@@ -12,12 +12,13 @@
 import { z } from 'zod';
 
 import { COMMITMENT_CATEGORIES } from '@/ai/commitments';
+import { DRAFT_INPUT_MAX_CHARS } from '@/ai/reply';
 
 import { t } from '../_shared/copy';
 import { initLocale } from '../_server/locale';
-import { sendFromScreen, resolveSendMode } from '../_server/send';
+import { prepareEditedFromScreen, sendFromScreen, resolveSendMode } from '../_server/send';
 import { applySimulatedFailure, resolveSimulatedFailure } from './practice';
-import type { SendOutcome } from './reply-model';
+import { EDIT_KEYS, type EditedPrepareOutcome, type SendOutcome } from './reply-model';
 
 const SendFormSchema = z.object({
   disputeId: z.string().regex(/^PP-[A-Z0-9-]{1,40}$/),
@@ -28,6 +29,27 @@ const SendFormSchema = z.object({
     .array(z.enum(COMMITMENT_CATEGORIES as unknown as [string, ...string[]]))
     .max(COMMITMENT_CATEGORIES.length),
 });
+
+const EditedFormSchema = z.object({
+  disputeId: z.string().regex(/^PP-[A-Z0-9-]{1,40}$/),
+  replyId: z.string().regex(/^r-[0-9a-f]{32}$/),
+  text: z.string().min(1).max(DRAFT_INPUT_MAX_CHARS),
+});
+
+/**
+ * 고친 글 번역·검사 (T100). **보내지 않는다** — 서버가 글을 토큰으로 되돌려 `translateReply`를 지나고, 검사를 통과한
+ * 글만 기억해 번호를 준다. 보내기는 그 번호로 `sendReplyAction`(기존 관문)을 지난다.
+ */
+export async function prepareEditedAction(form: unknown): Promise<EditedPrepareOutcome> {
+  await initLocale();
+  const parsed = EditedFormSchema.safeParse(form);
+  if (!parsed.success) return { ok: false, reasonKey: EDIT_KEYS.invalid };
+  try {
+    return await prepareEditedFromScreen(parsed.data);
+  } catch {
+    return { ok: false, reasonKey: EDIT_KEYS.aiUnavailable };
+  }
+}
 
 export async function sendReplyAction(form: unknown): Promise<SendOutcome> {
   await initLocale();

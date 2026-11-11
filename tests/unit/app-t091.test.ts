@@ -364,9 +364,9 @@ describe('만들 것 5 · 완료 기준 4: 지호 Send offer · Add all N은 기
 
   it('답장·제안 보내기 경로·관문 무변경 (replyId만, 관문 파일 손대지 않음)', () => {
     const panelSrc = strip(read('src/app/cases/reply/reply-panel.tsx'));
-    expect(panelSrc).toMatch(/sendReplyAction\(\{ disputeId, kind, replyId, confirmedCommitments: confirmed \}\)/);
+    expect(panelSrc).toMatch(/sendReplyAction\(\{ disputeId, kind, replyId: sendId, confirmedCommitments: confirmed \}\)/); // T100: 번호만
     expect(panelSrc).toMatch(/if \(next\.ok\) report\(savings\);/);
-    // 글을 바꾸면(카드·칩) Send는 지금 관문이 끈다
+    // 글을 바꾸면(카드·칩) Send는 번역·검사 전까지 꺼진다 (T100)
     expect(editGate({ ok: true, reasonKey: null }, 'changed', 'anchor').ok).toBe(false);
     expect(editGate({ ok: true, reasonKey: null }, 'anchor', 'anchor').ok).toBe(true);
   });
@@ -423,7 +423,7 @@ describe('모션: 시안 값 그대로 (config/motion.json)', () => {
   it('타이핑 중에는 Send를 막는다 (관문 앞에 둔다)', () => {
     const src = strip(read('src/app/cases/reply/reply-panel.tsx'));
     expect(src).toMatch(/const screenGate: SendGate = typing\s*\?\s*\{ ok: false, reasonKey: null \}/);
-    expect(src).toMatch(/const gate: SendGate = editGate\(screenGate,/);
+    expect(src).toMatch(/const gate: EditedGate = editGate\(screenGate,/);
     expect(src).toMatch(/readOnly=\{busy \|\| typing\}/);
   });
 

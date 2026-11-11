@@ -36,6 +36,7 @@ import { createHash } from 'node:crypto';
 
 import { findCommitments } from '@/ai/commitments';
 import {
+  DRAFT_INPUT_MAX_CHARS,
   translateReply,
   type CommitmentCategory,
   type ReplyMove,
@@ -46,16 +47,21 @@ import { checkTokens, type FactLocale } from '@/ai/tokens';
 import { planMove } from '@/engine/plan';
 import { offerComesFirst } from '@/engine/policy';
 import { recommend } from '@/engine/recommend';
+import { detectReplyFeatures } from '@/engine/reply-features';
 import { EXEC_COPY, format } from '@/exec/copy';
 import { executeMove } from '@/exec/execute';
 import { ENDPOINTS } from '@/exec/request';
 import { getDispute, type DisputeDetail } from '@/paypal/disputes';
-import type { ActionPlan, Approval, DemoLink, FactToken, Params, PayPalCaller, PayPalClient, PolicyConfig } from '@/types';
+import type { ActionPlan, Approval, DemoLink, FactToken, LlmCaller, Params, PayPalCaller, PayPalClient, PolicyConfig } from '@/types';
 
+import { editAdditions, nameLeftovers, revertToTokens, withEditChecks } from '../cases/edited-reply';
 import { caseReplyFacts } from '../cases/reply-facts';
 import {
+  EDIT_KEYS,
   fillFactTokens,
   OFFER_STATUS,
+  screenText,
+  type EditedPrepareOutcome,
   type DraftSource,
   type SendFailure,
   type SendKind,
@@ -67,6 +73,7 @@ import { demoLinks, linkFor } from '../_shared/demo-links';
 import { pickBoard } from '../_shared/dispute-view';
 import { loadDemoDisputes, type LoadDemoDisputesResult } from './disputes';
 import { recordCaller } from './activity';
+import { getLlm } from './llm';
 import { resolveDemoMode } from './mode';
 import { getPayPalClient } from './paypal';
 
@@ -472,5 +479,133 @@ export async function sendFromScreen(form: {
       simulatedCall: SIMULATED_CALLER,
       now: new Date().toISOString(),
     },
+  );
+}
+
+// ───────────────────────────── 고친 글 입구 (T100) ─────────────────────────────
+
+/**
+ * 고친 글 → 토큰 되돌리기 → `translateReply` → `sendable` 확인 (T100, DECISIONS 2026-11-12 "Yes, allow edited send").
+ * **보내지 않는다.** 검사를 통과한 글만 서버 기억(`rememberReply`)에 두고 번호를 돌려준다 — 보내기는 그 번호로
+ * 위의 `sendReply`(관문·데모 모드·기록 규칙 그대로)를 지난다. 이 입구는 POST를 하지 않는다 (`load`는 GET만).
+ *
+ * 순서 (모든 거부는 **AI 호출 전에**):
+ *  1. 화면에 내는 분쟁 · 서버가 기억한 AI 답장(같은 분쟁) · 글 길이
+ *  2. 분쟁 다시 읽기 → 추천 → 메시지 계획만 (제안이 먼저인 분쟁·계획 없음은 거부)
+ *  3. 사실값 다시 만들기 (화면을 그릴 때 값과 같아야 한다)
+ *  4. 값 → 토큰 (`revertToTokens`, 영어 초안 벌)
+ *  5. 환불 상태: 고친 글이 "환불했다"고 말하면(엔진 `refundNow`, AI 초안에는 없음) 거부 — 환불은 시뮬레이션뿐이다
+ *  6. 이름 조각이 남았으면 거부 (AI에 이름 값을 보내지 않는다. SPEC 3장 v2.9)
+ *  7. AI 없음 → 거부. `translateReply` (번역 + 역번역 + 검사) → 보낼 글 기준 검사 더하기 (`withEditChecks`)
+ *  8. 채울 수 있는지(`screenText` = 보낼 때와 같은 채움)까지 통과하면 기억하고 번호를 준다
+ */
+export type PrepareEditedInput = {
+  disputeId: string;
+  /** 화면을 그릴 때 서버가 기억한 AI 답장 (검사받은 원래 초안). 없으면 거부. */
+  reply: PreparedReply | null;
+  /** 입력칸 글 (화면에 채워 보인 영어). 신뢰하지 않는 입력. */
+  text: string;
+};
+
+export type PrepareEditedDeps = {
+  load: () => Promise<LoadDemoDisputesResult>;
+  /** AI 호출기. 쓸 수 없으면 `null` (공개 모드 시간당 한도·캐시는 `getLlm`이 그대로 건다). */
+  llm: LlmCaller | null;
+  now: string;
+  links?: DemoLink[];
+  params?: Params;
+  rules?: PolicyConfig;
+};
+
+const editFail = (reasonKey: string): EditedPrepareOutcome => ({ ok: false, reasonKey });
+
+export async function prepareEditedReply(input: PrepareEditedInput, deps: PrepareEditedDeps): Promise<EditedPrepareOutcome> {
+  const links = deps.links ?? demoLinks;
+  const link = linkFor(input.disputeId, links);
+  if (link === undefined || !link.showOnScreen) return editFail(EDIT_KEYS.expired);
+  const reply = input.reply;
+  if (reply === null || reply.disputeId !== input.disputeId) return editFail(EDIT_KEYS.expired);
+  const text = input.text.trim();
+  if (text === '' || text.length > DRAFT_INPUT_MAX_CHARS) return editFail(EDIT_KEYS.invalid);
+
+  let loaded: LoadDemoDisputesResult;
+  try {
+    loaded = await deps.load();
+  } catch {
+    return editFail(EDIT_KEYS.expired);
+  }
+  const dispute = loaded.disputes.find((candidate) => candidate.disputeId === input.disputeId);
+  if (!loaded.paypal.ok || dispute === undefined) return editFail(EDIT_KEYS.expired);
+  const board = pickBoard(dispute);
+  const recommendation = recommend(board, deps.params, deps.rules);
+  const best = recommendation.best;
+  if (offerComesFirst(board, recommendation) || best === null || best.move !== 'fight' || best.apiMove !== 'send_message') {
+    return editFail(EDIT_KEYS.noPlan);
+  }
+  let plan: ActionPlan;
+  try {
+    plan = planMove(board, best, deps.params, deps.rules);
+  } catch {
+    return editFail(EDIT_KEYS.noPlan);
+  }
+
+  let both: { draft: FactToken[]; outgoing: FactToken[] };
+  try {
+    both = caseReplyFacts({ now: deps.now, dueDate: board.dueDate, buyerId: dispute.buyer?.id ?? null, buyerLocale: reply.buyerLocale });
+  } catch {
+    return editFail(EDIT_KEYS.expired);
+  }
+  if (!sameFacts(both.outgoing, reply.facts)) return editFail(EDIT_KEYS.expired);
+
+  const tokenized = revertToTokens(text, both.draft, { plan, board }, reply.draftEn);
+
+  // 판정할 수 없으면 환불이라고 본다 (막는 쪽으로 틀린다)
+  const saysRefunded = (value: string) => {
+    try {
+      return detectReplyFeatures(value).features.refundNow;
+    } catch {
+      return true;
+    }
+  };
+  if (saysRefunded(tokenized) && !saysRefunded(reply.draftEn)) return editFail(EDIT_KEYS.refundSimulated);
+
+  if (nameLeftovers(tokenized, [...both.draft, ...both.outgoing]).length > 0) return editFail(EDIT_KEYS.nameLiteral);
+
+  if (deps.llm === null) return editFail(EDIT_KEYS.aiUnavailable);
+  const raw = await translateReply(
+    { draftEn: tokenized, buyerLocale: reply.buyerLocale, facts: reply.facts, move: best.move },
+    { llm: deps.llm },
+  );
+  if (!raw.ok) {
+    return editFail(raw.reason === 'invalid_output' && raw.detail.startsWith('draft_') ? EDIT_KEYS.invalid : EDIT_KEYS.aiUnavailable);
+  }
+  const checked = withEditChecks(raw, editAdditions(reply.draftEn, tokenized, reply.facts));
+  if (!checked.ok) return editFail(EDIT_KEYS.aiUnavailable);
+
+  if (!screenText(checked.outgoing, reply.facts, reply.buyerLocale, { plan, board }).filled) return editFail(EDIT_KEYS.invalid);
+
+  const passes = checked.check.ok && checked.addedInTranslation.length === 0 && checked.nameProblems.length === 0;
+  const replyId = passes
+    ? rememberReply({
+        disputeId: input.disputeId,
+        draftSource: reply.draftSource,
+        draftEn: tokenized,
+        outgoing: checked.outgoing,
+        outsidePolicy: checked.outsidePolicy,
+        addedInTranslation: checked.addedInTranslation,
+        nameProblems: checked.nameProblems,
+        facts: reply.facts,
+        buyerLocale: reply.buyerLocale,
+      })
+    : null;
+  return { ok: true, replyId, draftEn: tokenized, translation: checked };
+}
+
+/** 서버 액션이 부른다. 실제 의존성(GET 읽기 · `getLlm`)을 꽂는다. PayPal 쓰기 호출기는 넘기지도 않는다. */
+export async function prepareEditedFromScreen(form: { disputeId: string; replyId: string; text: string }): Promise<EditedPrepareOutcome> {
+  const llm = getLlm();
+  return prepareEditedReply(
+    { disputeId: form.disputeId, reply: recallReply(form.replyId), text: form.text },
+    { load: () => loadDemoDisputes(), llm: llm.ok ? llm.llm : null, now: new Date().toISOString() },
   );
 }

@@ -319,7 +319,7 @@ describe('완료 기준 3: AC33 반응 막대 = 선택지 Reply = 엔진 fight (
   it('전송 관문·모드·기록 파일은 이 태스크에서 손대지 않는다 (공개 모드 쓰기 0회는 app-send·ops-t070 시험 그대로)', () => {
     // 관문은 서버 액션 → send.ts 하나뿐: 답장 칸은 replyId만 보낸다
     const panel = strip(read('src/app/cases/reply/reply-panel.tsx'));
-    expect(panel).toMatch(/sendReplyAction\(\{ disputeId, kind, replyId, confirmedCommitments: confirmed \}\)/);
+    expect(panel).toMatch(/sendReplyAction\(\{ disputeId, kind, replyId: sendId, confirmedCommitments: confirmed \}\)/); // T100: 번호만
     expect(panel).not.toMatch(/fetch\(|api-m\.sandbox/);
   });
 });
