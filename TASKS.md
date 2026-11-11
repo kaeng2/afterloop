@@ -88,6 +88,7 @@
 | T085 | 엔진: 새 상품 등록 전 점검 계산 (listing) | engine | 완료 | v2.12 | 계약 v2.12 | AC34 | 모델 `claude-opus-5-5`. `tasks/T085.md`. 병합. 독립 검증 통과(Sonnet, 별도 구현과 무작위 입력 40개 일치) |
 | T086 | AI: 새 상품 고칠 문구 6개 (약속 금지, 숫자 자리표시자, 정규식 판정) | ai | 완료 | v2.12 | 계약 v2.12 | — | 모델 `claude-sonnet-5-5`. `tasks/T086.md`. 병합. 독립 검증 통과(Sonnet). 실제 AI 1회: 5칸 통과, color만 rule_mismatch → 후속: color 칸을 "Color note:"로 시작 |
 | T087 | 화면: /listing Scene 3 (점검 모달·고치기·다시 계산·등록, /api/listing-check) | ui | 진행중 | v2.12 | T085, T086, T084, T081 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T087.md` |
+| T088 | 속도 ③: 지난 값 먼저 보여 주고 뒤에서 새로 읽기(최대 10분), 쓰기 뒤 바로 지움, 서버 뜰 때 데우기(선택) | ui | 대기 (T082 뒤, ui-perf) | v2.12 | T084, T082 | 시간 재기 | 모델 `claude-opus-5-5`. `tasks/T088.md` |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
 | T065 | **Products 상품 표 AG Grid** (As-is → With fixes, 처방 토글 시 셀 깜빡임) | ui | 대기 (T064 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T065.md` |
 | T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대체됨 | v2.2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 확정 (P0). AG Grid Community만 **2026-11-10 화면 구조 변경으로 T060~T064로 다시 쪼갬.** 이 지시서의 세부 규칙(리허설·색상 문구·거래 조회 한 줄·추적 등록 안전 규칙·로그 규칙)은 새 지시서가 참조한다 |
