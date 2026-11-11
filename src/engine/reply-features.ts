@@ -26,20 +26,24 @@ const MONTH = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|jul
 
 /** `lang`을 뺀 7개 특징의 규칙 (lang은 글자 종류로 따로 본다). */
 const RX: Record<Exclude<ReplyFeatureKey, 'lang'>, RegExp> = {
-  apology: /sorry|apolog|죄송|미안/i,
+  apology: /sorry|apolog|죄송|미안|사과\s?드/i,
   cause: /customs|clearance|colou?r|\bsize\b|세관|통관|색상|사이즈/i,
   ask: /customs (?:id|code)|pccc|send (?:me|us) (?:your|the)|reply with|please (?:send|share|provide)|통관번호|고유부호|알려\s?주|보내\s?주/i,
   // 영어 월 이름 + 날짜("November 17", "Nov. 17", "17 November"), "11월 17일", "11/17"
   date: new RegExp(
-    `\\b${MONTH}\\.?\\s{0,3}\\d{1,2}(?!\\d)|\\b\\d{1,2}(?:st|nd|rd|th)?\\s{1,3}(?:of\\s{1,3})?${MONTH}\\b|\\d{1,2}월\\s{0,3}\\d{1,2}일|\\b\\d{1,2}\\/\\d{1,2}(?!\\d)`,
+    `\\b${MONTH}\\.?\\s{0,3}\\d{1,2}(?!\\d)|\\b\\d{1,2}(?:st|nd|rd|th)?\\s{1,3}(?:of\\s{1,3})?${MONTH}\\b|\\d{1,2}월\\s{0,3}\\d{1,2}일|\\d{1,2}일\\s{0,3}까지|\\b\\d{1,2}\\/\\d{1,2}(?!\\d)`,
     'i',
   ),
   blame:
-    /not (?:our|my) (?:fault|responsibility|problem)|your (?:fault|problem)|contact customs yourself|(?:저희|제) (?:책임|잘못)이 아니|직접 (?:세관|문의)|세관에 직접/i,
-  vague: /\bsoon\b|should arrive|eventually|any day|곧|조만간|언젠가/i,
+    /not (?:our|my) (?:fault|responsibility|problem)|your (?:fault|problem)|contact customs yourself|(?:저희|제|판매자) ?(?:책임|잘못)(?:이|은|도)? ?아(?:니|닙)|(?:택배사|배송사|세관) ?(?:의 )?(?:잘못|탓)|(?:고객님|구매자) ?(?:의 )?(?:잘못|탓)(?! ?[이가] ?아(?:니|닙))|직접 (?:세관|택배사|문의)|세관에 직접/i,
+  vague: /\bsoon\b|should arrive|eventually|any day|곧|조만간|언젠가|금방 ?(?:도착|갈|가)/i,
   refundNow:
     /(?:have|i['’]ve|already) refunded|refunded (?:the|your)|(?:issued|processed) (?:a|the|your) (?:full )?refund|환불(?:해)? ?드렸|환불했어요|환불 완료|환불 처리했/i,
 };
+
+/** ask 보조 규칙: 통관번호류 낱말과 요청 동사가 한 문장에 함께 있으면 참 (따로 훑으므로 선형). */
+const ASK_TOPIC = /개인통관고유부호|통관번호|통관부호/;
+const ASK_VERB = /알려|보내|회신/;
 
 /** 구매자 언어 글자: 한글·가나 (영어 초안은 보낼 때 번역되므로 화면이 `translated`로 알려 준다). */
 const BUYER_SCRIPT = /[가-힣぀-ヿ]/;
@@ -111,7 +115,7 @@ export const detectReplyFeatures = ((text: string, opts?: { translated?: boolean
   const sentences = splitSentences(text);
   for (const key of Object.keys(RX) as (keyof typeof RX)[]) {
     const rx = RX[key];
-    const hit = sentences.find((s) => rx.test(s));
+    const hit = sentences.find((s) => rx.test(s) || (key === 'ask' && ASK_TOPIC.test(s) && ASK_VERB.test(s)));
     if (hit !== undefined) {
       features[key] = true;
       hits[key] = hit;
