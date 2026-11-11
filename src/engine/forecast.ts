@@ -28,8 +28,14 @@ import type {
   ReplyForecast,
   ReplyForecastInput,
   ReplyModelConfig,
+  ReplyFeatureEffect,
+  ReplyFeatureEffectsFn,
+  ReplyFeatureKey,
   RiskCurveFn,
   RiskPoint,
+  ScenarioPoint,
+  ScenarioRiskFn,
+  ScenarioStepKind,
   WeeklySummaryFn,
   ForecastReplyFn,
 } from '@/types';
@@ -76,6 +82,7 @@ const ReplyModelSchema = zod.object({
     okayFrom: weight,
     annoyedFrom: weight,
   }),
+  scenario: zod.unknown().optional(), // v2.14: scenarioRisk만 읽는다 (ScenarioSchema). 기존 함수는 보지 않는다
 });
 
 /** `config/reply-model.json` 원본 (검증 전). */
@@ -357,3 +364,134 @@ export const weeklySummary: WeeklySummaryFn = (input, params, rules) => {
     usesDemoData: input.usesDemoData,
   };
 };
+
+// ───────────────────────────── v2.14 칩 효과·Send 뒤 시나리오 (T093) ─────────────────────────────
+
+/** 글에서 문장 하나를 뺀다 (처음 나온 곳 하나). 남은 공백은 한 칸으로 줄인다 (줄바꿈은 둔다). */
+export function removeSentence(text: string, sentence: string): string {
+  const at = sentence === '' ? -1 : text.indexOf(sentence);
+  if (at < 0) return text;
+  return (text.slice(0, at) + text.slice(at + sentence.length))
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/ +\n/g, '\n')
+    .trim();
+}
+
+/** 글 끝에 문장 하나를 넣는다 (빈 글이면 그 문장만). */
+export function appendSentence(text: string, sentence: string): string {
+  const base = text.trimEnd();
+  return base === '' ? sentence : `${base} ${sentence}`;
+}
+
+/** 칩으로 내는 좋은 특징 (refundNow는 칩이 아니다). lang은 문장으로 넣을 수 없어 missing으로 내지 않는다. */
+const GOOD_CHIP_KEYS: readonly ReplyFeatureKey[] = ['apology', 'cause', 'ask', 'date', 'lang'];
+const BAD_CHIP_KEYS: readonly ReplyFeatureKey[] = ['blame', 'vague'];
+
+/** 퍼센트포인트 (반올림하지 않는다 — 표기는 화면). */
+const toPp = (dp: number): number => dp * 100;
+
+/**
+ * 답장 칩마다 효과 (계약 `ReplyFeatureEffectsFn`). 모두 같은 보정(c) 위에서 forecastReply와 같은 식으로 pChargeback을 두 번 구한 차이다.
+ * - good (있는 apology·cause·ask·date·lang): deltaPp = (지금 − 걸린 문장을 뺀 글) × 100. lang만은 문장을 빼도 번역이 남으므로
+ *   특징 하나(lang)를 끈 값과 비교한다.
+ * - missing (없는 apology·cause·ask·date이고 snippets에 문장이 있음): deltaPp = (글 끝에 문장을 넣은 글 − 지금) × 100.
+ *   snippets는 자리표시자를 채운 문장을 넘긴다 (안 채운 ⟦DATE_1⟧은 날짜로 걸리지 않는다).
+ * - bad (있는 blame·vague): deltaPp = (걸린 문장을 뺀 글 − 지금) × 100.
+ * 순서는 REPLY_FEATURE_KEYS 순서. 같은 입력이면 같은 결과.
+ */
+export const replyFeatureEffects = ((
+  input: ReplyForecastInput & ForecastInputExtra,
+  snippets: Partial<Record<ReplyFeatureKey, string>>,
+  params?: Params,
+  rules?: PolicyConfig,
+  model?: ReplyModelConfig,
+): ReplyFeatureEffect[] => {
+  const p = prepare(input, params, rules, model);
+  const text = typeof input.text === 'string' ? input.text : '';
+  const pOfFeatures = (f: ReplyFeatures): number => core(f, p.situation, p.calibration, p.costs, p.model).pChargeback;
+  const pOf = (t: string): number => pOfFeatures(featuresOf(t, input.translated));
+
+  const detected = text.trim() === '' ? null : detectReplyFeatures(text, { translated: input.translated });
+  const now = detected?.features ?? noReplyFeatures();
+  const hits: Partial<Record<ReplyFeatureKey, string>> = detected?.hits ?? {};
+  const pNow = pOfFeatures(now);
+
+  const out: ReplyFeatureEffect[] = [];
+  for (const key of REPLY_FEATURE_KEYS) {
+    const hit = hits[key] ?? null;
+    if (GOOD_CHIP_KEYS.includes(key) && now[key]) {
+      const pWithout = key === 'lang' ? pOfFeatures({ ...now, lang: false }) : hit === null ? pNow : pOf(removeSentence(text, hit));
+      out.push({ key, kind: 'good', sentence: hit, deltaPp: toPp(pNow - pWithout) });
+    } else if (GOOD_CHIP_KEYS.includes(key) && key !== 'lang') {
+      const sentence = snippets[key];
+      if (typeof sentence !== 'string' || sentence.trim() === '') continue;
+      out.push({ key, kind: 'missing', sentence, deltaPp: toPp(pOf(appendSentence(text, sentence)) - pNow) });
+    } else if (BAD_CHIP_KEYS.includes(key) && now[key]) {
+      const pWithout = hit === null ? pNow : pOf(removeSentence(text, hit));
+      out.push({ key, kind: 'bad', sentence: hit, deltaPp: toPp(pWithout - pNow) });
+    }
+  }
+  return out;
+}) satisfies ReplyFeatureEffectsFn;
+
+const STEP_KINDS = ['sent', 'buyer_reply', 'forwarded', 'cleared'] as const satisfies readonly ScenarioStepKind[];
+
+const StepChangeSchema = zod
+  .object({
+    threat: zod.boolean().optional(),
+    unanswered: zod.boolean().optional(),
+    tone: zod.boolean().optional(),
+    delayDays: zod.number().finite().min(0).optional(),
+    shift: weight.optional(),
+  })
+  .strict();
+
+const ScenarioSchema = zod.object({
+  source: zod.string(),
+  note: zod.string().optional(),
+  steps: zod.object({
+    sent: StepChangeSchema,
+    buyer_reply: StepChangeSchema,
+    forwarded: StepChangeSchema,
+    cleared: StepChangeSchema,
+  }),
+});
+
+type ScenarioConfig = zod.infer<typeof ScenarioSchema>;
+
+/** 시나리오 설정: 넘긴 model에 scenario가 있으면 그것, 없으면 config/reply-model.json의 scenario. */
+function resolveScenario(model?: ReplyModelConfig): ScenarioConfig {
+  const fromModel = (model as { scenario?: unknown } | undefined)?.scenario;
+  return ScenarioSchema.parse(fromModel ?? (replyModelJson as { scenario?: unknown }).scenario);
+}
+
+/**
+ * Send 뒤 예상 시나리오 (계약 `ScenarioRiskFn`, 전부 Simulated). 보낸 글(input.text)의 특징·보정·상황에서 시작해
+ * steps 순서대로 config `scenario.steps[단계]`의 신호 변화를 앞 단계 위에 누적하고, 단계마다 pChargeback을 낸다.
+ * 기본 설정의 sent는 바꾸는 것이 없어 첫 점 = forecastReply(input).pChargeback. 단조 감소를 강제하지 않는다 (설정값 그대로).
+ */
+export const scenarioRisk = ((
+  input: ReplyForecastInput & ForecastInputExtra,
+  steps: ScenarioStepKind[],
+  params?: Params,
+  rules?: PolicyConfig,
+  model?: ReplyModelConfig,
+): ScenarioPoint[] => {
+  const p = prepare(input, params, rules, model);
+  const scenario = resolveScenario(model);
+  const features = featuresOf(input.text, input.translated);
+  let situation: Situation = { ...p.situation };
+  let shift = 0;
+  return steps.map((step) => {
+    if (!STEP_KINDS.includes(step)) throw new Error(`scenarioRisk: 모르는 단계 ${String(step)}`);
+    const change = scenario.steps[step];
+    situation = {
+      threat: change.threat ?? situation.threat,
+      unanswered: change.unanswered ?? situation.unanswered,
+      tone: change.tone ?? situation.tone,
+      delayDays: change.delayDays !== undefined ? cleanDelay(change.delayDays) : situation.delayDays,
+    };
+    shift += change.shift ?? 0;
+    return { step, pChargeback: core(features, situation, p.calibration + shift, p.costs, p.model).pChargeback };
+  });
+}) satisfies ScenarioRiskFn;
