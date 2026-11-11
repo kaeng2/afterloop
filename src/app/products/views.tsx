@@ -6,14 +6,13 @@
  * 폭포 차트·분포 막대·전후 막대는 그리지 않는다.
  */
 import type { ReactNode } from 'react';
-import Link from 'next/link';
-
 import { AssumptionBadge, CachedBadge, DemoBadge } from '../_shared/badges';
 import { t } from '../_shared/copy';
 import type { FixId } from '@/types';
+import { ProductGrid } from './product-grid';
 import type { DotPlotView, FixCardView, ProductRow, ProductView, TransactionLineView } from './model';
 
-// ── 왼쪽 상품 목록 (임시판. T065가 AG Grid 표로 바꾼다) ────────────────────
+// ── 왼쪽 상품 표 (T065: AG Grid Community, `product-grid.tsx`) ─────────────
 
 export function ProductList({ rows }: { rows: readonly ProductRow[] }) {
   return (
@@ -22,25 +21,7 @@ export function ProductList({ rows }: { rows: readonly ProductRow[] }) {
         <h1 className="products-title">{t('product.list.title')}</h1>
         <DemoBadge />
       </div>
-      <p className="small muted">{t('product.list.columns')}</p>
-      <ul className="products-rows">
-        {rows.map((row) => (
-          <li key={row.sku}>
-            <Link
-              href={row.href}
-              className="products-row"
-              aria-current={row.selected ? 'page' : undefined}
-              data-sku={row.sku}
-            >
-              <span className="products-row-name">{row.name}</span>
-              <span className="small muted num">{row.stockText}</span>
-              <span className="products-row-values num" data-as-is={row.asIs.cents} data-with-fixes={row.withFixes.cents}>
-                {row.valuesText}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <ProductGrid rows={rows} />
     </nav>
   );
 }
