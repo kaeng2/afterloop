@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EN · Scene 3 · New listing rehearsal</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;900&amp;family=Noto+Sans+KR:wght@400;700;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ls *{box-sizing:border-box}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 22px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:15px;font-weight:700;white-space:nowrap;transition:background-color .15s ease}
+.btn:disabled{opacity:.45;cursor:default}
+.b-black{background:#000000;color:#FFFFFF}.b-black:hover{background:#333333}
+.b-tint{background:#05378214;color:#000000}.b-tint:hover{background:#05378227}
+.b-ai{background:linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF);color:#FFFFFF}
+.b-sm{min-height:34px;padding:6px 14px;font-size:13px}
+.spin{animation:spin 1.2s linear infinite;transform-origin:48px 48px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{animation:pl 1.2s ease-in-out infinite}
+@keyframes pl{0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:1;transform:scale(1.06)}}
+.tipw{position:relative}
+.tipq{width:18px;height:18px;border-radius:50%;border:0;background:#E4E6E9;color:#3F4144;font:inherit;font-size:11px;font-weight:900;cursor:help;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.tipb{display:none;position:absolute;right:0;top:100%;margin-top:6px;width:280px;z-index:9;background:#0B0F14;color:#FFFFFF;border-radius:14px;padding:12px 14px;font-size:12px;line-height:1.5;text-align:left;box-shadow:rgba(0,0,0,0.25) 0 8px 24px}
+.tipw:hover .tipb,.tipw:focus-within .tipb{display:block}
+.snav{display:flex;align-items:center;gap:10px;min-height:38px;padding:6px 10px;border-radius:10px;font-size:14px;font-weight:700;color:#3F4144;text-decoration:none}
+.snav:hover{background:#EEF0F3}
+.snav.on{background:#FFFFFF;color:#000000;box-shadow:inset 0 0 0 1px #E4E6E9}
+.apib{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:1000px;background:#F3F5F9;font-size:12px;color:#3F4144;margin-right:auto}
+.apib b{color:#0B0F14;font-weight:900}
+.livedot{width:7px;height:7px;border-radius:50%;background:#1F9D55;box-shadow:0 0 0 3px rgba(31,157,85,.18)}
+.btn:focus-visible,.fld:focus-visible,.ins:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+.lab{font-size:13px;font-weight:700;color:#3F4144}
+.fld{width:100%;padding:12px 14px;field-sizing:content;max-height:420px;border-radius:14px;border:2px solid #CFD3D8;font:inherit;font-size:15px;line-height:1.5;color:#000000;background:#FFFFFF;resize:vertical}
+.fld.gap{border-color:#E8796B;background:#FFFBFA}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+.ai{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 8px;border-radius:1000px;font-size:12px;font-weight:900;color:#FFFFFF;background:linear-gradient(120deg,#002991 0%,#0066F5 55%,#60CDFF 100%);white-space:nowrap}
+.ph{position:relative;aspect-ratio:3/4;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ph{background:#FFFFFF;box-shadow:inset 0 0 0 1px #E4E6E9}
+.addph{position:relative;aspect-ratio:3/4;border-radius:16px;border:2px dashed #9AA0A6;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:#0A1B3D;text-align:center;padding:8px;transition:border-color .15s,background-color .15s}
+.addph:hover{border-color:#0A1B3D;background:#F6F7F9}
+.addph:focus-within{outline:2px solid #097FF5;outline-offset:2px}
+.addic{width:44px;height:44px;border-radius:50%;background:#0A1B3D;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;box-shadow:rgba(10,27,61,0.25) 0 4px 10px}
+.phl{position:absolute;left:8px;bottom:8px;right:8px;font-size:11px;font-weight:700;color:#3F4144;background:rgba(255,255,255,0.85);border-radius:8px;padding:2px 6px;text-align:center}
+.card{border-radius:24px;background:#FFFFFF;border:1px solid #E4E6E9;padding:22px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.ins{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:4px 12px 4px 6px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:13px;font-weight:700;background:#F5F9FF;color:#002991;box-shadow:inset 0 0 0 2px #99C2FF}
+.ins:disabled{opacity:.6;cursor:default}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(1040px,100%);max-height:92vh;overflow:auto;z-index:20;border-radius:28px 28px 0 0;background:#FFFFFF;box-shadow:rgba(0,0,0,0.25) 0 -12px 40px;padding:18px 44px 40px;display:flex;flex-direction:column;gap:24px;animation:up .45s cubic-bezier(.2,1,.3,1)}
+@keyframes up{from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rise{animation:rise .4s ease both}
+@keyframes flashA{0%{background:#E3F3FF}100%{background:#FFFFFF}}
+@keyframes flashB{0%{background:#E3F3FF}100%{background:#FFFFFF}}
+.flA{animation:flashA 1.2s ease}.flB{animation:flashB 1.2s ease}
+.ko{font-family:'Noto Sans KR',Figtree,sans-serif}
+</style>
+</helmet>
+<div class="ls" style="min-height: 100vh; background: #F6F7F9; color: #000000; font-family: Figtree, 'Noto Sans KR', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5">
+
+<header style="position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 18px; padding: 12px 24px; background: #FFFFFF; border-bottom: 1px solid #E4E6E9">
+<span style="display: inline-flex; align-items: center; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 10px; background: #1F3A2E; color: #F3EBDD; display: inline-flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 17px; font-weight: 700">K</span><span style="display: flex; flex-direction: column; line-height: 1.15"><b style="font-family: Georgia, serif; font-size: 17px; letter-spacing: -0.2px">{{v.store}}</b><span style="font-size: 11px; color: #6C7378">{{v.admin}}</span></span></span>
+<label style="flex: 1; max-width: 520px; margin: 0 auto; display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 12px; background: #F3F4F6; color: #6C7378; font-size: 14px"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg><input placeholder="{{v.search}}" aria-label="{{v.search}}" style="border: 0; background: transparent; font: inherit; outline: 0; flex: 1; min-width: 0"></label>
+<span style="width: 34px; height: 34px; border-radius: 50%; background: #E3E7EC; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #3F4144">SM</span>
+</header>
+<div style="display: flex; align-items: flex-start">
+<nav aria-label="Store admin" style="position: sticky; top: 59px; width: 220px; flex-shrink: 0; min-height: calc(100vh - 59px); padding: 16px 12px; background: #FAFAFB; border-right: 1px solid #E4E6E9; display: flex; flex-direction: column; gap: 2px">
+<a href="#" class="snav"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>{{v.nav.home}}</span></a><a href="#" class="snav"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 9h6M9 13h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>{{v.nav.orders}}</span></a><a href="#" class="snav on"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8l8-4 8 4-8 4zM4 8v8l8 4 8-4V8M12 12v8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>{{v.nav.products}}</span></a><a href="#" class="snav"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11a3 3 0 1 0 0-.01M2 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 1 0 0-.01M14 15c3 0 6 1.6 6 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>{{v.nav.customers}}</span></a><a href="#" class="snav"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>{{v.nav.analytics}}</span></a><a href="#" class="snav"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4l12 5V5zM16 9a3 3 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>{{v.nav.marketing}}</span></a>
+<span style="margin: 18px 10px 6px; font-size: 11px; font-weight: 700; color: #6C7378; letter-spacing: .4px; text-transform: uppercase">{{v.nav.apps}}</span>
+<a href="#" class="snav"><span style="width: 20px; height: 20px; border-radius: 6px; background: #0B0F14; display: inline-flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="30 70 200 110" aria-hidden="true"><path d="M92 112H146C176 112 192 126 206 158" fill="none" stroke="#00A8EA" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="56" cy="112" r="16" fill="#FFFFFF"></circle></svg></span><span>DisputeLess</span></a>
+<a href="#" class="snav"><span style="width: 20px; height: 20px; border-radius: 6px; background: #E3E7EC; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #002991">P</span><span>{{v.nav.payments}}</span></a>
+</nav>
+<div style="flex: 1; min-width: 0">
+<div style="display: flex; align-items: center; gap: 10px; padding: 18px 32px 0; max-width: 1320px; margin: 0 auto; font-size: 13px; color: #6C7378"><a href="#" style="color: #6C7378; text-decoration: none">{{v.nav.products}}</a><span>›</span><b style="font-size: 20px; color: #000000">{{v.crumb}}</b></div>
+
+<!-- EDIT + DETAIL share the editor -->
+<sc-if value="{{showEditor}}" hint-placeholder-val="{{ true }}">
+<div style="{{layoutSt}}">
+
+<section class="card" style="gap: 18px">
+<sc-if value="{{isDetail}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 20px">{{v.detailT}}</b><span style="font-size: 14px; color: #3F4144">{{v.detailS}}</span></div></sc-if>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span class="lab">{{v.photos}}</span>
+<div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: start">
+<sc-for list="{{photos}}" as="p" hint-placeholder-count="4">
+<div class="ph" style="{{p.st}}"><img src="{{p.src}}" alt="{{p.label}}" style="width: 100%; height: 100%; object-fit: cover; display: block"><span class="phl">{{p.label}}</span></div>
+</sc-for>
+<label class="addph"><input type="file" accept="image/*" onChange="{{addPhoto}}" aria-label="{{v.addPhoto}}" style="position: absolute; width: 1px; height: 1px; opacity: 0"><span class="addic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg></span><span style="font-size: 13px; font-weight: 700">{{v.addPhoto}}</span><span style="font-size: 11px; color: #6C7378">{{v.addHint}}</span></label>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px">
+<label style="display: flex; flex-direction: column; gap: 6px"><span class="lab">{{v.fTitle}}</span><input class="fld" value="{{f.title}}" onChange="{{on.title}}"></label>
+<label style="display: flex; flex-direction: column; gap: 6px"><span class="lab">{{v.fPrice}}</span><input class="fld" value="{{f.price}}" readOnly="{{ true }}"></label>
+<label style="display: flex; flex-direction: column; gap: 6px"><span class="lab">{{v.fUnits}}</span><input class="fld" value="{{f.units}}" readOnly="{{ true }}"></label>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 12px; align-items: end">
+<label style="display: flex; flex-direction: column; gap: 6px"><span class="lab">{{v.fFrom}}</span><input type="date" class="fld" value="{{f.from}}" onChange="{{on.from}}"></label>
+<label style="display: flex; flex-direction: column; gap: 6px"><span class="lab">{{v.fTo}}</span><input type="date" class="fld" value="{{f.to}}" onChange="{{on.to}}"></label>
+<span style="{{peakChipSt}}">{{peakChip}}</span>
+</div>
+<sc-for list="{{fields}}" as="x" hint-placeholder-count="4">
+<div class="{{x.flash}}" style="display: flex; flex-direction: column; gap: 6px; border-radius: 16px">
+<label for="{{x.id}}" class="lab" style="display: flex; align-items: center; gap: 8px">{{x.label}}<sc-if value="{{x.hasGap}}" hint-placeholder-val="{{ false }}"><span class="chip" style="background: #FBE7E4; color: #9E2414">{{v.gap}}: {{x.gapTxt}}</span></sc-if></label>
+<textarea id="{{x.id}}" class="{{x.cls}}" rows="{{x.rows}}" value="{{x.val}}" onChange="{{x.on}}"></textarea>
+<sc-if value="{{x.hasIns}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{x.ins}}" as="i" hint-placeholder-count="2"><button type="button" class="ins" disabled="{{i.done}}" onClick="{{i.run}}"><span class="ai" style="padding: 1px 7px">AI</span>{{i.label}}</button></sc-for></div>
+</sc-if>
+</div>
+</sc-for>
+<sc-if value="{{isEdit}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid #E4E6E9; padding-top: 16px">
+<span class="apib" title="{{v.apiBy}}"><span style="width: 20px; height: 20px; border-radius: 6px; background: #0B0F14; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="14" height="14" viewBox="30 70 200 110" aria-hidden="true"><path d="M92 112H146C176 112 192 126 206 158" fill="none" stroke="#00A8EA" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="56" cy="112" r="16" fill="#FFFFFF"></circle></svg></span><b>DisputeLess API</b><span class="livedot"></span><span>{{v.apiOn}}</span></span>
+<button type="button" class="btn b-tint">{{v.saveDraft}}</button>
+<button type="button" class="btn b-black" onClick="{{publish}}">{{v.publish}}</button>
+</div>
+</sc-if>
+</section>
+
+<!-- Rehearsal panel (detail) -->
+<sc-if value="{{isDetail}}" hint-placeholder-val="{{ false }}">
+<aside style="position: sticky; top: 84px; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 28px; background: #EEF1F5">
+<div style="display: flex; align-items: center; gap: 10px; padding: 2px 4px"><span class="ai">AI</span><div style="display: flex; flex-direction: column; line-height: 1.3"><b style="font-size: 16px">{{v.panelT}}</b><span style="font-size: 12px; color: #6C7378">{{v.panelS}} · {{basisLine}}</span></div></div>
+<section class="card" style="gap: 14px; padding: 18px">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span class="lab">{{v.probL}}</span>
+<div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap"><span style="{{p.bigSt}}">{{p.big}}</span><sc-if value="{{p.hasDelta}}" hint-placeholder-val="{{ false }}"><span class="chip" style="background: #0066F5; color: #FFFFFF; font-size: 13px; padding: 3px 10px">{{p.delta}}</span></sc-if></div>
+<span style="font-size: 13px; color: #6C7378">{{p.sub}}</span>
+</div>
+<div class="tipw" style="display: flex; flex-direction: column; align-items: flex-end; text-align: right">
+<span style="font-size: 12px; color: #3F4144; display: inline-flex; align-items: center; gap: 4px">{{v.lossL}}<button type="button" class="tipq" aria-label="{{v.lossHow}}">i</button></span>
+<b style="font-size: 20px; font-variant-numeric: tabular-nums">{{p.loss}}</b>
+<span class="tipb" role="tooltip">{{v.lossTip}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, 9px); gap: 4px"><sc-for list="{{p.dots}}" as="d" hint-placeholder-count="200"><span style="{{d}}"></span></sc-for></div>
+<span style="font-size: 11px; color: #6C7378">{{p.dotsL}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #E4E6E9; padding-top: 12px">
+<b style="font-size: 14px">{{v.typesT}}</b>
+<sc-for list="{{p.types}}" as="t" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 12px 116px minmax(0, 1fr) 48px; gap: 8px; align-items: center; font-size: 12px">
+<span style="{{t.sw}}"></span>
+<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.name}}</span>
+<div style="position: relative; height: 10px; border-radius: 1000px; background: #F1EFEA"><div style="{{t.ghostSt}}"></div><div style="{{t.barSt}}"></div></div>
+<b style="text-align: right; font-variant-numeric: tabular-nums">{{t.pct}}</b>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: {{p.statusBg}}">
+<span style="{{p.statusSt}}">{{p.status}}</span>
+<button type="button" class="btn b-ai b-sm" disabled="{{p.recalcOff}}" onClick="{{recalc}}">{{p.recalcLabel}}</button>
+</div>
+<sc-if value="{{p.running}}" hint-placeholder-val="{{ false }}"><div style="height: 6px; border-radius: 1000px; background: #E4E6E9; overflow: hidden"><div style="{{p.progSt}}"></div></div></sc-if>
+</section>
+<section class="card" style="gap: 8px; padding: 18px">
+<b style="font-size: 15px">{{v.reduceT}}</b>
+<sc-for list="{{checks}}" as="c" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 13px"><span style="{{c.icSt}}">{{c.ic}}</span><span style="flex: 1">{{c.t}}</span><b style="{{c.sSt}}">{{c.s}}</b></div>
+</sc-for>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 8px"><span class="apib" title="{{v.apiBy}}"><span style="width: 20px; height: 20px; border-radius: 6px; background: #0B0F14; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="14" height="14" viewBox="30 70 200 110" aria-hidden="true"><path d="M92 112H146C176 112 192 126 206 158" fill="none" stroke="#00A8EA" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="56" cy="112" r="16" fill="#FFFFFF"></circle></svg></span><b>DisputeLess API</b><span class="livedot"></span><span>{{v.apiOn}}</span></span><button type="button" class="btn b-black" onClick="{{publishFinal}}">{{v.publishNow}}</button></div>
+</section>
+</aside>
+</sc-if>
+</div>
+</sc-if>
+
+<!-- Bottom sheet -->
+<sc-if value="{{isSheet}}" hint-placeholder-val="{{ false }}">
+<div style="position: fixed; inset: 0; z-index: 15; background: rgba(0,0,0,0.38)"></div>
+<div class="sheet" role="dialog" aria-modal="true" aria-label="{{v.sheetKicker}}">
+<span aria-hidden="true" style="align-self: center; width: 48px; height: 5px; border-radius: 1000px; background: #CFD3D8"></span>
+<div style="display: flex; align-items: center; gap: 8px"><span class="ai">AI</span><span style="font-size: 14px; font-weight: 700; color: #002991">{{v.sheetKicker}}</span></div>
+<sc-if value="{{sh.running}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 22px; align-items: center; padding: 26px 0 12px">
+<div style="position: relative; width: 96px; height: 96px">
+<svg class="spin" width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="40" fill="none" stroke="#E4E6E9" stroke-width="8"></circle><path d="M48 8a40 40 0 0 1 40 40" fill="none" stroke="url(#spg)" stroke-width="8" stroke-linecap="round"></path><defs><linearGradient id="spg" x1="48" y1="8" x2="88" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#002991"></stop><stop offset="1" stop-color="#60CDFF"></stop></linearGradient></defs></svg>
+<svg class="pulse" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; left: 28px; top: 28px"><path d="M4 18l5-6 4 3 7-9" fill="none" stroke="#0066F5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="20" cy="6" r="2" fill="#0066F5"></circle></svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<b style="font-size: 22px; letter-spacing: -0.3px">{{v.anT}}</b>
+<span style="font-size: 14px; color: #3F4144">{{sh.anS}}</span>
+<div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px"><sc-for list="{{sh.steps}}" as="st" hint-placeholder-count="4"><span style="{{st.st}}">{{st.ic}} {{st.t}}</span></sc-for></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 28px; padding-bottom: 8px">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, 12px); gap: 5px"><sc-for list="{{sh.cells}}" as="c" hint-placeholder-count="200"><span style="{{c}}"></span></sc-for></div>
+<div style="height: 6px; border-radius: 1000px; background: #E4E6E9; overflow: hidden"><div style="{{sh.progSt}}"></div></div>
+<span style="font-size: 12px; color: #6C7378">{{sh.runTxt}}</span>
+</div>
+</sc-if>
+<sc-if value="{{sh.ready}}" hint-placeholder-val="{{ true }}">
+<div class="rise" style="display: flex; flex-direction: column; gap: 26px">
+<b style="font-size: 24px; letter-spacing: -0.4px">{{v.resT}}</b>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-radius: 16px; border: 1px solid #E4E6E9; overflow: hidden">
+<sc-for list="{{sh.basis}}" as="b" hint-placeholder-count="4"><div style="{{b.st}}"><span style="font-size: 11px; font-weight: 700; color: #6C7378">{{b.k}}</span><b style="font-size: 14px; line-height: 1.3">{{b.v}}</b><sc-if value="{{b.hasChip}}" hint-placeholder-val="{{ false }}"><span class="chip" style="background: #E3F3FF; color: #002991; align-self: flex-start">{{b.chip}}</span></sc-if></div></sc-for>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: center; padding: 22px 24px; border-radius: 20px; background: #F6F7F9">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="lab">{{v.probL}}</span>
+<span style="font-size: 52px; font-weight: 900; letter-spacing: -1.6px; line-height: 1; color: #C4321F; font-variant-numeric: tabular-nums">{{sh.prob}}</span>
+<span style="font-size: 14px; color: #3F4144">{{sh.probSub}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, 10px); gap: 4px"><sc-for list="{{sh.dots}}" as="c" hint-placeholder-count="200"><span style="{{c}}"></span></sc-for></div>
+<div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px"><sc-for list="{{sh.legend}}" as="l" hint-placeholder-count="3"><span style="display: inline-flex; align-items: center; gap: 5px"><span style="{{l.sw}}"></span>{{l.name}} <b>{{l.pct}}</b></span></sc-for></div>
+<span style="font-size: 11px; color: #6C7378">{{sh.dotsL}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span class="lab">{{v.topT2}}</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{sh.top}}" as="t" hint-placeholder-count="3">
+<div style="border-radius: 18px; border: 1px solid #E4E6E9; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 8px"><span style="{{t.rankSt}}">{{t.rank}}</span><b style="font-size: 15px">{{t.name}}</b></div>
+<div style="display: flex; align-items: baseline; gap: 8px"><b style="font-size: 20px; color: #C4321F; font-variant-numeric: tabular-nums">{{t.pct}}</b><span style="font-size: 12px; color: #6C7378">{{t.of}}</span></div>
+<span style="font-size: 13px; color: #3F4144">{{t.why}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<sc-if value="{{sh.peak}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; border-radius: 16px; background: #F1EFEA">
+<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-.01M17 19a2 2 0 1 0 0-.01" fill="none" stroke="#002991" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+<div style="display: flex; flex-direction: column"><b style="font-size: 14px">{{v.bfT}}</b><span style="font-size: 13px; color: #3F4144">{{v.bfB}}</span></div>
+</div>
+</sc-if>
+<div style="display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="lab">{{v.fixT}}</span>
+<sc-for list="{{sh.fixes}}" as="x" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: #F5F9FF; font-size: 13px"><span style="width: 20px; height: 20px; border-radius: 50%; background: #0066F5; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; flex-shrink: 0">+</span><span style="flex: 1">{{x.t}}</span><b style="color: #0066F5; white-space: nowrap">{{x.s}}</b></div>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 16px; border: 1px solid #E4E6E9">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="lab">{{v.lossL}}</span><b style="font-size: 20px; font-variant-numeric: tabular-nums">{{sh.loss}}</b></div>
+<span style="font-size: 12px; font-weight: 700; color: #3F4144">{{v.lossHow}}</span>
+<span style="font-size: 13px; color: #3F4144; line-height: 1.5">{{v.lossTip}}</span>
+</div>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; border-top: 1px solid #E4E6E9; padding-top: 16px">
+<button type="button" class="btn b-tint" onClick="{{publishAnyway}}">{{v.publishAnyway}}</button>
+<button type="button" class="btn b-ai" onClick="{{toDetail}}">{{v.seeDetail}} →</button>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<!-- Done -->
+<sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+<div style="max-width: 720px; margin: 48px auto; padding: 0 24px">
+<section class="card rise" style="align-items: center; text-align: center; gap: 14px; padding: 36px">
+<span style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900">✓</span>
+<b style="font-size: 28px; letter-spacing: -0.4px">{{v.doneT}}</b>
+<span style="font-size: 15px; color: #3F4144">{{v.doneS}}</span>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 22px; border-radius: 18px; background: #F5F9FF; width: 100%">
+<b style="{{dn.st}}">{{dn.loss}}</b>
+<span style="font-size: 14px; color: #3F4144">{{dn.disp}}</span>
+</div>
+<span style="font-size: 13px; color: #3F4144">{{v.doneNote}}</span>
+<div style="display: flex; gap: 10px"><button type="button" class="btn b-tint" onClick="{{backEdit}}">{{v.backEdit}}</button><button type="button" class="btn b-black" onClick="{{restart}}">{{v.restart}}</button></div>
+</section>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+var LANG = 'en';
+var LI = {
+en: {
+  crumb: 'Add a product', store: 'Knot & Co.', admin: 'Store admin', search: 'Search orders, products…', apiOn: 'Pre-publish check on', apiBy: 'Uses your PayPal dispute and sales data', nav: { home: 'Home', orders: 'Orders', products: 'Products', customers: 'Customers', analytics: 'Analytics', marketing: 'Marketing', apps: 'Apps', payments: 'PayPal payments' }, addHint: 'JPG or PNG', yours: 'Your photo', rehOn: 'Rehearsal on',
+  photos: 'Photos', photo: ['Front', 'Back', 'Detail', 'Colors'], dayPhoto: 'Colors · AI', addPhoto: 'Add photo',
+  fTitle: 'Product name', fPrice: 'Price', fUnits: 'Units for sale', fDesc: 'Description', fSize: 'Sizes', fShip: 'Shipping', fRet: 'Returns',
+  init: { title: 'Ribbed Wool Crewneck, Ivory', price: '$89', units: '200',
+    desc: 'Chunky ribbed knit in a soft wool blend. Relaxed drop-shoulder fit. Also in Oatmeal and Charcoal.',
+    size: 'S / M / L', ship: 'Ships worldwide.', ret: '' },
+  saveDraft: 'Save draft', publish: 'Publish product',
+  running: (n) => 'Rehearsing Black Friday… ' + n + ' / 500 seasons',
+  sheetKicker: 'DisputeLess API · quick rehearsal before you publish', sheetHead: (l, d) => 'Expected loss ' + l + ' over Black Friday · ~' + d + ' disputes',
+  sheetSub: (u, lo, hi) => u + ' units · sale Nov 27 · most seasons ' + lo + '–' + hi,
+  topT: 'Likely disputes', share: (x) => x + '% of loss',
+  types: { A1: 'Not received', A2: 'Stuck at customs', B1: 'Color looks different', B2: 'Doesn’t fit', X: 'Unauthorized payment' },
+  why: { A1: 'No delivery time or tracking promise', A2: 'No customs ID note for Korean buyers', B1: 'Ivory and Oatmeal look alike on screen — no color note', B2: 'Sizes have no measurements', X: 'Normal for high-price items' },
+  bfT: 'Black Friday shipping', bfB: 'Peak season adds 3–5 days in transit. Customs holds rise ~40% for Korea.',
+  fixT: 'What to fix', saves: (x) => 'saves ~' + x,
+  fixes: {
+    size: { t: 'Add measurements in cm', field: 'size', txt: 'Measurements (cm) — S: chest 112, length 64, sleeve 74 · M: chest 118, length 66, sleeve 76 · L: chest 124, length 68, sleeve 78. Oversized fit: size down for a closer fit.' },
+    color: { t: 'Add a color note', field: 'desc', txt: 'Color note: Ivory is a warm off-white, not pure white. The last photo shows Ivory, Oatmeal and Charcoal side by side.' },
+    ship: { t: 'State delivery time + tracking', field: 'ship', txt: 'Ships in 1–2 business days with tracking. Delivery: US 4–7 days, EU/Asia 7–12 days.' },
+    customs: { t: 'Ask Korean buyers for a customs ID', field: 'ship', txt: 'Korea: please enter your personal customs ID (PCCC) at checkout to avoid customs holds.' },
+    bf: { t: 'Warn about peak-season delays', field: 'ship', txt: 'Black Friday week: allow 3–5 extra days. Order by Dec 10 for holiday delivery.' },
+    ret: { t: 'Add a return policy', field: 'ret', txt: 'Free returns within 30 days if unworn. Size exchanges available.' }
+  },
+  seeDetail: 'See details and fix', publishAnyway: 'Publish anyway', close: 'Close',
+  detailT: 'Fix with rehearsal', detailS: 'Edit on the left. Recalculate to see the new risk.',
+  insert: 'Insert', inserted: 'Added ✓', gap: 'Missing',
+  panelT: 'Black Friday rehearsal', lossNow: 'Expected loss', before: 'Before', changed: 'Changed — recalculate', recalc: 'Recalculate', recalcing: 'Recalculating…', upToDate: 'Up to date',
+  checklist: 'Checklist', publishNow: 'Publish product',
+  doneT: 'Published', doneS: 'Ribbed Wool Crewneck, Ivory is live.', doneLoss: (a, b, p) => 'Expected loss ' + a + ' → ' + b + ' (−' + p + '%)', doneDisp: (a, b) => 'Disputes ~' + a + ' → ~' + b,
+  doneNote: 'Added to your Black Friday rehearsal. DisputeLess will keep checking it.', restart: 'Replay this scene', backEdit: 'Back to editor'
+},
+ko: {
+  crumb: '상품 등록하기', store: 'Knot & Co.', admin: '스토어 관리자', search: '주문, 상품 검색…', apiOn: '등록 전 검수 적용 중', apiBy: 'PayPal 분쟁·판매 데이터 사용', nav: { home: '홈', orders: '주문', products: '상품', customers: '고객', analytics: '분석', marketing: '마케팅', apps: '앱', payments: 'PayPal 결제' }, addHint: 'JPG, PNG', yours: '내 사진', rehOn: '리허설 켜짐',
+  photos: '사진', photo: ['앞면', '뒷면', '디테일', '색상'], dayPhoto: '색상 비교 · AI', addPhoto: '사진 추가',
+  fTitle: '상품명', fPrice: '가격', fUnits: '판매 수량', fDesc: '상품 설명', fSize: '사이즈', fShip: '배송', fRet: '반품',
+  init: { title: '리브 울 크루넥 니트 (아이보리)', price: '$89', units: '200',
+    desc: '부드러운 울 혼방의 도톰한 리브 니트예요. 드롭숄더로 여유 있는 핏이에요. 오트밀, 차콜 색상도 있어요.',
+    size: 'S / M / L', ship: '전 세계 배송.', ret: '' },
+  saveDraft: '임시 저장', publish: '상품 등록',
+  running: (n) => '블랙프라이데이 리허설 중… 시즌 ' + n + ' / 500',
+  sheetKicker: 'DisputeLess API · 등록 전 빠른 리허설', sheetHead: (l, d) => '블랙프라이데이 예상 손실 ' + l + ' · 분쟁 ~' + d + '건',
+  sheetSub: (u, lo, hi) => u + '장 · 세일 11/27 · 대부분 ' + lo + '~' + hi,
+  topT: '예상 분쟁 유형', share: (x) => '손실의 ' + x + '%',
+  types: { A1: '미수령', A2: '통관 보류', B1: '색이 달라요', B2: '사이즈 안 맞음', X: '도용 결제' },
+  why: { A1: '배송 기간·추적 안내가 없어요', A2: '한국 구매자 통관번호 안내가 없어요', B1: '아이보리와 오트밀이 화면에서 비슷해 보여요 — 색상 안내 없음', B2: '사이즈에 실측 정보가 없어요', X: '고가 상품의 일반적인 수준' },
+  bfT: '블랙프라이데이 배송', bfB: '성수기엔 운송이 3~5일 늘어나요. 한국 통관 보류도 약 40% 늘어요.',
+  fixT: '고칠 점', saves: (x) => '절감 ~' + x,
+  fixes: {
+    size: { t: 'cm 실측 추가', field: 'size', txt: '실측(cm) — S: 가슴 112, 총장 64, 소매 74 · M: 가슴 118, 총장 66, 소매 76 · L: 가슴 124, 총장 68, 소매 78. 오버핏이라 딱 맞게 입으려면 한 치수 작게 추천해요.' },
+    color: { t: '색상 안내 추가', field: 'desc', txt: '색상 안내: 아이보리는 순백색이 아닌 따뜻한 미색이에요. 마지막 사진에서 아이보리·오트밀·차콜을 나란히 비교할 수 있어요.' },
+    ship: { t: '배송 기간 + 추적 안내', field: 'ship', txt: '결제 후 1~2영업일 내 추적 가능하게 발송. 미국 4~7일, 유럽·아시아 7~12일.' },
+    customs: { t: '한국 구매자 통관번호 안내', field: 'ship', txt: '한국: 통관 보류를 막으려면 결제 시 개인통관고유부호를 입력해 주세요.' },
+    bf: { t: '성수기 지연 안내', field: 'ship', txt: '블랙프라이데이 주간은 3~5일 더 걸려요. 연말 도착은 12/10까지 주문해 주세요.' },
+    ret: { t: '반품 정책 추가', field: 'ret', txt: '미착용 시 30일 내 무료 반품. 사이즈 교환 가능.' }
+  },
+  seeDetail: '자세히 보고 고치기', publishAnyway: '그대로 등록', close: '닫기',
+  detailT: '리허설 보면서 고치기', detailS: '왼쪽에서 고치고, 다시 계산하면 위험이 바뀌어요.',
+  insert: '넣기', inserted: '추가됨 ✓', gap: '빠짐',
+  panelT: '블랙프라이데이 리허설', lossNow: '예상 손실', before: '이전', changed: '변경됨 — 다시 계산', recalc: '다시 계산', recalcing: '계산 중…', upToDate: '최신',
+  checklist: '체크리스트', publishNow: '상품 등록',
+  doneT: '등록 완료', doneS: '리브 울 크루넥 니트 (아이보리)가 판매 중이에요.', doneLoss: (a, b, p) => '예상 손실 ' + a + ' → ' + b + ' (−' + p + '%)', doneDisp: (a, b) => '분쟁 ~' + a + '건 → ~' + b + '건',
+  doneNote: '블랙프라이데이 리허설에 추가했어요. DisputeLess가 계속 점검해요.', restart: '이 씬 다시 보기', backEdit: '편집으로 돌아가기'
+}
+};
+Object.assign(LI.en, {
+  units: (n) => n + ' units', fFrom: 'Sale starts', fTo: 'Sale ends', peakOn: 'Includes Black Friday week', peakOff: 'Regular season',
+  init2: { from: '2026-11-20', to: '2026-12-02' },
+  anT: 'Analyzing dispute risk…', anS: (p) => 'Checking the product details you entered against your sale period (' + p + ').',
+  anSteps: ['Reading sizes, description and shipping', 'Applying the sale period', 'Comparing with your PayPal dispute history', 'Simulating 500 sale periods'],
+  resT: 'Product analysis · expected dispute risk', basisT: 'Analysis basis',
+  basis: { units: 'Units', period: 'Sale period', price: 'Price', data: 'Data' }, dataV: 'PayPal disputes & sales + 500 simulations',
+  probL: 'Chance of a dispute per order', probSub: (n, d) => 'About ' + d + ' disputes if you sell ' + n,
+  dotsL: (n) => n + ' units · each dot is one sale', perOrder: (p) => p + ' per order',
+  lossL: 'Expected loss from disputes', lossHow: 'How we estimate it', lossTip: 'For each likely dispute, you either refund (you lose the price) or contest it (if you lose, the price plus an $8 fee). We play this out over 500 simulated sale periods and take the average.',
+  topT2: 'Main dispute types', probOf: (p) => p + ' chance', ofUnits: (d, n) => '~' + d + ' of ' + n,
+  probCut: (x) => 'chance −' + x + ' pts', detailT: 'Product details',
+  panelT: 'Dispute risk from the details you entered', panelS: 'Rehearsal result', reduceT: 'To reduce disputes', typesT: 'Main dispute types',
+  doneProb: (a, b) => 'Chance of a dispute ' + a + ' → ' + b
+});
+Object.assign(LI.ko, {
+  units: (n) => n + '장', fFrom: '판매 시작', fTo: '판매 종료', peakOn: '블랙프라이데이 주간 포함', peakOff: '일반 시즌',
+  init2: { from: '2026-11-20', to: '2026-12-02' },
+  anT: '분쟁 리스크 분석 중…', anS: (p) => '입력한 상품 정보와 판매 기간(' + p + ')을 바탕으로 분쟁 리스크를 검토하고 있어요.',
+  anSteps: ['사이즈·설명·배송 정보 읽는 중', '판매 기간 반영 중', 'PayPal 분쟁 이력과 비교 중', '판매 기간 500회 시뮬레이션 중'],
+  resT: '상품 분석 결과 · 예상 분쟁 리스크', basisT: '분석 기준',
+  basis: { units: '판매 수량', period: '판매 기간', price: '가격', data: '데이터' }, dataV: 'PayPal 분쟁·판매 이력 + 시뮬레이션 500회',
+  probL: '주문당 분쟁 확률', probSub: (n, d) => n + '장 팔면 분쟁 약 ' + d + '건',
+  dotsL: (n) => n + '장 · 점 하나 = 판매 1건', perOrder: (p) => '주문당 ' + p,
+  lossL: '분쟁으로 인한 예상 손실액', lossHow: '계산 방법', lossTip: '분쟁이 생기면 환불하거나(상품 가격만큼 손해) 다투게 돼요(지면 가격 + 수수료 $8 손해). 이런 판매 기간을 500번 돌려 보고 평균을 냈어요.',
+  topT2: '주요 분쟁 유형', probOf: (p) => '분쟁 확률 ' + p, ofUnits: (d, n) => n + '장 중 ~' + d + '건',
+  probCut: (x) => '확률 −' + x + '%p', detailT: '상품 정보',
+  panelT: '입력한 상품 정보 기준 분쟁 리스크', panelS: '리허설 결과', reduceT: '분쟁을 줄이려면?', typesT: '주요 분쟁 유형',
+  doneProb: (a, b) => '분쟁 확률 ' + a + ' → ' + b
+});
+LI.en.fixes = {
+  size: { t: 'Add measurements in cm', field: 'size', txt: '[Measurements · cm, laid flat]\n• S — chest 112 / length 64 / sleeve 74 / shoulder 58\n• M — chest 118 / length 66 / sleeve 76 / shoulder 60\n• L — chest 124 / length 68 / sleeve 78 / shoulder 62\n\n[Fit guide]\n• Oversized, drop-shoulder fit. For a closer fit, size down one.\n• Model: 168 cm / 52 kg, wearing S.\n• Hand-measured; allow 1–2 cm difference.' },
+  color: { t: 'Add a color note', field: 'desc', txt: '[Color]\n• Ivory is a warm off-white, not pure white.\n• It can look slightly yellow under warm indoor light.\n• The last photo shows Ivory, Oatmeal and Charcoal side by side.\n\n[Material & feel]\n• 70% wool, 30% nylon. Medium-heavy chunky rib knit.\n• Soft, with little itch. A little light shedding is normal at first.\n\n[Care]\n• Hand wash cold or dry clean. Dry flat. Do not tumble dry.' },
+  ship: { t: 'State delivery time + tracking', field: 'ship', txt: '[Shipping]\n• Ships within 1–2 business days, with tracking for every order.\n• US 4–7 days · EU 7–10 days · Asia 7–12 days.\n• Tracking is sent by email and shown in your PayPal activity.' },
+  customs: { t: 'Ask Korean buyers for a customs ID', field: 'ship', txt: '[Korea · customs]\n• Please enter your personal customs ID (PCCC) at checkout.\n• Without it, customs can hold the parcel for 1–2 weeks.' },
+  bf: { t: 'Warn about peak-season delays', field: 'ship', txt: '[Black Friday week]\n• Carriers are busy: allow 3–5 extra days.\n• Order by Dec 10 for holiday delivery.' },
+  ret: { t: 'Add a return policy', field: 'ret', txt: '[Returns & exchanges]\n• Return within 30 days of delivery if unworn, unwashed and with tags.\n• Size exchanges are free (one per order); we send the new size once the return is scanned.\n• Refunds go back to your PayPal account within 3–5 business days after we receive the item.\n• Wrong or damaged item: we cover return shipping. Change of mind: return shipping is paid by the buyer.\n• How to start: reply to your order email with your order number and a photo.' }
+};
+LI.ko.fixes = {
+  size: { t: 'cm 실측 추가', field: 'size', txt: '[실측 · cm, 단면 기준]\n• S — 가슴 112 / 총장 64 / 소매 74 / 어깨 58\n• M — 가슴 118 / 총장 66 / 소매 76 / 어깨 60\n• L — 가슴 124 / 총장 68 / 소매 78 / 어깨 62\n\n[핏 가이드]\n• 드롭숄더 오버핏이에요. 딱 맞게 입으려면 한 치수 작게 추천해요.\n• 모델: 168cm / 52kg, S 착용.\n• 손으로 잰 치수라 1~2cm 차이가 있을 수 있어요.' },
+  color: { t: '색상 안내 추가', field: 'desc', txt: '[색상]\n• 아이보리는 순백색이 아닌 따뜻한 미색이에요.\n• 노란빛 실내 조명에서는 조금 더 누렇게 보일 수 있어요.\n• 마지막 사진에서 아이보리·오트밀·차콜을 나란히 비교할 수 있어요.\n\n[소재 · 촉감]\n• 울 70%, 나일론 30%. 도톰한 중간 두께의 리브 니트예요.\n• 부드럽고 까슬거림이 적어요. 처음엔 잔털이 조금 빠질 수 있어요.\n\n[세탁]\n• 찬물 손세탁 또는 드라이클리닝. 뉘어서 건조, 건조기 사용 금지.' },
+  ship: { t: '배송 기간 + 추적 안내', field: 'ship', txt: '[배송]\n• 결제 후 1~2영업일 안에 발송하고, 모든 주문에 추적번호를 드려요.\n• 미국 4~7일 · 유럽 7~10일 · 아시아 7~12일.\n• 추적번호는 이메일과 PayPal 활동 내역에서 볼 수 있어요.' },
+  customs: { t: '한국 구매자 통관번호 안내', field: 'ship', txt: '[한국 · 통관]\n• 결제 시 개인통관고유부호를 꼭 입력해 주세요.\n• 번호가 없으면 세관에서 1~2주 보류될 수 있어요.' },
+  bf: { t: '성수기 지연 안내', field: 'ship', txt: '[블랙프라이데이 주간]\n• 택배사 물량이 많아 3~5일 더 걸릴 수 있어요.\n• 연말 도착을 원하시면 12/10까지 주문해 주세요.' },
+  ret: { t: '반품 정책 추가', field: 'ret', txt: '[반품 · 교환]\n• 받은 날부터 30일 안에, 착용·세탁하지 않고 택이 있으면 반품할 수 있어요.\n• 사이즈 교환은 주문당 1회 무료예요. 반품 송장이 찍히면 새 사이즈를 바로 보내드려요.\n• 환불은 상품을 받은 뒤 3~5영업일 안에 PayPal 계정으로 돌아가요.\n• 잘못 왔거나 불량이면 반품 배송비는 저희가 내요. 단순 변심은 구매자 부담이에요.\n• 신청 방법: 주문 확인 메일에 답장으로 주문번호와 사진을 보내주세요.' }
+};
+LI.en.why.A2 = 'No customs / tax ID note for international buyers';
+LI.ko.why.A2 = '해외 구매자 통관(세관) 번호 안내가 없어요';
+LI.en.bfB = 'Peak season adds 3–5 days in transit, and customs holds on international orders rise.';
+LI.ko.bfB = '성수기엔 운송이 3~5일 늘고, 해외 주문의 세관 보류도 늘어나요.';
+LI.en.fixes.customs = { t: 'Ask international buyers for a customs ID', field: 'ship', txt: '[International orders · customs]\n• Some countries need a personal customs or tax ID to clear the parcel (e.g. Korea: PCCC, Brazil: CPF, Chile: RUT).\n• Please enter it in the "Customs / tax ID" field at checkout.\n• Without it, customs can hold the parcel for 1–2 weeks or return it.\n• Import duties and taxes, if any, are paid by the buyer on delivery.' };
+LI.ko.fixes.customs = { t: '해외 구매자 통관번호 안내', field: 'ship', txt: '[해외 주문 · 통관]\n• 일부 국가는 통관을 위해 개인 통관·세금 번호가 필요해요 (예: 한국 개인통관고유부호, 브라질 CPF, 칠레 RUT).\n• 결제 시 "통관/세금 번호" 칸에 꼭 입력해 주세요.\n• 번호가 없으면 세관에서 1~2주 보류되거나 반송될 수 있어요.\n• 관세·부가세가 있을 경우 수령 시 구매자가 부담해요.' };
+
+// ---- Listing rehearsal: 500 Black Friday seasons for one new listing (common random numbers) ----
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var LK = ['A1', 'A2', 'B1', 'B2', 'X'], L_RUNS = 500, L_FEE = 8, L_T = 2;
+var L_BASE = { A1: 0.006, A2: 0.007, B1: 0.008, B2: 0.016, X: 0.004 };
+var L_PEAK = { A1: 1.25, A2: 1.4 };
+var LRX = {
+  size: /\d+\s*(cm|in)\b|chest|length|가슴|총장|소매|어깨/i,
+  color: /daylight|indoor|natural light|color note|off-white|자연광|실내|색상 안내|미색/i,
+  ship: /\d\s*[–\-~]\s*\d+\s*(business\s*)?(days|일)|tracking|영업일|추적/i,
+  customs: /customs id|tax id|pccc|통관번호|세금 번호|개인통관고유부호/i,
+  bf: /black friday|peak|holiday|블랙프라이데이|성수기/i,
+  ret: /return|반품|교환/i
+};
+function lFeatures(f, dayPhoto) {
+  return { size: LRX.size.test(f.size), color: LRX.color.test(f.desc) || !!dayPhoto, ship: LRX.ship.test(f.ship),
+    customs: LRX.customs.test(f.ship), bf: LRX.bf.test(f.ship), ret: LRX.ret.test(f.ret) };
+}
+function lRates(x, peak) {
+  var pk = peak === false ? { A1: 1, A2: 1 } : L_PEAK;
+  return { A1: L_BASE.A1 * pk.A1 * (x.ship ? 0.55 : 1) * (x.bf ? 0.8 : 1), A2: L_BASE.A2 * pk.A2 * (x.customs ? 0.45 : 1) * (x.bf ? 0.85 : 1),
+    B1: L_BASE.B1 * (x.color ? 0.45 : 1), B2: L_BASE.B2 * (x.size ? 0.4 : 1) * (x.ret ? 0.85 : 1), X: L_BASE.X };
+}
+function lWin(k, x) { return { A1: x.ship ? 0.6 : 0.15, A2: 0.3, B1: x.color ? 0.45 : 0.3, B2: x.size ? 0.5 : 0.35, X: 0.1 }[k]; }
+var L_DRAWS = {};
+function lDraws(n) {
+  if (L_DRAWS[n]) return L_DRAWS[n];
+  var r = mulberry32(4242 + n), N = L_RUNS * n * LK.length, u = new Float32Array(N), v = new Float32Array(N), w = new Float32Array(N);
+  for (var i = 0; i < N; i++) { u[i] = r(); v[i] = r(); w[i] = r(); }
+  return L_DRAWS[n] = { u: u, v: v, w: w };
+}
+var L_CACHE = {};
+function lSimulate(x, price, n, peak) {
+  var key = ['size','color','ship','customs','bf','ret'].map(function (k) { return x[k] ? 1 : 0; }).join('') + '|' + price + '|' + n + '|' + (peak === false ? 0 : 1);
+  if (L_CACHE[key]) return L_CACHE[key];
+  var d = lDraws(n), q = lRates(x, peak), runs = [], disp = 0, lossK = {}, cntK = {};
+  LK.forEach(function (k) { lossK[k] = 0; cntK[k] = 0; });
+  for (var run = 0; run < L_RUNS; run++) {
+    var L = 0;
+    for (var o = 0; o < n; o++) for (var j = 0; j < LK.length; j++) {
+      var i = (run * n + o) * LK.length + j, k = LK[j];
+      if (d.u[i] < q[k]) {
+        var l = d.v[i] < 0.5 ? price + L_T : (d.w[i] < lWin(k, x) ? L_T : price + L_FEE + L_T);
+        disp++; L += l; lossK[k] += l; cntK[k]++; break;
+      }
+    }
+    runs.push(L);
+  }
+  var s = runs.slice().sort(function (a, b) { return a - b; }), mean = s.reduce(function (a, b) { return a + b; }, 0) / L_RUNS;
+  LK.forEach(function (k) { lossK[k] /= L_RUNS; cntK[k] /= L_RUNS; });
+  return L_CACHE[key] = { mean: mean, p10: s[Math.floor(L_RUNS * 0.1)], p90: s[Math.floor(L_RUNS * 0.9)], disputes: disp / L_RUNS, lossK: lossK, cntK: cntK };
+}
+
+var FIXK = ['size', 'color', 'ship', 'customs', 'bf', 'ret'];
+var NONEF = { size: false, color: false, ship: false, customs: false, bf: false, ret: false };
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = this.fresh();
+  }
+  fresh() { return { screen: 'edit', f: Object.assign({}, LI[LANG].init, LI[LANG].init2), dayPhoto: false, prog: 0, calcF: null, baseF: null, flash: {}, fl: 0, rprog: 0, published: null }; }
+  componentWillUnmount() { if (this.iv) clearInterval(this.iv); }
+  feats() { return lFeatures(this.state.f, this.state.dayPhoto); }
+  peak() { const f = this.state.f; return !!(f.from && f.to && f.from <= '2026-12-01' && f.to >= '2026-11-24'); }
+  periodTxt() { const f = this.state.f, d = (x) => { if (!x) return '–'; const p = x.split('-'); return LANG === 'ko' ? (+p[1]) + '/' + (+p[2]) : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1] - 1] + ' ' + (+p[2]); }; return d(f.from) + '–' + d(f.to); }
+  run(onDone) {
+    if (this.iv) clearInterval(this.iv);
+    let n = 0;
+    this.iv = setInterval(() => { n = Math.min(500, n + 5); this.setState({ prog: n }); if (n >= 500) { clearInterval(this.iv); this.iv = null; onDone(); } }, 70);
+  }
+  setField(k, val) { const f = Object.assign({}, this.state.f); f[k] = val; this.setState({ f: f }); }
+  insert(fx) {
+    const v = LI[LANG], d = v.fixes[fx], f = Object.assign({}, this.state.f);
+    f[d.field] = (f[d.field].trim() + (f[d.field].trim() ? '\n\n' : '') + d.txt).trim();
+    const fl = this.state.fl + 1, flash = {}; flash[d.field] = fl;
+    this.setState({ f: f, flash: flash, fl: fl });
+  }
+  renderVals() {
+    const v = LI[LANG], s = this.state;
+    const $ = (x) => '$' + Math.round(x), PRICE = 89, N = 200;
+    const pct = (x) => (Math.round(x * 1000) / 10).toFixed(1) + '%';
+    const x = this.feats(), peak = this.peak();
+    const per = this.periodTxt();
+    const base = lSimulate(NONEF, PRICE, N, s.basePeak === undefined ? peak : s.basePeak);
+    const cur = s.calcF ? lSimulate(s.calcF, PRICE, N, s.calcPeak) : base;
+    const dirty = !!s.calcF && (FIXK.some((k) => !!x[k] !== !!s.calcF[k]) || s.calcPeak !== peak);
+    const isEdit = s.screen === 'edit' || s.screen === 'sheet', isDetail = s.screen === 'detail';
+    const TC = { B2: '#C4321F', A2: '#E8796B', A1: '#7A1A0F', B1: '#F2B8AF', X: '#9AA0A6' };
+    const sw = (k) => 'width:10px;height:10px;border-radius:3px;display:inline-block;background:' + TC[k];
+
+    const IMG = ['./assets/19f4fad1ac52cbefe5f28dcea6270615.jpg', './assets/c10951a163d450b236df611153cc90f7.jpg', './assets/9252d3e05ae60e91db01ccd3ea270935.jpg', './assets/570f3db88a890be27f042dd247d5d39d.jpg'];
+    const photos = [0, 1, 2, 3].map((i) => ({ label: v.photo[i], src: IMG[i], st: '' }));
+    (s.userPhotos || []).forEach((u) => photos.push({ label: v.yours, src: u, st: '' }));
+
+    const gapsFor = { desc: ['color'], size: ['size'], ship: ['ship', 'customs', 'bf'], ret: ['ret'] };
+    const fields = [['desc', v.fDesc, 4], ['size', v.fSize, 3], ['ship', v.fShip, 4], ['ret', v.fRet, 3]].map((q) => {
+      const k = q[0], miss = gapsFor[k].filter((g) => !x[g] && !(g === 'bf' && !peak));
+      const showGap = isDetail && miss.length > 0;
+      return { id: 'ls-' + k, label: q[1], val: s.f[k], rows: String(q[2]), cls: 'fld' + (showGap ? ' gap' : ''), on: (e) => this.setField(k, e && e.target ? e.target.value : ''),
+        hasGap: showGap, gapTxt: miss.map((g) => v.fixes[g].t).join(' · '), hasIns: showGap,
+        ins: miss.map((g) => ({ label: v.fixes[g].t, done: false, run: () => this.insert(g) })),
+        flash: s.flash[k] ? (s.flash[k] % 2 ? 'flA' : 'flB') : '' };
+    });
+
+    // dots: one per unit, disputed ones colored by type (expected counts, rounded)
+    const dotsFor = (res, gap) => {
+      const tot = Math.round(res.disputes), ks = LK.map((k) => ({ k: k, e: res.cntK[k], f: Math.floor(res.cntK[k]) }));
+      let left = tot - ks.reduce((a, q) => a + q.f, 0);
+      ks.slice().sort((a, b) => (b.e - b.f) - (a.e - a.f)).forEach((q) => { if (left > 0) { q.f++; left--; } });
+      const seq = []; ks.slice().sort((a, b) => b.e - a.e).forEach((q) => { for (let i = 0; i < q.f; i++) seq.push(q.k); });
+      const at = {}; seq.forEach((k, j) => { at[Math.floor((j + 0.5) * N / Math.max(1, seq.length))] = k; });
+      return Array.from({ length: N }, (_, i) => 'width:100%;aspect-ratio:1;border-radius:3px;transition:background-color .4s ease;background:' + (at[i] ? TC[at[i]] : (gap || '#D9DCE0')));
+    };
+    const order = LK.slice().sort((a, b) => base.cntK[b] - base.cntK[a]);
+
+    // sheet
+    const ready = s.screen === 'sheet' && s.prog >= 500;
+    const step = Math.min(3, Math.floor(s.prog / 125));
+    const gainP = (k, from, pk) => { const t = Object.assign({}, from); t[k] = true; return from[k] ? 0 : (lSimulate(from, PRICE, N, pk).disputes - lSimulate(t, PRICE, N, pk).disputes) / N * 100; };
+    const fixKeys = FIXK.filter((k) => !(k === 'bf' && !peak));
+    const sfixes = fixKeys.map((k) => ({ k: k, g: gainP(k, NONEF, peak) })).sort((a, b) => b.g - a.g).slice(0, 4).map((q) => ({ t: v.fixes[q.k].t, s: v.probCut(q.g.toFixed(1)) }));
+    const bst = (i) => 'display:flex;flex-direction:column;gap:2px;padding:10px 14px;' + (i ? 'border-left:1px solid #E4E6E9' : '');
+    const sh = {
+      running: s.screen === 'sheet' && !ready, ready: ready, anS: v.anS(per + (peak ? ' · ' + v.peakOn : '')),
+      steps: v.anSteps.map((t, i) => ({ t: t, ic: i < step ? '✓' : i === step ? '●' : '○', st: 'font-size:13px;font-weight:' + (i === step ? '700' : '400') + ';color:' + (i < step ? '#0066F5' : i === step ? '#000000' : '#9AA0A6') })),
+      runTxt: v.running(s.prog), progSt: 'height:100%;background:linear-gradient(90deg,#002991,#0066F5,#60CDFF);transition:width .07s linear;width:' + (s.prog / 5) + '%',
+      cells: Array.from({ length: N }, (_, i) => 'width:100%;aspect-ratio:1;border-radius:3px;transition:background-color .3s ease,transform .3s ease;' + (i / N * 500 < s.prog ? 'background:#9AA0A6;transform:scale(1)' : 'background:#EEF0F2;transform:scale(.7)')),
+      basis: [[v.basis.units, v.units(N)], [v.basis.period, per, peak ? v.peakOn : ''], [v.basis.price, '$' + PRICE], [v.basis.data, v.dataV]].map((b, i) => ({ k: b[0], v: b[1], hasChip: !!b[2], chip: b[2] || '', st: bst(i) })),
+      prob: pct(base.disputes / N), probSub: v.probSub(N, base.disputes.toFixed(1)),
+      dots: dotsFor(base), dotsL: v.dotsL(N),
+      legend: order.slice(0, 3).map((k) => ({ name: v.types[k], pct: pct(base.cntK[k] / N), sw: sw(k) })),
+      top: order.slice(0, 3).map((k, i) => ({ rank: String(i + 1), name: v.types[k], why: v.why[k], pct: pct(base.cntK[k] / N), of: v.ofUnits(base.cntK[k].toFixed(1), N),
+        rankSt: 'width:26px;height:26px;border-radius:50%;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;background:' + TC[k] })),
+      peak: peak, loss: $(base.mean), fixes: sfixes
+    };
+
+    // panel
+    const running = isDetail && s.rprog > 0 && s.rprog < 500;
+    const maxP = Math.max.apply(null, LK.map((k) => base.cntK[k]));
+    const p = {
+      big: pct(cur.disputes / N), bigSt: 'font-size:46px;font-weight:900;letter-spacing:-1.3px;line-height:1;font-variant-numeric:tabular-nums;color:' + (cur.disputes < base.disputes - 0.05 ? '#002991' : '#C4321F'),
+      hasDelta: cur.disputes < base.disputes - 0.05, delta: '−' + ((base.disputes - cur.disputes) / N * 100).toFixed(1) + (LANG === 'ko' ? '%p' : ' pts'),
+      sub: v.probSub(N, cur.disputes.toFixed(1)) + ' · ' + v.before + ' ' + pct(base.disputes / N),
+      loss: $(cur.mean), dots: dotsFor(cur), dotsL: v.dotsL(N),
+      types: order.map((k) => ({ name: v.types[k], pct: pct(cur.cntK[k] / N), sw: sw(k),
+        ghostSt: 'position:absolute;left:0;top:0;bottom:0;border-radius:1000px;background:#F2B8AF;opacity:.5;width:' + (base.cntK[k] / maxP * 100).toFixed(1) + '%',
+        barSt: 'position:absolute;left:0;top:0;bottom:0;border-radius:1000px;transition:width .5s ease;background:' + (cur.cntK[k] < base.cntK[k] - 0.02 ? '#0066F5' : TC[k]) + ';width:' + (cur.cntK[k] / maxP * 100).toFixed(1) + '%' })),
+      status: running ? v.recalcing : (dirty ? v.changed : v.upToDate), statusBg: dirty ? '#FFFBFA' : '#F5F9FF',
+      statusSt: 'font-size:13px;font-weight:700;color:' + (dirty ? '#9E2414' : '#002991'),
+      recalcOff: !dirty || running, recalcLabel: running ? v.recalcing : v.recalc, running: running,
+      progSt: 'height:100%;background:linear-gradient(90deg,#002991,#0066F5,#60CDFF);width:' + (s.rprog / 5) + '%'
+    };
+    const checks = fixKeys.map((k) => ({ t: v.fixes[k].t, ic: x[k] ? '✓' : '○', icSt: 'width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;' + (x[k] ? 'background:#0066F5;color:#FFFFFF' : 'background:#FFFFFF;color:#9AA0A6;box-shadow:inset 0 0 0 2px #CFD3D8'),
+      s: x[k] ? (LANG === 'ko' ? '반영' : 'done') : v.probCut(gainP(k, x, peak).toFixed(1)), sSt: 'white-space:nowrap;color:' + (x[k] ? '#002991' : '#0066F5') }));
+
+    // done
+    const pub = s.published ? lSimulate(s.published, PRICE, N, peak) : base;
+    const improved = pub.disputes < base.disputes - 0.05;
+    const dn = { loss: v.doneProb(pct(base.disputes / N), pct(pub.disputes / N)), disp: v.lossL + ' ' + $(base.mean) + ' → ' + $(pub.mean) + ' · ' + v.doneDisp(base.disputes.toFixed(1), pub.disputes.toFixed(1)), st: 'font-size:20px;color:' + (improved ? '#002991' : '#C4321F') };
+
+    return {
+      v: v, f: s.f, photos: photos, fields: fields,
+      addPhoto: (e) => { const fl = e && e.target && e.target.files && e.target.files[0]; if (!fl) return; let u = ''; try { u = URL.createObjectURL(fl); } catch (err) { return; } this.setState({ userPhotos: (this.state.userPhotos || []).concat([u]) }); },
+      on: { title: (e) => this.setField('title', e && e.target ? e.target.value : ''), from: (e) => this.setField('from', e && e.target ? e.target.value : s.f.from), to: (e) => this.setField('to', e && e.target ? e.target.value : s.f.to) },
+      peakChip: peak ? v.peakOn : v.peakOff, peakChipSt: 'display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;font-size:13px;font-weight:700;white-space:nowrap;' + (peak ? 'background:#E3F3FF;color:#002991' : 'background:#F1EFEA;color:#3F4144'),
+      basisLine: v.units(N) + ' · ' + per + (peak ? ' · ' + v.peakOn : ''),
+      showEditor: s.screen !== 'done', isEdit: isEdit, isDetail: isDetail, isSheet: s.screen === 'sheet', isDone: s.screen === 'done',
+      layoutSt: isDetail ? 'display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:24px;align-items:start;max-width:1320px;margin:0 auto;padding:18px 32px 48px'
+        : 'display:grid;grid-template-columns:minmax(0,1fr);gap:24px;max-width:960px;margin:0 auto;padding:18px 32px 48px',
+      publish: () => { this.setState({ screen: 'sheet', prog: 0, basePeak: peak }); this.run(() => {}); },
+      publishAnyway: () => this.setState({ screen: 'done', published: Object.assign({}, x) }),
+      toDetail: () => this.setState({ screen: 'detail', calcF: Object.assign({}, NONEF), calcPeak: peak, rprog: 0 }),
+      sh: sh, p: p, checks: checks,
+      recalc: () => { if (this.iv) clearInterval(this.iv); let n = 0; this.setState({ rprog: 1 }); this.iv = setInterval(() => { n = Math.min(500, n + 25); this.setState({ rprog: n }); if (n >= 500) { clearInterval(this.iv); this.iv = null; this.setState({ rprog: 0, calcF: Object.assign({}, this.feats()), calcPeak: this.peak() }); } }, 60); },
+      publishFinal: () => this.setState({ screen: 'done', published: Object.assign({}, x) }),
+      dn: dn, backEdit: () => this.setState({ screen: 'detail', calcF: Object.assign({}, x), calcPeak: peak }),
+      restart: () => { if (this.iv) clearInterval(this.iv); this.setState(this.fresh()); }
+    };
+  }
+}
+</script>
+</body>
+</html>

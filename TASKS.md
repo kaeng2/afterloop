@@ -83,6 +83,11 @@
 | T080 | 엔진: 한국어 답장 특징 정규식 보강(격식체·탓하기) | engine | 완료 | v2.11 | T075 | AC33 | 모델 `claude-sonnet-5-5`. `tasks/T080.md` |
 | T081 | 화면 언어 바꾸기 EN \| 한국어 (1단계: 화면 글자만, 쿠키·?lang, 기본 영어) | ui | 진행중 | v2.11 | T079 | — | 모델 `claude-sonnet-5-5`. `tasks/T081.md` |
 | T082 | 사건 기록 "추적 없음"은 실제 확인한 경우만 (Mike O08은 등록됨 — 요약이 틀린 사실을 씀) | ui | 대기 (T081 뒤) | v2.11 | T081 | — | 모델 `claude-sonnet-5-5`. `tasks/T082.md` |
+| T083 | 속도 ①: listUntracked 주문 조회 병렬 (결과 같게) | paypal | 진행중 | v2.11 | — | — | 모델 `claude-opus-5-5`. worktree paypal-client. `tasks/T083.md` |
+| T084 | 속도 ②: 요청 사이 캐시 90초·클라이언트 하나·병렬·Suspense·loading·startTransition | ui | 진행중 | v2.11 | — | 시간 재기 | 모델 `claude-opus-5-5`. 임시 worktree ui-perf (lane/ui-perf). 병합 T084 → T081. `tasks/T084.md` |
+| T085 | 엔진: 새 상품 등록 전 점검 계산 (listing) | engine | 대기 (속도 작업 뒤) | v2.12 | 계약 v2.12 | AC34 | 모델 `claude-opus-5-5`. `tasks/T085.md` |
+| T086 | AI: 새 상품 고칠 문구 6개 (약속 금지, 숫자 자리표시자, 정규식 판정) | ai | 대기 (속도 작업 뒤) | v2.12 | 계약 v2.12 | — | 모델 `claude-sonnet-5-5`. `tasks/T086.md` |
+| T087 | 화면: /listing Scene 3 (점검 모달·고치기·다시 계산·등록, /api/listing-check) | ui | 대기 | v2.12 | T085, T086, T084, T081 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T087.md` |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
 | T065 | **Products 상품 표 AG Grid** (As-is → With fixes, 처방 토글 시 셀 깜빡임) | ui | 대기 (T064 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T065.md` |
 | T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대체됨 | v2.2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 확정 (P0). AG Grid Community만 **2026-11-10 화면 구조 변경으로 T060~T064로 다시 쪼갬.** 이 지시서의 세부 규칙(리허설·색상 문구·거래 조회 한 줄·추적 등록 안전 규칙·로그 규칙)은 새 지시서가 참조한다 |

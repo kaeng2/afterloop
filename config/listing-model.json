@@ -1,0 +1,33 @@
+{
+  "version": "listing-model-2026-11-11.v1",
+  "source": "가정(기획 시안)",
+  "note": "SPEC v2.12 8-3장. 새 상품 등록 전 점검(Scene 3). 값은 기획 시안 docs/design/mockup-v4/scene3/Main.dc.html의 L_BASE·L_PEAK·lRates·lWin·LRX를 그대로 옮긴 가정이다 (PayPal 데이터 아님). 수수료·시간 비용·환불 몫은 이 파일이 아니라 config/params.json의 feeCents·timeCostCents·habitRefundShare를 쓴다 (시안의 $8·$2 대신). 엔진(src/engine/listing.ts)만 읽어 계산한다.",
+  "types": ["A1", "A2", "B1", "B2", "X"],
+  "runs": 500,
+  "seedBase": 4242,
+  "progressChunkRuns": 20,
+  "baseRate": { "A1": 0.006, "A2": 0.007, "B1": 0.008, "B2": 0.016, "X": 0.004 },
+  "peak": { "from": "2026-11-24", "to": "2026-12-01", "multiplier": { "A1": 1.25, "A2": 1.4 } },
+  "fixMultiplier": {
+    "ship": { "A1": 0.55 },
+    "bf": { "A1": 0.8, "A2": 0.85 },
+    "customs": { "A2": 0.45 },
+    "color": { "B1": 0.45 },
+    "size": { "B2": 0.4 },
+    "ret": { "B2": 0.85 }
+  },
+  "pWin": { "A1": 0.15, "A2": 0.3, "B1": 0.3, "B2": 0.35, "X": 0.1 },
+  "pWinWithFix": {
+    "A1": { "fix": "ship", "value": 0.6 },
+    "B1": { "fix": "color", "value": 0.45 },
+    "B2": { "fix": "size", "value": 0.5 }
+  },
+  "rules": {
+    "size": { "field": "size", "pattern": "\\d+\\s*(cm|in)\\b|chest|length|가슴|총장|소매|어깨", "flags": "i" },
+    "color": { "field": "desc", "pattern": "daylight|indoor|natural light|color note|off-white|자연광|실내|색상 안내|미색", "flags": "i" },
+    "ship": { "field": "ship", "pattern": "\\d\\s*[–\\-~]\\s*\\d+\\s*(business\\s*)?(days|일)|tracking|영업일|추적", "flags": "i" },
+    "customs": { "field": "ship", "pattern": "customs id|tax id|pccc|통관번호|세금 번호|개인통관고유부호", "flags": "i" },
+    "bf": { "field": "ship", "pattern": "black friday|peak|holiday|블랙프라이데이|성수기", "flags": "i" },
+    "ret": { "field": "ret", "pattern": "return|반품|교환", "flags": "i" }
+  }
+}
