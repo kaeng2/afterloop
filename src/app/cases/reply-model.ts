@@ -544,17 +544,64 @@ export function canSendOffer(view: Pick<ReplyView, 'gate'>): SendGate {
   return contentGate(g);
 }
 
-/** 입력칸 글이 검사받은 초안과 다를 때의 이유 키 (T076). */
-export const EDITED_KEY = 'case.reply.editedCantSend';
+/** 입력칸 글이 검사받은 초안과 다를 때(아직 번역·검사 전)의 이유 키 (T076 → T100). */
+export const EDITED_KEY = 'case.reply.editedNeedsCheck';
+
+/** 고친 글 보내기의 이유 키 (T100). */
+export const EDIT_KEYS = {
+  needsCheck: EDITED_KEY,
+  translating: 'case.reply.translating',
+  aiUnavailable: 'case.reply.editedAiUnavailable',
+  refundSimulated: 'case.send.blocked.refundSimulated',
+  nameLiteral: 'case.reply.editedNameLiteral',
+  invalid: 'case.reply.editedInvalid',
+  expired: 'case.send.error.replyExpired',
+  noPlan: 'case.send.blocked.noPlan',
+} as const;
 
 /**
- * 답장 입력칸(T076)의 관문. **보내는 글은 늘 서버가 기억한 검사 통과 초안**이다 — 입력칸 글은 예측을 바꾸는 용도이고
- * 서버로 가지 않는다. 그래서 입력칸 글이 초안(`anchor`)과 한 글자라도 다르면 [Send]를 끈다 (이유: "use AI draft").
- * 같으면 지금 관문(`canSend`) 결과를 **그대로** 돌려준다.
+ * 서버 입구(`send.ts`의 `prepareEditedReply`)가 돌려주는 값. 직렬화할 수 있는 값만 (이름 값·비밀값 없음).
+ * - `ok: true`: 고친 글을 토큰으로 되돌려 번역·역번역·검사한 결과. `replyId`는 **검사를 통과했을 때만** 있다
+ *   (서버가 기억한 답장 번호 — 보내기는 이 번호로 기존 관문 `sendReply`를 그대로 지난다).
+ *   `draftEn`은 토큰 글(되돌린 영어), `translation`은 보낼 글 기준으로 다시 엮은 검사다.
+ * - `ok: false`: AI를 부르지 않았거나 쓸 수 없다. `reasonKey`는 `EDIT_KEYS` 가운데 하나.
  */
-export function editGate(gate: SendGate, text: string, anchor: string | null): SendGate {
-  if (anchor === null || text === anchor) return gate;
-  return { ok: false, reasonKey: EDITED_KEY };
+export type EditedPrepareOutcome =
+  | { ok: true; replyId: string | null; draftEn: string; translation: Extract<ReplyTranslation, { ok: true }> }
+  | { ok: false; reasonKey: string };
+
+/** 입력칸 글 하나의 번역·검사 상태 (화면 상태). `ready`의 `gate`는 고친 글 보기용 값으로 낸 `canSend`다. */
+export type EditStatus =
+  | { state: 'idle' }
+  | { state: 'translating' }
+  | { state: 'failed'; reasonKey: string }
+  | { state: 'ready'; gate: SendGate };
+
+/** 관문 + "Translate & check" 단추를 켤지 (고친 글이 아직 검사 전일 때만). */
+export type EditedGate = SendGate & { translate: boolean };
+
+/**
+ * 답장 입력칸(T076)의 관문 (T100: "고친 글은 보낼 수 없음" → "고친 글은 번역·검사를 거쳐야 보낼 수 있음").
+ * 순서:
+ *  1. 환불 카드 상태(`refund`)면 늘 끈다 — 환불은 "Refund done · Simulated"일 뿐이라 안내 글을 보내면 거짓이 된다.
+ *  2. 초안이 없거나 글이 초안(`anchor`)과 같으면 지금 관문(`canSend`) 결과를 **그대로**.
+ *  3. 고친 글: 검사 전이면 끄고 "Translate & check"를 켠다 · 번역 중이면 끈다 · 실패면 끄고 이유 한 줄 ·
+ *     끝났으면 고친 글로 낸 관문(`status.gate`) 그대로.
+ * `status`를 주지 않으면 검사 전으로 본다.
+ */
+export function editGate(
+  gate: SendGate,
+  text: string,
+  anchor: string | null,
+  opts: { refund?: boolean; status?: EditStatus } = {},
+): EditedGate {
+  if (opts.refund === true) return { ok: false, reasonKey: EDIT_KEYS.refundSimulated, translate: false };
+  if (anchor === null || text === anchor) return { ...gate, translate: false };
+  const status = opts.status ?? { state: 'idle' };
+  if (status.state === 'translating') return { ok: false, reasonKey: EDIT_KEYS.translating, translate: false };
+  if (status.state === 'failed') return { ok: false, reasonKey: status.reasonKey, translate: false };
+  if (status.state === 'ready') return { ...status.gate, translate: false };
+  return { ok: false, reasonKey: EDITED_KEY, translate: text.trim() !== '' };
 }
 
 /** 두 버튼이 함께 쓰는 글 검사 + 전송 상태. 순서: 초안 → 전송본 → 번역이 더한 약속 → 토큰 → 이름 → 약속 확인 → 상태. */

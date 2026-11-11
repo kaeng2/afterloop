@@ -318,8 +318,9 @@ describe('입력칸 글을 바꾸면 예측이 바뀌고 Send는 꺼진다', () 
     const view = buildReplyView({ ...base, confirmed: [], sendState: 'idle', outcome: null });
     const gate = canSend(view);
     expect(gate.ok).toBe(true);
-    expect(editGate(gate, anchor, anchor)).toEqual(gate);
-    expect(editGate(gate, edited, anchor)).toEqual({ ok: false, reasonKey: EDITED_KEY });
+    expect(editGate(gate, anchor, anchor)).toEqual({ ...gate, translate: false });
+    // T100: 고친 글은 번역·검사 전이면 꺼지고 [Translate & check]가 켜진다
+    expect(editGate(gate, edited, anchor)).toEqual({ ok: false, reasonKey: EDITED_KEY, translate: true });
   });
 
   it('번역해서 보내는 답장이면 "구매자 언어" 특징이 켜진다 (영어 구매자는 꺼짐)', async () => {
