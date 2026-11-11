@@ -14,6 +14,8 @@ import { t } from '@/app/_shared/copy';
 import { CaseDetail } from '@/app/cases/case-detail';
 import { addTrackingAction } from '@/app/today/actions';
 import { selectItem } from '@/app/today/model';
+import { SavingsProvider } from '@/app/today/savings';
+import { trackingSavingsDisplay } from '@/app/today/savings-values';
 import { ProductFilterBar, TodayList } from '@/app/today/today-list';
 import { TrackingDetail } from '@/app/today/tracking-detail';
 
@@ -39,20 +41,27 @@ export default async function TodayPage({ searchParams }: Props) {
         .join(' · ');
 
   return (
-    <div className="today-page">
-      <ProductFilterBar view={view} />
-      <div className="today">
-        <TodayList view={view} weekly={weekly} selectedId={selected?.id ?? null} paypalNotice={paypalNotice} />
-        <section className="today-detail" aria-label={t('today.detailLabel')}>
-          {selected === null ? (
-            <p className="small muted">{t('today.empty')}</p>
-          ) : selected.kind === 'tracking' && view.tracking !== null ? (
-            <TrackingDetail tracking={view.tracking} register={addTrackingAction} />
-          ) : selected.kind === 'dispute' ? (
-            <CaseDetail key={selected.id} disputeId={selected.id} />
-          ) : null}
-        </section>
+    // T091: "+$N just now"는 화면 상태만 (목록·상세가 같은 상자를 쓴다. 새로고침하면 원래 값)
+    <SavingsProvider>
+      <div className="today-page">
+        <ProductFilterBar view={view} />
+        <div className="today">
+          <TodayList view={view} weekly={weekly} selectedId={selected?.id ?? null} paypalNotice={paypalNotice} />
+          <section className="today-detail" aria-label={t('today.detailLabel')}>
+            {selected === null ? (
+              <p className="small muted">{t('today.empty')}</p>
+            ) : selected.kind === 'tracking' && view.tracking !== null ? (
+              <TrackingDetail
+                tracking={view.tracking}
+                register={addTrackingAction}
+                savings={trackingSavingsDisplay(view.tracking)}
+              />
+            ) : selected.kind === 'dispute' ? (
+              <CaseDetail key={selected.id} disputeId={selected.id} />
+            ) : null}
+          </section>
+        </div>
       </div>
-    </div>
+    </SavingsProvider>
   );
 }

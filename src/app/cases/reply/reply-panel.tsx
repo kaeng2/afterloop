@@ -30,17 +30,35 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 import type { CommitmentCategory } from '@/ai/reply';
-import type { EscalationSignals, ReplyForecast } from '@/types';
+import type { EscalationSignals, Evaluation, ReplyForecast } from '@/types';
 
 import { AiPill, Badge, RiskLevel } from '../../_shared/badges';
 import { useT } from '../../_shared/locale-context';
 import { toDollarsCents } from '../../_shared/money';
+import { chipPopDelay, prefersReducedMotion, typeOutTiming } from '../../_shared/motion';
 import { toPercentRounded } from '../../_shared/percent';
+import { useSavings } from '../../today/savings';
 import { sendReplyAction } from '../actions';
+import {
+  applyChip,
+  draftForMove,
+  effectRows,
+  filledSnippets,
+  lintSummary,
+  quoteCut,
+  typeOutFrames,
+  type DeskPath,
+  type EffectRows,
+  type EffectRowView,
+  type MoveDrafts,
+} from '../desk-actions';
 import { featureChips, reactionView, type FeatureChipView, type ReactionView } from '../desk-model';
 import {
   detectReplyFeaturesClient,
   forecastReplyClient,
+  replyFeatureEffectsClient,
+  snippetsForClient,
+  type ReplyEffectsClient,
   type ReplyFeatureDetector,
   type ReplyForecaster,
 } from '../forecast-client';
@@ -62,6 +80,7 @@ import {
   type SendOutcome,
   type SendState,
 } from '../reply-model';
+import { useDeskSelection } from '../view/desk-selection';
 import { useDraftForecast } from '../view/draft-forecast';
 import { useSent } from '../view/sent-state';
 
@@ -86,9 +105,14 @@ export type ReplyPanelProps = {
    * "No carrier data linked …" 한 줄 (선택지 카드 아래에서 옮겨 왔다). 없으면 줄 없음.
    */
   paypalOnly?: string | null;
+  /** T091 "+$N just now" 값 (엔진 `actionSavings` 표기, 서버가 만든다). 보내기에 성공하면 이번 주 카드로. */
+  savings?: string | null;
   /** 시험용 주입 (기본 = 브라우저 어댑터). */
   forecaster?: ReplyForecaster;
   detector?: ReplyFeatureDetector;
+  effects?: ReplyEffectsClient;
+  /** 시험용: 입력칸 처음 글 (기본 = AI 초안). 보내는 글은 바뀌지 않는다 (관문이 그대로 막는다). */
+  initialText?: string;
 };
 
 function CheckGlyph({ ok }: { ok: boolean }) {
@@ -164,6 +188,111 @@ export function FeatureChips({ chips, toggle }: { chips: FeatureChipView[]; togg
   );
 }
 
+/** %p 글자 ("−12 pts"). 값은 엔진 `deltaPp`의 반올림 (`ppText`). */
+function PpText({ row }: { row: EffectRowView }) {
+  const t = useT();
+  return (
+    <span className={row.kind === 'bad' ? 'reply-lint-pp reply-lint-pp-bad num' : 'reply-lint-pp num'}>
+      {t('case.reply.pts', { value: row.pp })}
+    </span>
+  );
+}
+
+/**
+ * T091 칩 받침 (시안 `.tray`: `lints` 줄 + ✓ 칩 + Details). 위에서 아래로:
+ *  - "As you type" + 요약 알약 ("1 to fix · 2 missing · 3 good", 0은 뺀다)
+ *  - 나쁜 것 줄 "! Blames buyer … “문장” +9 pts [Remove]" → 그 문장을 지운다
+ *  - 빠진 것 줄 "+ Missing: A date  문장  −14 pts [+ Add]" → `config/reply-snippets.json` 문장을 글 끝에 넣는다
+ *  - ✓ 칩 (pop, 칩마다 0.12s씩 늦게) + "Refund done · Simulated" + 오른쪽 "Details ⌄"
+ * 숫자는 엔진 `replyFeatureEffects` 값 그대로 (표기만). 빈 글이면 "Start typing — each sentence is checked."
+ */
+export function LintTray({
+  rows,
+  empty,
+  refundDone,
+  busy,
+  onChip,
+  toggle,
+}: {
+  rows: EffectRows;
+  empty: boolean;
+  refundDone: boolean;
+  busy: boolean;
+  onChip: (row: EffectRowView) => void;
+  toggle?: ReactNode;
+}) {
+  const t = useT();
+  const summary = empty ? [] : lintSummary(rows);
+  const lines = empty ? [] : [...rows.bad, ...rows.missing];
+  const goods = empty ? [] : rows.good;
+  return (
+    <>
+      <div className="reply-tray-chips" data-part="head">
+        <svg className="reply-tray-icon" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 6h16M4 12h10M4 18h7" />
+        </svg>
+        <span className="reply-tray-title">{t('case.reply.asYouType')}</span>
+        {summary.map((item) => (
+          <span key={item.key} className="reply-tray-sum num">
+            {t(item.key, { count: item.count })}
+          </span>
+        ))}
+      </div>
+      {empty ? <span className="reply-lint-empty">{t('case.reply.lintEmpty')}</span> : null}
+      {lines.map((row) => (
+        <div key={`${row.kind}-${row.key}`} className={`reply-lint reply-lint-${row.kind}`} data-chip={row.key}>
+          <span className={`reply-lint-icon reply-lint-icon-${row.kind}`} aria-hidden="true">
+            {row.kind === 'bad' ? '!' : '+'}
+          </span>
+          <strong className="reply-lint-label">
+            {row.kind === 'missing' ? t('case.reply.missing', { label: t(row.labelKey) }) : t(row.labelKey)}
+          </strong>
+          <span className="reply-lint-detail">{row.kind === 'bad' ? quoteCut(row.sentence) : row.sentence}</span>
+          <PpText row={row} />
+          {row.action === null ? null : (
+            <button
+              type="button"
+              className={row.kind === 'bad' ? 'reply-lint-button reply-lint-button-ghost' : 'reply-lint-button'}
+              disabled={busy}
+              onClick={() => onChip(row)}
+            >
+              {t(row.action === 'add' ? 'case.reply.add' : 'case.reply.remove')}
+            </button>
+          )}
+        </div>
+      ))}
+      <div className="reply-tray-chips reply-goods">
+        {goods.length === 0 && !refundDone ? null : (
+          <ul className="reply-chip-list">
+            {goods.map((row, index) => (
+              <li
+                key={row.key}
+                className="reply-chip reply-chip-good"
+                style={{ animationDelay: chipPopDelay(index) }}
+                title={row.sentence ?? undefined}
+              >
+                <span aria-hidden="true">✓ </span>
+                {t(row.labelKey)}
+              </li>
+            ))}
+            {refundDone ? (
+              <li
+                className="reply-chip reply-chip-good"
+                data-chip="refundNow"
+                style={{ animationDelay: chipPopDelay(goods.length) }}
+              >
+                <span aria-hidden="true">✓ </span>
+                {t('case.reply.refundDone')}
+              </li>
+            ) : null}
+          </ul>
+        )}
+        {toggle ?? null}
+      </div>
+    </>
+  );
+}
+
 /** "Details ⌄" 단추 (펼침 여부는 부르는 쪽이 정한다 — 검사 실패면 늘 펼침). */
 function DetailsToggle({
   open,
@@ -210,11 +339,14 @@ function DetailsPanel({
   view,
   paypalOnly,
   hidden,
+  goods = [],
 }: {
   id: string;
   view: ReplyView;
   paypalOnly: string | null;
   hidden: boolean;
+  /** T091: ✓ 칩마다 기여한 %p(엔진 `replyFeatureEffects`)와 그 문장 (시안 goodsOpen 목록). */
+  goods?: EffectRowView[];
 }) {
   const t = useT();
   const checks = detailsChecks(view.checkRows);
@@ -241,6 +373,21 @@ function DetailsPanel({
           ))}
           {facts.map((fact) => (
             <FactRow key={fact.token} fact={fact} />
+          ))}
+        </ul>
+      )}
+      {/* T091: ✓ 칩마다 기여한 %p와 그 문장 (시안 goodsOpen 목록). 검사 줄 뒤 */}
+      {goods.length === 0 ? null : (
+        <ul className="reply-details-effects">
+          {goods.map((row) => (
+            <li key={row.key} className="reply-lint reply-lint-good" data-effect={row.key}>
+              <span className="reply-lint-icon reply-lint-icon-good" aria-hidden="true">
+                ✓
+              </span>
+              <strong className="reply-lint-label">{t(row.labelKey)}</strong>
+              <span className="reply-lint-detail reply-lint-detail-wrap">{quoteCut(row.sentence, Number.POSITIVE_INFINITY)}</span>
+              <PpText row={row} />
+            </li>
           ))}
         </ul>
       )}
@@ -271,14 +418,23 @@ export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: 
           {reaction.parts.map((part) => (
             <li key={part.key}>
               <span className={`reaction-swatch reaction-seg-${part.key}`} aria-hidden="true" />
-              {t(part.labelKey)} <strong className="num">{part.display}</strong>
+              {/* 시안 legend pSt: 차지백 칸이 50% 이상이면 빨강 */}
+              {t(part.labelKey)}{' '}
+              <strong
+                className={part.key === 'chargeback' && reaction.chargebackHigh ? 'num reaction-legend-high' : 'num'}
+              >
+                {part.display}
+              </strong>
             </li>
           ))}
         </ul>
       </div>
       <div className="reaction-mood">
         <span className="reaction-mood-label">{t('case.reaction.moodNext')}</span>
-        <strong className="reaction-mood-value">{t(reaction.moodKey)}</strong>
+        {/* 시안 moodSt: 기분이 나쁘면(엔진 기분 단계 angry = mood < -0.5) 빨강, transition color .3s */}
+        <strong className={reaction.moodBad ? 'reaction-mood-value reaction-mood-bad' : 'reaction-mood-value'}>
+          {t(reaction.moodKey)}
+        </strong>
         {reaction.nowMoodKey === null ? null : (
           <span className="reaction-mood-now">{t('case.reaction.moodNow', { mood: t(reaction.nowMoodKey) })}</span>
         )}
@@ -298,6 +454,9 @@ export function ReplyPanel({
   paypalOnly = null,
   forecaster = forecastReplyClient,
   detector = detectReplyFeaturesClient,
+  effects: effectsFn = replyFeatureEffectsClient,
+  savings = null,
+  initialText,
 }: ReplyPanelProps) {
   const t = useT();
   const detailsId = useId();
@@ -308,19 +467,83 @@ export function ReplyPanel({
   const inFlight = useRef(false);
   const { setSent } = useSent();
   const { setForecast } = useDraftForecast();
+  const { report } = useSavings();
+  const desk = useDeskSelection();
 
   const view = buildReplyView({ ...base, confirmed, sendState, outcome });
   // 입력칸: 처음 글 = 화면의 영어 초안 (실제 값 채운 미리보기). 초안이 없으면 입력칸 없음
   const anchor = view.draftEn?.text ?? null;
-  const [text, setText] = useState<string>(anchor ?? '');
+  const [text, setText] = useState<string>(initialText ?? anchor ?? '');
   const edited = anchor !== null && text !== anchor;
 
-  const noReply = replyId === null && view.gate.hasDraft;
-  const gate: SendGate = editGate(
-    noReply ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSend(view),
-    text,
-    view.offer === null ? anchor : null,
+  // ── T091 타이핑 효과 (시안 typeOut: 34ms마다 2글자, config/motion.json). 타이핑 중에는 Send·카드·도구가 꺼진다 ──
+  const [typing, setTyping] = useState(false);
+  const typer = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(
+    () => () => {
+      if (typer.current !== null) clearInterval(typer.current);
+    },
+    [],
   );
+  const setBusyBoth = (value: boolean) => {
+    setTyping(value);
+    desk.setBusy(value);
+  };
+  function typeOut(next: string, path: DeskPath) {
+    if (typer.current !== null) clearInterval(typer.current);
+    typer.current = null;
+    desk.setPath(path);
+    const { intervalMs, step } = typeOutTiming();
+    // 움직임 줄이기면 바로 전체 (시안 모션 끔)
+    const frames = typeOutFrames(next, step, prefersReducedMotion());
+    if (frames.length <= 1) {
+      setText(next);
+      setBusyBoth(false);
+      return;
+    }
+    setText('');
+    setBusyBoth(true);
+    let index = 0;
+    typer.current = setInterval(() => {
+      setText(frames[index]);
+      index += 1;
+      if (index >= frames.length) {
+        if (typer.current !== null) clearInterval(typer.current);
+        typer.current = null;
+        setBusyBoth(false);
+      }
+    }, intervalMs);
+  }
+
+  // 수마다 넣을 초안 (새 AI 호출 없음): 최선 수 = AI 초안(anchor), 환불 = "Refund done · Simulated" 안내 글(문구 키, 이름만 채움)
+  const bestMove: Evaluation['move'] = base.plan?.move ?? 'fight';
+  const refundNote =
+    buyerShort === null ? t('case.reply.refundDraftNoName') : t('case.reply.refundDraft', { name: buyerShort });
+  const drafts: MoveDrafts = { [bestMove]: anchor, ...(bestMove === 'refund' ? {} : { refund: refundNote }) };
+  const pickMove = (move: Evaluation['move']) => {
+    const next = draftForMove(move, drafts);
+    if (next === null) {
+      desk.setPath(move);
+      return;
+    }
+    typeOut(next, move);
+  };
+  const pickerRef = desk.pickerRef;
+  useEffect(() => {
+    pickerRef.current = pickMove;
+    return () => {
+      pickerRef.current = null;
+    };
+  });
+
+  const noReply = replyId === null && view.gate.hasDraft;
+  // T091: 타이핑 중에는 Send를 막는다 (시안 `sendOff: s.busy || …`). 이유 글은 내지 않는다 (곧 끝난다)
+  const screenGate: SendGate = typing
+    ? { ok: false, reasonKey: null }
+    : noReply
+      ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation }
+      : canSend(view);
+  const gate: SendGate = editGate(screenGate, text, view.offer === null ? anchor : null);
   const offerGate: SendGate | null =
     view.offer === null ? null : noReply ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSendOffer(view);
   const language = languageKey === null ? t('case.send.languageUnknown') : t(languageKey);
@@ -339,9 +562,10 @@ export function ReplyPanel({
       onToggle={() => setDetailsOpen((value) => !value)}
     />
   ) : null;
-  const detailsPanel = view.available ? (
-    <DetailsPanel id={detailsId} view={view} paypalOnly={paypalOnly} hidden={!detailsShown} />
-  ) : null;
+  const detailsPanel = (goods: EffectRowView[]) =>
+    view.available ? (
+      <DetailsPanel id={detailsId} view={view} paypalOnly={paypalOnly} hidden={!detailsShown} goods={goods} />
+    ) : null;
 
   // 예측 (브라우저 어댑터 = 엔진 순수 함수. 쓸 수 없으면 null → 칸이 숨는다). 입력 글이 바뀔 때마다 다시 받는다
   const board = base.board ?? null;
@@ -360,11 +584,32 @@ export function ReplyPanel({
   useEffect(() => {
     setForecast(forecast);
   }, [forecast, setForecast]);
-  const chips = useMemo(
-    () => (anchor === null ? null : featureChips(detector(text, { translated }))),
+  const detected = useMemo(
+    () => (anchor === null ? null : detector(text, { translated })),
     [detector, text, anchor, translated],
   );
+  const chips = useMemo(() => featureChips(detected), [detected]);
+  // T091: 칩마다 효과 (엔진 replyFeatureEffects). 넣을 문장 = config/reply-snippets.json (자리표시자는 영어 초안과 같은 채움)
+  const subtype = board?.cause?.subtype ?? null;
+  const draftFacts = base.draftFacts;
+  const snippets = useMemo(() => filledSnippets(snippetsForClient(subtype), draftFacts ?? []), [subtype, draftFacts]);
+  const rows = useMemo(() => {
+    // 예측 어댑터를 쓸 수 없으면(null) 칩 효과도 내지 않는다 (같은 엔진) → 지금 칩으로 돌아간다
+    if (forecast === null || forecastBase === null || anchor === null || board === null || view.offer !== null) return null;
+    const list = effectsFn(
+      { text, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays, translated },
+      snippets,
+    );
+    return effectRows(list, detected?.features.refundNow === true);
+  }, [effectsFn, forecast, forecastBase, anchor, board, view.offer, text, translated, snippets, detected]);
+  const empty = text.trim() === '';
   const reaction = reactionView(forecast, forecastBase?.signals.angryTone ?? null);
+
+  function onChip(row: EffectRowView) {
+    if (typing) return;
+    setText((now) => applyChip(now, row));
+    desk.setPath('custom');
+  }
 
   function toggle(category: CommitmentCategory) {
     setConfirmed((now) => (now.includes(category) ? now.filter((c) => c !== category) : [...now, category]));
@@ -400,6 +645,8 @@ export function ReplyPanel({
     setOutcome(next);
     setSendState(next.ok ? 'done' : 'failed');
     setSent(next.ok);
+    // T091: 보내기(가짜 전송 포함)가 끝나면 이번 주 카드에 "+$N just now" (엔진 actionSavings 값, 화면 상태만)
+    if (next.ok) report(savings);
   }
 
   function again() {
@@ -528,7 +775,7 @@ export function ReplyPanel({
         ) : null}
         {view.available ? commitmentsBlock : null}
         {detailsToggle}
-        {detailsPanel}
+        {detailsPanel([])}
 
         <div className="reply-foot">
           <div className="reply-actions">
@@ -575,14 +822,33 @@ export function ReplyPanel({
           {anchor === null ? null : <span className="desk-step-sub">{t('case.reply.editSub')}</span>}
           {anchor === null ? null : (
             <span className="reply-tools">
-              <button type="button" className="desk-button-tint" disabled={busy} onClick={() => setText(t('case.reply.rushedExample'))}>
+              {/* 시안: rushed·Use AI draft = typeOut, Clear = 바로 비움. 타이핑 중에는 모두 꺼진다 */}
+              <button
+                type="button"
+                className="desk-button-tint"
+                disabled={busy || typing}
+                onClick={() => typeOut(t('case.reply.rushedExample'), 'custom')}
+              >
                 {t('case.reply.rushed')}
               </button>
-              <button type="button" className="desk-button-tint" disabled={busy} onClick={() => setText(anchor)}>
+              <button
+                type="button"
+                className="desk-button-tint"
+                disabled={busy || typing}
+                onClick={() => typeOut(anchor, bestMove)}
+              >
                 <AiPill small decorative />
                 {t('case.reply.useAiDraft')}
               </button>
-              <button type="button" className="desk-button-tint" disabled={busy} onClick={() => setText('')}>
+              <button
+                type="button"
+                className="desk-button-tint"
+                disabled={busy || typing}
+                onClick={() => {
+                  setText('');
+                  desk.setPath('custom');
+                }}
+              >
                 {t('case.reply.clear')}
               </button>
             </span>
@@ -597,7 +863,13 @@ export function ReplyPanel({
 
             <div className="reply-pair">
               {anchor === null ? null : (
-                <div className={edited ? 'reply-editor reply-editor-edited' : 'reply-editor'}>
+                // 시안 editorSt: 빈 글 = 회색, 위험 50% 이상 = 빨강, 아니면 남색 (transition border-color .3s)
+                <div
+                  className={`reply-editor ${
+                    empty ? 'reply-editor-empty' : reaction?.chargebackHigh === true ? 'reply-editor-high' : 'reply-editor-ok'
+                  }`}
+                  data-edited={edited ? 'true' : undefined}
+                >
                   <div className="reply-editor-field">
                     <textarea
                       id={`reply-input-${disputeId}`}
@@ -605,17 +877,34 @@ export function ReplyPanel({
                       lang="en"
                       rows={5}
                       value={text}
-                      readOnly={busy}
+                      readOnly={busy || typing}
+                      aria-busy={typing ? 'true' : undefined}
                       placeholder={t('case.reply.placeholder')}
-                      onChange={(event) => setText(event.target.value)}
+                      onChange={(event) => {
+                        setText(event.target.value);
+                        desk.setPath('custom');
+                      }}
                     />
-                    {/* T090: 알약 안 Assumption은 뺀다 (Assumption은 반응 막대 쪽 하나만) */}
+                    {/* T090: 알약 안 Assumption은 뺀다. T091: 50% 이상이면 빨강 (시안 pillSt, transition background-color .3s) */}
                     {reaction === null ? null : (
-                      <span className="reply-editor-pill num">{t('case.choice.chargeback', { percent: reaction.chargeback })}</span>
+                      <span
+                        className={reaction.chargebackHigh ? 'reply-editor-pill reply-editor-pill-high num' : 'reply-editor-pill num'}
+                      >
+                        {t('case.choice.chargeback', { percent: reaction.chargeback })}
+                      </span>
                     )}
                   </div>
                   <div className="reply-tray">
-                    {chips !== null ? (
+                    {rows !== null ? (
+                      <LintTray
+                        rows={rows}
+                        empty={empty}
+                        refundDone={!empty && detected?.features.refundNow === true}
+                        busy={busy || typing}
+                        onChip={onChip}
+                        toggle={detailsToggle}
+                      />
+                    ) : chips !== null ? (
                       <FeatureChips chips={chips} toggle={detailsToggle} />
                     ) : (
                       <div className="reply-tray-chips">
@@ -634,21 +923,24 @@ export function ReplyPanel({
                         {detailsToggle}
                       </div>
                     )}
-                    {detailsPanel}
+                    {detailsPanel(rows === null || empty ? [] : rows.good)}
                   </div>
                 </div>
               )}
 
               <div className="reply-block reply-box">
                 <h3 className="reply-box-title">{readsLabel}</h3>
-                {view.outgoing === null ? (
+                {edited ? (
+                  // 시안 koTxt: 글을 바꾸면(카드·Add·Remove·직접 입력) "Translated to Korean when you send." (회색).
+                  // 보내는 글은 바뀌지 않는다 — 관문(editGate)이 Send를 끄고 이유를 보인다
+                  <p className="reply-text reply-outgoing reply-auto-tr">{t('case.reply.autoTr', { language })}</p>
+                ) : view.outgoing === null ? (
                   <p className="small muted">{t('case.reply.outgoingUnavailable')}</p>
                 ) : (
                   <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined}>
                     {view.outgoing.text}
                   </p>
                 )}
-                {edited ? <p className="reply-edited small">{t('case.reply.editedNote')}</p> : null}
               </div>
             </div>
 
@@ -656,7 +948,7 @@ export function ReplyPanel({
             {anchor === null ? (
               <>
                 {detailsToggle}
-                {detailsPanel}
+                {detailsPanel([])}
               </>
             ) : null}
 

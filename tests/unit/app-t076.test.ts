@@ -381,6 +381,8 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
         forecastBase: { signals: SIGNALS, delayDays: 2 },
         forecaster: () => FAKE_FORECAST,
         detector: () => FAKE_FEATURES,
+        // T091: 칩 효과 어댑터가 없을 때(null)의 칩 줄 = 특징 판정 칩 (이 시험이 보는 길)
+        effects: () => null,
       }),
     );
     const bar = markup.slice(markup.indexOf('class="reaction-bar"'), markup.indexOf('class="reaction-legend"'));

@@ -82,7 +82,7 @@ export const TRACKING_ERROR = (): TrackingOutcome => ({
 
 /** 버튼 글자: 1건 "Add to PayPal", 2건 "Add both to PayPal", 그보다 많으면 "Add all N to PayPal". */
 export function addButtonLabel(count: number): string {
+  // T091 시안: "Add all N" (2건도 같은 꼴)
   if (count === 1) return t('today.tracking.addOne');
-  if (count === 2) return t('today.tracking.add');
   return t('today.tracking.addMany', { count });
 }

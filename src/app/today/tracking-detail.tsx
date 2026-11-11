@@ -25,20 +25,24 @@ function Row({ order, excluded }: { order: TrackingOrderView; excluded: boolean 
 export function TrackingDetail({
   tracking,
   register,
+  savings = null,
 }: {
   tracking: TrackingSummary;
   /** 등록 서버 액션. 없으면 버튼을 그리지 않는다 (견본·테스트). */
   register?: () => Promise<TrackingOutcome>;
+  /** T091 "+$N just now" 값 (엔진 `trackingSavings` 표기). 없으면 더하지 않는다. */
+  savings?: string | null;
 }) {
   const count = tracking.untracked.length;
   return (
     <section className="stack tracking-detail" aria-labelledby="tracking-title">
+      {/* T091 시안: "Add tracking to N orders in PayPal" + [Add all N] */}
       <h2 className="today-detail-title" id="tracking-title">
-        {count === 1 ? t('today.tracking.titleOne', { count }) : t('today.tracking.title', { count })}
+        {count === 1 ? t('today.tracking.actTitleOne', { count }) : t('today.tracking.actTitle', { count })}
       </h2>
       <p>{count === 1 ? t('today.tracking.detailOne', { count }) : t('today.tracking.detail', { count })}</p>
       {register === undefined || count === 0 ? null : (
-        <TrackingRegister label={addButtonLabel(count)} action={register} />
+        <TrackingRegister label={addButtonLabel(count)} action={register} savings={savings} />
       )}
       <div className="card">
         <table className="tracking-table">

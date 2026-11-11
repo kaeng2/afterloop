@@ -485,10 +485,21 @@ describe('T060 추적 항목 조회 (GET만)', () => {
 
   it('이름·상품은 시드에서', async () => {
     const summary = await summarizeTracking(fakeOrders(), SEED);
-    expect(summary?.untracked).toEqual([
+    // T091: 금액·SKU("+$N just now"의 엔진 입력)가 붙을 수 있다 — 이름·상품 칸만 본다
+    expect(summary?.untracked).toMatchObject([
       { key: 'O05', buyerName: 'Yuki T.', productName: 'Beanie + Scarf Set' },
       { key: 'O07', buyerName: 'Lena K.', productName: 'Knit Cardigan, Oat' },
     ]);
+  });
+
+  it('T091: 주문 금액·SKU는 시드 주문 값 (trackingSavings 입력)', async () => {
+    const summary = await summarizeTracking(fakeOrders(), SEED);
+    for (const order of summary?.untracked ?? []) {
+      const seedOrder = seedOrders.find((o) => o.id === order.key);
+      if (seedOrder === undefined || order.amountCents === undefined) continue;
+      expect(order.amountCents).toBe(seedOrder.amountCents);
+      expect(order.sku).toBe(seedOrder.sku);
+    }
   });
 
   it('하나라도 읽지 못하면 null (항목 숨김) — 응답 실패·예외 모두', async () => {

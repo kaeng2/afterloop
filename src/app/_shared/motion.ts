@@ -31,6 +31,16 @@ const MotionSchema = z
       }),
       reactionBar: timing,
       editorBorder: timing,
+      // T091
+      typeOut: z.object({ intervalMs: z.number().int().positive(), step: z.number().int().positive() }),
+      chipPop: timing.extend({ staggerS: z.number().min(0) }),
+      lintRise: timing,
+      fold: timing,
+      caret: timing,
+      colorFade: timing,
+      flash: timing,
+      toast: z.object({ durationMs: z.number().int().positive(), riseDuration: z.string().regex(TIME), easing: z.string().min(1) }),
+      riskColor: z.object({ highFrom: z.number().min(0).max(1), midFrom: z.number().min(0).max(1) }),
     }),
   })
   .passthrough();
@@ -63,7 +73,51 @@ export function motionVars(config: MotionConfig = loadMotion()): Record<string, 
     '--motion-bar': `${d.reactionBar.duration} ${d.reactionBar.easing}`,
     '--motion-editor': d.editorBorder.duration,
     '--motion-editor-easing': d.editorBorder.easing,
+    // T091
+    '--motion-pop': `${d.chipPop.duration} ${d.chipPop.easing}`,
+    '--motion-lint-rise': `${d.lintRise.duration} ${d.lintRise.easing}`,
+    '--motion-fold': `${d.fold.duration} ${d.fold.easing}`,
+    '--motion-caret': `${d.caret.duration} ${d.caret.easing}`,
+    '--motion-color': `${d.colorFade.duration} ${d.colorFade.easing}`,
+    '--motion-flash': `${d.flash.duration} ${d.flash.easing}`,
+    '--motion-toast': `${d.toast.riseDuration} ${d.toast.easing}`,
   };
+}
+
+/** 타이핑 효과 값 (시안 `typeOut`: 34ms마다 2글자). */
+export function typeOutTiming(config: MotionConfig = loadMotion()): { intervalMs: number; step: number } {
+  return config.desk.typeOut;
+}
+
+/** ✓ 칩 pop의 n번째 지연 (시안 `animation-delay: n × 0.12s`). 그림 값이다. */
+export function chipPopDelay(index: number, config: MotionConfig = loadMotion()): string {
+  return `${Math.round(index * config.desk.chipPop.staggerS * 100) / 100}s`;
+}
+
+/** 알림(toast)이 떠 있는 시간 (ms). */
+export function toastDurationMs(config: MotionConfig = loadMotion()): number {
+  return config.desk.toast.durationMs;
+}
+
+export type RiskTone = 'high' | 'mid' | 'low';
+
+/**
+ * 위험 % 글자색 단계 (시안 `riskCol`). 확률 값(엔진)을 바꾸지 않고 색 단계만 고른다. 기준값은 config.
+ * 알약·입력칸 테두리는 `high`인지만 본다 (시안 `p >= 0.5`).
+ */
+export function riskTone(p: number, config: MotionConfig = loadMotion()): RiskTone {
+  const { highFrom, midFrom } = config.desk.riskColor;
+  return p >= highFrom ? 'high' : p >= midFrom ? 'mid' : 'low';
+}
+
+/** 사용자가 움직임 줄이기를 켰는가 (브라우저에서만. 서버·시험 환경은 거짓). */
+export function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
 }
 
 /** 끝점 물결 원의 처음 반지름 (SVG `r` 속성 — 애니메이션이 꺼져도 이 크기로 그린다). */

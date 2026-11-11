@@ -40,12 +40,13 @@
   transition: border-color var(--motion-editor) var(--motion-editor-easing);
 }
 
+/*
+ * 시안 `.editor:focus-within{box-shadow:#FFFFFF 0 0 0 2px,#097FF5 0 0 0 4px}` — 그림자는 `--shadow-selected` 하나만 쓰는
+ * 규칙(T047 B-3) 때문에 같은 자리의 2px 바깥 선으로 그린다. 테두리 색은 위험 값이 정한다 (T091)
+ */
 .reply-editor:focus-within {
-  border-color: var(--color-accent);
-}
-
-.reply-editor-edited {
-  border-color: var(--color-dot-watch);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .reply-editor-field {
@@ -736,4 +737,193 @@
   .reply-send .reply-why {
     text-align: left;
   }
+}
+
+/* ── T091: 칩 받침 줄 · 색 바뀜 (시안 Desk.dc.html `.tray`·`.nlint`·`.gchip`·editorSt·pillSt·moodSt) ───── */
+
+/* 입력칸 테두리 (시안 editorSt: 빈 글 #CFD3D8 · 위험 50%↑ #E8796B · 그 밖 #0A1B3D) */
+.reply-editor-empty {
+  border-color: var(--color-line);
+}
+
+.reply-editor-high {
+  border-color: var(--color-editor-high);
+}
+
+.reply-editor-ok {
+  border-color: var(--color-navy-ink);
+}
+
+/* 알약: 50% 이상 빨강 (pillSt) */
+.reply-editor-pill-high {
+  background: var(--color-bar-chargeback);
+}
+
+.reply-tray-chips[data-part='head'] {
+  gap: 8px;
+  padding: 0 2px 2px;
+}
+
+.reply-tray-icon path {
+  fill: none;
+  stroke: var(--color-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.reply-lint-empty {
+  padding: 0 2px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+/* 한 줄 (시안 `.nlint`: 7px 10px, 10px 모서리, 흰 바탕, rise .3s) */
+.reply-lint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: var(--color-surface);
+  border-radius: 10px;
+  animation: motion-rise var(--motion-lint-rise) both;
+}
+
+.reply-lint-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  font-weight: 900;
+  border-radius: 50%;
+}
+
+.reply-lint-icon-good {
+  color: var(--color-on-accent);
+  background: var(--color-navy-ink);
+}
+
+.reply-lint-icon-missing {
+  color: var(--color-pill-neutral-text);
+  background: var(--color-pill-neutral-bg);
+}
+
+.reply-lint-icon-bad {
+  color: var(--color-on-accent);
+  background: var(--color-bar-chargeback);
+}
+
+.reply-lint-label {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.reply-lint-detail {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reply-lint-detail-wrap {
+  white-space: normal;
+}
+
+.reply-lint-pp {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--color-navy-ink);
+  white-space: nowrap;
+}
+
+.reply-lint-pp-bad {
+  color: var(--color-bar-chargeback);
+}
+
+/* [+ Add] (시안 `.nmini`) · [Remove] (`.nmini.ghost`) */
+.reply-lint-button {
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 2px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--color-on-accent);
+  cursor: pointer;
+  background: var(--color-ink);
+  border: 0;
+  border-radius: var(--radius-pill);
+}
+
+.reply-lint-button-ghost {
+  color: var(--color-pill-high-text);
+  background: var(--color-surface);
+  /* 시안 `box-shadow: inset 0 0 0 2px #E8796B` — 그림자 규칙(T047 B-3) 때문에 같은 두께의 안쪽 테두리로 */
+  border: 2px solid var(--color-editor-high);
+}
+
+.reply-lint-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.reply-lint-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.reply-goods {
+  padding: 2px 2px 0;
+}
+
+.reply-goods:empty {
+  display: none;
+}
+
+/* ✓ 칩 pop (시안 `.gchip animation:pop .45s cubic-bezier(.2,1.4,.4,1) both`, 칩마다 0.12s씩 늦게 = style) */
+.reply-goods .reply-chip-good {
+  color: var(--color-navy-ink);
+  animation: motion-pop var(--motion-pop) both;
+}
+
+/* Details 화살표 (시안 goodsChev: transition transform .2s ease) */
+.reply-details-caret {
+  transition: transform var(--motion-caret);
+}
+
+.reply-details:not([hidden]) {
+  animation: motion-rise var(--motion-fold) both;
+}
+
+.reply-details-effects {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 글을 바꾼 뒤 미리보기 (시안 autoTr, #6C7378) */
+.reply-auto-tr {
+  color: var(--color-muted);
+}
+
+/* "Her mood next" (시안 moodSt: transition color .3s, 나쁘면 #C4321F) */
+.reaction-mood-value {
+  transition: color var(--motion-color);
+}
+
+.reaction-mood-bad {
+  color: var(--color-bar-chargeback);
+}
+
+/* 반응 막대 범례: 차지백 50% 이상이면 빨강 (시안 legend pSt) */
+.reaction-legend-high {
+  color: var(--color-bar-chargeback);
 }

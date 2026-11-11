@@ -17,11 +17,11 @@ import manifestJson from '../../../tests/sandbox/manifest.json';
 import { buyerShortName, type TrackingOrderView, type TrackingSummary } from './model';
 
 export type TrackingSeed = {
-  orders: readonly Pick<SeedOrder, 'id' | 'buyerId'>[];
+  orders: readonly (Pick<SeedOrder, 'id' | 'buyerId'> & Partial<Pick<SeedOrder, 'amountCents'>>)[];
   /** 시드 주문에 없는 샌드박스 주문(O13 등)은 그 주문에 걸린 시드 분쟁의 구매자로 찾는다. */
   disputes: readonly Pick<SeedDispute, 'id' | 'buyerId'>[];
   buyers: readonly Pick<SeedBuyer, 'id' | 'name'>[];
-  products: readonly Pick<SeedProduct, 'sku' | 'itemName'>[];
+  products: readonly (Pick<SeedProduct, 'sku' | 'itemName'> & Partial<Pick<SeedProduct, 'priceCents'>>)[];
 };
 
 export async function summarizeTracking(
@@ -46,10 +46,13 @@ export async function summarizeTracking(
       const buyerId = seed.orders.find((o) => o.id === key)?.buyerId ?? viaDispute;
       const buyer = seed.buyers.find((b) => b.id === buyerId);
       const product = seed.products.find((p) => p.sku === order?.sku);
+      // T091: 주문 금액 = 시드 주문 값, 없으면(샌드박스만 있는 주문) 시드 상품 가격. 둘 다 없으면 넣지 않는다
+      const amountCents = seed.orders.find((o) => o.id === key)?.amountCents ?? product?.priceCents;
       return {
         key,
         buyerName: buyer === undefined ? null : buyerShortName(buyer.name),
         productName: product?.itemName ?? null,
+        ...(order?.sku === undefined || amountCents === undefined ? {} : { sku: order.sku, amountCents }),
       };
     };
 

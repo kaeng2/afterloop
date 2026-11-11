@@ -11,9 +11,18 @@
  *
  * 이 파일은 서버 전용 코드를 import하지 않는다 (엔진 순수 함수와 설정 JSON만). 숫자를 만들지 않는다.
  */
-import { forecastReply } from '@/engine/forecast';
+import { forecastReply, replyFeatureEffects } from '@/engine/forecast';
 import { detectReplyFeatures } from '@/engine/reply-features';
-import type { ReplyFeatureHits, ReplyFeatures, ReplyForecast, ReplyForecastInput } from '@/types';
+import { replySnippetsFor } from '@/engine/snippets';
+import type {
+  ReplyFeatureEffect,
+  ReplyFeatureHits,
+  ReplyFeatureKey,
+  ReplyFeatures,
+  ReplyForecast,
+  ReplyForecastInput,
+  Subtype,
+} from '@/types';
 
 export type ReplyForecastClientInput = ReplyForecastInput & { translated?: boolean };
 export type ReplyForecaster = (input: ReplyForecastClientInput) => ReplyForecast | null;
@@ -39,3 +48,26 @@ export const detectReplyFeaturesClient: ReplyFeatureDetector = (text, opts) => {
     return null;
   }
 };
+
+/** 칩마다 효과 (T091). `replyFeatureEffects(input, snippets)` 그대로. 쓸 수 없으면 `null` (칩 줄이 지금 칩으로 돌아간다). */
+export type ReplyEffectsClient = (
+  input: ReplyForecastClientInput,
+  snippets: Partial<Record<ReplyFeatureKey, string>>,
+) => ReplyFeatureEffect[] | null;
+
+export const replyFeatureEffectsClient: ReplyEffectsClient = (input, snippets) => {
+  try {
+    return replyFeatureEffects(input, snippets);
+  } catch {
+    return null;
+  }
+};
+
+/** 이 분쟁 세부 유형의 넣을 문장 (`config/reply-snippets.json`, 자리표시자 그대로). 쓸 수 없으면 빈 묶음. */
+export function snippetsForClient(subtype: Subtype | null | undefined): Partial<Record<ReplyFeatureKey, string>> {
+  try {
+    return replySnippetsFor(subtype ?? null);
+  } catch {
+    return {};
+  }
+}

@@ -8,25 +8,37 @@
 import { useState, useTransition } from 'react';
 
 import { useT } from '../_shared/locale-context';
-import type { TrackingOutcome } from './tracking-result';
+import { useSavings } from './savings';
+import type { TrackingOutcome, TrackingOutcomeKind } from './tracking-result';
+
+/** "+$N just now"를 다는 결과: 모두 등록됨(added) 또는 가짜 등록(simulated). 일부 실패·실패·없음은 달지 않는다. */
+export function countsAsDone(kind: TrackingOutcomeKind): boolean {
+  return kind === 'added' || kind === 'simulated';
+}
 
 export function TrackingRegister({
   label,
   action,
   initial = null,
+  savings = null,
 }: {
   label: string;
   action: () => Promise<TrackingOutcome>;
   /** 테스트·견본용 처음 결과. */
   initial?: TrackingOutcome | null;
+  /** T091 "+$N just now" 값 (엔진 `trackingSavings` 표기). 등록이 끝나면(가짜 포함) 이번 주 카드에 넘긴다. */
+  savings?: string | null;
 }) {
   const t = useT();
+  const { report } = useSavings();
   const [outcome, setOutcome] = useState<TrackingOutcome | null>(initial);
   const [pending, startTransition] = useTransition();
 
   const onClick = () => {
     startTransition(async () => {
-      setOutcome(await action());
+      const next = await action();
+      setOutcome(next);
+      if (countsAsDone(next.kind)) report(savings);
     });
   };
 

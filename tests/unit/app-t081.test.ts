@@ -241,6 +241,8 @@ describe('T081: 문구 파일', () => {
       'case.curve.tick100', // T090: 곡선 눈금 "100%"
       'case.curve.tick50', // T090: 곡선 눈금 "50%"
       'case.reply.rushedExample', // 구매자에게 나가는 영어 답장 예시 (영어 그대로가 맞다)
+      'case.reply.refundDraft', // T091: 환불 카드의 영어 입력칸 글 (입력칸은 영어 — 예측 규칙이 영어 글을 본다)
+      'case.reply.refundDraftNoName', // T091: 같은 글, 이름을 모를 때
     ]);
     const same = copyKeys(copyTables.en).filter((key) => copyTables.en[key] === copyTables.ko[key]);
     expect(same.filter((key) => !allowed.has(key))).toEqual([]);

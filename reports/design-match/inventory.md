@@ -72,132 +72,132 @@
 | `.b-black:hover` | 1 | L20 | background:#333333 |  |  |
 | `.b-tint:hover` | 1 | L21 | background:#05378227 |  |  |
 | `.btn:focus-visible,.it:focus-visible,.pf:focus-visible,.npath:focus-visible,.nmini:focus-visible,.ndraft:focus-visible,.hbtn:focus-visible,.nav:focus-visible` | 1 | L23 | box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px |  |  |
-| `.editor:focus-within` | 1 | L59 | box-shadow:#FFFFFF 0 0 0 2px,#097FF5 0 0 0 4px |  |  |
+| `.editor:focus-within` | 1 | L59 | box-shadow:#FFFFFF 0 0 0 2px,#097FF5 0 0 0 4px | 구현함 | T091 `reply.css .reply-editor:focus-within` — 같은 자리 2px 바깥 선(outline 2px + offset 2px). 그림자는 `--shadow-selected` 하나만 쓰는 기존 규칙(T047 B-3 시험) 때문에 box-shadow 대신 outline |
 | `.gmore:focus-visible` | 1 | L66 | outline:2px solid #097FF5;outline-offset:2px |  |  |
 | `.gmore:hover` | 1 | L65 | background:#E4E6E9 |  |  |
 | `.hbtn:hover` | 1 | L81 | border-color:#000000 |  |  |
 | `.it:hover` | 1 | L39 | background:#F5F7FB |  |  |
 | `.nav:hover` | 1 | L29 | color:#000000 |  |  |
-| `.npath:hover` | 1 | L69 | border-color:#6C7378 |  |  |
+| `.npath:hover` | 1 | L69 | border-color:#6C7378 | 구현함 | `case.css .choice:not(.choice-blocked):hover` (T090) — T091에서 카드가 버튼(`choice-cards.tsx`) |
 | `.pf:hover` | 1 | L32 | border-color:#9AA0A6 |  |  |
-| `@keyframes flash` | 1 | L90 | 0%{background:#60CDFF}100%{background:transparent} |  |  |
+| `@keyframes flash` | 1 | L90 | 0%{background:#60CDFF}100%{background:transparent} | 구현함 | T091 `globals.css @keyframes motion-flash` (시작 색 `--color-flash` #60cdff) → `today.css .weekly-cell-flash` |
 | `@keyframes ndot` | 1 | L85 | 0%,80%,100%{opacity:.3;transform:none}40%{opacity:1;transform:translateY(-3px)} |  |  |
 | `@keyframes ping` | 1 | L88 | 0%{r:7;opacity:.6}100%{r:20;opacity:0} |  |  |
-| `@keyframes pop` | 1 | L63 | 0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none} |  |  |
-| `@keyframes rise` | 1 | L86 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} |  |  |
-| `animation-delay: ' + (n * 0.12) + 's'` | 1 | L838 ~st |  |  |  |
+| `@keyframes pop` | 1 | L63 | 0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none} | 구현함 | T091 `globals.css @keyframes motion-pop` (값 그대로) |
+| `@keyframes rise` | 1 | L86 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} | 구현함 | T091 `globals.css @keyframes motion-rise` (값 그대로). 알림은 가운데 정렬 transform을 지키려고 `today.css @keyframes motion-toast-rise`(translate(-50%, 8px) → translateX(-50%)) |
+| `animation-delay: ' + (n * 0.12) + 's'` | 1 | L838 ~st |  | 구현함 | T091 `reply-panel.tsx LintTray` style `animationDelay: chipPopDelay(index)` (`motion.json desk.chipPop.staggerS` 0.12), 시험 `app-t091` 모션 |
 | `animation-delay: .15s` | 1 | L84 .ndots span:nth-child(2) |  |  |  |
 | `animation-delay: .3s` | 1 | L84 .ndots span:nth-child(3) |  |  |  |
-| `animation: flash 1.6s ease` | 1 | L91 .flash |  |  |  |
+| `animation: flash 1.6s ease` | 1 | L91 .flash |  | 구현함 | T091 `today.css .weekly-cell-flash { animation: motion-flash var(--motion-flash) }` (`motion.json desk.flash` 1.6s ease), `savings.tsx WeeklyBumpCell` |
 | `animation: ndot 1s infinite ease-in-out` | 1 | L84 .ndots span |  |  |  |
 | `animation: ping 1.4s ease-out infinite` | 1 | L89 .ping |  |  |  |
-| `animation: pop .45s cubic-bezier(.2,1.4,.4,1) both` | 1 | L62 .gchip |  |  |  |
-| `animation: rise .35s ease` | 1 | L92 .toast |  |  |  |
-| `animation: rise .35s ease both` | 1 | L87 .rise |  |  |  |
-| `animation: rise .3s ease both` | 1 | L73 .nlint |  |  |  |
+| `animation: pop .45s cubic-bezier(.2,1.4,.4,1) both` | 1 | L62 .gchip |  | 구현함 | T091 `reply.css .reply-goods .reply-chip-good` (`--motion-pop` = `motion.json desk.chipPop`) |
+| `animation: rise .35s ease` | 1 | L92 .toast |  | 구현함 | T091 `today.css .savings-toast` (`--motion-toast` = `desk.toast.riseDuration` .35s ease). 시안 그림자 rgba(0,0,0,.25)는 그림자 하나 규칙(T047 B-3) 때문에 뺐다 |
+| `animation: rise .35s ease both` | 1 | L87 .rise |  | 구현함 | T091 Show history 펼친 목록 `case.css .history-list:not([hidden])`, Details `reply.css .reply-details:not([hidden])` (`--motion-fold` = `desk.fold`) |
+| `animation: rise .3s ease both` | 1 | L73 .nlint |  | 구현함 | T091 `reply.css .reply-lint` (`--motion-lint-rise` = `desk.lintRise`) |
 | `animation: rise .45s cubic-bezier(.2,1.2,.4,1) both` | 1 | L82 .step |  |  |  |
 | `later 1300 * (k - 1) + 400` | 1 | L666 ~ | this.later(() => { |  |  |
-| `later 3000` | 1 | L638 ~id | toast(txt) { this.setState({ toast: txt }); const id = txt; this.later(() => { if (this.state.toast === id) this.setState({ toast: null }); }, 3000); } |  |  |
-| `setInterval 34` | 1 | L652 ~iv | this.iv = setInterval(() => { |  |  |
+| `later 3000` | 1 | L638 ~id | toast(txt) { this.setState({ toast: txt }); const id = txt; this.later(() => { if (this.state.toast === id) this.setState({ toast: null }); }, 3000); } | 구현함 | T091 `savings.tsx SavingsProvider.report` setTimeout `toastDurationMs()` (`desk.toast.durationMs` 3000). 문구 `today.weekly.toast` "Dashboard updated · +$N kept" |
+| `setInterval 34` | 1 | L652 ~iv | this.iv = setInterval(() => { | 구현함 | T091 `reply-panel.tsx typeOut` (`typeOutTiming()` = `desk.typeOut` 34ms·2글자, `desk-actions.ts typeOutFrames`). 타이핑 중 Send·카드·도구 꺼짐, 움직임 줄이기면 바로 전체 — 시험 `app-t091` 모션 |
 | `setTimeout ms` | 1 | L637 later(fn, ms) | later(fn, ms) { this.tm = (this.tm \|\| []).concat([setTimeout(fn, ms)]); } |  |  |
 | `transition: all .3s ease` | 1 | L181 <polyline> |  |  |  |
 | `transition: background-color .15s` | 1 | L37 .it |  |  |  |
 | `transition: background-color .15s ease` | 1 | L18 .btn |  |  |  |
-| `transition: background-color .3s ease` | 1 | L840 ~pointer-events |  |  |  |
-| `transition: border-color .15s,background-color .15s` | 1 | L68 .npath |  |  |  |
-| `transition: border-color .3s ease` | 1 | L57 .editor |  |  |  |
-| `transition: color .3s ease` | 2 | L748 ~font-variant-numeric |  |  |  |
-| `transition: transform .2s ease` | 2 | L829 ~display |  |  |  |
-| `transition: width .35s ease` | 1 | L776 ~height |  |  |  |
+| `transition: background-color .3s ease` | 1 | L840 ~pointer-events |  | 구현함 | `reply.css .reply-editor-pill` (T090 전환) + T091 50% 이상 `.reply-editor-pill-high` |
+| `transition: border-color .15s,background-color .15s` | 1 | L68 .npath |  | 구현함 | `case.css .choice` (T090, `desk.choiceCard`) — T091 고른 카드 `.choice[data-on='true']` |
+| `transition: border-color .3s ease` | 1 | L57 .editor |  | 구현함 | `reply.css .reply-editor` (T090) + T091 테두리 색 `.reply-editor-empty/-high/-ok` |
+| `transition: color .3s ease` | 2 | L748 ~font-variant-numeric |  | 구현함 | T091 위험 % `case.css .curve-headline` · 기분 `reply.css .reaction-mood-value` (`--motion-color` = `desk.colorFade`) |
+| `transition: transform .2s ease` | 2 | L829 ~display |  | 구현함 | T091 Show history `case.css .desk-caret` · Details `reply.css .reply-details-caret` (`--motion-caret` = `desk.caret`) |
+| `transition: width .35s ease` | 1 | L776 ~height |  | 구현함 | `reply.css .reaction-seg` 세 칸 모두 (T090, `desk.reactionBar`) — 시험 `app-t091` 보충 22:50 |
 
 ### 3. 누를 수 있는 것과 결과 상태 (13행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `onChange onType` | 1 | L271 <textarea> | setState: draft, path |  |  |
-| `onClick clear` | 1 | L265 button.btn | setState: draft, path |  |  |
-| `onClick it.pick` | 1 | L141 button.{{it.cls}} | setState: busy, draft, path, sel, sku · 호출: typeOut |  |  |
-| `onClick l.act` | 1 | L278 button.{{l.actCls}} | (정의 못 찾음) |  |  |
-| `onClick oc.run` | 1 | L354 button.btn | setState: dash, done, flash · 호출: bump |  |  |
-| `onClick p.pick` | 2 | L111 button.{{p.cls}} | setState: busy, draft, path, sel, sku · 호출: typeOut |  |  |
+| `onChange onType` | 1 | L271 <textarea> | setState: draft, path | 구현함 | T091 `reply-panel.tsx` textarea onChange → 글 + `desk.setPath('custom')` (예측·칩이 다시 나온다) |
+| `onClick clear` | 1 | L265 button.btn | setState: draft, path | 구현함 | T091 `reply-panel.tsx` [Clear] → 빈 글 + path custom ("Start typing — each sentence is checked.") |
+| `onClick it.pick` | 1 | L141 button.{{it.cls}} | setState: busy, draft, path, sel, sku · 호출: typeOut | 구현함 | 목록 줄 = 링크 `?item=` (T060·T076 `today-list.tsx`, 고른 줄 `aria-current`). 주소로 고르기라 새로고침해도 같은 항목 |
+| `onClick l.act` | 1 | L278 button.{{l.actCls}} | (정의 못 찾음) | 구현함 | T091 `reply-panel.tsx LintTray` [+ Add] = `config/reply-snippets.json` 문장 글 끝에(`applyChip` → 엔진 `appendSentence`), [Remove] = 걸린 문장 삭제(엔진 `removeSentence`). %p = 엔진 `replyFeatureEffects`. 시험 `app-t091` 만들 것 2 |
+| `onClick oc.run` | 1 | L354 button.btn | setState: dash, done, flash · 호출: bump | 구현함 | 지호 [Send offer] = 기존 제안 관문(`canSendOffer` → `sendReplyAction` kind offer), 추적 [Add all N] = 기존 `addTrackingAction`(공개 모드 Simulated). 끝나면 `useSavings().report` → "+$N just now"(엔진 `actionSavings`·`trackingSavings`). 나머지 카드(Lena 환불·kc·Yuki·bm 증빙)는 **예외(데이터: Lena·Yuki 없음, 실제 시드·샌드박스 사건만 — DECISIONS 22:55)** |
+| `onClick p.pick` | 2 | L111 button.{{p.cls}} | setState: busy, draft, path, sel, sku · 호출: typeOut | 구현함 | 상품 칩 = 링크 `?sku=` (T076 `today-list.tsx ProductFilterBar`, T091 칩 줄 sticky `today.css`) · 선택지 카드 = T091 `choice-cards.tsx` 버튼 → `typeOut`(그 수의 초안), 막힌 수 `aria-disabled` |
 | `onClick refundNow` | 1 | L324 button.btn | setState: cbDone, dash, done, flash · 호출: bump |  |  |
 | `onClick replay` | 1 | L339 button.btn | setState: cbDone, done, draft, path, phase, shown, typing |  |  |
-| `onClick rushed` | 1 | L263 button.btn | setState: busy, draft, path · 호출: typeOut |  |  |
+| `onClick rushed` | 1 | L263 button.btn | setState: busy, draft, path · 호출: typeOut | 구현함 | T091 `reply-panel.tsx` [Try a rushed reply] → `typeOut(case.reply.rushedExample, 'custom')` |
 | `onClick send` | 1 | L305 button.btn | setState: cbDone, dash, done, flash, out, phase, refundNowF, sentKo, sentP, sentTxt, shown, typing · 호출: blocked, bump, fc, send |  |  |
-| `onClick toggleGoods` | 1 | L283 button.gmore | setState: goodsOpen |  |  |
-| `onClick toggleHist` | 1 | L202 button.hbtn | setState: histOpen |  |  |
-| `onClick useAi` | 1 | L264 button.btn | setState: busy, draft, path · 호출: typeOut |  |  |
+| `onClick toggleGoods` | 1 | L283 button.gmore | setState: goodsOpen | 구현함 | "Details ⌄" `reply-panel.tsx DetailsToggle` (T090) — T091 안에 ✓ 칩별 %p·문장. **예외(안전장치)**: 검사가 실패하면 늘 펼침(닫을 수 없음) |
+| `onClick toggleHist` | 1 | L202 button.hbtn | setState: histOpen | 구현함 | `case-history.tsx` [Show history] (T076·T090), T091 화살표 회전·펼침 rise |
+| `onClick useAi` | 1 | L264 button.btn | setState: busy, draft, path · 호출: typeOut | 구현함 | T091 `reply-panel.tsx` [Use AI draft] → `typeOut(AI 초안, 최선 수)` (새 AI 호출 없음) |
 
 ### 4. 접힘·펼침 (34행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `aria-expanded {{goodsOpen}}` | 1 | L283 button.gmore |  |  |  |
-| `aria-expanded {{histOpen}}` | 1 | L202 button.hbtn |  |  |  |
-| `more/less .gmore` | 4 | L64 ~ |  |  |  |
-| `more/less .less` | 1 | L838 ~goodsLabel |  |  |  |
-| `more/less .more` | 1 | L838 ~less |  |  |  |
-| `more/less gmore` | 2 | L65 ~ |  |  |  |
-| `more/less less` | 3 | L406 ~more |  |  |  |
-| `more/less more` | 2 | L406 ~sumOk |  |  |  |
-| `rotate(180deg)` | 2 | L829 ~transform |  |  |  |
-| `sc-if goodsOpen` | 1 | L285 <sc-if> |  |  |  |
-| `sc-if h.hasFlag` | 1 | L210 <sc-if> |  |  |  |
-| `sc-if hasGoods` | 1 | L280 <sc-if> |  |  |  |
-| `sc-if histOpen` | 1 | L204 <sc-if> |  |  |  |
-| `sc-if isOther` | 1 | L345 <sc-if> |  |  |  |
-| `sc-if isSeo` | 1 | L157 <sc-if> |  |  |  |
+| `aria-expanded {{goodsOpen}}` | 1 | L283 button.gmore |  | 구현함 | `reply-panel.tsx DetailsToggle` aria-expanded (T090) |
+| `aria-expanded {{histOpen}}` | 1 | L202 button.hbtn |  | 구현함 | `case-history.tsx` aria-expanded (T076) |
+| `more/less .gmore` | 4 | L64 ~ |  | 구현함 | `reply.css .reply-details-toggle` (T090: 오른쪽 끝, 투명 바탕, 12px 700, hover) |
+| `more/less .less` | 1 | L838 ~goodsLabel |  | 구현함 | 문구 `case.reply.detailsHide` "Hide" (T090) |
+| `more/less .more` | 1 | L838 ~less |  | 구현함 | 문구 `case.reply.details` "Details" (T090) |
+| `more/less gmore` | 2 | L65 ~ |  | 구현함 | 위 `.gmore`와 같은 단추 (T090) |
+| `more/less less` | 3 | L406 ~more |  | 구현함 | `case.reply.detailsHide` (en "Hide" / ko "접기") |
+| `more/less more` | 2 | L406 ~sumOk |  | 구현함 | `case.reply.details` (en "Details" / ko "자세히 보기") |
+| `rotate(180deg)` | 2 | L829 ~transform |  | 구현함 | T091 `case.css .desk-caret-open` · `reply.css .reply-details-caret-open` (transition .2s) |
+| `sc-if goodsOpen` | 1 | L285 <sc-if> |  | 구현함 | Details 칸 `hidden` (T090) + T091 ✓ 칩별 %p 목록 `.reply-details-effects` |
+| `sc-if h.hasFlag` | 1 | L210 <sc-if> |  | 구현함 | `case-history.tsx` 빨간 "Before DisputeLess · <표시>" (T090, 실제 기록의 표시만) |
+| `sc-if hasGoods` | 1 | L280 <sc-if> |  | 구현함 | T091 `LintTray` ✓ 칩 줄 (`.reply-goods`, 칩 없으면 줄도 비움). Details 단추는 칩이 없어도 남긴다(**예외: 안전장치** — 검사 실패 시 Details를 펼쳐야 한다) |
+| `sc-if histOpen` | 1 | L204 <sc-if> |  | 구현함 | `case-history.tsx` `hidden={!open}` + T091 rise |
+| `sc-if isOther` | 1 | L345 <sc-if> |  | 구현함 | 지호 = 짧은 제안 카드(`reply-panel.tsx` 제안 먼저), 추적 = `tracking-detail.tsx` "Add tracking to N orders in PayPal" + [Add all N] (T091) |
+| `sc-if isSeo` | 1 | L157 <sc-if> |  | 구현함 | `case-view.tsx` 전체 사례 화면 (제안 먼저가 아닌 분쟁) |
 | `sc-if isTyping` | 1 | L234 <sc-if> |  |  |  |
-| `sc-if l.hasAct` | 1 | L278 <sc-if> |  |  |  |
-| `sc-if lintEmpty` | 1 | L276 <sc-if> |  |  |  |
+| `sc-if l.hasAct` | 1 | L278 <sc-if> |  | 구현함 | T091 `LintTray` 빠진 것 [+ Add] / 나쁜 것 [Remove] (걸린 문장이 있을 때만) |
+| `sc-if lintEmpty` | 1 | L276 <sc-if> |  | 구현함 | T091 빈 글이면 `case.reply.lintEmpty` "Start typing — each sentence is checked." |
 | `sc-if m.hasTags` | 1 | L231 <sc-if> |  |  |  |
 | `sc-if m.isSim` | 1 | L227 <sc-if> |  |  |  |
 | `sc-if notSent` | 1 | L238 <sc-if> |  |  |  |
-| `sc-if p.hasCase` | 1 | L112 <sc-if> |  |  |  |
-| `sc-if p.rec` | 1 | L249 <sc-if> |  |  |  |
+| `sc-if p.hasCase` | 1 | L112 <sc-if> |  | 구현함 | 상품 칩 빨간 건수 배지 `ProductTile badge` (T076, 엔진 목록 값) |
+| `sc-if p.rec` | 1 | L249 <sc-if> |  | 구현함 | "Best" 알약 = 엔진 `recommend` 최선 수 (`choice-cards.tsx`) |
 | `sc-if resOn` | 1 | L330 <sc-if> |  |  |  |
-| `sc-if risk.hasFrom` | 1 | L191 <sc-if> |  |  |  |
+| `sc-if risk.hasFrom` | 1 | L191 <sc-if> |  | 구현함 | `risk-curve.tsx` "89% → x" (`curveView.fromTo`, 엔진 값, 답장 예측이 있을 때만) |
 | `sc-if s.act` | 1 | L324 <sc-if> |  |  |  |
 | `sc-if s.auto` | 1 | L321 <sc-if> |  |  |  |
 | `sc-if s.hasP` | 1 | L321 <sc-if> |  |  |  |
 | `sc-if sent` | 1 | L313 <sc-if> |  |  |  |
-| `sc-if showKo` | 1 | L293 <sc-if> |  |  |  |
+| `sc-if showKo` | 1 | L293 <sc-if> |  | 구현함 | "She'll see (Korean)" 칸 (T090). T091: 글을 바꾸면 `case.reply.autoTr` "Translated to Korean when you send." (회색) |
 | `sc-if stepsRunning` | 1 | L328 <sc-if> |  |  |  |
-| `sc-if toastOn` | 1 | L361 <sc-if> |  |  |  |
-| `state goodsOpen` | 8 | L283 button.gmore |  |  |  |
-| `state histOpen` | 12 | L202 button.hbtn |  |  |  |
+| `sc-if toastOn` | 1 | L361 <sc-if> |  | 구현함 | T091 `savings.tsx` `.savings-toast` role=status (3000ms) |
+| `state goodsOpen` | 8 | L283 button.gmore |  | 구현함 | `reply-panel.tsx detailsOpen` (T090) |
+| `state histOpen` | 12 | L202 button.hbtn |  | 구현함 | `case-history.tsx open` (T076) |
 
 ### 5. 조건부 스타일 (28행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `/\\+/.test(d.sub) ? '#60CDFF' : '#C9E3FF'` | 1 | L698 ~color |  |  |  |
-| `c.empty ? '#CFD3D8' : fc.p.cb >= 0.5 ? '#E8796B' : '#0A1B3D'` | 2 | L837 ~border-color |  |  |  |
+| `/\\+/.test(d.sub) ? '#60CDFF' : '#C9E3FF'` | 1 | L698 ~color |  | 구현함 | T091 "+$N just now" `today.css .weekly-bump` (`--color-flash` #60cdff). 나머지 줄은 지금 색(`--color-on-accent-muted`) |
+| `c.empty ? '#CFD3D8' : fc.p.cb >= 0.5 ? '#E8796B' : '#0A1B3D'` | 2 | L837 ~border-color |  | 구현함 | T091 `reply-panel.tsx` `.reply-editor-empty/-high/-ok` (기준값 `motion.json desk.riskColor.highFrom` 0.5, 색 토큰 `--color-line`·`--color-editor-high`·`--color-navy-ink`) |
 | `draftGrid: LANG === 'en' ? 'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px' : 'display:grid;grid-template-columns:minmax(0,1fr);gap:12px'` | 1 | L836 ~LANG |  |  |  |
-| `fc.mood >= -0.5 ? '#000000' : '#C4321F'` | 1 | L844 ~color |  |  |  |
-| `fc.p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'` | 1 | L840 ~background |  |  |  |
-| `fn riskCol: p >= 0.5 ? '#C4321F' : p >= 0.2 ? '#000000' : '#0066F5'` | 1 | L747 ~ |  |  |  |
+| `fc.mood >= -0.5 ? '#000000' : '#C4321F'` | 1 | L844 ~color |  | 구현함 | T091 `.reaction-mood-bad` = 엔진 기분 단계 `angry`(mood < annoyedFrom −0.5, `config/reply-model.json`) → `reactionView.moodBad` |
+| `fc.p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'` | 1 | L840 ~background |  | 구현함 | T091 `.reply-editor-pill-high` (`reactionView.chargebackHigh` = `riskTone` high) |
+| `fn riskCol: p >= 0.5 ? '#C4321F' : p >= 0.2 ? '#000000' : '#0066F5'` | 1 | L747 ~ |  | 구현함 | T091 `motion.ts riskTone` (기준값 `desk.riskColor` 0.5·0.2) → `risk-curve.tsx` `data-tone` + `case.css .curve-headline[data-tone]` |
 | `i.risk === 'high' ? 'background:#FBE7E4;color:#9E2414' : 'background:#ECEEF0;color:#3F4144'` | 1 | L704 ~risk |  |  |  |
-| `k === 'cb' && fc.p.cb >= 0.5 ? '#C4321F' : '#000000'` | 1 | L843 ~k |  |  |  |
-| `kind === 'bad' ? ' ghost' : ''` | 1 | L788 ~kind |  |  |  |
-| `kind === 'bad' ? '#C4321F' : '#0A1B3D'` | 1 | L787 ~kind |  |  |  |
+| `k === 'cb' && fc.p.cb >= 0.5 ? '#C4321F' : '#000000'` | 1 | L843 ~k |  | 구현함 | T091 반응 막대 범례 `.reaction-legend-high` (차지백 칸만, `chargebackHigh`) |
+| `kind === 'bad' ? ' ghost' : ''` | 1 | L788 ~kind |  | 구현함 | T091 [Remove] `.reply-lint-button-ghost` (시안 inset 2px #E8796B는 그림자 규칙 때문에 2px 테두리) |
+| `kind === 'bad' ? '#C4321F' : '#0A1B3D'` | 1 | L787 ~kind |  | 구현함 | T091 %p 글자 `.reply-lint-pp` / `.reply-lint-pp-bad` |
 | `line: i === 0 ? 'display:none' : 'flex:1;height:2px;background:#E4E6E9;min-width:6px'` | 1 | L752 ~i |  |  |  |
 | `lineSt: isLast ? 'display:none' : 'flex:1;width:2px;min-height:14px;background:#CFD3D8;margin:4px 0'` | 1 | L807 ~lineSt |  |  |  |
 | `n === 0 ? 'No cases' : n + (n === 1 ? ' case' : ' cases')` | 1 | L372 ~n |  |  |  |
 | `n === 1 ? ' case' : ' cases'` | 1 | L372 ~n |  |  |  |
-| `p >= 0.5 ? '#C4321F' : p >= 0.2 ? '#000000' : '#0066F5'` | 2 | L747 ~riskCol |  |  |  |
+| `p >= 0.5 ? '#C4321F' : p >= 0.2 ? '#000000' : '#0066F5'` | 2 | L747 ~riskCol |  | 구현함 | 위 `riskCol`과 같음 (T091 `riskTone`, 시험 `app-t091` 보충 22:50) |
 | `pSt: st.p !== null && st.p >= 0.5 ? 'background:#FBE7E4;color:#9E2414' : 'background:#E3F3FF;color:#002991'` | 1 | L808 ~pSt |  |  |  |
-| `pf[k].p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'` | 1 | L781 ~color |  |  |  |
+| `pf[k].p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'` | 1 | L781 ~color |  | 구현함 | T091 선택지 카드 "Chargeback N%" `.choice-cb-high/-low` (`ChoiceView.chargebackTone`, 엔진 `forecastMoves` 값) |
 | `resBg: resKey === 'cb' ? '#FBE7E4' : 'linear-gradient(120deg,#E3F3FF,#F5F9FF)'` | 1 | L851 ~resKey |  |  |  |
 | `resKey === 'cb' ? '#9E2414' : '#002991'` | 1 | L851 ~resKey |  |  |  |
 | `s.done[i.id] ? ' done' : ''` | 1 | L709 ~sel |  |  |  |
 | `s.done[i.id] ? '#CFD3D8' : sevCol[i.risk]` | 1 | L708 ~background |  |  |  |
-| `s.goodsOpen ? 'transform:rotate(180deg)' : ''` | 1 | L838 ~transition |  |  |  |
-| `s.histOpen ? 'transform:rotate(180deg)' : ''` | 1 | L829 ~transition |  |  |  |
-| `s.path === k ? ' on' : ''` | 2 | L780 ~path |  |  |  |
-| `s.sel === i.id ? ' on' : ''` | 1 | L709 ~sel |  |  |  |
-| `s.sku === p.sku ? ' on' : ''` | 1 | L686 ~sku |  |  |  |
-| `same ? '' : 'color:#6C7378'` | 1 | L841 ~font-size |  |  |  |
+| `s.goodsOpen ? 'transform:rotate(180deg)' : ''` | 1 | L838 ~transition |  | 구현함 | `reply.css .reply-details-caret-open` + T091 transition .2s |
+| `s.histOpen ? 'transform:rotate(180deg)' : ''` | 1 | L829 ~transition |  | 구현함 | T091 `case.css .desk-caret-open` (전에는 규칙이 없어 돌지 않았다) |
+| `s.path === k ? ' on' : ''` | 2 | L780 ~path |  | 구현함 | T091 `choice-cards.tsx` `data-on` + `aria-pressed` + `.choice-radio-on` (`case.css .choice[data-on='true']` = 시안 `.npath.on` #0A1B3D·#F3F5F9) |
+| `s.sel === i.id ? ' on' : ''` | 1 | L709 ~sel |  | 구현함 | 목록 고른 줄 `aria-current` (T076 `today.css`) |
+| `s.sku === p.sku ? ' on' : ''` | 1 | L686 ~sku |  | 구현함 | 상품 칩 `aria-current` (T076 `today.css .product-filter-chip[aria-current='true']`) |
+| `same ? '' : 'color:#6C7378'` | 1 | L841 ~font-size |  | 구현함 | T091 `.reply-auto-tr` (`--color-muted`) |
 | `st.buyer ? '#F1EFEA;color:#000000' : st.auto ? 'linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF);color:#FFFFFF' : st.act ? '#FBE7E4;color:#9E2414' : '#002991;color:#FFFFFF'` | 3 | L805 ~bg |  |  |  |
 
 ## docs/design/mockup-v4/scene1/Scene1.dc.html
