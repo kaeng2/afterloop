@@ -29,17 +29,16 @@ const model = JSON.parse(readFileSync(path.join(ROOT, 'config/reply-model.json')
 
 type ForecastModule = { forecastReply: ForecastReplyFn; riskCurve: RiskCurveFn; weeklySummary: WeeklySummaryFn };
 type FeatureModule = { detectReplyFeatures: DetectReplyFeaturesFn };
-let fc: ForecastModule | null = null;
-let ft: FeatureModule | null = null;
+// 모듈은 파일 맨 위에서(테스트를 모으기 전에) 읽는다 — skipIf가 모으는 시점에 판단하기 때문 (T075 보고 2026-11-11).
+// 경로를 변수로 두어 모듈이 없을 때 번들러가 미리 막지 않게 한다
+const FORECAST = '@/engine/forecast';
+const FEATURES = '@/engine/reply-features';
+const fc = (await import(/* @vite-ignore */ FORECAST).catch(() => null)) as ForecastModule | null;
+const ft = (await import(/* @vite-ignore */ FEATURES).catch(() => null)) as FeatureModule | null;
 let recommend: RecommendFn;
 
 beforeAll(async () => {
   recommend = (await import('@/engine/recommend')).recommend;
-  // 경로를 변수로 두어 모듈이 없을 때 번들러가 미리 막지 않게 한다
-  const f = '@/engine/forecast';
-  const g = '@/engine/reply-features';
-  fc = (await import(/* @vite-ignore */ f).catch(() => null)) as ForecastModule | null;
-  ft = (await import(/* @vite-ignore */ g).catch(() => null)) as FeatureModule | null;
 });
 
 /** 서연 (배송사 기록 반영 뒤): $72, INR → A2 통관 지연, 추적 있음, 합의 단계 */
