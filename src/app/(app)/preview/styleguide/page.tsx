@@ -7,6 +7,7 @@
  */
 import type { Metadata } from 'next';
 
+import { applyLangParam } from '@/app/_server/locale';
 import { BADGES, BADGE_ORDER, RISK_ORDER } from '@/app/_shared/badge-keys';
 import { AssumptionBadge, Badge, DemoBadge, RiskLevel } from '@/app/_shared/badges';
 import { CompareCard } from '@/app/_shared/compare-card';
@@ -36,7 +37,12 @@ const SWATCHES = [
   { className: 'swatch-danger', key: 'common.preview.colorDanger' },
 ] as const;
 
-export default function StyleguidePage() {
+export default async function StyleguidePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  await applyLangParam('/preview/styleguide', await searchParams);
   const sample = compareSample();
   const noValue = t('common.noValue');
 

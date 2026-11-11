@@ -575,7 +575,8 @@ describe('T060 옛 주소와 정적 검사', () => {
   it('/cases/<id>는 /?item=<id>로 보낸다 (PayPal을 읽지 않는다)', () => {
     const code = strip(readFileSync(path.join(ROOT, 'src/app/(app)/cases/[disputeId]/page.tsx'), 'utf8'));
     expect(code).toMatch(/redirect\(`\/\?item=\$\{encodeURIComponent\(decode\(disputeId\)\)\}`\)/);
-    expect(code).not.toMatch(/loadCase|loadDemoDisputes|_server/);
+    // 언어 쿠키(T081 `applyLangParam`)만 `_server/locale`에서 읽는다 — 데이터 읽기는 없다
+    expect(code.replace("'@/app/_server/locale'", '')).not.toMatch(/loadCase|loadDemoDisputes|_server/);
   });
 
   it('Today 오른쪽 칸: 분쟁은 사례 상세 + 답장 칸, Routine은 답장 칸 없는 상세 (T061)', () => {

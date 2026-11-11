@@ -62,3 +62,20 @@
 
 ## 컨트롤 타워에 요청할 결정
 - 없음 (계약·인수 테스트·SPEC 무변경).
+
+## 재시도
+검증 보고서(`reports/T081-verify.md`)의 두 가지를 고쳤다.
+1. **열린 리다이렉트 (필수)**: 검사를 `src/app/_server/safe-next.ts`의 `safeNext`로 옮겼다 (Next 라우트 파일은 `GET` 외 export 불가). `/`로 시작하지 않거나 `//`로 시작하거나, 역슬래시·제어문자·공백이 있으면 `/`. 그 외엔 `new URL(next, 요청 주소)`의 origin이 요청 origin과 같을 때만 `pathname+search`로 보내고 아니면 `/`. `src/app/lang/route.ts`가 이를 쓴다.
+   - 시험 `tests/unit/lang-route.test.ts`: `/\evil.com`, 탭 문자 `/<TAB>/evil.com`, 공백, 개행, `//evil.com`, `https://evil.com`, `javascript:`, `\\evil.com`, 빈 값·null → 모두 `/`. `/%09/evil.com`·`/%5Cevil.com`·`/a/../../evil.com`·`/%2F/evil.com`은 결과가 항상 같은 origin·`//`로 시작하지 않음을 확인 (퍼센트 인코딩은 그대로 같은 사이트 경로).
+2. **`?lang=ko`**: `/cases/[disputeId]`와 `/preview/styleguide`가 `applyLangParam`을 부른다. (`/cases/<id>`는 이 호출 뒤 기존대로 `/?item=`으로 보낸다.)
+- 기존 시험 `tests/unit/app-today.test.ts`의 "cases 페이지는 `_server`를 안 쓴다" 정적 검사를 `_server/locale` import만 허용하도록 고쳤다 (데이터 읽기 금지는 그대로).
+
+| 명령 | 결과 |
+|---|---|
+| npm test | 2232 통과, 실패 0 |
+| npx tsc --noEmit | 통과 |
+| npm run lint | 통과 (경고 0) |
+| npm run test:acceptance | 167 통과 (9 skipped), 실패 0 |
+| npm run build | 성공 |
+
+컨트롤 타워에 요청할 결정: 없음.

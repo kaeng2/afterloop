@@ -4,14 +4,14 @@
  */
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { safeNext } from '../_server/safe-next';
 import { LOCALE_COOKIE, parseLocale } from '../_shared/copy';
 
 export const dynamic = 'force-dynamic';
 
 export function GET(request: NextRequest) {
   const locale = parseLocale(request.nextUrl.searchParams.get('set'));
-  const next = request.nextUrl.searchParams.get('next') ?? '/';
-  const safe = next.startsWith('/') && !next.startsWith('//') ? next : '/';
+  const safe = safeNext(request.nextUrl.searchParams.get('next'), request.url);
   const res = NextResponse.redirect(new URL(safe, request.url));
   res.cookies.set(LOCALE_COOKIE, locale, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' });
   return res;
