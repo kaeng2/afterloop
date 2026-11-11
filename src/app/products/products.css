@@ -1,34 +1,305 @@
-/* Products 탭 최소판 (T060). 변수만 쓴다. 고른 상품은 테두리로 구분한다 (그림자 없음). */
+/*
+ * Products 탭 (T062). 공용 틀(T060·T067) 그대로: 색·간격·글자 크기는 `globals.css` 변수만 쓴다 (새 색 값 없음).
+ * 세 칸: 왼쪽 상품 목록(바탕 `--color-list-bg`) · 가운데 리허설 · 오른쪽 처방 카드. 64rem 아래는 한 열.
+ * 빨간 점 = `--color-danger` (위험 색 변수).
+ */
 
-.products-title {
-  font-size: 1.625em;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+.main:has(> .products) {
+  max-width: none;
+  padding: 0;
 }
 
-.products-list {
+.products {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-  gap: var(--card-gap);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
+  .products {
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr) minmax(0, 22rem);
+    min-height: calc(100vh - 4.5rem);
+    align-items: stretch;
+  }
+}
+
+/* ── 왼쪽 상품 목록 ─────────────────────────────────────────────────────── */
+
+.products-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-list-bg);
+}
+
+.products-list-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.products-title {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--color-heading);
+}
+
+.products-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   list-style: none;
 }
 
-.products-item {
+.products-row {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  min-width: 0;
-  padding: var(--space-4);
-  background: var(--color-surface);
+  padding: var(--space-3) var(--space-4);
   border: var(--card-border);
+  border-color: transparent;
   border-radius: var(--card-radius);
+  color: inherit;
+  text-decoration: none;
 }
 
-.products-item[aria-current='true'] {
+.products-row:hover {
+  background: var(--color-surface);
+}
+
+.products-row[aria-current='page'] {
+  background: var(--color-surface);
   border-color: var(--color-accent);
 }
 
-.products-name {
+.products-row-name {
   font-weight: 700;
+  color: var(--color-heading);
+}
+
+.products-row-values {
+  font-weight: 700;
+}
+
+/* ── 가운데 리허설 ───────────────────────────────────────────────────────── */
+
+.rehearsal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+}
+
+.rehearsal-title {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--color-heading);
+}
+
+.rehearsal-card {
+  gap: var(--space-4);
+}
+
+.big-numbers {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.big-number {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.big-number-after .hero-number {
+  color: var(--color-accent);
+}
+
+.big-arrow {
+  font-size: var(--text-lg);
+  color: var(--color-muted);
+  padding-bottom: var(--space-2);
+}
+
+.rehearsal-range {
+  font-size: var(--text-md);
+}
+
+.dots-plot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dots-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-5);
+}
+
+.dots-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.dots-caption {
+  font-weight: 700;
+}
+
+.dots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 0.75rem);
+  gap: var(--space-1);
+}
+
+.dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-dot-neutral);
+  opacity: 0.45;
+}
+
+.dot-red {
+  background: var(--color-danger);
+  opacity: 1;
+}
+
+.tx-line {
+  gap: var(--space-2);
+}
+
+/* ── 오른쪽 처방 카드 ───────────────────────────────────────────────────── */
+
+.fixes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5) var(--space-4);
+}
+
+.fixes-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-accent);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.fixes-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.fix-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fix-card[data-on='true'] {
+  border-color: var(--color-accent);
+}
+
+.fix-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.fix-title {
+  font-weight: 700;
+  color: var(--color-heading);
+  cursor: pointer;
+}
+
+.fix-toggle {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fix-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+/* 통관 안내는 시뮬레이션뿐이다 — 다른 배지보다 눈에 띄게 (굵은 점선 + 굵은 글자) */
+.fix-badge-simulated {
+  border: 2px dashed var(--color-risk-watch);
+  color: var(--color-risk-watch);
+  font-weight: 700;
+}
+
+.fix-effect {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.color-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+}
+
+.color-note-ko {
+  font-family: var(--font-ko);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-heading);
+}
+
+.color-note-button {
+  align-self: flex-start;
+  padding: var(--space-1) var(--space-3);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.color-note-button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
