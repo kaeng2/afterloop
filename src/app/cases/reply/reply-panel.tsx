@@ -89,6 +89,7 @@ import {
   type EditedPrepareOutcome,
 } from '../reply-model';
 import { CaseProgress } from '../progress/case-progress';
+import type { ScenarioInput } from '../progress/progress-client';
 import { useDeskSelection } from '../view/desk-selection';
 import { useDraftForecast } from '../view/draft-forecast';
 import { useSent } from '../view/sent-state';
@@ -661,6 +662,15 @@ export function ReplyPanel({
   }, [effectsFn, forecast, forecastBase, anchor, board, view.offer, text, translated, snippets, detected]);
   const empty = text.trim() === '';
   const reaction = reactionView(forecast, forecastBase?.signals.angryTone ?? null);
+  // T103: Send 뒤 칸의 엔진 입력은 렌더마다 같은 객체여야 한다. 새 객체면 그 칸이 점(scenarioRisk)을 다시 내고
+  // 곡선 상자(`setTrail`)를 갱신 → 이 칸이 다시 그려짐 → 또 새 객체 … 로 끝없이 돌아 목록 링크 이동이 막혔다
+  const scenarioInput: ScenarioInput | null = useMemo(
+    () =>
+      forecastBase === null || anchor === null || board === null
+        ? null
+        : { text: anchor, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays, translated },
+    [forecastBase, anchor, board, translated],
+  );
 
   function onChip(row: EffectRowView) {
     if (typing) return;
@@ -888,11 +898,7 @@ export function ReplyPanel({
         buyerShort={buyerShort}
         sentText={shownView.outgoing?.text ?? null}
         sentLocale={base.buyerLocale ?? null}
-        scenarioInput={
-          forecastBase === null || anchor === null || board === null
-            ? null
-            : { text: anchor, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays, translated }
-        }
+        scenarioInput={scenarioInput}
         board={board}
         move={base.plan?.move ?? null}
         baseForecast={forecast}
