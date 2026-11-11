@@ -538,7 +538,7 @@ describe('T060 위쪽 막대', () => {
     expect(code).toContain("t('shell.drawer.empty')");
     expect(code).toContain("t('shell.drawer.close')");
     expect(t('shell.drawer.empty')).toBe('No PayPal calls recorded yet.');
-    expect(t('shell.drawer.note')).toBe('Every call AfterLoop makes on your behalf. Sandbox.');
+    expect(t('shell.drawer.note')).toBe(`Every call ${t('nav.appName')} makes on your behalf. Sandbox.`);
   });
 
   it('서랍 폭은 고정 폭 검사에 걸리지 않게 (width: 100% + max-width)', () => {

@@ -617,9 +617,9 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     for (const item of view.groups[0].items) expect(item.status.key).not.toBe('today.skipped');
   });
 
-  it('Mike 상태 문장: "3rd \'not received\' claim in 90 days with a delivery record — AfterLoop won\'t act on this."', () => {
+  it('Mike 상태 문장: "3rd \'not received\' claim in 90 days with a delivery record — <제품 이름> won\'t act on this."', () => {
     const line = routineLine(mikeBoard, decideFor(mikeBoard, R));
-    expect(line).toBe("3rd 'not received' claim in 90 days with a delivery record — AfterLoop won't act on this.");
+    expect(line).toBe(`3rd 'not received' claim in 90 days with a delivery record — ${t('nav.appName')} won't act on this.`);
     expect(routineLine({ ...mikeBoard, hasDeliveredTracking: false }, decideFor(mikeBoard, R))).not.toContain('delivery record');
     expect(routineLine(D2_AFTER, decideFor(D2_AFTER, R))).toBeNull(); // Routine이 아니면 없다
   });
