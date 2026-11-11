@@ -59,8 +59,8 @@
 }
 
 .product-filter-chip[aria-current='true'] {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent);
+  background: var(--color-accent-pale);
+  border-color: var(--color-accent-deep);
 }
 
 .product-filter-text {
@@ -258,7 +258,7 @@
 }
 
 .today-group-prevent .today-group-bar {
-  background: var(--color-accent);
+  background: var(--color-accent-deep);
 }
 
 .today-group-title {

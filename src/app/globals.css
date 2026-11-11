@@ -30,9 +30,6 @@
   --color-accent-pale: #f5f9ff; /* 가장 옅은 파랑 바탕 */
   --color-accent-tint: #c9e3ff; /* 옅은 버튼 바탕 */
   --color-accent-deep: #002991; /* 남색 글자·꼬리표 글자·예방 막대·고른 상품 칩 */
-  --color-accent-strong: #0b48c4; /* 이번 주 카드 그라데이션 끝 */
-  --color-accent-night: #001c64; /* 이번 주 카드 그라데이션 시작 */
-  --color-accent-sky: #60cdff; /* AI 알약·위쪽 선 그라데이션 끝 */
   --color-navy-ink: #0a1b3d; /* 고른 선택지 테두리·라디오·단계 번호 원·Chargeback 알약 */
   --color-bar-wait: #0066f5; /* 손님 반응 막대: 기다림 */
   --color-bar-refund: #99c2ff; /* 손님 반응 막대: 환불 */
@@ -122,10 +119,7 @@
     --color-accent-soft: #14283f;
     --color-accent-pale: #101e30;
     --color-accent-tint: #1f3a5c;
-    --color-accent-deep: #1a3fa8;
-    --color-accent-strong: #2a5fd6;
-    --color-accent-night: #0d2563;
-    --color-accent-sky: #60cdff;
+    --color-accent-deep: #8fb4f5; /* 어두운 바탕 위 남색 글자·막대 자리 (밝게) */
     --color-navy-ink: #8fb4f5;
     --color-bar-wait: #60a5ff;
     --color-bar-refund: #3f6aa8;

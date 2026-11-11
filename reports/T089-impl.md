@@ -56,3 +56,40 @@ accent #60a5ff, soft #14283f, pale #101e30, tint #1f3a5c, deep #1a3fa8, strong #
 ## 컨트롤 타워에 요청할 결정
 - 다크 모드 흰 글자/accent 대비 2.52 (위 표). 다크 모드를 데모에서 안 쓰면 무시해도 됨.
 - `/listing`은 이 브랜치에 없어 건너뜀 (T087이 토큰을 따라가야 함. 새 토큰 이름은 위 표).
+
+## 재시도 (검증 실패: #002991 연결 누락)
+
+기준 SPEC v2.14. main(T087 /listing)이 이 브랜치에 병합돼 있어 `/listing`도 함께 맞췄다. 색만 바꿨다 (문구·배치·동작 무변경).
+
+### 고친 것 — 시안 `Desk.dc.html`의 #002991 자리 대조
+| 시안 자리 | CSS 규칙 | 토큰 → 값 |
+|---|---|---|
+| 예방 막대 (`secBar.prevent`) | today.css `.today-group-prevent .today-group-bar` | `--color-accent-deep` #002991 |
+| 고른 상품 칩 (`.pf.on` 테두리 #002991 + 바탕 #F5F9FF) | today.css `.product-filter-chip[aria-current]` | 테두리 `--color-accent-deep`, 바탕 `--color-accent-pale` |
+| 꼬리표 글자 (`badge` 글자 #002991) | shell.css `.shell-for` | `--color-accent-deep` |
+| 상품 아이콘 stroke (`ptile` svg stroke #002991) | shell.css `.product-icon path` | `--color-accent-deep` |
+| `89% → x` 글자 | case.css `.curve-fromto` | `--color-accent-deep` |
+| aiRead 글자 | case.css `.case-read-label` | `--color-accent-deep` |
+| Best 알약·링크·위험 %·곡선 | (그대로) | `--color-accent` #0066f5 |
+
+- `--color-accent-pale`은 위 칩에 쓰인다. `--color-accent-strong`·`--color-accent-night`·`--color-accent-sky`는 시안 자리에서 변수로 쓰이는 곳이 없어(그라데이션은 값 그대로 토큰 한 줄) **지웠다**.
+- 다크: `--color-accent-deep`이 이제 글자·막대에 쓰이므로 어두운 바탕에서 읽히게 #8fb4f5로 올렸다 (그라데이션은 별도 토큰이라 영향 없음).
+- 이전 보고서 표의 "남색 글자 … → --color-accent-deep"은 실제와 달랐다. 위 표가 실제 CSS와 맞다.
+- Products 고른 줄 이름(products.css `--color-accent`): 시안(Desk)에 남색 지정이 없어 #0066f5 그대로 둔다.
+
+### /listing (src/app/listing/listing.css) — 시안 scene3/Main.dc.html 값
+`--ls-accent` #0066f5 · `--ls-accent-deep` #002991 · `--ls-accent-strong/light` #60cdff(AI 그라데이션 끝) · `--ls-accent-soft` #e3f3ff(peak 칩) · `--ls-accent-pale` #f5f9ff(ins·상태·완료 상자·고친 줄) · `--ls-accent-line` #99c2ff · `--ls-accent-flash` #e3f3ff(flashA/B) · `--ls-tint` rgba(5,55,130,.08)/hover .153(시안 b-tint #05378214/27) · `--ls-focus` #097ff5(시안 focus 윤곽) · `--ls-navy` #0a1b3d(사진 추가 칸 글자·원). 남보라 제거. 값은 변수 정의 줄에만 있다.
+
+### 시험
+- app-t067: "시안 자리의 CSS 규칙이 해당 토큰을 쓴다" 추가 — 위 표 규칙 8건 + /listing 변수 값 + globals의 모든 `--color-accent-*`가 다른 파일에서 `var()`로 쓰이는지(정의만 있고 안 쓰이면 실패).
+- app-t087-listing: "PayPal 파랑 없음" 두 시험(소스·`.next` 묶음)은 결정 철회(지시서 4번)로 "남보라 없음 + listing.css가 시안 파랑을 가짐"으로 교체. 키·프롬프트·샌드박스 주소 검사는 유지.
+
+### 작은 글자 대비 4.5:1 미달 (시안 색 유지)
+- #0066f5 / #e3f3ff 4.39 (고른 줄·peak 칩 위 링크성 글자)
+- #0066f5 / #f1efea 4.33 (Today 목록 영역 위 링크)
+- 다크: 흰 글자 / #60a5ff 2.52 (다크 accent 채운 칸)
+- /listing: #0066f5 / #e3f3ff 4.39 (`.ls-peak`류 칩 위 accent 글자가 있으면 같은 값). #0066f5 / #f5f9ff 4.7 통과.
+큰·굵은 글자(3:1)는 통과.
+
+### 확인
+`npm test` 2320 통과 + storefront 시간 초과 1건(단독 31/31 통과), `tsc` 0, `lint` 0, `test:acceptance` 177 통과(9 skipped), `build` 성공. 개발 서버·실제 AI/PayPal 호출·`.env` 읽기 없음.

@@ -383,4 +383,51 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
       expect(val(name), name).toBe(hex);
     }
   });
+
+  it('T089: 시안 자리의 CSS 규칙이 해당 토큰을 쓴다 (정의만 있고 안 쓰이면 실패)', () => {
+    const rule = (file: string, selector: string) => {
+      const css = readFileSync(path.join(APP, file), 'utf8');
+      const esc = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const m = new RegExp(`(?:^|\\n)${esc}\\s*\\{([^}]*)\\}`).exec(css);
+      expect(m, `${file} ${selector}`).not.toBeNull();
+      return m?.[1] ?? '';
+    };
+    const cases: [string, string, string][] = [
+      ['today/today.css', '.today-group-prevent .today-group-bar', 'background: var(--color-accent-deep)'],
+      ['today/today.css', ".product-filter-chip[aria-current='true']", 'border-color: var(--color-accent-deep)'],
+      ['today/today.css', ".product-filter-chip[aria-current='true']", 'background: var(--color-accent-pale)'],
+      ['_shared/shell.css', '.shell-for', 'color: var(--color-accent-deep)'],
+      ['_shared/shell.css', '.product-icon path', 'stroke: var(--color-accent-deep)'],
+      ['cases/view/case.css', '.curve-fromto', 'color: var(--color-accent-deep)'],
+      ['cases/view/case.css', '.case-read-label', 'color: var(--color-accent-deep)'],
+      ['cases/view/case.css', '.choice-best', 'background: var(--color-accent-soft)'],
+    ];
+    for (const [file, selector, decl] of cases) {
+      expect(rule(file, selector), `${file} ${selector}`).toContain(decl);
+    }
+    // /listing: 시안 scene3 값 (남보라 없음 + 토큰과 같은 값)
+    const ls = readFileSync(path.join(APP, 'listing/listing.css'), 'utf8');
+    for (const decl of [
+      '--ls-accent: #0066f5',
+      '--ls-accent-deep: #002991',
+      '--ls-accent-soft: #e3f3ff',
+      '--ls-accent-pale: #f5f9ff',
+      '--ls-accent-line: #99c2ff',
+      '--ls-navy: #0a1b3d',
+      '--ls-focus: #097ff5',
+    ]) {
+      expect(ls, decl).toContain(decl);
+    }
+    expect(ls).toMatch(/\.ls-addic\s*\{[^}]*background: var\(--ls-navy\)/);
+    // 지워진 토큰이 다시 정의만 되는 것을 막는다: globals의 모든 --color-accent-* 는 어딘가에서 var()로 쓰인다
+    const globals = readFileSync(path.join(APP, 'globals.css'), 'utf8');
+    const all = [...filesUnder(APP, '.css'), ...filesUnder(APP, '.tsx'), ...filesUnder(APP, '.ts')]
+      .filter((f) => !f.endsWith('globals.css'))
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n');
+    const names = new Set([...globals.matchAll(/(--color-accent-[a-z]+):/g)].map((m) => m[1]));
+    for (const n of names) {
+      expect(all, `${n} 사용처`).toContain(`var(${n})`);
+    }
+  });
 });

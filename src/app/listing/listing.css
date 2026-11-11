@@ -1,16 +1,19 @@
 /*
  * /listing 화면 (T087). 값은 시안 scene3/Main.dc.html의 배치·간격·카드 모양.
- * 색 값은 아래 변수 정의 줄에만 쓴다 (tests/unit/app-shared-design.test.ts). PayPal 파랑은 쓰지 않는다 —
- * 시안의 파랑 그라데이션·파랑 글자는 우리 강조색(보라) 계열로 바꿨다. 밝은 화면으로 고정 (시안이 밝은 화면).
+ * 색 값은 아래 변수 정의 줄에만 쓴다 (tests/unit/app-shared-design.test.ts). T089: 시안 v4(scene3/Main.dc.html)의
+ * 파랑·남색 값 그대로 (globals.css 토큰과 같은 값). 남보라 없음. 밝은 화면으로 고정 (시안이 밝은 화면).
  */
 .ls {
-  --ls-accent: #5b3cc4;
-  --ls-accent-deep: #4a2499;
-  --ls-accent-strong: #6a46d6;
-  --ls-accent-light: #a996f0;
-  --ls-accent-soft: #f1edfc;
-  --ls-accent-line: #cbbff3;
-  --ls-accent-flash: #e6e0fa;
+  --ls-accent: #0066f5;
+  --ls-accent-deep: #002991;
+  --ls-accent-strong: #60cdff;
+  --ls-accent-light: #60cdff;
+  --ls-accent-soft: #e3f3ff;
+  --ls-accent-pale: #f5f9ff;
+  --ls-accent-line: #99c2ff;
+  --ls-accent-flash: #e3f3ff;
+  --ls-focus: #097ff5;
+  --ls-navy: #0a1b3d;
   --ls-bg: #f6f7f9;
   --ls-surface: #ffffff;
   --ls-side: #fafafb;
@@ -23,8 +26,8 @@
   --ls-field-bg: #f3f4f6;
   --ls-ink: #0b0f14;
   --ls-ink-hover: #333333;
-  --ls-tint: #ece9f6;
-  --ls-tint-hover: #ddd7f0;
+  --ls-tint: rgba(5, 55, 130, 0.08);
+  --ls-tint-hover: rgba(5, 55, 130, 0.153);
   --ls-warm: #f1efea;
   --ls-risk: #c4321f;
   --ls-risk-text: #9e2414;
@@ -76,7 +79,7 @@
   cursor: default;
 }
 .ls :focus-visible {
-  outline: 2px solid var(--ls-accent);
+  outline: 2px solid var(--ls-focus);
   outline-offset: 2px;
 }
 
@@ -380,6 +383,7 @@
   border-radius: 16px;
   border: 2px dashed var(--ls-t-x);
   background: var(--ls-surface);
+  color: var(--ls-navy);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -392,7 +396,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--ls-ink);
+  background: var(--ls-navy);
   color: var(--ls-on-dark);
   display: inline-flex;
   align-items: center;
@@ -534,7 +538,7 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
-  background: var(--ls-accent-soft);
+  background: var(--ls-accent-pale);
   color: var(--ls-accent-deep);
   text-align: left;
 }
@@ -548,7 +552,7 @@
   gap: 4px;
   padding: 8px 12px;
   border-radius: 12px;
-  background: var(--ls-accent-soft);
+  background: var(--ls-accent-pale);
 }
 .ls-inserted-text {
   margin: 0;
@@ -883,7 +887,7 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  background: var(--ls-accent-soft);
+  background: var(--ls-accent-pale);
   font-size: 13px;
   font-weight: 700;
   color: var(--ls-accent-deep);
@@ -1214,7 +1218,7 @@
   gap: 10px;
   padding: 8px 12px;
   border-radius: 12px;
-  background: var(--ls-accent-soft);
+  background: var(--ls-accent-pale);
   font-size: 13px;
 }
 .ls-fix-plus {
@@ -1285,7 +1289,7 @@
   gap: 4px;
   padding: 16px 22px;
   border-radius: 18px;
-  background: var(--ls-accent-soft);
+  background: var(--ls-accent-pale);
   width: 100%;
 }
 .ls-done-prob {

@@ -430,11 +430,15 @@ describe('T087 색·문구 정직성', () => {
     ...readdirSync(path.join(ROOT, 'src/app/listing')).map((f) => `src/app/listing/${f}`),
     'src/app/api/listing-check/route.ts',
   ];
-  it('화면 코드·css에 PayPal 파랑이 없다', () => {
+  it('화면 코드·css에 남보라(T089 이전 강조색)가 없고, 색은 시안 scene3 파랑을 쓴다', () => {
     for (const file of screenFiles) {
       const text = read(file).toLowerCase();
-      for (const blue of ['#002991', '#0066f5', '#60cdff', '#0070e0', '#003087']) expect(text, file).not.toContain(blue);
+      for (const violet of ['#5b3cc4', '#a996f0', '#4a2499', '#6a46d6', '#f1edfc', '#cbbff3', '#e6e0fa', '#ece9f6', '#ddd7f0']) {
+        expect(text, file).not.toContain(violet);
+      }
     }
+    const css = read('src/app/listing/listing.css').toLowerCase();
+    for (const v of ['#0066f5', '#002991', '#60cdff']) expect(css).toContain(v);
   });
 
   it('"Knot & Co."·"PayPal disputes & sales"·"Comparing with your PayPal dispute history"가 없다', () => {
@@ -488,12 +492,12 @@ describe('T087 .next/static에 서버 전용 값 없음 (빌드 뒤에만)', () 
   } catch {
     exists = false;
   }
-  it.skipIf(!exists)('키 이름·AI 프롬프트·샌드박스 주소·PayPal 파랑이 묶음에 없다', () => {
+  it.skipIf(!exists)('키 이름·AI 프롬프트·샌드박스 주소·남보라가 묶음에 없다', () => {
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
         e.isDirectory() ? walk(path.join(dir, e.name)) : /\.(js|css)$/.test(e.name) ? [path.join(dir, e.name)] : [],
       );
-    const banned = [/LLM_API_KEY/, /CLIENT_SECRET/, /api-m\.sandbox\.paypal\.com/, /You help a small online clothing seller/, /AI_LIVE_LIMIT/, /#002991|#0066F5|#60CDFF/i];
+    const banned = [/LLM_API_KEY/, /CLIENT_SECRET/, /api-m\.sandbox\.paypal\.com/, /You help a small online clothing seller/, /AI_LIVE_LIMIT/, /#5b3cc4|#a996f0/i];
     for (const file of walk(STATIC)) {
       const text = readFileSync(file, 'utf8');
       for (const re of banned) expect(re.test(text), `${path.relative(ROOT, file)} ${re}`).toBe(false);
