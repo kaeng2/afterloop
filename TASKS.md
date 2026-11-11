@@ -87,7 +87,7 @@
 | T084 | 속도 ②: 요청 사이 캐시 90초·클라이언트 하나·병렬·Suspense·loading·startTransition | ui | 완료 | v2.11 | — | 시간 재기 | 병합. 독립 검증 통과(Sonnet, public 쓰기 0회 직접 시험). 시간: 반복 0.03~0.07초(목표 달성), 캐시 빈 뒤 첫 클릭 3.2초(목표 2초 미달). 모델 `claude-opus-5-5`. 임시 worktree ui-perf (lane/ui-perf). 병합 T084 → T081. `tasks/T084.md` |
 | T085 | 엔진: 새 상품 등록 전 점검 계산 (listing) | engine | 완료 | v2.12 | 계약 v2.12 | AC34 | 모델 `claude-opus-5-5`. `tasks/T085.md`. 병합. 독립 검증 통과(Sonnet, 별도 구현과 무작위 입력 40개 일치) |
 | T086 | AI: 새 상품 고칠 문구 6개 (약속 금지, 숫자 자리표시자, 정규식 판정) | ai | 완료 | v2.12 | 계약 v2.12 | — | 모델 `claude-sonnet-5-5`. `tasks/T086.md`. 병합. 독립 검증 통과(Sonnet). 실제 AI 1회: 5칸 통과, color만 rule_mismatch → 후속: color 칸을 "Color note:"로 시작 |
-| T087 | 화면: /listing Scene 3 (점검 모달·고치기·다시 계산·등록, /api/listing-check) | ui | 진행중 | v2.12 | T085, T086, T084, T081 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T087.md` |
+| T087 | 화면: /listing Scene 3 (점검 모달·고치기·다시 계산·등록, /api/listing-check) | ui | 완료 | v2.12 | T085, T086, T084, T081 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T087.md` | 병합. 독립 검증 통과(Sonnet): 화면 무계산, 진행 = step, 정직성 문구, /api/listing-check = checkListing. 스크린샷은 색 병합 뒤 |
 | T088 | 속도 ③: 지난 값 먼저 보여 주고 뒤에서 새로 읽기(최대 10분), 쓰기 뒤 바로 지움, 서버 뜰 때 데우기(선택) | ui | 완료 | v2.12 | T084, T082 | 시간 재기 | 모델 `claude-opus-5-5`. `tasks/T088.md`. 병합. 검증 통과(Sonnet). 95초·5분 쉰 뒤 첫 클릭 0.05~0.10초 |
 | T089 | 디자인 1단계: 색을 시안 v4 그대로 (토큰), 남보라 제거 | ui | 진행중 | v2.13 | — | 스크린샷 | 모델 `claude-sonnet-5-5`. 임시 worktree ui-color. 먼저 병합 → 재배포. `tasks/T089.md` |
 | T090 | 시안 맞추기 A: 배치·작은 UI (위쪽 막대, 배지 3종, Details, 검사 실패 시 Send 막기) | ui | 대기 (T089·T087 뒤) | v2.14 | T089, T087 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T090.md` |
