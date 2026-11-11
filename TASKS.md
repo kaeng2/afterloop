@@ -75,7 +75,7 @@
 | T072 | Products 후속: 처방 처음 상태 모두 꺼짐 + "could save $X" 한 숫자(엔진 fixSavings) | ui | 완료 | v2.10 | T065, T071 | — | 모델 `claude-sonnet-5-5`. `tasks/T072.md` |
 | T073 | Products 표 폭·값 잘림 + 공개 모드 줄 정렬 | ui | 완료 | v2.10 | T072 | — | 모델 `claude-sonnet-5-5`. `tasks/T073.md` |
 | T074 | 화면에 보이는 제품 이름 AfterLoop → DisputeLess (문구 파일, 탭 제목) | ui | 완료 | v2.10 | — | 테스트 결과 같음 | 모델 `claude-sonnet-5-5`. `tasks/T074.md` |
-| T075 | 엔진: 답장 예측 모델(코드 규칙 특징 + 로지스틱, 숫자 일치 보정) + 위험 곡선 + 이번 주 요약 + 수별 예측 | engine | 진행중 | v2.11 | 계약 v2.11 | AC33 | 모델 `claude-opus-5-5`. `tasks/T075.md` |
+| T075 | 엔진: 답장 예측 모델(코드 규칙 특징 + 로지스틱, 숫자 일치 보정) + 위험 곡선 + 이번 주 요약 + 수별 예측 | engine | 완료 | v2.11 | 계약 v2.11 | AC33 | 모델 `claude-opus-5-5`. `tasks/T075.md` |
 | T076 | 화면: 시안 v4 배치(Today·사례·Rehearsal·서랍), 예측 자리는 어댑터(null이면 숨김 = 대체안) | ui | 진행중 | v2.11 | 계약 v2.11 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T076.md` |
 | T077 | AI: 사건 기록 요약(입력 사실만, 약속 금지, 캐시) | ai | 완료 | v2.11 | 계약 v2.11 | — | 모델 `claude-sonnet-5-5`. `tasks/T077.md` |
 | T078 | /intro 껍데기 화면(첫 장면 시안 scene1) | ops | 대기 (시안 파일·빈 자리) | v2.11 | — | 스크린샷 | 모델 `claude-sonnet-5-5` |
