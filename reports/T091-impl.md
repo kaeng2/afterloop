@@ -65,3 +65,34 @@
 ## 컨트롤 타워에 요청할 결정
 - **글을 바꾼 뒤의 Send**: 지금은 관문 그대로(보낼 수 없음)인데, 미리보기는 지시서대로 "Translated to Korean when you send."다. ① 이대로 두기(꺼진 Send 옆 이유 글로 설명), ② 글을 바꾸면 미리보기를 "Use AI draft to send" 계열 문구로 바꾸기, ③ 바꾼 글도 번역·검사해서 보내게 하기(서버 액션·`send.ts`·계약 변경 필요 — 이 레인 밖) 중 하나를 정해 주면 된다. ②는 문구 키 하나(`case.reply.autoTr`)만 바꾸면 된다.
 - 환불 카드 % 불일치를 없애려면 환불 카드 글을 "AI 초안 + 환불 완료 문장"으로 하면 엔진 `forecastMoves`와 정확히 같아진다 (글은 어색해진다). 지금 방식이 괜찮은지 정해 주면 된다.
+
+## main 병합 (2026-11-12)
+기준 SPEC v2.15 (확인). main(`da3babc` T092 merged — T090 A·T096 진입점·밝은 모드·T092 Send 뒤 진행)을 lane/ui에 병합했다. 병합 커밋 `9a4e492`.
+
+충돌 4개 처리:
+| 파일 | 처리 |
+|---|---|
+| `src/app/cases/reply/reply-panel.tsx` | import 충돌만 났다. T091 `useDeskSelection`과 T092 `CaseProgress`를 둘 다 둔다. T092 전환 블록(`sendState === 'done' && outcome.ok` → `<CaseProgress …/>`)은 자동 병합으로 들어왔고, T091 카드 고르기·typeOut·칩·Details도 그대로다 |
+| `src/app/globals.css` | main 쪽(T096 밝은 모드 고정 `html { color-scheme: light }`)을 썼다. 어두운 모드 `@media (prefers-color-scheme: dark)` 분기·토큰은 다시 넣지 않았다(`src/app`에 `prefers-color-scheme` 0건). T091이 더한 밝은 토큰(`--color-choice-on`·`--color-editor-high`·`--color-flash` 등)과 `@keyframes motion-*`는 그대로 남아 있다 |
+| `tests/unit/app-t081.test.ts` | en=ko 허용 목록에 두 쪽 키를 다 넣었다 (T091 `case.reply.refundDraft`·`refundDraftNoName` + T092 `case.progress.buyer.original`·`english`) |
+| `reports/design-match/inventory.md` | 행 키(첫 칸)로 합쳤다. 상태가 한쪽만 차 있으면 그 값을 쓰고, 근거는 두 쪽을 ` · `로 이어 붙였다. 두 쪽이 다 채운 행은 7개(`@keyframes flash`·`@keyframes rise`·`animation: flash 1.6s ease`·`animation: rise .35s ease`·`animation: rise .35s ease both`·`later 3000`·`sc-if toastOn`)이고, 모두 상태가 "구현함"으로 같았다. 한쪽에만 있는 행이나 기본 칸이 다른 행은 없었다 |
+
+컨트롤 타워 결정 반영 (환불 카드 숫자 일치):
+- 환불 카드를 고른 상태(`desk.path === 'refund'`, 글을 직접 고치거나 Clear·칩을 쓰면 `custom`이 된다)에서는 큰 위험 %, 반응 막대, 곡선 끝점, 입력칸 테두리 색이 같은 예측 하나를 쓴다. 그 예측은 환불 안내 글이 아니라 **AI 초안 + 환불 안내 글의 refundNow 문장**을 엔진 `forecastReply`에 넣은 값이다. 특징은 문장마다 판정해서 합치므로(`detectReplyFeatures`) 이 값은 엔진 `forecastMoves`의 refund 값(기본 초안 특징 + refundNow)과 정확히 같다. 화면에서 숫자를 계산하지 않고, 엔진에 넘길 글만 고른다 (`desk-actions.ts refundMoveText`, 엔진 `appendSentence`).
+- 입력칸에 보이는 글은 지금처럼 환불 안내 글이다. 칩·Details %p는 지금처럼 보이는 글 기준이다 (결정 범위가 "큰 위험 %·반응 막대"라서 바꾸지 않았다).
+- 시험: `app-t091`에 "환불 카드를 고른 상태: 큰 위험 %·반응 막대 = 카드 숫자"를 더했다. `forecastMoves` refund pChargeback과 화면 예측이 소수 12자리까지 같은지, 카드 표기 %와 반응 막대 `--seg` 값이 같은지, 환불 안내 글 자체의 예측과는 다른지 본다. 기존 시험(길 없이 환불 안내 글을 넣은 경우)은 그대로 통과한다.
+- 숫자·관문(`editGate`·`canSend`)·데모 모드·`send.ts`·엔진은 바꾸지 않았다. 실제 AI·PayPal 호출과 개발 서버 실행은 하지 않았고, `.env`는 읽지 않았다.
+
+시험 결과 (병합 뒤):
+| 명령 | 통과 | 실패 | 비고 |
+|---|---|---|---|
+| npm test | 2415 | 0 | 69 파일 (storefront 시간 초과 없음) |
+| npx tsc --noEmit | 통과 | 0 | |
+| npm run lint | 통과 | 0 | |
+| npm run test:acceptance | 177 (9 skipped) | 0 | 15 파일 |
+| npm run build | 통과 | 0 | |
+
+남은 문제:
+- 환불 상태에서 큰 %는 카드와 같지만, 칩·Details %p는 보이는 환불 안내 글 기준이라 두 숫자가 다른 글을 바탕으로 한다. 이게 문제라면 칩도 같은 글로 맞출지 정해 주면 된다.
+- 위 "컨트롤 타워에 요청할 결정" 두 번째 항목(환불 카드 % 불일치)은 이번 결정으로 끝났다. 첫 번째(글을 바꾼 뒤 Send)는 아직 정해지지 않았다.
+- 화면 스크린샷 확인은 여전히 하지 않았다 (개발 서버 금지).
