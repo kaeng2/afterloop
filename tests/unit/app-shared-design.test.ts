@@ -186,12 +186,38 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
     const { light } = themeVars();
     expect(light['--shadow-selected']).toBe('rgba(0, 0, 0, 0.14) 4px 4px 28px 6px');
     for (const file of filesUnder(APP, ['.css'])) {
+      // T098a (DECISIONS 11/11 22:55 "기준은 시안 파일 자체 — 그림자 포함"): /intro·/listing은 시안 그림자를
+      // 그 화면 css의 `--i-shadow-*`/`--ls-shadow-*` 변수로만 쓴다 (값은 아래 "T098a 시안 그림자" 시험이 본다).
+      const rel = path.relative(APP, file);
+      const scene = rel.startsWith('intro/') ? 'i' : rel.startsWith('listing/') ? 'ls' : null;
       for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
-        expect(match[1].trim(), `${path.relative(ROOT, file)}: ${match[0]}`).toBe('var(--shadow-selected)');
+        const value = match[1].trim();
+        const where = `${path.relative(ROOT, file)}: ${match[0]}`;
+        if (scene !== null) expect(value, where).toMatch(new RegExp(`^(var\\(--shadow-selected\\)|var\\(--${scene}-shadow-[a-z-]+\\)|none)$`));
+        else expect(value, where).toBe('var(--shadow-selected)');
       }
     }
     for (const file of filesUnder(APP, ['.tsx'])) {
       expect(/boxShadow/.test(readFileSync(file, 'utf8')), path.relative(ROOT, file)).toBe(false);
+    }
+  });
+
+  it('T098a 시안 그림자: /intro·/listing 그림자 변수 값은 시안 Scene1·Main 파일에 있는 값 그대로다', () => {
+    const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/(^|[^\d])0\./g, '$1.');
+    const cases: [string, string, string][] = [
+      ['src/app/intro/intro.css', 'docs/design/mockup-v4/scene1/Scene1.dc.html', '--i-shadow-'],
+      ['src/app/listing/listing.css', 'docs/design/mockup-v4/scene3/Main.dc.html', '--ls-shadow-'],
+    ];
+    for (const [cssFile, mockFile, prefix] of cases) {
+      const css = stripComments(readFileSync(path.join(ROOT, cssFile), 'utf8'));
+      const mock = norm(readFileSync(path.join(ROOT, mockFile), 'utf8'));
+      const defs = Object.entries(varsIn(css)).filter(([name]) => name.startsWith(prefix));
+      expect(defs.length, cssFile).toBeGreaterThan(0);
+      for (const [name, value] of defs) expect(mock.includes(norm(value)), `${cssFile} ${name}: ${value}`).toBe(true);
+      // 쓰는 변수는 모두 정의돼 있다
+      for (const m of css.matchAll(new RegExp(`box-shadow\\s*:\\s*var\\((${prefix}[a-z-]+)\\)`, 'g'))) {
+        expect(defs.map(([n]) => n), `${cssFile} ${m[1]}`).toContain(m[1]);
+      }
     }
   });
 });

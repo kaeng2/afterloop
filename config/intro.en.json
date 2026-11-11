@@ -5,6 +5,7 @@
   "mockBand": "Demo mock — not a real PayPal page",
   "brand": "Seller dashboard",
   "biz": "Business",
+  "mock": "Demo mock",
   "nav": { "home": "Home", "activity": "Activity", "reports": "Reports", "money": "Money", "rc": "Resolution Center", "label": "Main" },
   "openCount": "2",
   "bell": "Notifications",
