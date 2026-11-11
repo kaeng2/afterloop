@@ -6,7 +6,7 @@
 
 | 무엇 | 링크 | 비고 |
 |---|---|---|
-| 공개 데모 (Render) | **[배포 후 채움]** | `DEMO_MODE=public` — PayPal 쓰기 호출 0회, 버튼은 "Simulated" 결과만. 읽기(분쟁·거래 조회)는 실제 샌드박스. 화면 녹화는 이 링크로 해도 된다 (전송 장면만 빼고) |
+| 공개 데모 (Render) | **https://disputeless.onrender.com** (`/api/health` → `{"ok":true,"mode":"public"}`) | `DEMO_MODE=public` — PayPal 쓰기 호출 0회, 버튼은 "Simulated" 결과만. 읽기(분쟁·거래 조회)는 실제 샌드박스. 화면 녹화는 이 링크로 해도 된다 (전송 장면만 빼고) |
 | 실제 전송 장면 | 경희가 따로 찍음 (아래 4절) | `DEMO_MODE=recording` 로컬/별도 환경 |
 
 ## 2. 장면 순서 (PRD v3 15장 기준, Autopilot 없음, 3분 미만 — 목표 2:30 안팎)

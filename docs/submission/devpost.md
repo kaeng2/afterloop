@@ -8,6 +8,10 @@ Seo-yeon, a buyer in Korea, writes in Korean that her sweater has not arrived an
 
 (Carrier feed is demo data; dispute reads, the message and the send are real PayPal sandbox calls.)
 
+**How much does the answer depend on our assumptions?** With the carrier record, a reply beats a refund whenever the chance of winning the dispute is above about 17%. We assume 60%, so that recommendation holds even if our guess is far off. Without the carrier record the refund is a close call: $75.95 expected to fight versus $74 to refund at our assumed 15% win chance (PayPal's $15 Standard dispute fee, charged only when the seller loses). That contrast is the point: one carrier event moves the case from a coin flip to a clear answer. (Checked with the app's engine.)
+
+**Try it:** https://disputeless.onrender.com — public demo mode: real sandbox reads, cached AI answers, and simulated sends (no PayPal writes from the public link).
+
 ## Inspiration
 
 Small sellers who ship abroad often lose disputes they could have settled, because they can't read the buyer's language or know the customs rules. Many just refund. We wanted a tool that works in the settlement window, before a dispute becomes a chargeback, and that tells the seller *why* it is happening. The buyer gains too: an answer in their own language and a real explanation.
@@ -37,9 +41,9 @@ DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo run
 
 **Code.** The seeded simulation is deterministic: the same input always gives the same result, and "as-is" and "with fixes" use the same random numbers, so the difference comes from the fixes, not luck.
 
-**Stack.** Next.js 15, React, TypeScript, zod, AG Grid Community for the product table, deployed on Render. [확인 필요: Render 링크] APIMatic: [확인 필요: 사용했는지, 어느 엔드포인트에 썼는지. 저장소에 근거 없음]
+**Stack.** Next.js 15, React, TypeScript, zod, AG Grid Community for the product table, deployed on Render (https://disputeless.onrender.com).
 
-**What is real and what is not.** Sandbox orders, disputes (including the Korean complaint text), reads, sends and tracking are real PayPal sandbox. Carrier events, earlier inquiries and closed-dispute history are demo data. Rates and win probabilities are our assumptions. The full table is in the README. [확인 필요: README 링크]
+**What is real and what is not.** Sandbox orders, disputes (including the Korean complaint text), reads, sends and tracking are real PayPal sandbox. Carrier events, earlier inquiries and closed-dispute history are demo data. Rates and win probabilities are our assumptions. The full table is in the README (https://github.com/kaeng2/afterloop#readme).
 
 ## Challenges we ran into
 

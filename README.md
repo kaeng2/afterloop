@@ -1,5 +1,15 @@
 # DisputeLess
 
+**A post-purchase copilot for small sellers on PayPal who sell abroad.** When a buyer opens a dispute in a language the seller can't read, DisputeLess reads the case through the PayPal APIs, finds the cause, compares the expected loss of each move (refund, offer, reply), and drafts a reply in the buyer's language — with code, not AI, deciding the numbers, the dates and what may be sent. Before a dispute happens, it rehearses the stock that is left and shows which fixes cut likely losses.
+
+- **Live demo:** https://disputeless.onrender.com (public mode: real PayPal sandbox reads, cached AI, simulated sends)
+- **What is real, what is assumed:** [honesty table](docs/submission/honesty-table.md) — real PayPal sandbox vs demo data vs assumptions vs what AI does vs what code decides, and known limits
+- PayPal AI Hackathon submission. Built with Next.js, TypeScript, AG Grid Community, deployed on Render.
+
+---
+
+## 개발 안내 (한국어)
+
 판매자에게 들어온 PayPal 분쟁 1건을 바둑판처럼 놓고, 허용된 대응마다 기대 손실을 계산해 가장 손실이 적은 수를 추천한다. 판매자가 승인하면 그 수를 PayPal API(샌드박스)로 실행한다. PayPal AI Hackathon 제출작 (마감 KST 2026-11-13 05:00).
 
 - 기준 문서: [SPEC.md](SPEC.md) · 계약: [src/types.ts](src/types.ts) · 결정 기록: [DECISIONS.md](DECISIONS.md) · 작업 보드: [TASKS.md](TASKS.md) · 세션 규칙: [CLAUDE.md](CLAUDE.md)
