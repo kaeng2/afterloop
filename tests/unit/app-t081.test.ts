@@ -130,7 +130,7 @@ describe('T081: 언어 고르기', () => {
           createElement(
             Provider,
             { locale },
-            createElement(TopBar, { todayCount: 2, seller: { initial: 'F', shop: 'Fernwood Knits' } }),
+            createElement(TopBar, { seller: { initial: 'F', shop: 'Fernwood Knits' } }),
           ),
         );
       } finally {
@@ -140,12 +140,11 @@ describe('T081: 언어 고르기', () => {
     const en = bar('en');
     expect(en).toMatch(/<button[^>]*aria-pressed="true"[^>]*>EN<\/button>/);
     expect(en).toMatch(/<button[^>]*aria-pressed="false"[^>]*>한국어<\/button>/);
-    expect(en).toContain('Today (2)');
+    expect(en).not.toContain('Today (');
     const ko = bar('ko');
     expect(ko).toMatch(/<button[^>]*aria-pressed="true"[^>]*>한국어<\/button>/);
     expect(ko).toMatch(/<button[^>]*aria-pressed="false"[^>]*>EN<\/button>/);
-    expect(ko).toContain(t('shell.todayTab', { count: 2 }, 'ko'));
-    expect(ko).not.toContain('Today (2)');
+    expect(ko).not.toContain(t('shell.todayTab', { count: 2 }, 'ko'));
   });
 });
 

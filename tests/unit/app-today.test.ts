@@ -316,9 +316,10 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     const html = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D1, paypalNotice: null }));
     expect(html.match(/aria-current="true"/g)?.length).toBe(1);
     expect(html).toMatch(new RegExp(`aria-current="true" href="/\\?item=${D1}"`));
-    // T076: 날짜 줄은 위쪽 막대로 옮겼다 (TopBar dateLine). 가게 전체 한 줄은 이번 주 카드 아래 링크
+    // T076: 날짜 줄은 위쪽 막대로 옮겼다 (TopBar dateLine). 가게 전체 한 줄은 이번 주 카드 아래 글 (T096: 링크 아님)
     expect(view.dateLine).toBe('Tue, Nov 10 · Black Friday in 17 days');
-    expect(html).toContain('href="/products"');
+    expect(html).not.toContain('href="/products"');
+    expect(html).toContain(`class="weekly-link">${view.storeLine.text}</p>`);
   });
 });
 

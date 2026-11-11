@@ -348,7 +348,7 @@ describe('완료 기준 4: copy en/ko 키 집합 같음', () => {
 
 describe('만들 것 1: 위쪽 막대 — 로고·꼬리표·날짜 왼쪽, 탭·서랍·언어·판매자 오른쪽에 작게', () => {
   const markup = html(
-    createElement(TopBar, { todayCount: 3, seller: { initial: 'H', shop: 'Fernwood Knits' }, modeNote: t('mode.public'), dateLine: 'Wed, Nov 11' }),
+    createElement(TopBar, { seller: { initial: 'H', shop: 'Fernwood Knits' }, modeNote: t('mode.public'), dateLine: 'Wed, Nov 11' }),
   );
 
   it('순서: 로고 → 날짜 → (오른쪽 묶음: 공개 데모 글자 → 탭 → PayPal activity → EN/KO → 판매자)', () => {
@@ -358,15 +358,13 @@ describe('만들 것 1: 위쪽 막대 — 로고·꼬리표·날짜 왼쪽, 탭�
       at('class="shell-date"'),
       at('class="shell-actions"'),
       at('class="shell-mode-note"'),
-      at('class="shell-tabs nav"'),
       at('class="shell-seller"'),
     ];
     for (const index of order) expect(index).toBeGreaterThan(-1);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
-    // 탭은 오른쪽 묶음 안에 있다 (기능 유지: 세 탭 모두)
-    const actions = markup.slice(at('class="shell-actions"'));
-    for (const key of ['nav.listing']) expect(actions).toContain(t(key));
-    expect(actions).toContain(t('shell.todayTab', { count: 3 }));
+    // T096: 탭 없음
+    expect(markup).not.toContain('shell-tab');
+    expect(markup).not.toContain(t('nav.listing'));
   });
 
   it('"Public demo · simulated sends"는 작은 회색 글자, 탭은 작은 글자', () => {
@@ -374,8 +372,6 @@ describe('만들 것 1: 위쪽 막대 — 로고·꼬리표·날짜 왼쪽, 탭�
     const note = css.match(/\.shell-mode-note\s*\{([^}]*)\}/)?.[1] ?? '';
     expect(note).toMatch(/font-size:\s*var\(--text-xs\)/);
     expect(note).toMatch(/color:\s*var\(--color-muted\)/);
-    const tab = css.match(/\.shell-tab\s*\{([^}]*)\}/)?.[1] ?? '';
-    expect(tab).toMatch(/font-size:\s*var\(--text-xs\)/);
   });
 });
 

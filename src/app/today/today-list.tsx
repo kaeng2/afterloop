@@ -108,9 +108,7 @@ export function WeeklyCard({ weekly, storeLine }: { weekly: WeeklyView; storeLin
           <span className="weekly-note">{t('today.weekly.fact')}</span>
         </div>
       </div>
-      <Link href="/products" className="weekly-link">
-        {storeLine}
-      </Link>
+      <p className="weekly-link">{storeLine}</p>
     </section>
   );
 }

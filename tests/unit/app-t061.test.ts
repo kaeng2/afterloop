@@ -659,7 +659,7 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
   });
 
   it('Autopilot 토글이 위쪽 막대에 그려지지 않는다', () => {
-    const markup = html(createElement(TopBar, { todayCount: 5, seller: { initial: 'X', shop: 'Shop' } }));
+    const markup = html(createElement(TopBar, { seller: { initial: 'X', shop: 'Shop' } }));
     expect(markup).not.toContain(t('shell.autopilot'));
     expect(markup).not.toContain('role="switch"');
   });
