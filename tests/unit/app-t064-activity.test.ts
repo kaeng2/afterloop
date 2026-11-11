@@ -309,7 +309,7 @@ describe('T064 6: 위쪽 막대 건수 = 기록 수, 서랍 줄', () => {
     expect(t('activity.title.addTracking')).toBe('Add tracking');
     expect(t('activity.title.readSales')).toBe('Read sales');
     expect(t('activity.title.readCases')).toBe('Read your open cases');
-    expect(t('shell.drawer.note')).toBe('Every call AfterLoop makes on your behalf. Sandbox.');
+    expect(t('shell.drawer.note')).toBe(`Every call ${t('nav.appName')} makes on your behalf. Sandbox.`);
   });
 
   it('응답 코드 배지: 2xx는 ok, 그 밖·응답 없음은 bad', () => {
