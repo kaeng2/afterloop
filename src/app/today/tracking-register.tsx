@@ -21,6 +21,7 @@ export function TrackingRegister({
   action,
   initial = null,
   savings = null,
+  doneId = null,
 }: {
   label: string;
   action: () => Promise<TrackingOutcome>;
@@ -28,9 +29,11 @@ export function TrackingRegister({
   initial?: TrackingOutcome | null;
   /** T091 "+$N just now" 값 (엔진 `trackingSavings` 표기). 등록이 끝나면(가짜 포함) 이번 주 카드에 넘긴다. */
   savings?: string | null;
+  /** T102: 등록이 끝나면(가짜 포함) 왼쪽 목록에서 "Done today"로 옮길 항목 id. 없으면 옮기지 않는다. */
+  doneId?: string | null;
 }) {
   const t = useT();
-  const { report } = useSavings();
+  const { report, markDone } = useSavings();
   const [outcome, setOutcome] = useState<TrackingOutcome | null>(initial);
   const [pending, startTransition] = useTransition();
 
@@ -38,7 +41,11 @@ export function TrackingRegister({
     startTransition(async () => {
       const next = await action();
       setOutcome(next);
-      if (countsAsDone(next.kind)) report(savings);
+      if (countsAsDone(next.kind)) {
+        report(savings);
+        // T102: dry run(simulated)은 Simulated로 표시한다 (실제로 넣지 않은 것을 끝난 것처럼 말하지 않는다)
+        if (doneId !== null) markDone(doneId, { simulated: next.kind === 'simulated' });
+      }
     });
   };
 

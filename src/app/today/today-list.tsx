@@ -2,7 +2,8 @@
  * Today 왼쪽 칸 (T060 → T067 → T076 시안 v4). 위에서 아래로:
  *  1. "DisputeLess this week" 카드 — 계산 가능한 숫자만 (`WeeklyView`: 열린 분쟁 수 · 지킬 수 있는 돈 · AI 초안 수).
  *     예측 어댑터가 없으면 열린 분쟁 수 + 사실 한 줄만. 시드 값이 섞이면 Demo data
- *  2. 묶음 카드 세 개 (Reply needed / Prevent / Routine) — 머리 줄(이름 (N) + 한 줄 설명) + 항목 줄
+ *  2. 묶음 카드 세 개 (Reply needed / Prevent / Routine) — 머리 줄(이름 (N) + 한 줄 설명) + 항목 줄.
+ *     T102: 이 화면에서 끝낸 항목은 맨 아래 "Done today" 묶음 (`today-groups.tsx`, 화면 상태만)
  *
  * 항목 한 줄 (시안 v4): 상품 아이콘(오른쪽 위 점 = 위험 등급) · "PP-R-… · Wool Sweater" · 범주 알약 ·
  * "Reply by Nov 30" · "Seo-yeon Kim · KR". 고른 줄은 옅은 강조색 바탕 + 왼쪽 띠.
@@ -15,60 +16,9 @@ import Link from 'next/link';
 import { Badge } from '../_shared/badges';
 import { t } from '../_shared/copy';
 import { ProductTile } from '../_shared/product-icon';
-import { weeklyView, type TodayGroup, type TodayItem, type TodayView, type WeeklyView } from './model';
+import { weeklyView, type TodayView, type WeeklyView } from './model';
 import { WeeklyBumpCell } from './savings';
-
-function ItemRow({ item, selected }: { item: TodayItem; selected: boolean }) {
-  const { row } = item;
-  return (
-    <li>
-      <Link
-        href={item.href}
-        className="today-item"
-        aria-current={selected ? 'true' : undefined}
-        scroll={item.kind === 'prevent'}
-      >
-        <ProductTile kind={row.icon} size="sm" dot={`today-dot today-dot-${item.dot}`} />
-        <span className="today-item-body">
-          <span className="today-item-top">
-            <span className="today-item-name num">{row.head}</span>
-            {row.product === null ? null : <span className="today-item-product"> · {row.product}</span>}
-          </span>
-          <span className="today-item-tags">
-            {row.category === null ? null : (
-              <span className={`today-pill today-pill-${row.categoryTone}`}>{row.category}</span>
-            )}
-            {row.due === null ? null : <span className="today-item-due num">{row.due}</span>}
-          </span>
-          {row.who === null ? null : <span className="today-item-sub">{row.who}</span>}
-          <span className="today-sr-only">
-            {item.name}
-            {item.label === null ? '' : ` · ${item.label}`} · {t(item.status.key)}
-          </span>
-        </span>
-      </Link>
-    </li>
-  );
-}
-
-function GroupCard({ group, selectedId }: { group: TodayGroup; selectedId: string | null }) {
-  return (
-    <section className={`today-group today-group-${group.key}`} aria-labelledby={`today-group-${group.key}`}>
-      <div className="today-group-head">
-        <span className="today-group-bar" aria-hidden="true" />
-        <h2 className="today-group-title" id={`today-group-${group.key}`}>
-          {group.title} <span className="today-group-count num">({group.items.length})</span>
-        </h2>
-        <span className="today-group-hint">{group.hint}</span>
-      </div>
-      <ul className="today-items">
-        {group.items.map((item) => (
-          <ItemRow key={item.id} item={item} selected={item.id === selectedId} />
-        ))}
-      </ul>
-    </section>
-  );
-}
+import { TodayGroups } from './today-groups';
 
 /** "DisputeLess this week" 카드. 숫자는 `WeeklyView` 그대로 (없는 칸은 그리지 않는다). */
 export function WeeklyCard({ weekly, storeLine }: { weekly: WeeklyView; storeLine: string }) {
@@ -143,9 +93,8 @@ export function TodayList({
 
       <nav aria-label={t('today.listLabel')} className="today-groups">
         {view.groups.length === 0 ? <p className="small muted">{t('today.empty')}</p> : null}
-        {view.groups.map((group) => (
-          <GroupCard key={group.key} group={group} selectedId={selectedId} />
-        ))}
+        {/* T102: 묶음 카드는 클라이언트 (이 화면에서 끝낸 항목을 맨 아래 "Done today"로 옮긴다. 화면 상태만) */}
+        <TodayGroups groups={view.groups} selectedId={selectedId} />
       </nav>
     </div>
   );

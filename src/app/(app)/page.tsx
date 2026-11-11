@@ -43,6 +43,7 @@ export default async function TodayPage({ searchParams }: Props) {
 
   return (
     // T091: "+$N just now"는 화면 상태만 (목록·상세가 같은 상자를 쓴다. 새로고침하면 원래 값)
+    // T102: 끝낸 항목("Done today" 묶음)도 같은 상자 (화면 상태만)
     <SavingsProvider>
       <div className="today-page">
         <ProductFilterBar view={view} />

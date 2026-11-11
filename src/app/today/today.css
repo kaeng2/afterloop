@@ -335,6 +335,26 @@
   background: var(--color-dot-neutral);
 }
 
+/* T102 "Done today" 묶음 (시안 `.it.done{opacity:.55}` · sevSt done #CFD3D8 · secBar.done #CFD3D8 = --color-line) */
+.today-group-done .today-group-bar {
+  background: var(--color-line);
+}
+
+.today-item-done {
+  opacity: 0.55;
+}
+
+.today-dot-done {
+  background: var(--color-line);
+}
+
+/* 섞인 done 묶음에서 가짜 전송 줄에만 붙는 작은 "Simulated" (정직 규칙) */
+.today-item-simulated {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-sub);
+}
+
 .today-item-body {
   display: flex;
   flex: 1;
