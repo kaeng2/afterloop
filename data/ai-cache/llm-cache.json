@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "entries": {
+    "0c4060e21cd5d8442683d9ba06aa18d095ead6bee9e1903342024b8be1d8b1d9": {
+      "response": {
+        "outgoing": "⟦BUYER_NAME_1⟧, 안녕하세요.\n받으신 카디건이 저희 상품 사진에 나온 밝은 오트 베이지 색상과 많이 달라 보여서 죄송해요. 이 문제를 지금 해결하기 위해 {{offerAmount}}의 부분 환불을 제안드리고 싶어요. PayPal에서 제안을 수락하시면 {{offerAmount}}의 부분 환불이 바로 보내지고 이 건은 종료돼요.\n⟦SELLER_NAME_1⟧"
+      },
+      "createdAt": "2026-11-11T10:27:11.701Z"
+    },
+    "133f802f93567b753336394fc51b678d7e43c45367692cbd9897f8ecc24d14f3": {
+      "response": {
+        "back_translation_en": "Hello, ⟦BUYER_NAME_1⟧.\nI'm sorry that the cardigan you received looks very different from the light oat beige color shown in our product photos. To resolve this issue now, I would like to offer you a partial refund of {{offerAmount}}. If you accept the offer on PayPal, the partial refund of {{offerAmount}} will be sent right away and this case will be closed.\n⟦SELLER_NAME_1⟧"
+      },
+      "createdAt": "2026-11-11T10:27:14.786Z"
+    },
+    "181f4238f15c022f1f9203751dbcb4b49b315246db97fbef42e4d13c111f55d1": {
+      "response": {
+        "angryTone": false,
+        "evidence": [
+          "Never received it.",
+          "I checked with my neighbors as well.",
+          "Please refund me."
+        ]
+      },
+      "createdAt": "2026-11-11T10:26:46.870Z"
+    },
+    "48da30aa767eb017304c4977dddda05f03c9be3acff0c4ebfc5c0e0103f326b8": {
+      "response": {
+        "angryTone": true,
+        "evidence": [
+          "이번 주 안에 연락 없으면 카드사에 이의제기할게요",
+          "판매자에게 메시지를 보냈는데 답도 없어요"
+        ]
+      },
+      "createdAt": "2026-11-11T10:26:44.823Z"
+    },
+    "4ef495ee215d2a5cc77d9bfa33339b3efc67009b066df6716f6b59e4f9700f94": {
+      "response": {
+        "buyer_message_en": "The color looks very different from the photos. The listing showed a light oat beige, but the cardigan I received is a dark grey-brown. I would like this resolved.",
+        "coaching": [
+          "Reply today",
+          "Apologize for the color difference",
+          "Offer a partial refund to settle now",
+          "Explain how to accept the offer in PayPal"
+        ],
+        "chips": [
+          "Apology",
+          "Color mismatch",
+          "Partial offer",
+          "Offer in PayPal"
+        ],
+        "draft_en": "Hello ⟦BUYER_NAME_1⟧,\nI am sorry the cardigan you received looks so different from the light oat beige shown in our listing photos. To settle this now, I would like to offer you a partial refund of {{offerAmount}}. If you accept the offer in PayPal, the partial refund of {{offerAmount}} is sent right away and this case is closed.\n⟦SELLER_NAME_1⟧"
+      },
+      "createdAt": "2026-11-11T10:27:00.081Z"
+    },
+    "63c1b3565bc7e4fbfe3907f4eeb314693dc73bee10f4537d0ffdc5b122a9a6af": {
+      "response": {
+        "angryTone": false,
+        "evidence": [
+          "The color looks very different from the photos.",
+          "I would like this resolved."
+        ]
+      },
+      "createdAt": "2026-11-11T10:26:42.126Z"
+    },
+    "716b3c96a42844af05fb62d568edf94ded25bcc0d2463760aab8fe4ac5271047": {
+      "response": {
+        "back_translation_en": "Hello ⟦BUYER_NAME_1⟧,\nI'm really sorry for making you wait so long and for not replying to your message sooner. The sweater has been shipped, but it is being held at Korean customs because the recipient's Personal Customs Clearance Code is missing. Could you send me your Personal Customs Clearance Code? As soon as I receive it, I will pass it on to the courier right away, and after checking with the courier, I will contact you again by ⟦DATE_1⟧.\n⟦SELLER_NAME_1⟧"
+      },
+      "createdAt": "2026-11-11T10:27:41.712Z"
+    },
+    "75567304676e55f92a679a04580a2ca99bc112f3bad6dbd9796f9ac4a2999967": {
+      "response": {
+        "buyer_message_en": "It's already been three weeks and it still hasn't arrived. When I check the tracking, it has been stuck at the same stage for days, and I sent the seller a message but got no reply. It's a sweater I bought as a gift, so I can't wait any longer. If I don't hear from you within this week, I'll file a dispute with my card company.",
+        "coaching": [
+          "Reply today and apologize for the silence",
+          "Explain the parcel is held at customs",
+          "Ask for the personal customs clearance code",
+          "Say you will pass the code to the carrier",
+          "Say when you will follow up"
+        ],
+        "chips": [
+          "Apology",
+          "Customs hold",
+          "Ask for code",
+          "Pass code to carrier",
+          "Follow-up: ⟦DATE_1⟧"
+        ],
+        "draft_en": "Hello ⟦BUYER_NAME_1⟧,\nI am very sorry for the long wait and for not answering your message sooner. Your sweater has been shipped, but it is being held at Korean customs because the recipient's personal customs clearance code is missing. Could you please send me your personal customs clearance code? As soon as I receive it, I will pass it to the carrier, and I will check with the carrier and contact you again by ⟦DATE_1⟧.\n⟦SELLER_NAME_1⟧"
+      },
+      "createdAt": "2026-11-11T10:27:26.894Z"
+    },
+    "8bdd16b1e02773b2fcdad835a106d4a2fbc8359cc8122b46b4cc567710eefd1a": {
+      "response": {
+        "buyer_message_en": "Never received it. Tracking shows it was shipped, but nothing ever arrived at my door or in my mailbox. I checked with my neighbors as well. Please refund me.",
+        "coaching": [
+          "Reply today",
+          "Thank them for checking with neighbors",
+          "Confirm the full refund is on its way",
+          "Keep it short and warm"
+        ],
+        "chips": [
+          "Reply today",
+          "Neighbors checked",
+          "Full refund sent"
+        ],
+        "draft_en": "Hello,\nThank you for letting me know, and for taking the time to check with your neighbors. I'm sorry the parcel never reached you. I have issued a full refund of {{refundAmount}}, and it is on its way to you through PayPal.\n⟦SELLER_NAME_1⟧"
+      },
+      "createdAt": "2026-11-11T10:27:55.200Z"
+    },
+    "91830fdb96caef47a3463aab3a07e916d379da09813f7f935e300d6ea7e04026": {
+      "response": {
+        "outgoing": "안녕하세요 ⟦BUYER_NAME_1⟧,\n오래 기다리시게 하고 메시지에 더 빨리 답장드리지 못해 정말 죄송해요. 스웨터는 발송되었지만, 수취인의 개인통관고유부호가 누락되어 한국 세관에 보류되어 있어요. 개인통관고유부호를 보내주실 수 있을까요? 받는 대로 바로 택배사에 전달하고, 택배사에 확인한 뒤 ⟦DATE_1⟧까지 다시 연락드릴게요.\n⟦SELLER_NAME_1⟧"
+      },
+      "createdAt": "2026-11-11T10:27:38.767Z"
+    },
+    "cc4c40dc3ab9a9b88ec6c92ad592a9e3f3d8c3c49f54c7c0e815a3437eef0ec0": {
+      "response": {
+        "subtype": "B1",
+        "confidence": 0.9,
+        "evidence": [
+          "The color looks very different from the photos.",
+          "listing showed a light oat beige",
+          "cardigan I received is a dark grey-brown"
+        ],
+        "cause": "color differs from listing photos"
+      },
+      "createdAt": "2026-11-11T10:26:39.885Z"
+    }
+  }
+}
