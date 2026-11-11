@@ -147,3 +147,4 @@
 | AC14 | OAuth 클라이언트 | 잠금 | T002 |
 | AC17 | 시드: 상품 4·구매자 12·문의 31·분쟁 9·주문 214, 샌드박스 12건 = T001 표, 종결 손실 합 41300 (수수료는 질 때만), 분쟁 → 주문 연결, 주문일 90일 창, 국가 95·53·31·31·4 | 잠금 (v2.2) | T007, T028 |
 | AC15~AC16, AC18~AC28 | mapper, 분류, SC4, S4, 토큰, 추적, sim, S2, S1, Transaction Search, 색상 문구, FAQ, S3 | 작성 예정 | 각 작업 |
+| T102 | Today 목록: "Done today · Simulated" 묶음 (화면 상태만) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`. `tasks/T102.md` | 사람 결정 "Yes, show it" |
