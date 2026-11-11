@@ -510,9 +510,9 @@ describe('T060 추적 항목 조회 (GET만)', () => {
 // ───────────────────────────── 위쪽 막대 · 서랍 ─────────────────────────────
 
 describe('T060 위쪽 막대', () => {
-  it('탭은 Today / Black Friday rehearsal(= Products) 두 개 (T076 메뉴 이름)', () => {
+  it('기본 탭은 Today / Products (T087: "Black Friday rehearsal"은 /listing으로 — 위쪽 막대 TOP_TABS가 끼운다)', () => {
     expect(NAV_ITEMS.map((item) => item.href)).toEqual(['/', '/products']);
-    expect(NAV_ITEMS.map((item) => t(item.copyKey))).toEqual(['Today', 'Black Friday rehearsal']);
+    expect(NAV_ITEMS.map((item) => t(item.copyKey))).toEqual(['Today', 'Products']);
   });
 
   it('판매자 칩 글자는 설정의 서명에서 온다', () => {
