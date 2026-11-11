@@ -622,10 +622,12 @@
 @keyframes ls-pulse {
   0%,
   100% {
-    outline-color: var(--ls-live-ring);
+    opacity: 0.5;
+    transform: scale(0.92);
   }
   50% {
-    outline-color: transparent;
+    opacity: 1;
+    transform: scale(1.06);
   }
 }
 
@@ -916,6 +918,7 @@
 .ls-prog-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--ls-accent-deep), var(--ls-accent), var(--ls-accent-light));
+  transition: width 0.07s linear;
 }
 .ls-checks {
   gap: 8px;

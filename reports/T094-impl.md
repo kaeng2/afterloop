@@ -20,3 +20,9 @@
 
 ## 컨트롤 타워에 요청할 결정
 없음.
+
+## 후속 (시안 모션 2건)
+- `.ls-prog-fill`에 시안 522행 그대로 `transition: width .07s linear` 추가.
+- `ls-pulse` keyframes를 시안 `pl`과 같게: 0%,100% opacity .5 + scale .92 / 50% opacity 1 + scale 1.06, 1.2s 유지 (outline-color 깜빡임 제거).
+- reduced-motion 끄는 규칙 그대로. 시험에 두 값 검사 추가 (`app-t087-listing.test.ts`). 그 밖은 변경 없음.
+- 실제 AI·PayPal 호출, 개발 서버 없음.

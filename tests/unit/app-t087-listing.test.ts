@@ -382,6 +382,17 @@ describe('T087 진행 표시: setInterval·가짜 카운터 없음 (정적 검�
     expect(h.state.base?.result).toEqual(checkListing(BASE));
   });
 
+  it('시안 모션 값: 진행 막대 width .07s linear, pulse = opacity .5↔1 + scale .92↔1.06 (1.2s), reduced-motion이면 끔', () => {
+    const css = read('src/app/listing/listing.css');
+    const fill = css.match(/\.ls-prog-fill\s*\{[^}]*\}/)?.[0] ?? '';
+    expect(fill).toMatch(/transition:\s*width\s+0?\.07s\s+linear/);
+    const kf = css.match(/@keyframes ls-pulse\s*\{[\s\S]*?\n\}/)?.[0].replace(/\s+/g, ' ') ?? '';
+    expect(kf).toMatch(/0%, 100% \{ opacity: 0?\.5; transform: scale\(0?\.92\); \}/);
+    expect(kf).toMatch(/50% \{ opacity: 1; transform: scale\(1\.06\); \}/);
+    expect(css).toMatch(/\.ls-livedot\s*\{[^}]*animation:\s*ls-pulse 1\.2s/);
+    expect(css).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*animation: none !important[\s\S]*transition: none !important/);
+  });
+
   it('진행 숫자는 progress 액션(= step 반환값)으로만 바뀐다', () => {
     const model = strip(read('src/app/listing/model.ts'));
     expect(model.match(/done: action\.done/g)).toHaveLength(1);
