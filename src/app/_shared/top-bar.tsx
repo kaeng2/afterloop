@@ -83,25 +83,25 @@ export function TopBar({
         </div>
         {dateLine === undefined ? null : <span className="shell-date">{dateLine}</span>}
 
-        <nav className="shell-tabs nav" aria-label={t('shell.tabs')}>
-          {TOP_TABS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="shell-tab"
-              aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-            >
-              {item.href === '/' && todayCount !== undefined ? t('shell.todayTab', { count: todayCount }) : t(item.copyKey)}
-            </Link>
-          ))}
-        </nav>
-
+        {/* T090 시안 v4: 로고·꼬리표·날짜는 왼쪽, 탭·서랍·언어·판매자는 오른쪽에 작게 */}
         <div className="shell-actions">
           {modeNote ? (
-            <span className="shell-mode-note muted small" role="note">
+            <span className="shell-mode-note" role="note">
               {modeNote}
             </span>
           ) : null}
+          <nav className="shell-tabs nav" aria-label={t('shell.tabs')}>
+            {TOP_TABS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="shell-tab"
+                aria-current={isActive(pathname, item.href) ? 'page' : undefined}
+              >
+                {item.href === '/' && todayCount !== undefined ? t('shell.todayTab', { count: todayCount }) : t(item.copyKey)}
+              </Link>
+            ))}
+          </nav>
           {SHOW_AUTOPILOT ? <AutopilotToggle /> : null}
           {/* 기록은 서랍이 서버에서 읽는다 (T064) */}
           <ActivityDrawer />

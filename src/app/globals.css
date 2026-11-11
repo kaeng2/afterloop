@@ -441,6 +441,66 @@ h3 {
   font-style: italic;
 }
 
+/* "AI" 알약 (T090, 시안 v4 `.ai`: 3px 10px 3px 8px, 12px 900, 그라데이션 + 옅은 그림자) */
+.ai-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 3px 8px;
+  font-size: var(--text-xs);
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--color-on-accent);
+  white-space: nowrap;
+  vertical-align: middle;
+  background: var(--gradient-ai);
+  border-radius: var(--radius-pill);
+}
+
+.ai-pill-small {
+  padding: 1px 7px;
+}
+
+.ai-pill-spark {
+  flex: none;
+  fill: currentColor;
+}
+
+/* ── 모션 (T090, SPEC v2.15 8-4장). 시간은 `config/motion.json` → `<html style>`의 `--motion-*` 변수 ─ */
+
+@keyframes motion-ping {
+  0% {
+    r: var(--motion-ping-from-r);
+    opacity: var(--motion-ping-from-opacity);
+  }
+  100% {
+    r: var(--motion-ping-to-r);
+    opacity: 0;
+  }
+}
+
+/* 움직임 줄이기: 모든 전환 시간을 0으로, 반복 애니메이션은 끈다 */
+@media (prefers-reduced-motion: reduce) {
+  /* `<html style>`(설정 값)보다 앞서도록 !important */
+  :root {
+    --motion-hover: 0s !important;
+    --motion-hover-duration: 0s !important;
+    --motion-choice: 0s !important;
+    --motion-curve: 0s !important;
+    --motion-ping-duration: 0s !important;
+    --motion-bar: 0s !important;
+    --motion-editor: 0s !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+    animation: none !important;
+  }
+}
+
 /* ── 위험 단계 3종 (배지와 다른 부품. 색 + 글자 + 점 모양) ──────────────── */
 
 .risk {

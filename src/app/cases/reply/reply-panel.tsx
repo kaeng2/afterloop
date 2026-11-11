@@ -5,11 +5,13 @@
  *
  *  - 머리 줄: "Your reply" + [Try a rushed reply] [Use AI draft] [Clear]
  *  - 두 칸 나란히: 왼쪽 **입력칸**(처음 글 = AI 영어 초안을 실제 값으로 채운 미리보기) + 모서리 차지백 %(예측) +
- *    아래 "As you type" 칩(엔진 특징 판정, 어댑터. 없으면 지금 "Suggested reply covers" 칩) · 오른쪽
- *    "<이름> reads (<언어>)" = **검사받은 전송본**
+ *    아래 "As you type · N good" 칩(엔진 특징 판정, 어댑터. 없으면 지금 "Suggested reply covers" 칩) + 오른쪽
+ *    "Details ⌄" · 오른쪽 칸 "She'll see (<언어>)" = **검사받은 전송본** (회색 바탕, 테두리 없음)
+ *  - Details 안 (T090): "PayPal data only" 한 줄 → 역번역(영어) → 검사 3개(Facts match · No new promises · Follow-up date).
+ *    **검사가 하나라도 실패하면 자동으로 펼치고**(`detailsMustOpen`) [Send]는 관문(`canSend`)이 끈다.
  *  - 입력칸 글이 초안과 다르면 "Edited text can't be sent — use AI draft" (보내기 꺼짐, `editGate`)
  *  - "Her likely reaction" 막대(기다림·환불·차지백) + Expected cost + Her mood next (예측 어댑터, Assumption. 없으면 숨김)
- *  - 맨 아래 한 줄: 검사(Facts match · No new promises · 확인 기한 + "More checks ▸") · 전송 모드 글자 · 보내기 버튼
+ *  - 맨 아래 한 줄: 전송 모드 작은 글씨("Simulated send …") · 보내기 버튼 (검사 줄은 T090부터 Details 안)
  *  - 결과 한 줄 · 답장 후 위험
  *
  * 제안이 먼저인 분쟁은 시안의 짧은 카드: "Offer N% back ($X), the buyer keeps it" + 한 줄 + 전송본 접기 +
@@ -25,12 +27,12 @@
  *
  * 서버 전용 코드를 import하지 않는다 (서버 액션 `../actions`만 부른다).
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 import type { CommitmentCategory } from '@/ai/reply';
 import type { EscalationSignals, ReplyForecast } from '@/types';
 
-import { Badge, RiskLevel } from '../../_shared/badges';
+import { AiPill, Badge, RiskLevel } from '../../_shared/badges';
 import { useT } from '../../_shared/locale-context';
 import { toDollarsCents } from '../../_shared/money';
 import { toPercentRounded } from '../../_shared/percent';
@@ -47,9 +49,10 @@ import {
   buildReplyView,
   canSend,
   canSendOffer,
+  detailsChecks,
+  detailsMustOpen,
   editGate,
   REPLY_KEYS,
-  visibleChecks,
   type CheckRowView,
   type FactRowView,
   type ReplyView,
@@ -78,6 +81,11 @@ export type ReplyPanelProps = {
   forecastBase?: { signals: EscalationSignals; delayDays: number; translated?: boolean } | null;
   /** 제안 비율 (엔진 가정값, 제안 카드 표시만). */
   offerRate?: number | null;
+  /**
+   * Details 첫 줄 "PayPal data only: Full refund $74" (`CaseDesk.paypalOnly`, 엔진 값). 배송사 기록이 없는 분쟁은
+   * "No carrier data linked …" 한 줄 (선택지 카드 아래에서 옮겨 왔다). 없으면 줄 없음.
+   */
+  paypalOnly?: string | null;
   /** 시험용 주입 (기본 = 브라우저 어댑터). */
   forecaster?: ReplyForecaster;
   detector?: ReplyFeatureDetector;
@@ -128,15 +136,17 @@ function FoldSummary({ label }: { label: string }) {
   );
 }
 
-/** "As you type" 칩 (엔진 특징 판정). */
-export function FeatureChips({ chips }: { chips: FeatureChipView[] }) {
+/**
+ * "As you type · N good" + ✓ 칩 (경고 칩은 빨강 글자) + 오른쪽 "Details ⌄" (T090 시안 v4).
+ * 칩을 눌러 넣기·빼기(Add/Remove)와 칩별 %p는 T091 몫이다 — 지금은 모양만.
+ */
+export function FeatureChips({ chips, toggle }: { chips: FeatureChipView[]; toggle?: ReactNode }) {
   const t = useT();
   const good = chips.filter((chip) => chip.good).length;
   return (
     <div className="reply-tray-chips">
       <span className="reply-tray-title">{t('case.reply.asYouType')}</span>
       {chips.length === 0 ? null : <span className="reply-tray-sum num">{t('case.reply.goodCount', { count: good })}</span>}
-      <Badge kind="codeDecides" />
       <ul className="reply-chip-list">
         {chips.map((chip) => (
           <li
@@ -149,6 +159,91 @@ export function FeatureChips({ chips }: { chips: FeatureChipView[] }) {
           </li>
         ))}
       </ul>
+      {toggle ?? null}
+    </div>
+  );
+}
+
+/** "Details ⌄" 단추 (펼침 여부는 부르는 쪽이 정한다 — 검사 실패면 늘 펼침). */
+function DetailsToggle({
+  open,
+  forced,
+  controls,
+  onToggle,
+}: {
+  open: boolean;
+  forced: boolean;
+  controls: string;
+  onToggle: () => void;
+}) {
+  const t = useT();
+  return (
+    <button
+      type="button"
+      className="reply-details-toggle"
+      aria-expanded={open}
+      aria-controls={controls}
+      data-forced={forced ? 'true' : undefined}
+      onClick={forced ? undefined : onToggle}
+    >
+      {t(open ? 'case.reply.detailsHide' : 'case.reply.details')}
+      <svg
+        className={open ? 'reply-details-caret reply-details-caret-open' : 'reply-details-caret'}
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </button>
+  );
+}
+
+/**
+ * Details 안 (T090): "PayPal data only" 한 줄 → 역번역(영어) → 검사 3개(Facts match · No new promises · Follow-up date).
+ * 실패한 보조 검사(직접 쓴 값·호칭)도 여기 보인다. 칩별 %p는 T091이 더한다.
+ */
+function DetailsPanel({
+  id,
+  view,
+  paypalOnly,
+  hidden,
+}: {
+  id: string;
+  view: ReplyView;
+  paypalOnly: string | null;
+  hidden: boolean;
+}) {
+  const t = useT();
+  const checks = detailsChecks(view.checkRows);
+  const facts = view.factRows.filter((fact) => fact.primary);
+  return (
+    <div id={id} className="reply-details" role="group" aria-label={t('case.reply.checks')} hidden={hidden}>
+      {paypalOnly === null ? null : (
+        <p className="reply-details-paypal num" title={t('case.choice.paypalOnlyHint')}>
+          {paypalOnly}
+        </p>
+      )}
+      {view.backTranslationEn === null ? null : (
+        <div className="reply-details-back">
+          <span className="reply-details-label">{t('case.reply.backTranslation')}</span>
+          <p className="reply-text" lang="en">
+            {view.backTranslationEn}
+          </p>
+        </div>
+      )}
+      {checks.length === 0 && facts.length === 0 ? null : (
+        <ul className="reply-list small">
+          {checks.map((row) => (
+            <CheckRow key={row.labelKey} row={row} />
+          ))}
+          {facts.map((fact) => (
+            <FactRow key={fact.token} fact={fact} />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -168,7 +263,8 @@ export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: 
         </div>
         <div className="reaction-bar" aria-hidden="true">
           {reaction.parts.map((part) => (
-            <span key={part.key} className={`reaction-seg reaction-seg-${part.key}`} style={{ flexGrow: part.p }} />
+            // 시안: 막대 칸 너비 = 확률 (그리기 자리 값), transition width .35s (config/motion.json desk.reactionBar)
+            <span key={part.key} className={`reaction-seg reaction-seg-${part.key}`} style={{ '--seg': part.p } as CSSProperties} />
           ))}
         </div>
         <ul className="reaction-legend">
@@ -191,43 +287,6 @@ export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: 
   );
 }
 
-/** 맨 아래 검사 줄 (Code decides). */
-function ChecksLine({ view }: { view: ReplyView }) {
-  const t = useT();
-  const checks = visibleChecks(view.checkRows);
-  const shownFacts = view.factRows.filter((fact) => fact.primary);
-  const foldedFacts = view.factRows.filter((fact) => !fact.primary);
-  const hasFolded = checks.folded.length > 0 || foldedFacts.length > 0;
-  if (!view.available || view.checkRows.length === 0) return <span className="reply-checks" />;
-  return (
-    <div className="reply-checks">
-      <h3 className="reply-sr-only">{t('case.reply.checks')}</h3>
-      <ul className="reply-inline small">
-        {checks.shown.map((row) => (
-          <CheckRow key={row.labelKey} row={row} />
-        ))}
-        {shownFacts.map((fact) => (
-          <FactRow key={fact.token} fact={fact} />
-        ))}
-      </ul>
-      <Badge kind="codeDecides" />
-      {hasFolded ? (
-        <details className="reply-fold">
-          <FoldSummary label={t('case.reply.moreChecks')} />
-          <ul className="reply-list small">
-            {checks.folded.map((row) => (
-              <CheckRow key={row.labelKey} row={row} />
-            ))}
-            {foldedFacts.map((fact) => (
-              <FactRow key={fact.token} fact={fact} />
-            ))}
-          </ul>
-        </details>
-      ) : null}
-    </div>
-  );
-}
-
 export function ReplyPanel({
   disputeId,
   base,
@@ -236,10 +295,13 @@ export function ReplyPanel({
   buyerShort = null,
   forecastBase = null,
   offerRate = null,
+  paypalOnly = null,
   forecaster = forecastReplyClient,
   detector = detectReplyFeaturesClient,
 }: ReplyPanelProps) {
   const t = useT();
+  const detailsId = useId();
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirmed, setConfirmed] = useState<CommitmentCategory[]>([]);
   const [sendState, setSendState] = useState<SendState>('idle');
   const [outcome, setOutcome] = useState<SendOutcome | null>(null);
@@ -262,10 +324,24 @@ export function ReplyPanel({
   const offerGate: SendGate | null =
     view.offer === null ? null : noReply ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSendOffer(view);
   const language = languageKey === null ? t('case.send.languageUnknown') : t(languageKey);
+  // 시안 "She'll see (Korean)" — 언어 이름은 데이터(구매자 언어)에서
   const readsLabel =
-    buyerShort === null
-      ? t('case.reply.buyerReadsUnknown', { language })
-      : t('case.reply.buyerReads', { name: buyerShort, language });
+    buyerShort === null ? t('case.reply.buyerReadsUnknown', { language }) : t('case.reply.sheSees', { language });
+
+  // Details ⌄ (T090): 검사가 하나라도 실패하면 자동으로 펼친다 (닫을 수 없다). [Send]는 관문이 이미 끈다
+  const detailsForced = detailsMustOpen(view);
+  const detailsShown = detailsOpen || detailsForced;
+  const detailsToggle = view.available ? (
+    <DetailsToggle
+      open={detailsShown}
+      forced={detailsForced}
+      controls={detailsId}
+      onToggle={() => setDetailsOpen((value) => !value)}
+    />
+  ) : null;
+  const detailsPanel = view.available ? (
+    <DetailsPanel id={detailsId} view={view} paypalOnly={paypalOnly} hidden={!detailsShown} />
+  ) : null;
 
   // 예측 (브라우저 어댑터 = 엔진 순수 함수. 쓸 수 없으면 null → 칸이 숨는다). 입력 글이 바뀔 때마다 다시 받는다
   const board = base.board ?? null;
@@ -432,15 +508,12 @@ export function ReplyPanel({
         : t(keeps ? 'case.offer.title.keep' : 'case.offer.title.return', { percent: toPercentRounded(offerRate), amount });
     return (
       <section className="reply offer-card" aria-labelledby="reply-title">
-        <span className="work-ai" aria-hidden="true">
-          {t('case.work.ai')}
-        </span>
+        <AiPill />
         <h2 className="offer-title num" id="reply-title">
           {title}
         </h2>
         <p className="offer-line">{t('case.offer.line', { language })}</p>
         <p className="offer-badges">
-          <Badge kind="codeDecides" />
           <Badge kind="assumption" />
         </p>
 
@@ -451,15 +524,13 @@ export function ReplyPanel({
             <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined}>
               {view.outgoing.text}
             </p>
-            {view.sourceBadges.map((kind) => (
-              <Badge key={kind} kind={kind} />
-            ))}
           </details>
         ) : null}
         {view.available ? commitmentsBlock : null}
+        {detailsToggle}
+        {detailsPanel}
 
         <div className="reply-foot">
-          <ChecksLine view={view} />
           <div className="reply-actions">
             {modeLine}
             <div className="reply-send">
@@ -508,9 +579,7 @@ export function ReplyPanel({
                 {t('case.reply.rushed')}
               </button>
               <button type="button" className="desk-button-tint" disabled={busy} onClick={() => setText(anchor)}>
-                <span className="work-ai work-ai-small" aria-hidden="true">
-                  {t('case.work.ai')}
-                </span>
+                <AiPill small decorative />
                 {t('case.reply.useAiDraft')}
               </button>
               <button type="button" className="desk-button-tint" disabled={busy} onClick={() => setText('')}>
@@ -540,39 +609,38 @@ export function ReplyPanel({
                       placeholder={t('case.reply.placeholder')}
                       onChange={(event) => setText(event.target.value)}
                     />
+                    {/* T090: 알약 안 Assumption은 뺀다 (Assumption은 반응 막대 쪽 하나만) */}
                     {reaction === null ? null : (
-                      <span className="reply-editor-pill num">
-                        {t('case.choice.chargeback', { percent: reaction.chargeback })} <Badge kind="assumption" />
-                      </span>
+                      <span className="reply-editor-pill num">{t('case.choice.chargeback', { percent: reaction.chargeback })}</span>
                     )}
                   </div>
                   <div className="reply-tray">
                     {chips !== null ? (
-                      <FeatureChips chips={chips} />
-                    ) : view.chips.length === 0 ? null : (
+                      <FeatureChips chips={chips} toggle={detailsToggle} />
+                    ) : (
                       <div className="reply-tray-chips">
-                        <span className="reply-tray-title">{t('case.reply.covers')}</span>
-                        <ul className="reply-chip-list">
-                          {view.chips.map((chip, index) => (
-                            <li key={index} className="reply-chip">
-                              {chip}
-                            </li>
-                          ))}
-                        </ul>
-                        {view.sourceBadges.map((kind) => (
-                          <Badge key={kind} kind={kind} />
-                        ))}
+                        {view.chips.length === 0 ? null : (
+                          <>
+                            <span className="reply-tray-title">{t('case.reply.covers')}</span>
+                            <ul className="reply-chip-list">
+                              {view.chips.map((chip, index) => (
+                                <li key={index} className="reply-chip">
+                                  {chip}
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                        {detailsToggle}
                       </div>
                     )}
+                    {detailsPanel}
                   </div>
                 </div>
               )}
 
               <div className="reply-block reply-box">
-                <div className="row">
-                  <h3 className="reply-box-title">{readsLabel}</h3>
-                  {view.outgoing === null ? null : view.sourceBadges.map((kind) => <Badge key={kind} kind={kind} />)}
-                </div>
+                <h3 className="reply-box-title">{readsLabel}</h3>
                 {view.outgoing === null ? (
                   <p className="small muted">{t('case.reply.outgoingUnavailable')}</p>
                 ) : (
@@ -584,12 +652,13 @@ export function ReplyPanel({
               </div>
             </div>
 
-            {view.backTranslationEn === null ? null : (
-              <details className="reply-fold">
-                <FoldSummary label={t('case.reply.backTranslation')} />
-                <p className="reply-text small">{view.backTranslationEn}</p>
-              </details>
-            )}
+            {/* 입력칸이 없으면(초안 글 없음) Details를 여기 둔다 */}
+            {anchor === null ? (
+              <>
+                {detailsToggle}
+                {detailsPanel}
+              </>
+            ) : null}
 
             {commitmentsBlock}
 
@@ -597,8 +666,8 @@ export function ReplyPanel({
           </>
         ) : null}
 
+        {/* T090: 검사 줄은 Details 안으로. 맨 아래는 "Simulated send" 작은 글씨 + [Send] */}
         <div className="reply-foot">
-          <ChecksLine view={view} />
           <div className="reply-actions">
             {modeLine}
             <div className="reply-send">

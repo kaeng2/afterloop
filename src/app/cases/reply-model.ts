@@ -250,6 +250,23 @@ export function visibleChecks(rows: CheckRowView[]): { shown: CheckRowView[]; fo
   };
 }
 
+/**
+ * Details ⌄ 안의 검사 줄 (T090). 순서: Facts match · No new promises · (실패한 나머지 검사) — 확인 기한 날짜는
+ * `factRows`의 `primary` 줄이 셋째로 붙는다. 통과한 보조 검사(직접 쓴 값·호칭)는 보이지 않는다.
+ */
+export function detailsChecks(rows: CheckRowView[]): CheckRowView[] {
+  return visibleChecks(rows).shown;
+}
+
+/**
+ * Details를 **자동으로 펼쳐야** 하는가 (T090 안전장치): 검사 줄 하나라도 실패했거나, 번역이 약속을 더했으면 참.
+ * 이때 [Send]는 `canSend`가 이미 끈다 (`checkOk`·`addedInTranslation`) — 이 함수는 펼침만 정한다.
+ */
+export function detailsMustOpen(view: Pick<ReplyView, 'available' | 'checkRows' | 'addedInTranslation'>): boolean {
+  if (!view.available) return false;
+  return view.checkRows.some((row) => !row.ok) || view.addedInTranslation.length > 0;
+}
+
 /** 막힌 이유 키. `canSend`가 고른다. */
 export const BLOCK_KEYS = {
   noDraft: 'case.send.blocked.noDraft',

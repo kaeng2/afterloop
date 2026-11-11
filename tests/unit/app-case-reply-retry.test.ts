@@ -168,15 +168,15 @@ describe('1번: 대화·배송사 카드는 왼쪽 열에 위아래로', () => {
   });
 
   // T061: 배송사 카드는 없애고 배송사 줄이 대화 안으로 들어갔다. 대화와 답장 칸은 넓은 폭에서 두 칸이다
-  it('순서: 비교(case-hero) → 대화(case-body 안), 배송사 줄은 대화 안. 따로 있던 배송사 카드가 없다', () => {
+  // T090: 대화 사이의 배송사 줄도 뺐다 (배송사 기록은 사건 기록 카드에)
+  it('순서: 비교(case-hero) → 대화(case-body 안). 배송사 카드도, 대화 안 배송사 줄도 없다', () => {
     const html = renderToStaticMarkup(createElement(CaseView, { view: buildCaseView(caseInput(), P, R), llmOk: true }));
     expect(html).not.toContain('id="case-carrier"');
     const body = html.indexOf('class="case-body');
     const conversation = html.indexOf('id="case-conversation"');
-    const carrierLine = html.indexOf('class="case-carrier-line"');
     expect(html.indexOf('case-hero')).toBeLessThan(body);
     expect(conversation).toBeGreaterThan(body);
-    expect(carrierLine).toBeGreaterThan(conversation);
+    expect(html).not.toContain('class="case-carrier-line"');
   });
 
   // T068: 대화 | 답장 두 칸을 없애고 폭과 상관없이 한 열 (위에서 아래로 한 줄기)

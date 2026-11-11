@@ -312,7 +312,9 @@ describe('완료 기준 1: 어댑터가 null이면 화면이 깨지지 않고 �
     expect(markup).not.toContain('reply-editor-pill');
     expect(markup).not.toContain('class="history-summary"');
     expect(markup).not.toMatch(/Chargeback \d+%/);
-    for (const needle of ['class="history-card"', 'class="choice-list"', 'class="reply-textarea"', 'Seo-yeon reads (Korean)', 'class="reply-foot"', 'Send in Korean']) {
+    // T090: 전송본 제목은 시안 "She’ll see (Korean)"
+    const sheSees = t('case.reply.sheSees', { language: t('case.view.lang.KO') });
+    for (const needle of ['class="history-card"', 'class="choice-list"', 'class="reply-textarea"', sheSees, 'class="reply-foot"', 'Send in Korean']) {
       expect(markup, needle).toContain(needle);
     }
     // 특징 판정이 없으면 지금 칩("Suggested reply covers")
@@ -358,7 +360,7 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
     );
   });
 
-  it('예상 반응: 막대 3분할 비율 = 예측 확률 그대로(flex-grow), 기대 비용·기분·지금 기분', async () => {
+  it('예상 반응: 막대 3분할 비율 = 예측 확률 그대로(T090: --seg → width, transition), 기대 비용·기분·지금 기분', async () => {
     const reaction = reactionView(FAKE_FORECAST, true);
     expect(reaction?.parts.map((part) => [part.key, part.p, part.display])).toEqual([
       ['wait', 0.71, '71%'],
@@ -382,18 +384,20 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
       }),
     );
     const bar = markup.slice(markup.indexOf('class="reaction-bar"'), markup.indexOf('class="reaction-legend"'));
-    expect(bar).toContain('style="flex-grow:0.71"');
-    expect(bar).toContain('style="flex-grow:0.17"');
-    expect(bar).toContain('style="flex-grow:0.12"');
+    expect(bar).toContain('style="--seg:0.71"');
+    expect(bar).toContain('style="--seg:0.17"');
+    expect(bar).toContain('style="--seg:0.12"');
     expect(markup).toContain(t('case.reaction.cost', { amount: toDollarsRounded(3680) }));
     expect(markup).toContain(t('case.reaction.title', { name: 'Seo-yeon' }).replace(/'/g, '&#x27;'));
     expect(markup).toContain(`class="reaction-mood-value">${t('case.mood.okay')}<`);
     expect(markup).toContain(t('case.reaction.moodNow', { mood: t('case.mood.angry') }));
     // 입력칸 모서리 "Chargeback 12%"
     expect(markup).toContain(`class="reply-editor-pill num">${t('case.choice.chargeback', { percent: '12%' })}`);
-    // 입력칸 모서리 %에도 Assumption 배지 (T079)
+    // T090: 입력칸 모서리 알약 안 Assumption은 뺐다 (Assumption은 반응 막대 쪽 하나만)
     const pill = markup.slice(markup.indexOf('class="reply-editor-pill num"'), markup.indexOf('class="reply-tray"'));
-    expect(pill).toContain(copyTables.en['badge.assumption']);
+    expect(pill).not.toContain(copyTables.en['badge.assumption']);
+    const reactionHead = markup.slice(markup.indexOf('class="reaction-head"'), markup.indexOf('class="reaction-bar"'));
+    expect(reactionHead).toContain(copyTables.en['badge.assumption']);
     // As you type 칩: 참인 특징만, 좋은 것 ✓ 먼저, 조심할 것 ! (걸린 문장은 title)
     const tray = markup.slice(markup.indexOf('class="reply-tray-chips"'), markup.indexOf('class="reply-block reply-box"'));
     expect(tray).toContain(t('case.reply.asYouType'));

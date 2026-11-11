@@ -297,6 +297,8 @@
   min-width: 0;
   padding: 12px 16px;
   color: var(--color-heading);
+  /* 시안 `.it` transition:background-color .15s (config/motion.json desk.hover) */
+  transition: background-color var(--motion-hover);
 }
 
 .today-item:hover {

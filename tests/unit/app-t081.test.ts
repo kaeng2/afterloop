@@ -237,6 +237,9 @@ describe('T081: 문구 파일', () => {
       'case.head.title',
       'case.curve.fromTo',
       'case.work.ai',
+      'badge.aiSuggests', // T090: "AI" 알약 (두 언어 모두 기호처럼 "AI")
+      'case.curve.tick100', // T090: 곡선 눈금 "100%"
+      'case.curve.tick50', // T090: 곡선 눈금 "50%"
       'case.reply.rushedExample', // 구매자에게 나가는 영어 답장 예시 (영어 그대로가 맞다)
     ]);
     const same = copyKeys(copyTables.en).filter((key) => copyTables.en[key] === copyTables.ko[key]);

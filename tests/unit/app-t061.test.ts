@@ -147,7 +147,8 @@ describe('1번: 머리글 (T076 시안 v4) + 작은 위험 배지', () => {
     expect(text(meta).trim()).toBe(
       `${toDollarsRounded(D2_BASE.amountCents)} · Seo-yeon Kim · Korea · reads Korean · Open 3 days · ${copyTables.en['case.status.WAITING_FOR_SELLER_RESPONSE']}`,
     );
-    expect(CASE_HTML.match(/case-risk-button/g)).toHaveLength(1);
+    // T090: 머리글의 "High · Score 6" 펼침은 뺐다 (위험은 곡선 카드)
+    expect(CASE_HTML).not.toContain('case-risk-button');
   });
 });
 
@@ -167,19 +168,22 @@ describe('2번: 선택지 카드와 대응 시간 비용', () => {
     expect(buildCaseView(input(), P2, R).compare.before.timeCost?.display).toBe(toDollarsRounded(500));
   });
 
-  it('Assumption 배지(단계 머리)와 Demo data 배지("PayPal data only" 줄)가 남아 있다', () => {
+  it('Assumption 배지(단계 머리)가 남아 있고, T090부터 "PayPal data only" 줄은 카드 아래에 없다 (답장 칸 Details로)', () => {
     const step = CASE_HTML.slice(CASE_HTML.indexOf('class="desk-step"'));
     expect(step).toContain(copyTables.en['badge.assumption']);
-    expect(step.indexOf(copyTables.en['badge.demo'])).toBeGreaterThan(step.indexOf('PayPal data only'));
+    expect(step).not.toContain('PayPal data only');
+    expect(DESK.paypalOnly).toContain('PayPal data only');
   });
 });
 
 // ── 3. 한 줄 요약 ──────────────────────────────────────────────────────
 
 describe('3번: 한 줄 요약은 엔진 원인 전환에서', () => {
-  it('전 A1 → 후 A2 = case.view.summary.A1_A2, Code decides', () => {
+  it('전 A1 → 후 A2 = case.view.summary.A1_A2, Code decides (보기용 값). T090: 선택지 카드가 있으면 화면에 그리지 않는다', () => {
     expect(VIEW.summary).toEqual({ key: 'case.view.summary.A1_A2', badge: 'codeDecides', codes: { before: 'A1', after: 'A2' }, needsReview: false });
-    expect(text(CASE_HTML)).toContain(copyTables.en['case.view.summary.A1_A2']);
+    expect(text(CASE_HTML)).not.toContain(copyTables.en['case.view.summary.A1_A2']);
+    // 선택지 카드 없이 그리면(desk 없음) 요약 한 줄이 남는다
+    expect(text(html(createElement(CaseView, { view: VIEW, llmOk: true })))).toContain(copyTables.en['case.view.summary.A1_A2']);
   });
 
   it('원인이 바뀌면 키도 바뀐다 (문구가 없는 전환은 후 원인의 이름)', () => {
@@ -206,24 +210,27 @@ describe('3번: 한 줄 요약은 엔진 원인 전환에서', () => {
 describe('4번: 대화 — 한국어가 기본, 영어는 아래 작게', () => {
   const conv = html(createElement(Conversation, { messages: VIEW.messages, carrierLine: VIEW.carrierLine, locale: 'ko' }));
 
-  it('말풍선마다 원문(lang=ko, 큰 글자)이 먼저, 영어(lang=en, 작은 글자)가 뒤', () => {
-    const bubbles = conv.match(/<li class="case-bubble[\s\S]*?<\/li>/g) ?? [];
+  it('말풍선마다 원문(lang=ko, 큰 글자)이 먼저, 아래 한 줄 "Translated · 영어(lang=en, 작은 글자) · 날짜" (T090)', () => {
+    const bubbles = conv.match(/<li class="case-bubble-wrap">[\s\S]*?<\/li>/g) ?? [];
     expect(bubbles.length).toBe(2);
     for (const bubble of bubbles) {
       const ko = bubble.indexOf('class="case-bubble-original" lang="ko"');
-      const en = bubble.indexOf('class="case-bubble-en" lang="en"');
+      const sub = bubble.indexOf('class="case-bubble-sub"');
+      const en = bubble.indexOf('lang="en"');
       expect(ko).toBeGreaterThan(0);
-      expect(en).toBeGreaterThan(ko);
+      expect(sub).toBeGreaterThan(ko);
+      expect(en).toBeGreaterThan(sub);
+      expect(text(bubble.slice(bubble.indexOf('>', sub) + 1)).trim()).toMatch(new RegExp(`^${copyTables.en['case.view.translated']} · `));
     }
     expect(conv).not.toContain('Show original');
     const css = readFileSync(path.join(ROOT, 'src/app/cases/view/case.css'), 'utf8');
     expect(css.match(/\.case-bubble-original\s*\{[^}]*font-size:\s*var\(--text-md\)/)).not.toBeNull();
-    expect(css.match(/\.case-bubble-en\s*\{[^}]*font-size:\s*var\(--text-xs\)/)).not.toBeNull();
+    expect(css.match(/\.case-bubble-sub\s*\{[^}]*font-size:\s*var\(--text-xs\)/)).not.toBeNull();
   });
 
-  it('AI 번역에는 AI suggests 배지', () => {
-    const real = (conv.match(/<li class="case-bubble"[\s\S]*?<\/li>/) ?? [''])[0];
-    expect(real).toContain(copyTables.en['badge.aiSuggests']);
+  it('T090: 말풍선에는 출처 배지 대신 "AI read" 태그 줄(있는 판정만)만 — AI suggests·Code decides 배지 없음', () => {
+    expect(conv).not.toContain('Code decides');
+    expect(conv).not.toContain('class="ai-pill"');
   });
 
   it('강조: 한국어 "카드사에 이의제기", 영어 밑줄은 "dispute with my card company"까지', () => {
@@ -236,13 +243,13 @@ describe('4번: 대화 — 한국어가 기본, 영어는 아래 작게', () => 
     ]); // 문장 부호가 끼면 잇지 않는다
   });
 
-  it('날짜 순: Oct 30 배송사 줄 → Nov 2 문의 → 날짜 모르는 실제 글. 배송사 줄에 Demo data', () => {
+  it('날짜 순: Nov 2 문의 → 날짜 모르는 실제 글. T090: 대화 사이 배송사 줄("Carrier: Customs hold")은 그리지 않는다', () => {
     const order = timeline(VIEW.messages, VIEW.carrierLine).map((e) => (e.kind === 'carrier' ? 'carrier' : e.message.source));
     expect(order).toEqual(['carrier', 'demo', 'paypal']);
-    const line = conv.slice(conv.indexOf('class="case-carrier-line"'));
-    const carrier = line.slice(0, line.indexOf('</li>'));
-    expect(text(carrier)).toContain(`Oct 30 · Carrier: ${CUSTOMS_EVENT}`);
-    expect(carrier).toContain(copyTables.en['badge.demo']);
+    expect(conv).not.toContain('class="case-carrier-line"');
+    expect(text(conv)).not.toContain(`Oct 30 · Carrier: ${CUSTOMS_EVENT}`);
+    const items = conv.match(/<li class="case-bubble-wrap">[\s\S]*?<\/li>/g) ?? [];
+    expect(items[0]).toContain(copyTables.en['badge.demo']);
   });
 
   it('따로 있던 배송사 카드가 없다', () => {
@@ -302,14 +309,17 @@ describe('5~6번: 답장 칸 — 접기와 검사 줄', () => {
       createElement(ReplyPanel, { disputeId: ID, base: replyBase(draft, translation), replyId: null, languageKey: 'case.view.lang.KO', buyerShort: 'Seo-yeon' }),
     );
     expect(markup).not.toContain('coaching tips');
-    const reads = markup.indexOf('Seo-yeon reads (Korean)');
+    // T090 시안: 오른쪽 제목 "She'll see (Korean)" (언어 이름은 데이터에서)
+    const reads = markup.indexOf(t('case.reply.sheSees', { language: t('case.view.lang.KO') }));
     const write = markup.indexOf('class="reply-textarea"');
     expect(write).toBeGreaterThan(0);
     expect(reads).toBeGreaterThan(write);
     expect(markup).toContain('class="reply-text reply-outgoing" lang="ko"');
     expect(markup).toMatch(/<textarea[^>]*class="reply-textarea" lang="en"/);
-    // 역번역은 접기 안
-    expect(markup).toMatch(/<summary class="reply-fold-summary"><span>Back-translation to English<\/span>/);
+    // T090: 역번역은 Details ⌄ 안 (통과면 접혀 있다)
+    const details = markup.slice(markup.indexOf('class="reply-details"'));
+    expect(details).toMatch(/^class="reply-details"[^>]*hidden/);
+    expect(details).toContain('Back-translation to English');
   });
 
   it('통과하면 보이는 줄은 3개: Facts match · No new promises · Follow-up date 11월 17일. 나머지는 More checks 안', async () => {
@@ -321,7 +331,9 @@ describe('5~6번: 답장 칸 — 접기와 검사 줄', () => {
     expect(folded.map((r) => r.labelKey)).toEqual(['case.reply.check.literal', 'case.reply.check.nameHonorific']);
 
     const markup = html(createElement(ReplyPanel, { disputeId: ID, base: replyBase(draft, translation), replyId: null, languageKey: 'case.view.lang.KO' }));
-    const visible = markup.slice(markup.indexOf('Checks before sending'), markup.indexOf('More checks'));
+    // T090: 검사 줄은 Details ⌄ 안의 3줄 (통과한 보조 검사는 보이지 않는다)
+    const start = markup.indexOf('class="reply-details"');
+    const visible = markup.slice(start, markup.indexOf('</ul>', start));
     expect((visible.match(/class="reply-check/g) ?? []).length).toBe(3);
     expect(visible).not.toContain(t('case.reply.check.literal'));
   });

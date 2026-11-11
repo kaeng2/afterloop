@@ -1,10 +1,10 @@
 /**
- * 대화 (T061 4번). 말풍선. **구매자 원문이 기본**(큰 글자), 그 아래 영어 번역을 작게 + 출처 배지.
- * 날짜 순서 사이에 배송사 줄 한 줄("Oct 30 · Carrier: …" + Demo data)을 끼운다 — 따로 있던 배송사 카드를 대신한다.
+ * 대화 (T061 4번 → T090 시안 v4). 말풍선. **구매자 원문이 기본**(큰 글자), 그 아래 한 줄 "Translated · 영어 · 날짜".
+ * T090: 대화 사이의 배송사 줄("Carrier: Customs hold")은 그리지 않는다 (배송사 기록은 사건 기록 카드에 있다).
  *
- * - 실제 글: "From PayPal" 표시 (배지 없음). 시연용 글(시드 문의): 'Demo data' 배지.
- * - 영어: AI 번역이면 'AI suggests', 시드 번역이면 'Demo data'. 영어가 없는 글은 원문만 두고, 구매자 언어가
- *   영어가 아니면 "English translation unavailable"을 보인다 (번역을 지어내지 않는다).
+ * - 시연용 글(시드 문의·시드 번역): 말풍선 끝에 작은 'Demo data' **하나만**.
+ * - 영어가 없는 글은 원문만 두고, 구매자 언어가 영어가 아니면 "English translation unavailable"을 보인다
+ *   (번역을 지어내지 않는다).
  * - 카드사 언급은 엔진 신호가 참일 때만 `<mark>`로 보인다 (`../model.ts`).
  * - 날짜가 있는 글·배송사 줄은 날짜 순, 날짜를 모르는 실제 분쟁 글은 맨 뒤 (받은 순서 그대로).
  *
@@ -40,25 +40,33 @@ export function timeline(messages: CaseMessageView[], carrierLine: CarrierLineVi
   return [...dated, ...undated];
 }
 
+/** 태그는 "AI read" 뒤에 두 개까지 (T090 시안). */
+export const MAX_READ_TAGS = 2;
+
 /** 말풍선 아래 "AI read" 태그 줄 (있는 판정만, `readTags`). 태그가 없으면 그리지 않는다. */
 function ReadTags({ tags }: { tags: ReadTag[] }) {
   if (tags.length === 0) return null;
-  const byAi = tags.some((tag) => tag.by === 'ai');
-  const byCode = tags.some((tag) => tag.by === 'code');
   return (
     <div className="case-read">
       <span className="case-read-label">{t('case.read.label')}</span>
-      {tags.map((tag) => (
+      {tags.slice(0, MAX_READ_TAGS).map((tag) => (
         <span key={tag.key} className={tag.tone === 'bad' ? 'desk-chip desk-chip-bad' : 'desk-chip'}>
           {t(tag.key)}
         </span>
       ))}
-      {byCode ? <Badge kind="codeDecides" /> : null}
-      {byAi ? <Badge kind="aiSuggests" /> : null}
     </div>
   );
 }
 
+/** 말풍선 끝 "Demo data" — 글이나 번역 어느 쪽이든 시연용이면 **하나만** (T090). */
+export function bubbleIsDemo(message: CaseMessageView): boolean {
+  return message.source === 'demo' || message.badges.includes('demo') || message.englishBadges.includes('demo');
+}
+
+/**
+ * 말풍선 (T090 시안 v4): 원문 → 아래 한 줄 "Translated · <영어> · <날짜>". 시연용 글이면 끝에 작은 "Demo data" 하나.
+ * 번역이 없는 비영어 글은 "English translation unavailable · <날짜>" (번역을 지어내지 않는다).
+ */
 function Bubble({
   message,
   locale,
@@ -70,41 +78,41 @@ function Bubble({
   markTitle: string;
   tags: ReadTag[];
 }) {
-  // 같은 배지는 한 번만 (시연용 문의는 글 자체도, 시드 번역도 'Demo data'라 두 번 붙던 문제)
-  const englishOnly = message.englishBadges.filter((kind) => !message.badges.includes(kind));
-  // 꼬리("Dispute message · From PayPal" / 날짜 + Demo data)는 따로 줄을 두지 않고 마지막 줄 끝에 붙인다 (T068 재시도 1번)
-  const meta = (
-    <span className="case-bubble-meta">
-      <span className="num">{message.date === null ? t('case.view.dateUnknown') : shortDate(message.date)}</span>
-      {message.sourceKey === null ? null : <span className="case-source">{t(message.sourceKey)}</span>}
-      {message.badges.map((kind) => (
-        <Badge key={kind} kind={kind} />
-      ))}
-    </span>
-  );
-  // 원문이 영어면(또는 번역이 원문과 같으면) 번역 줄을 두지 않는다 — 같은 글이 두 번 나오지 않게 (T068 재시도 2번)
+  const date = <span className="num">{message.date === null ? t('case.view.dateUnknown') : shortDate(message.date)}</span>;
+  const demo = bubbleIsDemo(message) ? <Badge kind="demo" /> : null;
+  // 원문이 영어면(또는 번역이 원문과 같으면) 번역을 두지 않는다 — 같은 글이 두 번 나오지 않게 (T068 재시도 2번)
   const noEnglishLine = message.english === null && (locale === 'en' || message.originalIsEnglish);
   return (
-    <li className={message.source === 'demo' ? 'case-bubble case-bubble-demo' : 'case-bubble'}>
-      <p className="case-bubble-original" lang={message.originalIsEnglish ? 'en' : (locale ?? undefined)}>
-        <Segments segments={message.original} markTitle={markTitle} />
-      </p>
-      {noEnglishLine ? (
-        <p className="case-bubble-en">{meta}</p>
-      ) : message.english === null ? (
-        <p className="case-bubble-en">
-          <span>{t('case.view.englishUnavailable')}</span>
-          {meta}
+    <li className="case-bubble-wrap">
+      <div className="case-bubble">
+        <p className="case-bubble-original" lang={message.originalIsEnglish ? 'en' : (locale ?? undefined)}>
+          <Segments segments={message.original} markTitle={markTitle} />
         </p>
-      ) : (
-        <p className="case-bubble-en" lang="en">
-          <Segments segments={message.english} markTitle={markTitle} />
-          {englishOnly.map((kind) => (
-            <Badge key={`en-${kind}`} kind={kind} />
-          ))}
-          {meta}
-        </p>
-      )}
+        {noEnglishLine ? (
+          <p className="case-bubble-sub">
+            {date}
+            {demo}
+          </p>
+        ) : message.english === null ? (
+          <p className="case-bubble-sub">
+            <span>{t('case.view.englishUnavailable')}</span>
+            {' · '}
+            {date}
+            {demo}
+          </p>
+        ) : (
+          <p className="case-bubble-sub">
+            <span>{t('case.view.translated')}</span>
+            {' · '}
+            <span lang="en">
+              <Segments segments={message.english} markTitle={markTitle} />
+            </span>
+            {' · '}
+            {date}
+            {demo}
+          </p>
+        )}
+      </div>
       <ReadTags tags={tags} />
     </li>
   );
@@ -115,13 +123,13 @@ const hasMark = (message: CaseMessageView): boolean =>
 
 export function Conversation({
   messages,
-  carrierLine,
   locale,
   signals = null,
   languageKey = null,
 }: {
   messages: CaseMessageView[];
-  carrierLine: CarrierLineView | null;
+  /** T090부터 대화 사이에 배송사 줄을 그리지 않는다 (받아도 쓰지 않는다 — 옛 부르는 쪽 호환). */
+  carrierLine?: CarrierLineView | null;
   locale: FactLocale | null;
   /** 엔진 신호 (T076 "AI read" 태그 — 있는 판정만). 없으면 태그 없음. */
   signals?: EscalationSignals | null;
@@ -129,7 +137,7 @@ export function Conversation({
   languageKey?: string | null;
 }) {
   const markTitle = t('case.view.cardCompanyMark');
-  const entries = timeline(messages, carrierLine);
+  const entries = timeline(messages, null);
   const lastReal = [...messages].reverse().find((message) => message.source === 'paypal') ?? null;
 
   return (

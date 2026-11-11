@@ -511,7 +511,8 @@ describe('예측 칸에 Assumption 배지', () => {
     expect(section('class="curve-card"', '</section>')).toContain(assumption);
     expect(section('class="choice-list"', '</ul>').length).toBeGreaterThan(0);
     expect(markup).toMatch(/Chargeback \d+%/);
-    expect(section('class="reply-editor-pill num"', 'class="reply-tray"')).toContain(assumption);
+    // T090: 입력칸 모서리 알약 안 Assumption은 뺐다 — Assumption은 반응 막대 쪽 하나만
+    expect(section('class="reply-editor-pill num"', 'class="reply-tray"')).not.toContain(assumption);
     expect(section('class="reaction"', 'class="reaction-bar"')).toContain(assumption);
     const choiceHead = markup.slice(markup.lastIndexOf('class="desk-step-head"', markup.indexOf('class="choice-list"')), markup.indexOf('class="choice-list"'));
     expect(choiceHead).toContain(assumption);
