@@ -143,7 +143,7 @@ export function FixCard({
       <div className="row">
         <FixBadge card={card} />
       </div>
-      <p className="small num fix-effect" data-from={card.effect.from.cents} data-to={card.effect.to.cents}>
+      <p className="small num fix-effect" data-saving={card.effect.saving.cents}>
         <span>{card.effect.text}</span> <AssumptionBadge source={card.source} />
       </p>
       {children}

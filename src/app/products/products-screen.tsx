@@ -36,7 +36,7 @@ export function ProductsScreen({
   colorNoteSkus: string[];
   writeColorNote: (sku: string) => Promise<ColorNoteView | null>;
 }) {
-  const [fixesOn, setFixesOn] = useState<FixId[]>([...ALL_FIXES]);
+  const [fixesOn, setFixesOn] = useState<FixId[]>([]);
 
   const product = products.find((p) => p.sku === selectedSku) ?? products[0];
   const rows = useMemo(() => buildProductRows(products, fixesOn, product.sku), [products, fixesOn, product.sku]);
