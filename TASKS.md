@@ -82,7 +82,7 @@
 | T079 | 연결: 화면 어댑터 → 엔진 예측·AI 요약, AI 캐시 다시 만들기 | ui | 완료 | v2.11 | T075, T076, T077 | AC33·스크린샷 | 주의: 사건 글에 이름이 있으면 summarizeCaseHistory에 넘기기 전에 ⟦BUYER_NAME_1⟧ 토큰으로 바꾼다 (T077 검증) 함께: /intro에서 루트 layout의 위쪽 막대·Today 읽기를 건너뛰기(라우트 그룹 또는 조건) — T078은 덮개로 가림 |
 | T080 | 엔진: 한국어 답장 특징 정규식 보강(격식체·탓하기) | engine | 완료 | v2.11 | T075 | AC33 | 모델 `claude-sonnet-5-5`. `tasks/T080.md` |
 | T081 | 화면 언어 바꾸기 EN \| 한국어 (1단계: 화면 글자만, 쿠키·?lang, 기본 영어) | ui | 완료 | v2.11 | T079 | — | 모델 `claude-sonnet-5-5`. `tasks/T081.md`. 병합(T084 뒤). 검증 1회 실패(열린 리다이렉트) → 재시도 → 재검증 통과 |
-| T082 | 사건 기록 "추적 없음"은 실제 확인한 경우만 (Mike O08은 등록됨 — 요약이 틀린 사실을 씀) | ui | 진행중 | v2.11 | T081 | — | 모델 `claude-sonnet-5-5`. `tasks/T082.md` |
+| T082 | 사건 기록 "추적 없음"은 실제 확인한 경우만 (Mike O08은 등록됨 — 요약이 틀린 사실을 씀) | ui | 완료 | v2.11 | T081 | — | 모델 `claude-sonnet-5-5`. `tasks/T082.md` | 병합. 독립 검증 통과(Sonnet). Mike "PayPal data only" fight $78 → $38 (승률 0.15 → 0.60, 실제 등록 반영). `src/app/_shared/dispute-view.ts` 선택 필드 1개 허용(화면 내부 타입) |
 | T083 | 속도 ①: listUntracked 주문 조회 병렬 (결과 같게) | paypal | 완료 | v2.11 | — | — | 모델 `claude-opus-5-5`. worktree paypal-client. 병합. 독립 검증 통과(Sonnet, 이전 구현과 21가지 입력 toEqual). `tasks/T083.md` |
 | T084 | 속도 ②: 요청 사이 캐시 90초·클라이언트 하나·병렬·Suspense·loading·startTransition | ui | 완료 | v2.11 | — | 시간 재기 | 병합. 독립 검증 통과(Sonnet, public 쓰기 0회 직접 시험). 시간: 반복 0.03~0.07초(목표 달성), 캐시 빈 뒤 첫 클릭 3.2초(목표 2초 미달). 모델 `claude-opus-5-5`. 임시 worktree ui-perf (lane/ui-perf). 병합 T084 → T081. `tasks/T084.md` |
 | T085 | 엔진: 새 상품 등록 전 점검 계산 (listing) | engine | 완료 | v2.12 | 계약 v2.12 | AC34 | 모델 `claude-opus-5-5`. `tasks/T085.md`. 병합. 독립 검증 통과(Sonnet, 별도 구현과 무작위 입력 40개 일치) |
