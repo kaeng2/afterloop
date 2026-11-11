@@ -499,3 +499,25 @@ export function simInputFor(
     seed: seedFromString(sku),
   }) as SimInput;
 }
+
+export type FixSaving = { fix: FixId; on: boolean; savingCents: number };
+
+/**
+ * 처방 카드의 "could save $X" — 처방 하나의 절감액 (`FIX_ORDER` 순서).
+ * - 켜진 처방(`input.fixes`): 지금 켠 것에서 이 처방만 끈 평균 손실 − 지금 평균 손실
+ * - 꺼진 처방: 지금 평균 손실 − (지금 켠 것 + 이 처방)의 평균 손실
+ * 같은 시드·같은 미래라 결정적이다. 처방 배수가 ≤ 1이라 보통 0 이상이지만 음수가 나오면 그대로 돌려준다.
+ */
+export function fixSavings(input: SimInput, params?: ParamsConfig, rules?: PolicyConfig): FixSaving[] {
+  const checked = SimInputSchema.parse(input) as SimInput;
+  const ctx = resolveContext(checked, params ?? paramsConfigFromFile(), rules);
+  const current = canonicalFixes(checked.fixes);
+  const mean = (fixes: readonly FixId[]): number => meanCents(runPass(checked, ctx, canonicalFixes(fixes)).lossCents);
+  const now = mean(current);
+
+  return FIX_ORDER.map((fix) => {
+    const on = current.includes(fix);
+    const savingCents = on ? mean(current.filter((f) => f !== fix)) - now : now - mean([...current, fix]);
+    return { fix, on, savingCents };
+  });
+}
