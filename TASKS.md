@@ -77,9 +77,9 @@
 | T074 | 화면에 보이는 제품 이름 AfterLoop → DisputeLess (문구 파일, 탭 제목) | ui | 완료 | v2.10 | — | 테스트 결과 같음 | 모델 `claude-sonnet-5-5`. `tasks/T074.md` |
 | T075 | 엔진: 답장 예측 모델(코드 규칙 특징 + 로지스틱, 숫자 일치 보정) + 위험 곡선 + 이번 주 요약 + 수별 예측 | engine | 진행중 | v2.11 | 계약 v2.11 | AC33 | 모델 `claude-opus-5-5`. `tasks/T075.md` |
 | T076 | 화면: 시안 v4 배치(Today·사례·Rehearsal·서랍), 예측 자리는 어댑터(null이면 숨김 = 대체안) | ui | 진행중 | v2.11 | 계약 v2.11 | 스크린샷 | 모델 `claude-opus-5-5`. `tasks/T076.md` |
-| T077 | AI: 사건 기록 요약(입력 사실만, 약속 금지, 캐시) | ai | 진행중 | v2.11 | 계약 v2.11 | — | 모델 `claude-sonnet-5-5`. `tasks/T077.md` |
+| T077 | AI: 사건 기록 요약(입력 사실만, 약속 금지, 캐시) | ai | 완료 | v2.11 | 계약 v2.11 | — | 모델 `claude-sonnet-5-5`. `tasks/T077.md` |
 | T078 | /intro 껍데기 화면(첫 장면 시안 scene1) | ops | 대기 (시안 파일·빈 자리) | v2.11 | — | 스크린샷 | 모델 `claude-sonnet-5-5` |
-| T079 | 연결: 화면 어댑터 → 엔진 예측·AI 요약, AI 캐시 다시 만들기 | ui | 대기 (T075·T076·T077 뒤) | v2.11 | T075, T076, T077 | AC33·스크린샷 | |
+| T079 | 연결: 화면 어댑터 → 엔진 예측·AI 요약, AI 캐시 다시 만들기 | ui | 대기 (T075·T076·T077 뒤) | v2.11 | T075, T076, T077 | AC33·스크린샷 | 주의: 사건 글에 이름이 있으면 summarizeCaseHistory에 넘기기 전에 ⟦BUYER_NAME_1⟧ 토큰으로 바꾼다 (T077 검증) |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
 | T065 | **Products 상품 표 AG Grid** (As-is → With fixes, 처방 토글 시 셀 깜빡임) | ui | 대기 (T064 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T065.md` |
 | T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대체됨 | v2.2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 확정 (P0). AG Grid Community만 **2026-11-10 화면 구조 변경으로 T060~T064로 다시 쪼갬.** 이 지시서의 세부 규칙(리허설·색상 문구·거래 조회 한 줄·추적 등록 안전 규칙·로그 규칙)은 새 지시서가 참조한다 |
