@@ -70,3 +70,45 @@ main 체크아웃의 `node_modules`를 링크하는 `ln -s`도 승인이 필요�
   3. AI 캐시 키는 같은 분쟁이면 `now`가 달라도 같다 (프롬프트에 날짜·이름 값 없음).
   4. `/api/health`는 `{ok, mode, commit?}`만 낸다.
 - `render.yaml`의 `plan`·`region`·`autoDeploy: false`는 자리 값이다 — 사람이 정한다.
+
+---
+
+## 재시도 (1회, 2026-11-11)
+
+기준 SPEC v2.10 = `SPEC.md` 첫 줄 v2.10 (일치). 컨트롤 타워가 `npm ci`를 해 둔 상태에서 시작했다.
+
+### 원인
+1. **tsc TS2559 2개** — `process.env`(`ProcessEnv`)를 선택 칸만 있는 타입(`LlmEnv`, `Partial<Record<'AI_LIVE_LIMIT_PER_HOUR', string>>`)에 그대로 넘겨 "약한 타입" 검사에 걸렸다. 앱의 기존 꼴(`src/app/_server/llm.ts`의 `process.env as GetLlmEnv`, `src/ai/llm.ts`의 `process.env as LlmEnv`)과 똑같이 캐스팅했다.
+   - `scripts/ai-cache/build.ts`: `createLlmCaller(process.env as LlmEnv)` + `import type { LlmEnv }`
+   - `src/app/_server/llm-cache.ts`: `resolveLiveLimit`의 기본 인자에 캐스팅
+2. **단위 테스트 실패 2개 — 둘 다 같은 원인: 테스트의 가짜 LLM 답이 `draftReply` 계약을 지키지 않았다.**
+   - 가짜는 코칭 1줄만 냈는데 `src/ai/reply.ts`는 코칭 3~5줄(`COACHING_MIN = 3`)을 요구한다 → `draftReply`가 `{ ok: false, reason: 'invalid_output', detail: 'coaching_too_few' }`. 또 T069(`8b8aa3f`)가 출력 꼴에 `chips`를 더했다.
+   - 그래서 1번 테스트는 키 비교 전 `expect(draft.ok).toBe(true)`에서, 2번 테스트는 `built.cases.some((c) => c.draft)`에서 false였다. **키가 달라서 실패한 것이 아니다.**
+   - 고침: 가짜의 초안 답을 계약대로 바꿨다 (코칭 3줄, 칩 3개). 단언은 하나도 줄이거나 바꾸지 않았다.
+
+### "프롬프트에 날짜·이름 값이 없다" 전제 확인
+- 직접 확인했다: `caseReplyFacts({ now: '2026-11-11T03:00:00Z', … })`의 값은 `⟦DATE_1⟧ = 2026-11-18`, `⟦BUYER_NAME_1⟧ = Seo-yeon` / `서연 님`, `⟦SELLER_NAME_1⟧ = Hannah, Fernwood Knits`. 초안 요청의 `user`에는 토큰과 그 뜻(`the date the seller will check… Not a delivery date.`)만 있고 값은 없다.
+- 테스트도 이것을 직접 단언한다 (모든 요청의 system·user에 사실값이 없음) — 이제 통과한다. `now` 두 개(11/11, 11/14)에서 초안·번역·역번역 3개 요청 키가 같다.
+- **전제는 맞다.** 프롬프트(ai 레인)를 고칠 일도, 캐시 키 방식을 바꿀 일도 없다.
+
+### 고친 파일
+- `scripts/ai-cache/build.ts`, `src/app/_server/llm-cache.ts` (타입 캐스팅만, 동작 변화 없음)
+- `tests/unit/ops-t070-cache.test.ts` (가짜 LLM 초안 답만)
+
+### 결과
+| 명령 | 결과 |
+|---|---|
+| npm test | 45 파일, 2004 통과, 실패 0 |
+| npx tsc --noEmit | 오류 0 |
+| npm run lint | 통과 (exit 0) |
+| npm run test:acceptance | 158 통과, 9 건너뜀, 실패 0 |
+| npm run build | 통과 (exit 0) |
+
+실제 AI·PayPal 호출 없음, `.env` 열지 않음, 개발 서버 띄우지 않음.
+
+### 남은 문제
+- `ops-t070-cache` build 테스트의 번역·역번역 확인은 여전히 "전송본까지 간 분쟁이 있으면"으로 걸려 있다 (처음 보고서에 적은 그대로). 이번에 그 조건이 참인지는 따로 찍어 보지 않았다. 번역·역번역 키가 `now`와 무관한 것은 1번 테스트가 따로 꼭 확인한다.
+- 이 테스트처럼 ai 레인의 출력 꼴(`COACHING_MIN`, `chips`)이 바뀌면 다른 레인 테스트의 가짜 답이 조용히 틀어질 수 있다. 가짜 답을 `src/ai/reply.ts` 쪽 공용 고정값으로 두는 것은 ai 레인 일이라 여기서 하지 않았다.
+
+### 컨트롤 타워에 요청할 결정
+- 없음 (처음 보고서의 "인수 테스트로 올릴 만한 항목"·`render.yaml` 자리 값은 그대로 유효).

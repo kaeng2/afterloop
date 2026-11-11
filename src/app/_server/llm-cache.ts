@@ -85,7 +85,9 @@ export const DEFAULT_AI_LIVE_LIMIT_PER_HOUR = 20;
 const HOUR_MS = 3_600_000;
 
 /** `AI_LIVE_LIMIT_PER_HOUR`. 0 이상의 정수 글자만 받는다 — 그 밖(없음·빈 값·음수·소수·글자)은 기본 20. */
-export function resolveLiveLimit(env: Partial<Record<'AI_LIVE_LIMIT_PER_HOUR', string>> = process.env): number {
+export function resolveLiveLimit(
+  env: Partial<Record<'AI_LIVE_LIMIT_PER_HOUR', string>> = process.env as Partial<Record<'AI_LIVE_LIMIT_PER_HOUR', string>>,
+): number {
   const raw = (env.AI_LIVE_LIMIT_PER_HOUR ?? '').trim();
   if (!/^\d{1,6}$/.test(raw)) return DEFAULT_AI_LIVE_LIMIT_PER_HOUR;
   return Number(raw);

@@ -16,6 +16,8 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+import type { LlmEnv } from '@/ai/llm';
+
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_OUT = path.join(ROOT, 'data', 'ai-cache', 'llm-cache.json');
 
@@ -64,7 +66,7 @@ async function main(): Promise<number> {
     return 1;
   }
 
-  const built = await buildAiCache({ inner: createLlmCaller(process.env) });
+  const built = await buildAiCache({ inner: createLlmCaller(process.env as LlmEnv) });
   if (!built.paypal.ok) {
     console.error(`분쟁을 읽지 못했다 (사유 코드: ${built.paypal.reason ?? 'unknown'}). 파일을 쓰지 않았다.`);
     return 1;

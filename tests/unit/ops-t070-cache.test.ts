@@ -51,7 +51,14 @@ function countingLlm() {
   const llm: LlmCaller = async (req) => {
     calls.push(req);
     const props = Object.keys((req.jsonSchema.properties ?? {}) as Record<string, unknown>);
-    if (props.includes('draft_en')) return { buyer_message_en: 'It has not arrived.', coaching: ['Say sorry first.'], draft_en: DRAFT };
+    // `draftReply`는 코칭 3~5줄(COACHING_MIN)과 칩(T069)을 요구한다 — 계약을 지키는 답을 낸다
+    if (props.includes('draft_en'))
+      return {
+        buyer_message_en: 'It has not arrived.',
+        coaching: ['Say sorry first.', 'Name the next check-in date.', 'Keep it short and calm.'],
+        chips: ['Warmer', 'Shorter', 'More formal'],
+        draft_en: DRAFT,
+      };
     if (props.includes('outgoing')) return { outgoing: OUTGOING };
     if (props.includes('back_translation_en')) return { back_translation_en: BACK };
     if (props.includes('angryTone')) return { angryTone: false, evidence: [] };
