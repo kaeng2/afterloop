@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ZodError } from 'zod';
 
 import { paramsConfigFromFile, paramsFromConfig } from '@/engine/params';
-import { DEFAULT_FUTURES, FIX_ORDER, simInputFor, simulate, simulatePass } from '@/engine/sim';
+import { DEFAULT_FUTURES, FIX_ORDER, fixSavings, simInputFor, simulate, simulatePass } from '@/engine/sim';
 import { mulberry32, seedFromString } from '@/engine/rng';
 import type { FixId, Params, ParamsConfig, SimInput, Subtype } from '@/types';
 
@@ -456,5 +456,39 @@ describe('성능 (원문 F4: 처방 토글 후 0.5초 재계산)', () => {
     const elapsed = performance.now() - started;
 
     expect(elapsed, `${elapsed.toFixed(1)}ms`).toBeLessThan(50);
+  });
+});
+
+describe('fixSavings (T071)', () => {
+  const mean = (simInput: SimInput, fixes: FixId[]): number => simulate({ ...simInput, fixes }).after.meanLossCents;
+
+  it('처방 0개: 각 처방 1개를 켠 절감액', () => {
+    const base = simInputFor('FK-CD-OAT', PRODUCTS[0], []);
+    const savings = fixSavings(base);
+    expect(savings.map((s) => s.fix)).toEqual([...FIX_ORDER]);
+    for (const s of savings) {
+      expect(s.on).toBe(false);
+      expect(s.savingCents).toBeCloseTo(mean(base, []) - mean(base, [s.fix]), 6);
+      expect(s.savingCents).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('처방 4개: 각 처방을 끈 증가액', () => {
+    const base = simInputFor('FK-CD-OAT', PRODUCTS[0], ALL_FIXES);
+    for (const s of fixSavings(base)) {
+      expect(s.on).toBe(true);
+      const without = ALL_FIXES.filter((f) => f !== s.fix);
+      expect(s.savingCents).toBeCloseTo(mean(base, without) - mean(base, ALL_FIXES), 6);
+      expect(s.savingCents).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('결정적이고 0.5초 안', () => {
+    const base = simInputFor('FK-CD-OAT', PRODUCTS[0], ['settle_first']);
+    const t0 = performance.now();
+    const a = fixSavings(base);
+    const ms = performance.now() - t0;
+    expect(fixSavings(base)).toEqual(a);
+    expect(ms).toBeLessThan(500);
   });
 });
