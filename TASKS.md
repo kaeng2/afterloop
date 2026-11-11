@@ -74,7 +74,7 @@
 | T071 | 엔진: 처방별 절감액 `fixSavings` (처방 카드 "could save $X") | engine | 완료 | v2.10 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T071.md` |
 | T072 | Products 후속: 처방 처음 상태 모두 꺼짐 + "could save $X" 한 숫자(엔진 fixSavings) | ui | 완료 | v2.10 | T065, T071 | — | 모델 `claude-sonnet-5-5`. `tasks/T072.md` |
 | T073 | Products 표 폭·값 잘림 + 공개 모드 줄 정렬 | ui | 완료 | v2.10 | T072 | — | 모델 `claude-sonnet-5-5`. `tasks/T073.md` |
-| T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 진행중 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
+| T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
 | T065 | **Products 상품 표 AG Grid** (As-is → With fixes, 처방 토글 시 셀 깜빡임) | ui | 대기 (T064 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T065.md` |
 | T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대체됨 | v2.2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 확정 (P0). AG Grid Community만 **2026-11-10 화면 구조 변경으로 T060~T064로 다시 쪼갬.** 이 지시서의 세부 규칙(리허설·색상 문구·거래 조회 한 줄·추적 등록 안전 규칙·로그 규칙)은 새 지시서가 참조한다 |
 | T013 | **S2 Product check**: 리허설(점 그림·폭포·분포 막대), 처방 토글 0.5초 내 재계산, 색상 문구 | ui | 대체됨 | v2.2 | T015, T019, T020 | AC23 (작성 예정). F3·F4 **2026-11-10 화면 구조 변경으로 T060~T064로 다시 쪼갬.** 이 지시서의 세부 규칙(리허설·색상 문구·거래 조회 한 줄·추적 등록 안전 규칙·로그 규칙)은 새 지시서가 참조한다 |
