@@ -53,6 +53,8 @@ export type LoadedDispute = {
   signalsAfterReply: EscalationSignals | null;
   /** 이 분쟁에 실제 전송을 해도 되는가 (연결 표의 `liveSendAllowed`). */
   liveSendAllowed: boolean;
+  /** 실제 추적 등록 여부를 읽지 못했다 (T082). 참이면 `boardReal.hasTracking`은 자리값(없음)이고, 사건 기록은 "추적 없음"을 쓰지 않는다. */
+  trackingUnknown?: boolean;
   /**
    * 사건 기록 재료 (T076, 계약 9부 `CaseEvent`). 실제 값만: 분쟁 접수 시각·구매자/판매자 글 시각(샌드박스),
    * 시드 주문일. 없으면(옛 시험 데이터) 사건 기록은 배송사·문의만으로 만든다.
