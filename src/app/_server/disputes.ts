@@ -29,6 +29,8 @@ import { classifyDispute } from '@/ai/classify';
 import { judgeTone } from '@/ai/tone';
 import { buildEscalationSignals } from '@/engine/signals';
 import { getDispute, listDisputes, type DisputeDetail, type DisputeSummary } from '@/paypal/disputes';
+import { isOrderUntracked } from '@/paypal/track';
+import { readTrackOrders } from '@/paypal/track-orders';
 import { INR_REASON, buyerKeyOf, countPriorInrDisputes, toBoardState, toClassifyInput } from '@/paypal/mapper';
 import type {
   BoardState,
@@ -83,6 +85,50 @@ export type LoadDemoDisputesResult = {
 
 /** 추적 정보를 모를 때의 값 (위 `realTracking` 설명 참고). */
 const NO_TRACKING: RealTracking = { hasTracking: false, hasDeliveredTracking: false };
+
+/**
+ * 분쟁이 걸린 주문의 실제 추적 등록 여부를 주문 상세 GET으로 읽는다 (T082, PayPal 쓰기 없음).
+ * 분쟁 번호 → 샌드박스 주문 번호는 manifest. 주문을 찾지 못하거나 조회가 실패하면 `null`(모름).
+ * 한 번의 `loadDemoDisputes` 안에서 같은 주문은 한 번만 읽는다.
+ */
+async function readOrderTracking(
+  client: PayPalClient,
+  disputeIds: readonly string[],
+): Promise<Map<string, boolean | null>> {
+  const out = new Map<string, boolean | null>();
+  let manifest: ReturnType<typeof readTrackOrders>;
+  try {
+    manifest = readTrackOrders();
+  } catch {
+    for (const id of disputeIds) out.set(id, null);
+    return out;
+  }
+  const orderIdOf = (disputeId: string): string | null => {
+    const orderKey = manifest.disputes.find((d) => d.disputeId === disputeId)?.orderKey;
+    return manifest.orders.find((o) => o.key === orderKey)?.orderId ?? null;
+  };
+  const byOrder = new Map<string, Promise<boolean | null>>();
+  for (const id of disputeIds) {
+    const orderId = orderIdOf(id);
+    if (orderId === null || byOrder.has(orderId)) continue;
+    byOrder.set(
+      orderId,
+      (async () => {
+        try {
+          const res = await client.get(`/v2/checkout/orders/${encodeURIComponent(orderId)}`);
+          return res.status === 200 ? !isOrderUntracked(res.body) : null;
+        } catch {
+          return null;
+        }
+      })(),
+    );
+  }
+  for (const id of disputeIds) {
+    const orderId = orderIdOf(id);
+    out.set(id, orderId === null ? null : ((await byOrder.get(orderId)) ?? null));
+  }
+  return out;
+}
 
 // ── 시드에서 가져오는 값 ─────────────────────────────────────────────────────
 
@@ -235,7 +281,6 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
   const links = deps.links ?? demoLinks;
   const wanted = screenLinks(links);
   const now = deps.now ?? new Date().toISOString();
-  const realTracking = deps.realTracking ?? (() => NO_TRACKING);
 
   // LLM: 쓸 수 없으면 늘 실패하는 호출기를 넣는다 (분류기·어조 판정이 규칙 결과로 내려간다)
   let llmAvailability: Availability = { ok: true };
@@ -288,6 +333,17 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
     else details.set(id, detail);
   }
 
+  // 실제 추적 등록 여부 (T082). 주입이 없으면 주문 상세 GET (읽기 전용, 실패는 "모름")
+  const orderTracking: Map<string, boolean | null> =
+    deps.realTracking !== undefined ? new Map() : await readOrderTracking(client, [...details.keys()]);
+  const realTracking = (disputeId: string): { tracking: RealTracking; unknown: boolean } => {
+    if (deps.realTracking !== undefined) return { tracking: deps.realTracking(disputeId), unknown: false };
+    const known = orderTracking.get(disputeId) ?? null;
+    return known === null
+      ? { tracking: NO_TRACKING, unknown: true }
+      : { tracking: { hasTracking: known, hasDeliveredTracking: false }, unknown: false };
+  };
+
   // 2. 이전 미수령 분쟁을 셀 목록: 걸러 낸 목록 + 목록에 없던 상세 (상세도 목록 항목의 모양을 담고 있다)
   const seenInList = new Set(onScreen.map((summary) => summary.dispute_id));
   const countingList: DisputeSummary[] = [
@@ -312,7 +368,7 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
       priorInrReal = 0; // 구매자를 가릴 수 없으면 세지 않는다
     }
 
-    const trackingReal = realTracking(detail.dispute_id);
+    const { tracking: trackingReal, unknown: trackingUnknown } = realTracking(detail.dispute_id);
     const boardRealPending = buildBoard(
       detail,
       { tracking: trackingReal, priorInr: priorInrReal, trackingEvents: [], isDemo: false },
@@ -405,6 +461,7 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
       signals,
       signalsAfterReply,
       liveSendAllowed: link.liveSendAllowed,
+      ...(trackingUnknown ? { trackingUnknown: true } : {}),
     };
   }));
   const disputes = built.filter((dispute): dispute is LoadedDispute => dispute !== null);

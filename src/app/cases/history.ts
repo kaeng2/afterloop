@@ -152,7 +152,7 @@ export function buildCaseEvents(input: CaseHistoryInput): CaseEvent[] {
  * `earlierInquiries`가 있을 때만 넣는다 (대화 말풍선과 같은 규칙).
  */
 export function caseEventsFor(
-  loaded: Pick<LoadedDispute, 'buyer' | 'carrierEvents' | 'boardReal' | 'demoFields' | 'signals' | 'timeline'>,
+  loaded: Pick<LoadedDispute, 'buyer' | 'carrierEvents' | 'boardReal' | 'demoFields' | 'signals' | 'timeline' | 'trackingUnknown'>,
   inquiries: readonly { date: string; buyerId: string; original: string; english: string }[],
 ): CaseEvent[] {
   const buyerId = loaded.buyer?.id ?? null;
@@ -163,7 +163,7 @@ export function caseEventsFor(
   return buildCaseEvents({
     orderDate: loaded.timeline?.orderDate ?? null,
     carrierEvents: loaded.carrierEvents,
-    hasTrackingInPayPal: loaded.boardReal.hasTracking,
+    hasTrackingInPayPal: loaded.trackingUnknown === true ? null : loaded.boardReal.hasTracking,
     inquiries: own,
     buyerMessages: loaded.timeline?.buyerMessages ?? [],
     sellerReplies: loaded.timeline?.sellerReplies ?? [],
