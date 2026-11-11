@@ -26,6 +26,7 @@ import type {
 
 import { copyTables, t } from '../_shared/copy';
 import { toDollarsRounded } from '../_shared/money';
+import { riskTone, type RiskTone } from '../_shared/motion';
 import { toPercentRounded } from '../_shared/percent';
 import { shortDate } from '../_shared/short-date';
 import type { CaseView, MoneyView } from './model';
@@ -121,6 +122,8 @@ export type ChoiceView = {
   expectedLoss: MoneyView | null;
   /** 예상 차지백 % (어댑터). 없으면 `null` → 숨김. */
   chargeback: string | null;
+  /** 차지백 % 글자색 단계 (시안 `cbSt`: 50% 이상 빨강). 기준값은 config/motion.json. 없으면 `null`. */
+  chargebackTone: 'high' | 'low' | null;
 };
 
 const BLOCKED_KEY_PREFIX = 'case.choice.blocked.';
@@ -150,6 +153,7 @@ export function choicesView(rec: Recommendation, forecasts: readonly MoveForecas
           ? null
           : { cents: evaluation.expectedLossCents, display: toDollarsRounded(evaluation.expectedLossCents) },
       chargeback: forecast === undefined ? null : toPercentRounded(forecast.pChargeback),
+      chargebackTone: forecast === undefined ? null : riskTone(forecast.pChargeback) === 'high' ? 'high' : 'low',
     };
   });
 }
@@ -220,6 +224,8 @@ export type CurveView = {
   draft: { x: number; y: number; from: { x: number; y: number } } | null;
   /** 큰 % (답장 예측이 있으면 그 값, 없으면 마지막 사건 점). */
   headline: string;
+  /** 큰 % 글자색 단계 (시안 `riskCol`). */
+  headlineTone: RiskTone;
   /** 큰 % 아래 글자 키 ("with your draft" / "now"). */
   headlineKey: string;
   /** "89% → 8%" (답장 예측이 있을 때만). */
@@ -256,6 +262,7 @@ export function curveView(points: readonly RiskPoint[] | null, draftP: number | 
     area,
     draft,
     headline: toPercentRounded(draftP ?? lastP),
+    headlineTone: riskTone(draftP ?? lastP),
     headlineKey: draftP === null ? 'case.curve.now' : 'case.curve.withDraft',
     fromTo: draftP === null ? null : t('case.curve.fromTo', { from: toPercentRounded(lastP), to: toPercentRounded(draftP) }),
   };
@@ -407,6 +414,10 @@ export type ReactionView = {
   nowMoodKey: string | null;
   /** 입력칸 모서리 "Chargeback 8%". */
   chargeback: string;
+  /** 알약·입력칸 테두리 빨강 (시안 `fc.p.cb >= 0.5`, 기준값 config). */
+  chargebackHigh: boolean;
+  /** "Her mood next" 빨강 (시안 `mood < -0.5` = 엔진 기분 단계 angry). */
+  moodBad: boolean;
 };
 
 /** 엔진 답장 예측 → 막대·기대 비용·기분. 예측이 없으면 `null` (숨김). */
@@ -425,5 +436,7 @@ export function reactionView(forecast: ReplyForecast | null, angryTone: boolean 
     moodKey: `case.mood.${forecast.moodBand}`,
     nowMoodKey: angryTone === true ? 'case.mood.angry' : null,
     chargeback: toPercentRounded(forecast.pChargeback),
+    chargebackHigh: riskTone(forecast.pChargeback) === 'high',
+    moodBad: forecast.moodBand === 'angry',
   };
 }

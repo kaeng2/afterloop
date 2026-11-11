@@ -16,6 +16,7 @@ import { Badge } from '../_shared/badges';
 import { t } from '../_shared/copy';
 import { ProductTile } from '../_shared/product-icon';
 import { weeklyView, type TodayGroup, type TodayItem, type TodayView, type WeeklyView } from './model';
+import { WeeklyBumpCell } from './savings';
 
 function ItemRow({ item, selected }: { item: TodayItem; selected: boolean }) {
   const { row } = item;
@@ -89,13 +90,14 @@ export function WeeklyCard({ weekly, storeLine }: { weekly: WeeklyView; storeLin
           <span className="weekly-note">{t('today.weekly.openNote')}</span>
         </div>
         {weekly.keepable === null ? null : (
-          <div className="weekly-cell">
+          // T091: 액션이 끝나면 "+$N just now" (엔진 actionSavings·trackingSavings 값, 화면 상태만)
+          <WeeklyBumpCell className="weekly-cell">
             <span className="weekly-label">{t('today.weekly.keepable')}</span>
             <span className="weekly-value num">{weekly.keepable}</span>
             <span className="weekly-note">
               {t('today.weekly.keepableNote')} <Badge kind="assumption" />
             </span>
-          </div>
+          </WeeklyBumpCell>
         )}
         {weekly.aiDrafts === null ? null : (
           <div className="weekly-cell">
@@ -104,9 +106,15 @@ export function WeeklyCard({ weekly, storeLine }: { weekly: WeeklyView; storeLin
             <span className="weekly-note">{t('today.weekly.draftsNote')}</span>
           </div>
         )}
-        <div className="weekly-cell weekly-fact">
-          <span className="weekly-note">{t('today.weekly.fact')}</span>
-        </div>
+        {weekly.keepable === null ? (
+          <WeeklyBumpCell className="weekly-cell weekly-fact">
+            <span className="weekly-note">{t('today.weekly.fact')}</span>
+          </WeeklyBumpCell>
+        ) : (
+          <div className="weekly-cell weekly-fact">
+            <span className="weekly-note">{t('today.weekly.fact')}</span>
+          </div>
+        )}
       </div>
       <p className="weekly-link">{storeLine}</p>
     </section>

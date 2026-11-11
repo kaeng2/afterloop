@@ -17,6 +17,8 @@ import { reasonCopyKey } from '../_shared/availability';
 import { t } from '../_shared/copy';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
 import { decideFor, routineLine } from '../today/model';
+import { actionSavingsDisplay } from '../today/savings-values';
+import { DeskSelectionProvider } from './view/desk-selection';
 import { buildCaseDesk, historyView, type CaseDesk } from './desk-model';
 import { loadMoveForecasts, loadRiskCurve, replyTranslated, type ForecastAnchor } from './forecast-source';
 import { daysBetween, historySpanDays, unansweredDays } from './history';
@@ -99,9 +101,14 @@ export async function CaseDetail({ disputeId }: { disputeId: string }) {
     band: caseView.risk?.band ?? null,
   });
 
+  // T091: 처음 고른 수 = 엔진 최선 수. "+$N just now" = 그 수의 actionSavings (엔진, 표기만)
+  const bestMove = recommend(board).best?.move ?? null;
+  const savings = actionSavingsDisplay(board, bestMove);
+
   return (
     <SentProvider>
       <DraftForecastProvider>
+        <DeskSelectionProvider initialPath={bestMove}>
         <CaseView
           view={caseView}
           desk={desk}
@@ -121,10 +128,12 @@ export async function CaseDetail({ disputeId }: { disputeId: string }) {
                 }
                 offerRate={reply.offerRate}
                 paypalOnly={desk.paypalOnly ?? (caseView.compare.after === null ? t('case.view.noCarrier') : null)}
+                savings={savings}
               />
             )
           }
         />
+        </DeskSelectionProvider>
       </DraftForecastProvider>
     </SentProvider>
   );

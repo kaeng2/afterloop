@@ -150,7 +150,14 @@ export type ProductChipView = {
 export type ProductFilterView = { chips: ProductChipView[]; summary: string; selectedSku: string | null };
 
 /** 추적 등록 안 된 주문 한 줄 (보기용). */
-export type TrackingOrderView = { key: string; buyerName: string | null; productName: string | null };
+export type TrackingOrderView = {
+  key: string;
+  buyerName: string | null;
+  productName: string | null;
+  /** T091 "+$N just now"의 엔진 입력 (`trackingSavings`). 모르면 없음 → 그 주문은 더하지 않는다. */
+  sku?: string;
+  amountCents?: number;
+};
 
 /** 추적 항목 입력. `null`이면 조회 실패 → 항목을 숨긴다. */
 export type TrackingSummary = {

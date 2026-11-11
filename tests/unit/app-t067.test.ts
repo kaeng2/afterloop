@@ -184,7 +184,8 @@ describe('T067 추적 등록 (가짜 호출기)', () => {
     expect(server).toMatch(/registerTrackers\(client/);
     expect(server).toMatch(/import 'server-only'/);
     const page = readFileSync(path.join(APP, '(app)/page.tsx'), 'utf8');
-    expect(page).toMatch(/<TrackingDetail tracking=\{view\.tracking\} register=\{addTrackingAction\} \/>/);
+    // T091: "+$N just now" 값(엔진 trackingSavings 표기)을 함께 넘긴다. 등록은 같은 서버 액션
+    expect(page).toMatch(/<TrackingDetail\s+tracking=\{view\.tracking\}\s+register=\{addTrackingAction\}\s+savings=\{trackingSavingsDisplay\(view\.tracking\)\}\s+\/>/);
   });
 });
 
@@ -201,12 +202,14 @@ describe('T067 추적 상세 화면', () => {
   };
   const register = async (): Promise<TrackingOutcome> => ({ kind: 'nothing', line: '', rows: [] });
 
-  it('[Add both to PayPal] 버튼 (2건), 1건이면 "Add to PayPal"', () => {
+  // T091 시안: 제목 "Add tracking to N orders in PayPal" + [Add all N] (2건도 같은 꼴)
+  it('[Add all 2] 버튼 (2건), 1건이면 "Add to PayPal"', () => {
     const markup = html(createElement(TrackingDetail, { tracking: TRACKING, register }));
-    expect(markup).toMatch(/<button type="button" class="tracking-button">Add both to PayPal<\/button>/);
+    expect(markup).toMatch(/<button type="button" class="tracking-button">Add all 2<\/button>/);
+    expect(markup).toContain('Add tracking to 2 orders in PayPal');
     expect(addButtonLabel(1)).toBe('Add to PayPal');
-    expect(addButtonLabel(2)).toBe('Add both to PayPal');
-    expect(addButtonLabel(3)).toBe('Add all 3 to PayPal');
+    expect(addButtonLabel(2)).toBe('Add all 2');
+    expect(addButtonLabel(3)).toBe('Add all 3');
     const one = html(createElement(TrackingDetail, { tracking: { ...TRACKING, untracked: TRACKING.untracked.slice(0, 1) }, register }));
     expect(one).toContain('>Add to PayPal</button>');
   });
@@ -399,7 +402,8 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
       ['_shared/shell.css', '.product-icon path', 'stroke: var(--color-accent-deep)'],
       ['cases/view/case.css', '.curve-fromto', 'color: var(--color-accent-deep)'],
       ['cases/view/case.css', '.case-read-label', 'color: var(--color-accent-deep)'],
-      ['cases/view/case.css', '.choice-best', 'background: var(--color-accent-soft)'],
+      // T091: 고른 카드 = 시안 `.npath.on` (최선 수 강조는 "Best" 알약만)
+      ['cases/view/case.css', ".choice[data-on='true']", 'border-color: var(--color-navy-ink)'],
     ];
     for (const [file, selector, decl] of cases) {
       expect(rule(file, selector), `${file} ${selector}`).toContain(decl);

@@ -34,6 +34,53 @@
       "duration": "0.3s",
       "easing": "ease",
       "from": ".editor transition:border-color .3s ease, 알약 background-color .3s ease"
+    },
+    "typeOut": {
+      "intervalMs": 34,
+      "step": 2,
+      "from": "typeOut: setInterval 34ms, i += 2 (선택지 카드·Use AI draft·Try a rushed reply). 타이핑 중 Send 꺼짐"
+    },
+    "chipPop": {
+      "duration": "0.45s",
+      "easing": "cubic-bezier(.2,1.4,.4,1)",
+      "staggerS": 0.12,
+      "from": ".gchip animation:pop .45s cubic-bezier(.2,1.4,.4,1) both, animation-delay = n × 0.12s"
+    },
+    "lintRise": {
+      "duration": "0.3s",
+      "easing": "ease",
+      "from": ".nlint animation:rise .3s ease both"
+    },
+    "fold": {
+      "duration": "0.35s",
+      "easing": "ease",
+      "from": ".rise animation:rise .35s ease both (Show history·Details 펼친 목록)"
+    },
+    "caret": {
+      "duration": "0.2s",
+      "easing": "ease",
+      "from": "histChevSt·goodsChev transition:transform .2s ease, 펼치면 rotate(180deg)"
+    },
+    "colorFade": {
+      "duration": "0.3s",
+      "easing": "ease",
+      "from": "risk.st·moodSt transition:color .3s ease, pillSt transition:background-color .3s ease"
+    },
+    "flash": {
+      "duration": "1.6s",
+      "easing": "ease",
+      "from": "@keyframes flash{0%{background:#60CDFF}100%{background:transparent}} .flash{animation:flash 1.6s ease}"
+    },
+    "toast": {
+      "durationMs": 3000,
+      "riseDuration": "0.35s",
+      "easing": "ease",
+      "from": "toast(): setTimeout 3000ms, .toast animation:rise .35s ease"
+    },
+    "riskColor": {
+      "highFrom": 0.5,
+      "midFrom": 0.2,
+      "from": "riskCol(p) = p>=0.5 빨강 : p>=0.2 검정 : 파랑. 알약·입력칸 테두리 = p>=0.5 빨강 (색 자체는 디자인 토큰)"
     }
   },
   "caseProgress": {

@@ -40,6 +40,9 @@
   --gradient-soft: linear-gradient(120deg, #e3f3ff, #f5f9ff); /* 연한 바탕 그라데이션 */
   --color-on-accent: #ffffff; /* 짙은 강조색 위 글자 */
   --color-on-accent-muted: #c9e3ff; /* 짙은 강조색 위 작은 글자 */
+  --color-flash: #60cdff; /* T091 시안 `@keyframes flash` 시작 색 · "+$N just now" 글자 */
+  --color-choice-on: #f3f5f9; /* T091 시안 `.npath.on` 바탕 */
+  --color-editor-high: #e8796b; /* T091 시안 editorSt: 위험 50% 이상 입력칸 테두리 */
   --color-on-accent-fill: rgba(255, 255, 255, 0.14); /* 짙은 강조색 위 채운 배지 바탕 (Demo data) */
   --color-panel: #f6f7f9; /* 칸 안 회색 상자 (시안 값) */
   --color-zone: #eef0f3; /* 구매자 메시지 구역 (시안 값, 파랑기 뺀 회색) */
@@ -425,6 +428,38 @@ h3 {
   }
 }
 
+/* T091: 시안 `@keyframes pop`·`rise`·`flash` 그대로 (시간은 변수) */
+@keyframes motion-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-flash {
+  0% {
+    background: var(--color-flash);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
 /* 움직임 줄이기: 모든 전환 시간을 0으로, 반복 애니메이션은 끈다 */
 @media (prefers-reduced-motion: reduce) {
   /* `<html style>`(설정 값)보다 앞서도록 !important */
@@ -436,6 +471,13 @@ h3 {
     --motion-ping-duration: 0s !important;
     --motion-bar: 0s !important;
     --motion-editor: 0s !important;
+    --motion-pop: 0s !important;
+    --motion-lint-rise: 0s !important;
+    --motion-fold: 0s !important;
+    --motion-caret: 0s !important;
+    --motion-color: 0s !important;
+    --motion-flash: 0s !important;
+    --motion-toast: 0s !important;
   }
 
   *,

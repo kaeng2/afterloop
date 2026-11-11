@@ -83,7 +83,10 @@ export function RiskCurveCard({ points }: { points: RiskPoint[] | null }) {
       </div>
       <div className="curve-side">
         <span className="curve-side-label">{t('case.curve.risk')}</span>
-        <span className="curve-headline num">{curve.headline}</span>
+        {/* 시안 `risk.st`: 값별 색(riskCol) + transition color .3s (--motion-color) */}
+        <span data-tone={curve.headlineTone} className="curve-headline num">
+          {curve.headline}
+        </span>
         <span className="curve-side-sub">{t(curve.headlineKey)}</span>
         {curve.fromTo === null ? null : <span className="curve-fromto num">{curve.fromTo}</span>}
         <Badge kind="assumption" />

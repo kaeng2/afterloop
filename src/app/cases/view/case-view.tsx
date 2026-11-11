@@ -19,9 +19,10 @@ import type { ReactNode } from 'react';
 import { AiPill, Badge } from '../../_shared/badges';
 import { t } from '../../_shared/copy';
 import { ProductTile } from '../../_shared/product-icon';
-import { deskFromView, type CaseDesk, type ChoiceView } from '../desk-model';
+import { deskFromView, type CaseDesk } from '../desk-model';
 import type { CaseView as CaseViewData, SummaryView } from '../model';
 import { CaseHistoryCard } from './case-history';
+import { ChoiceCards } from './choice-cards';
 import { Conversation } from './conversation';
 import { RiskCurveCard } from './risk-curve';
 
@@ -102,57 +103,10 @@ function Summary({ summary, noCarrier }: { summary: SummaryView | null; noCarrie
 }
 
 /**
- * 1 Pick a way to resolve — 엔진 수별 카드. 고르기는 엔진의 최선 수 (화면이 고르지 않는다).
- * T090: 카드 아래 두 줄(원인 요약 · "PayPal data only")은 그리지 않는다 — "PayPal data only"는 답장 칸 Details 첫 줄로.
- * 카드를 눌러 바꾸는 동작은 T091 몫이다 (지금은 모양만).
+ * 1 Pick a way to resolve — 엔진 수별 카드. 처음 고른 수는 엔진의 최선 수. 누르기(T091)는 `./choice-cards.tsx`
+ * (클라이언트 — 답장 칸과 `DeskSelectionProvider`로 이어진다). 여기서는 다시 내보내기만 한다.
  */
-export function ChoiceCards({ choices }: { choices: ChoiceView[] }) {
-  if (choices.length === 0) return null;
-  return (
-    <div className="desk-step">
-      <div className="desk-rail" aria-hidden="true">
-        <span className="desk-step-num">1</span>
-        <span className="desk-rail-line" />
-      </div>
-      <div className="desk-step-body">
-        <div className="desk-step-head">
-          <h3 className="desk-step-title">{t('case.choice.title')}</h3>
-          <span className="desk-step-sub">{t('case.choice.sub', { count: choices.length })}</span>
-          <Badge kind="assumption" />
-        </div>
-        <ul className="choice-list">
-          {choices.map((choice) => (
-            <li
-              key={choice.move}
-              className={['choice', choice.best ? 'choice-best' : '', choice.blocked ? 'choice-blocked' : '']
-                .filter((name) => name !== '')
-                .join(' ')}
-              aria-current={choice.best ? 'true' : undefined}
-            >
-              <span className="choice-top">
-                <span className={choice.best ? 'choice-radio choice-radio-on' : 'choice-radio'} aria-hidden="true" />
-                <span className="choice-title">{t(choice.titleKey)}</span>
-                {choice.best ? <span className="choice-best-tag">{t('case.choice.best')}</span> : null}
-              </span>
-              <span className="choice-how">{choice.blockedKey === null ? t(choice.howKey) : t(choice.blockedKey)}</span>
-              {choice.expectedLoss === null ? null : (
-                <span className="choice-numbers num">
-                  {choice.chargeback === null ? null : (
-                    <>
-                      <strong className="choice-cb">{t('case.choice.chargeback', { percent: choice.chargeback })}</strong>
-                      {' · '}
-                    </>
-                  )}
-                  {t('case.choice.cost', { amount: choice.expectedLoss.display })}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
+export { ChoiceCards };
 
 export function CaseView({
   view,

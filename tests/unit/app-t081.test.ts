@@ -240,6 +240,8 @@ describe('T081: 문구 파일', () => {
       'case.curve.tick100', // T090: 곡선 눈금 "100%"
       'case.curve.tick50', // T090: 곡선 눈금 "50%"
       'case.reply.rushedExample', // 구매자에게 나가는 영어 답장 예시 (영어 그대로가 맞다)
+      'case.reply.refundDraft', // T091: 환불 카드의 영어 입력칸 글 (입력칸은 영어 — 예측 규칙이 영어 글을 본다)
+      'case.reply.refundDraftNoName', // T091: 같은 글, 이름을 모를 때
       'case.progress.buyer.original', // T092: 손님의 시뮬레이션 답장 원문 (구매자 언어 한국어 그대로가 맞다)
       'case.progress.buyer.english', // T092: 그 답장의 영어 번역 줄 ("Translated · …", 두 언어 모두 영어)
     ]);
