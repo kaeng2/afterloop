@@ -73,6 +73,30 @@ describe('특징별 규칙 (영어·한국어)', () => {
     expect(features.apology && features.ask && features.date).toBe(true);
   });
 
+  it('T101: "as soon as"는 vague가 아니고 홀로 쓴 "soon"은 vague다', () => {
+    const no = [
+      'I will pass it to the carrier as soon as I receive it.',
+      'I will pass it to the carrier As Soon As I receive it.',
+      '받는 대로 바로 전달할게요.',
+      '받으시면 바로 전달하겠습니다.',
+    ];
+    for (const t of no) expect(on(t, 'vague'), t).toBe(false);
+    const yes = [
+      'It should arrive soon.',
+      'Soon.',
+      'It will come soon, as I said.',
+      'Please send it as fast as you can, it will arrive soon.',
+    ];
+    for (const t of yes) expect(on(t, 'vague'), t).toBe(true);
+    // 시안 rushed 글
+    const rushed = 'It should arrive soon. Please wait.';
+    expect(on(rushed, 'vague')).toBe(true);
+    // 서연 AI 초안(캐시 초안 영어)
+    const draft =
+      'Could you please send me your personal customs clearance code? I will pass it to the carrier as soon as I receive it, and I will check with the carrier and contact you again by November 17.';
+    expect(on(draft, 'vague')).toBe(false);
+  });
+
   it('걸리지 않는 글', () => {
     const plain = 'Thanks for your order. Have a nice day.';
     const { features } = detectReplyFeatures(plain);

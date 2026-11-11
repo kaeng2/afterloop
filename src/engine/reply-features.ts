@@ -36,7 +36,7 @@ const RX: Record<Exclude<ReplyFeatureKey, 'lang'>, RegExp> = {
   ),
   blame:
     /not (?:our|my) (?:fault|responsibility|problem)|your (?:fault|problem)|contact customs yourself|(?:저희|제|판매자) ?(?:책임|잘못)(?:이|은|도)? ?아(?:니|닙)|(?:택배사|배송사|세관) ?(?:의 )?(?:잘못|탓)|(?:고객님|구매자) ?(?:의 )?(?:잘못|탓)(?! ?[이가] ?아(?:니|닙))|직접 (?:세관|택배사|문의)|세관에 직접/i,
-  vague: /\bsoon\b|should arrive|eventually|any day|곧|조만간|언젠가|금방 ?(?:도착|갈|가)/i,
+  vague: /(?<!\bas )\bsoon\b|should arrive|eventually|any day|곧|조만간|언젠가|금방 ?(?:도착|갈|가)/i,
   refundNow:
     /(?:have|i['’]ve|already) refunded|refunded (?:the|your)|(?:issued|processed) (?:a|the|your) (?:full )?refund|환불(?:해)? ?드렸|환불했어요|환불 완료|환불 처리했/i,
 };
