@@ -276,7 +276,7 @@ describe('배치: 한 열, 위에서 아래로', () => {
     expect(editor).toMatch(/<textarea[^>]*class="reply-textarea"[^>]*lang="en"/);
     const outgoing = pair.slice(pair.indexOf('class="reply-block reply-box"'));
     // 지시서 T090 8번: 제목은 시안 문구 그대로, 언어 이름만 데이터(구매자 언어)에서
-    expect(outgoing).toContain(t('case.reply.sheSees', { language: t('case.view.lang.KO') }));
+    expect(outgoing).toContain(t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') }));
     expect(outgoing).toContain('lang="ko"');
     // 출처 표시: "Use AI draft" 단추의 AI 알약 (미리보기 칸에는 배지를 두지 않는다 — 시안)
     expect(markup).toContain('class="ai-pill ai-pill-small"');
