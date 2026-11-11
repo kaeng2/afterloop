@@ -98,7 +98,7 @@
 | T095 | AI 캐시 스크립트에 Scene 3 고칠 문구(en·ko 기본값) 더하기 | ops | 완료 | v2.15 | T086, T087 | — | 모델 `claude-sonnet-5-5`. `tasks/T095.md` | 병합. 실제 AI 캐시 17개(listing en 6/6·ko 6/6) |
 | T096 | 화면 진입점 정정: 탭 없애기, /listing·/products 링크 없애기 (주소로만) | ui | 완료 | v2.15 | T090 | — | 모델 `claude-sonnet-5-5`. `tasks/T096.md` | 병합. 검증 통과. 남은 것: Today Prevent 행 /products 링크 1건 → B 뒤 후속(시안처럼 짧은 카드) |
 | T097 | 시안 목록 자동 추출 → reports/design-match/inventory.md (색·모션·동작·접힘·조건부 스타일, 상태·근거 칸) | ops | 완료 | v2.15 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T097.md` | 병합. 316행 (Desk 162·Scene1 35·Scene3 119). 독립 검증은 생략(도구 스크립트, 자체 시험 + 컨트롤 타워가 출력 확인) |
-| T099 | B 뒤 정리: 미리보기 제목 구매자 이름("Seo-yeon will see (Korean)"), Prevent 행 /products 링크 → 시안 카드 | ui | 진행중 | v2.15 | T091 | — | 모델 `claude-sonnet-5-5`. `tasks/T099.md` |
+| T099 | B 뒤 정리: 미리보기 제목 구매자 이름("Seo-yeon will see (Korean)"), Prevent 행 /products 링크 → 시안 카드 | ui | 완료 | v2.15 | T091 | — | 모델 `claude-sonnet-5-5`. `tasks/T099.md` | 병합. 검증 통과: 대명사 없음, Desk의 /products·/listing 링크 0, Prevent 카드 엔진 값·버튼 없음 |
 | T100 | 칩으로 고친 답장도 보내기 (토큰 되돌리기 → translateReply 번역·검사 → sendable일 때만 기존 관문) | ui | 진행중 | v2.15 | T091 | — | 모델 `claude-opus-5-5`. `tasks/T100.md` |
 | T098 | 시안 맞추기 마무리: inventory 빈칸 0 (T098a Scene1·3 지금 / T098b Desk + 곡선 점·토스트·그림자, T099·T100 뒤). 나란히 녹화는 컨트롤 타워 | ui | 진행중 (T098a) | v2.15 | T097, T091, T092, T096 | design-match | 모델 `claude-opus-5-5`. `tasks/T098.md` |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
