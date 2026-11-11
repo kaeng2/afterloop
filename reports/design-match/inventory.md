@@ -18,7 +18,7 @@
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
 | `#000000` | 23 | L20 .b-black |  |  |  |
-| `#000000A1` | 1 | L27 .nav |  |  |  |
+| `#000000A1` | 1 | L27 .nav |  | 예외 | DECISIONS 11/11 22:55 예외 "진입점(탭 없음, /listing·/products 주소로만)": 시안 `.nav` 탭 글자색. T096에서 위쪽 막대 탭을 지워 대응하는 요소가 없다 (`src/app/_shared/top-bar.tsx`, 시험 `tests/unit/app-t087-listing.test.ts` T096 진입점) |
 | `#001C64` | 1 | L124 <section> |  |  |  |
 | `#002991` | 23 | L25 .c-blue |  |  |  |
 | `#003087` | 1 | L101 <stop> |  |  |  |
@@ -71,13 +71,13 @@
 |---|---|---|---|---|---|
 | `.b-black:hover` | 1 | L20 | background:#333333 |  |  |
 | `.b-tint:hover` | 1 | L21 | background:#05378227 |  |  |
-| `.btn:focus-visible,.it:focus-visible,.pf:focus-visible,.npath:focus-visible,.nmini:focus-visible,.ndraft:focus-visible,.hbtn:focus-visible,.nav:focus-visible` | 1 | L23 | box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px |  |  |
+| `.btn:focus-visible,.it:focus-visible,.pf:focus-visible,.npath:focus-visible,.nmini:focus-visible,.ndraft:focus-visible,.hbtn:focus-visible,.nav:focus-visible` | 1 | L23 | box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px |  | T096은 `.nav:focus-visible` 선택자만 다룸: 예외 (DECISIONS 11/11 22:55 "진입점(탭 없음)", 대응 요소 없음). 나머지 선택자(.btn·.it·.pf·.npath·.nmini·.ndraft·.hbtn)는 다른 태스크가 채운다 |
 | `.editor:focus-within` | 1 | L59 | box-shadow:#FFFFFF 0 0 0 2px,#097FF5 0 0 0 4px |  |  |
 | `.gmore:focus-visible` | 1 | L66 | outline:2px solid #097FF5;outline-offset:2px |  |  |
 | `.gmore:hover` | 1 | L65 | background:#E4E6E9 |  |  |
 | `.hbtn:hover` | 1 | L81 | border-color:#000000 |  |  |
 | `.it:hover` | 1 | L39 | background:#F5F7FB |  |  |
-| `.nav:hover` | 1 | L29 | color:#000000 |  |  |
+| `.nav:hover` | 1 | L29 | color:#000000 | 예외 | DECISIONS 11/11 22:55 예외 "진입점(탭 없음)": `.nav` 탭 hover. T096에서 탭과 `.shell-tab*` CSS를 지웠다 (`src/app/_shared/shell.css`) |
 | `.npath:hover` | 1 | L69 | border-color:#6C7378 |  |  |
 | `.pf:hover` | 1 | L32 | border-color:#9AA0A6 |  |  |
 | `@keyframes flash` | 1 | L90 | 0%{background:#60CDFF}100%{background:transparent} |  |  |

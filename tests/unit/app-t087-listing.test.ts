@@ -556,12 +556,28 @@ describe('T087 .next/static에 서버 전용 값 없음 (빌드 뒤에만)', () 
   });
 });
 
-describe('T087 메뉴', () => {
-  it('위쪽 막대: Today · Black Friday rehearsal → /listing · Products → /products', async () => {
-    const { TOP_TABS } = await import('@/app/_shared/top-bar');
-    const { t } = await import('@/app/_shared/copy');
-    expect(TOP_TABS.map((x) => x.href)).toEqual(['/', '/listing', '/products']);
-    expect(TOP_TABS.map((x) => t(x.copyKey))).toEqual(['Today', 'Black Friday rehearsal', 'Products']);
-    expect(TOP_TABS.map((x) => t(x.copyKey, undefined, 'ko'))).toEqual(['오늘', '블랙프라이데이 리허설', '상품']);
+describe('T096 진입점', () => {
+  it('위쪽 막대에 탭이 없고, /listing·/products 링크가 없다 (로고 → / 만)', async () => {
+    const mod = await import('@/app/_shared/top-bar');
+    expect('TOP_TABS' in mod).toBe(false);
+    const src = readFileSync(path.join(ROOT, 'src/app/_shared/top-bar.tsx'), 'utf8');
+    expect(src).not.toMatch(/shell-tab/);
+    expect(src).not.toMatch(/['"`]\/(listing|products)/);
+  });
+
+  it('Desk(Today)·/intro 코드에 /listing·/products 로 가는 링크가 없다', () => {
+    for (const rel of ['src/app/today/today-list.tsx', 'src/app/intro/intro-screen.tsx', 'src/app/listing/listing-view.tsx']) {
+      const src = readFileSync(path.join(ROOT, rel), 'utf8');
+      expect(src, rel).not.toMatch(/href=["'{`][^>]*\/(listing|products)/);
+    }
+  });
+
+  it('/listing "DisputeLess" 메뉴는 button, 이동·핸들러 없음, aria-disabled', () => {
+    const src = readFileSync(path.join(ROOT, 'src/app/listing/listing-view.tsx'), 'utf8');
+    const at = src.indexOf('{n.disputeless}');
+    const block = src.slice(src.lastIndexOf('<button', at), at);
+    expect(block).toContain('type="button"');
+    expect(block).toContain('aria-disabled="true"');
+    expect(block).not.toMatch(/onClick|href/);
   });
 });

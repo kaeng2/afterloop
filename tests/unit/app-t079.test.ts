@@ -460,8 +460,8 @@ describe('이번 주 카드: 엔진 weeklySummary + AI 캐시 초안 수, Demo d
     expect(rule).toMatch(/background:\s*var\(--color-on-accent-fill\)/);
     expect(rule).toMatch(/border-color:\s*var\(--color-on-accent-muted\)/);
     const globals = read('src/app/globals.css');
-    // 밝은 화면·어두운 화면 둘 다 정의
-    expect(globals.match(/--color-on-accent-fill:/g)).toHaveLength(2);
+    // T096: 밝은 화면만 (어두운 모드 없음)
+    expect(globals.match(/--color-on-accent-fill:/g)).toHaveLength(1);
   });
 });
 
@@ -527,7 +527,8 @@ describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 
     // 언어 읽기(`_server/locale`, T081)만 허용 — 쿠키 한 값을 읽을 뿐 데이터·PayPal을 부르지 않는다
     expect(root.replace(/_server\/locale/g, '')).not.toMatch(/loadTodayForRequest|_server|TopBar|loadReplyNames/);
     const app = strip(read('src/app/(app)/layout.tsx'));
-    expect(app).toMatch(/await loadTodayForRequest\(\)/);
+    // T096: 위쪽 막대에 탭이 없어 (app)/layout도 Today를 읽지 않는다
+    expect(app).not.toMatch(/loadTodayForRequest/);
     expect(app).toMatch(/<TopBar/);
     expect(read('src/app/intro/page.tsx')).toBeTruthy();
     for (const page of ['src/app/(app)/page.tsx', 'src/app/(app)/products/page.tsx', 'src/app/(app)/cases/[disputeId]/page.tsx']) {
@@ -551,23 +552,15 @@ describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 
     expect(markup).toContain('class="intro"');
   });
 
-  it('비교: 앱 화면 layout은 Today를 읽는다 (가짜 클라이언트로 센다)', async () => {
+  it('T096: 앱 화면 layout의 위쪽 막대는 탭이 없어 Today·PayPal 읽기를 하지 않는다', async () => {
     const { default: AppLayout } = await import('@/app/(app)/layout');
     calls.disputes = 0;
     calls.paypal = 0;
-    const element = (await AppLayout({ children: createElement('p', null, 'x') })) as React.ReactElement<{
-      children: React.ReactNode[];
-    }>;
-    html(element);
-    // T084: Today (N)은 Suspense 안 막대가 읽는다 — 그 자식을 그려 Today 읽기를 센다
-    const suspense = React.Children.toArray(element.props.children).find(
-      (child): child is React.ReactElement<{ children: React.ReactElement }> =>
-        React.isValidElement(child) && child.type === React.Suspense,
-    );
-    expect(suspense).toBeDefined();
-    const bar = suspense!.props.children as React.ReactElement<Record<string, unknown>>;
-    html((await (bar.type as (props: unknown) => Promise<React.ReactElement>)(bar.props)) as React.ReactElement);
-    expect(calls.disputes).toBeGreaterThan(0);
-    expect(calls.paypal).toBeGreaterThan(0);
+    const element = (await AppLayout({ children: createElement('p', null, 'x') })) as React.ReactElement;
+    const markup = html(element);
+    expect(markup).toContain('class="shell-bar"');
+    expect(markup).not.toContain('shell-tab');
+    expect(calls.disputes).toBe(0);
+    expect(calls.paypal).toBe(0);
   });
 });

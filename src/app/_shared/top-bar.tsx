@@ -1,21 +1,18 @@
 'use client';
 
 /**
- * 위쪽 막대 (T060, 모든 화면 공통). 왼쪽부터 로고 · 탭 두 개(Today (N) / Products) ·
- * PayPal activity 버튼 · 판매자 칩. (Autopilot 토글은 T061부터 그리지 않는다 — 아래 `SHOW_AUTOPILOT`)
+ * 위쪽 막대 (T060, 모든 화면 공통). 왼쪽 로고·꼬리표·날짜, 오른쪽 공개 데모 표시·PayPal activity·EN/KO·판매자 칩.
+ * T096: 탭 없음 — 화면 사이 링크는 막대에 두지 않는다. (Autopilot 토글은 T061부터 그리지 않는다 — 아래 `SHOW_AUTOPILOT`)
  *
- * - N은 Today 목록에 실제로 보이는 항목 수다 — 서버(`layout.tsx`)가 `buildToday(...).count`를 넘긴다.
  * - 판매자 칩 글자는 `config/rules.json`의 서명에서 온다 (`layout.tsx`가 `sellerChip`으로 갈라 넘긴다).
- * - 지금 보고 있는 탭을 표시하려고 주소를 읽으므로 클라이언트 컴포넌트다. 서버 전용 코드를 import하지 않는다.
+ * - 서버 전용 코드를 import하지 않는다.
  */
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 import { ActivityDrawer } from './activity-drawer';
 import { AutopilotToggle } from './autopilot-toggle';
 import { LanguageSwitch } from './language-switch';
 import { useT } from './locale-context';
-import { NAV_ITEMS, isActive, type TabItem } from './nav-items';
 
 import './shell.css';
 
@@ -24,12 +21,6 @@ import './shell.css';
  * 다시 보이려면 이 값만 바꾼다.
  */
 const SHOW_AUTOPILOT = false;
-
-/**
- * 탭 (T087 메뉴 연결): Today · "Black Friday rehearsal" → `/listing`(새 상품 등록 전 점검, Scene 3) · "Products"
- * → `/products`(기존 AG Grid 화면, 지우지 않고 남긴다). `/listing`은 라우트 그룹 밖이라 이 막대가 없다.
- */
-export const TOP_TABS: readonly TabItem[] = [NAV_ITEMS[0], { href: '/listing', copyKey: 'nav.listing' }, ...NAV_ITEMS.slice(1)];
 
 /**
  * 글자 로고 (T076, 시안 v4): "Dispute" + 강조색 "Less" + 그 아래 밑줄 곡선. 색은 css 변수(강조색)만 쓴다 —
@@ -56,13 +47,10 @@ function Wordmark() {
 }
 
 export function TopBar({
-  todayCount,
   seller,
   modeNote,
   dateLine,
 }: {
-  /** 없으면(읽는 중, T084 Suspense 자리) 숫자 없이 "Today"만 */
-  todayCount?: number;
   seller: { initial: string; shop: string };
   /** 공개 모드 한 줄 (public일 때만). PayPal activity 버튼 왼쪽에 작은 글씨로 */
   modeNote?: string;
@@ -70,7 +58,6 @@ export function TopBar({
   dateLine?: string;
 }) {
   const t = useT();
-  const pathname = usePathname() ?? '/';
   return (
     <header className="shell-bar">
       <div className="shell-bar-inner">
@@ -90,18 +77,6 @@ export function TopBar({
               {modeNote}
             </span>
           ) : null}
-          <nav className="shell-tabs nav" aria-label={t('shell.tabs')}>
-            {TOP_TABS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="shell-tab"
-                aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-              >
-                {item.href === '/' && todayCount !== undefined ? t('shell.todayTab', { count: todayCount }) : t(item.copyKey)}
-              </Link>
-            ))}
-          </nav>
           {SHOW_AUTOPILOT ? <AutopilotToggle /> : null}
           {/* 기록은 서랍이 서버에서 읽는다 (T064) */}
           <ActivityDrawer />
