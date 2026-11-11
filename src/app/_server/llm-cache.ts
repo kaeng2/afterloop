@@ -126,14 +126,31 @@ export type CachedLlmOptions = {
  * 없으면 public은 `limiter`가 허락할 때만, recording은 늘 `inner`를 부르고, 받은 응답을 `cache`에 더한다.
  */
 export function cachedLlm(inner: LlmCaller, options: CachedLlmOptions): LlmCaller {
-  return async (req) => {
-    const key = llmCacheKey(req);
+  return shareInFlight(async (req, key) => {
     const hit = options.cache.entries[key];
     if (hit !== undefined) return hit.response;
     if (options.mode === 'public' && !options.limiter.tryTake()) throw new Error(AI_RATE_LIMITED);
     const response = await inner(req);
     options.cache.entries[key] = { response, createdAt: new Date().toISOString() };
     return response;
+  });
+}
+
+/**
+ * 같은 키가 동시에 들어오면 진행 중인 하나를 함께 기다린다 (T084: 화면이 분류·어조를 함께 부른다 —
+ * 순차일 때처럼 같은 키는 실제 호출 1회, 횟수 제한도 1회만 쓴다). 끝나면 잊는다 (그다음은 캐시가 받는다).
+ */
+function shareInFlight(run: (req: LlmRequest, key: string) => Promise<unknown>): LlmCaller {
+  const pending = new Map<string, Promise<unknown>>();
+  return (req) => {
+    const key = llmCacheKey(req);
+    const inFlight = pending.get(key);
+    if (inFlight !== undefined) return inFlight;
+    const started = run(req, key).finally(() => {
+      if (pending.get(key) === started) pending.delete(key);
+    });
+    pending.set(key, started);
+    return started;
   };
 }
 
@@ -174,15 +191,14 @@ let recording: { caller: LlmCaller; session: CacheRecording } | null = null;
 export function startCacheRecording(inner: LlmCaller): CacheRecording {
   const cache = emptyLlmCache();
   let calls = 0;
-  const caller: LlmCaller = async (req) => {
-    const key = llmCacheKey(req);
+  const caller: LlmCaller = shareInFlight(async (req, key) => {
     const hit = cache.entries[key];
     if (hit !== undefined) return hit.response;
     calls += 1;
     const response = await inner(req);
     cache.entries[key] = { response, createdAt: new Date().toISOString() };
     return response;
-  };
+  });
   const session: CacheRecording = { cache, calls: () => calls };
   recording = { caller, session };
   return session;

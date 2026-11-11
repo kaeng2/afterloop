@@ -7,7 +7,7 @@
  *
  * 이 파일은 계산하지 않는다. PayPal·LLM을 부르지 않는다 (색상 문구는 부모가 넘긴 서버 액션만).
  */
-import { useMemo, useState } from 'react';
+import { startTransition, useMemo, useState } from 'react';
 
 import type { FixId, SeedProduct } from '@/types';
 
@@ -52,8 +52,9 @@ export function ProductsScreen({
       <Rehearsal view={view} txLine={txLine} />
       <FixCards
         view={view}
-        onToggle={(id) => setFixesOn((current) => toggleFix(current, id))}
-        onAllOn={() => setFixesOn([...ALL_FIXES])}
+        // 다시 계산은 급하지 않은 갱신으로 (T084): 누른 반응이 먼저, 숫자는 같은 엔진 결과
+        onToggle={(id) => startTransition(() => setFixesOn((current) => toggleFix(current, id)))}
+        onAllOn={() => startTransition(() => setFixesOn([...ALL_FIXES]))}
         colorNoteSlot={colorNoteSlot}
       />
     </div>

@@ -19,12 +19,13 @@ import { loadWeeklySummary } from '../cases/forecast-source';
 import { buildToday, weeklyView, type TodayView, type TrackingSummary, type WeeklyView } from '../today/model';
 import { summarizeTracking } from '../today/tracking';
 import { loadDemoDisputesForRequest } from './disputes';
-import { getPayPalClient } from './paypal';
+import { getPayPalReadClient } from './paypal';
 
 export type TodayLoad = { view: TodayView; paypal: Availability; disputes: LoadedDispute[]; tracking: TrackingSummary | null };
 
 export const loadTrackingForRequest = cache(async (): Promise<TrackingSummary | null> => {
-  const resolved = getPayPalClient();
+  // 요청 사이 90초 읽기 캐시 (T084). 추적 등록이 끝나면 그 주문의 캐시가 지워진다
+  const resolved = getPayPalReadClient();
   if (!resolved.ok) return null;
   return summarizeTracking(resolved.client, {
     orders: seedOrders,

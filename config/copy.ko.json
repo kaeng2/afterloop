@@ -87,6 +87,7 @@
   "badge.hint.assumption": "바꿀 수 있는 가정 비율·비용으로 만든 값입니다.",
   "badge.hint.cached": "방금 읽은 것이 아니라 앞서 읽어 저장한 결과입니다.",
   "common.paypalUnavailable": "PayPal 샌드박스를 쓸 수 없습니다",
+  "common.loading": "불러오는 중…",
   "common.reason.not_configured": "서버에 자격 증명이 설정되지 않았습니다",
   "common.reason.not_sandbox": "PayPal 샌드박스만 쓸 수 있습니다",
   "common.reason.client_error": "PayPal 클라이언트를 만들 수 없습니다",

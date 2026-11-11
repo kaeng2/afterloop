@@ -23,6 +23,7 @@ import type { ClientDeps, PayPalClient, PayPalEnv } from '@/types';
 import type { UnavailableReason } from '../_shared/availability';
 import { recordClient } from './activity';
 import { resolveDemoMode } from './mode';
+import { createReadCache, type ReadCache } from './read-cache';
 
 /** 허용하는 단 하나의 baseUrl. live(실거래)는 쓰지 않는다 (CLAUDE.md). */
 export const SANDBOX_BASE_URL = 'https://api-m.sandbox.paypal.com';
@@ -62,16 +63,12 @@ function liveDeps(log?: ClientDeps['log']): ClientDeps {
 }
 
 /**
- * 환경 변수로 PayPal 클라이언트를 만든다. 던지지 않는다.
+ * 환경 변수로 PayPal 클라이언트를 새로 만든다. 던지지 않는다. 감싸는 순서: 클라이언트 → (public이면) `blockWrites` → `recordClient`.
  *
  * - 키가 빠졌으면 `not_configured`
  * - `PAYPAL_BASE_URL`이 샌드박스가 아니면 호출하지 않고 `not_sandbox` (받은 값은 적지 않는다)
  */
-export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVars, deps?: ClientDeps): PayPalAvailability {
-  if (typeof window !== 'undefined') {
-    return { ok: false, reason: 'server_only' };
-  }
-
+function buildPayPalClient(env: PayPalEnvVars, deps: ClientDeps): PayPalAvailability {
   const missing = KEYS.filter((key) => (env[key] ?? '').trim() === '');
   if (missing.length > 0) {
     return { ok: false, reason: 'not_configured' };
@@ -89,7 +86,7 @@ export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVar
   };
 
   try {
-    const client = createPayPalClient(paypalEnv, deps ?? liveDeps());
+    const client = createPayPalClient(paypalEnv, deps);
     // 모드 관문: recording이 아니면 쓰기는 PayPal로 나가지 않는다 (스위치 값과 무관)
     const gated = resolveDemoMode(env) === 'recording' ? client : blockWrites(client);
     // 기록기 (T064)는 관문 바깥: 막힌 쓰기는 "Simulated · not sent", 실제로 나간 요청만 응답 코드와 함께 남는다
@@ -98,4 +95,84 @@ export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVar
     // 클라이언트가 설정을 거부했다 (샌드박스 밖 주소 등). 예외 문구를 그대로 올리지 않는다.
     return { ok: false, reason: 'client_error' };
   }
+}
+
+// ───────────────────────────── 프로세스당 클라이언트 하나 (T084) ─────────────────────────────
+
+/**
+ * 같은 설정인지 가르는 열쇠. **비밀값을 넣지 않는다** — 모드 이름, 샌드박스 주소, 키가 채워졌는지(0·1)만.
+ * 열쇠가 바뀌면(모드가 바뀌는 등) 클라이언트와 읽기 캐시를 새로 만든다.
+ */
+function sharedKeyOf(env: PayPalEnvVars): string {
+  const filled = KEYS.map((key) => ((env[key] ?? '').trim() === '' ? '0' : '1')).join('');
+  return `${resolveDemoMode(env)}|${(env.PAYPAL_BASE_URL ?? '').trim()}|${filled}`;
+}
+
+export type SharedPayPal = {
+  /** 토큰을 함께 쓰는 클라이언트. 읽기는 캐시를 보지 않는다(보내기 직전 다시 읽기용). 쓰기가 끝나면 관련 읽기 캐시를 지운다. */
+  client: () => PayPalAvailability;
+  /** 같은 클라이언트 + 읽기 캐시 (분쟁 목록·상세·주문 조회 90초). 화면 읽기용. */
+  reader: () => PayPalAvailability;
+};
+
+/**
+ * 프로세스에 하나 두는 클라이언트 묶음을 만든다. 화면은 아래 기본 묶음을 쓰고, 시험은 가짜 `env`·`deps`로 따로 만든다.
+ *
+ * 요청 사이에 함께 쓰게 되는 상태: 액세스 토큰(만료 60초 전까지 재사용, 동시 발급 1회), 최근 60초 호출 시각
+ * (속도 제한 30회/60초 — PayPal 앱 하나의 한도라 함께 세는 것이 맞다). 재시도 횟수(429·5xx·401)는 호출 1건 안의
+ * 지역 값이라 요청 사이에 섞이지 않는다.
+ */
+export function createSharedPayPal(opts: { env: () => PayPalEnvVars; deps: () => ClientDeps; cache: ReadCache }): SharedPayPal {
+  let held: { key: string; client: PayPalClient; reader: PayPalClient } | null = null;
+
+  function resolve(): { ok: true; client: PayPalClient; reader: PayPalClient } | { ok: false; reason: UnavailableReason } {
+    const env = opts.env();
+    const key = sharedKeyOf(env);
+    if (held !== null && held.key === key) return { ok: true, client: held.client, reader: held.reader };
+    held = null;
+    opts.cache.clear();
+    const made = buildPayPalClient(env, opts.deps());
+    if (!made.ok) return made; // 실패는 붙잡아 두지 않는다
+    // 둘 다 같은 바탕(관문 + 기록기)을 감싼다. 읽기 캐시는 기록기 바깥 → 캐시 적중은 서랍에 새 줄을 남기지 않는다
+    held = { key, client: opts.cache.wrapWritesOnly(made.client), reader: opts.cache.wrap(made.client) };
+    return { ok: true, client: held.client, reader: held.reader };
+  }
+
+  return {
+    client: () => {
+      const r = resolve();
+      return r.ok ? { ok: true, client: r.client } : r;
+    },
+    reader: () => {
+      const r = resolve();
+      return r.ok ? { ok: true, client: r.reader } : r;
+    },
+  };
+}
+
+/** 화면 읽기 캐시와 클라이언트 묶음 (프로세스에 하나). */
+const READ_CACHE = createReadCache();
+const SHARED = createSharedPayPal({ env: () => process.env as PayPalEnvVars, deps: () => liveDeps(), cache: READ_CACHE });
+
+/**
+ * 화면용 PayPal 클라이언트. 던지지 않는다.
+ *
+ * - 인수 없이 부르면(= `process.env`, 실제 네트워크) 프로세스에 하나인 클라이언트 — 요청마다 토큰을 새로 받지 않는다.
+ *   읽기 캐시는 보지 않는다 (보내기 직전 다시 읽기·추적 등록 대상 고르기는 언제나 새로 읽는다). 쓰기가 끝나면 관련 읽기 캐시를 지운다.
+ * - `env`나 `deps`를 넘기면(시험) 매번 새로 만든다 (캐시 없음, 예전과 같다).
+ */
+export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVars, deps?: ClientDeps): PayPalAvailability {
+  if (typeof window !== 'undefined') {
+    return { ok: false, reason: 'server_only' };
+  }
+  if (env === process.env && deps === undefined) return SHARED.client();
+  return buildPayPalClient(env, deps ?? liveDeps());
+}
+
+/** 화면 읽기용 (분쟁 목록·상세, 주문 조회): 프로세스에 하나인 클라이언트 + 요청 사이 90초 캐시. 쓰기는 `getPayPalClient`와 같다. */
+export function getPayPalReadClient(): PayPalAvailability {
+  if (typeof window !== 'undefined') {
+    return { ok: false, reason: 'server_only' };
+  }
+  return SHARED.reader();
 }
