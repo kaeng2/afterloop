@@ -1,0 +1,80 @@
+'use client';
+
+/**
+ * "Case history · N events · D days" 카드 (T076, 시안 v4). 점 줄 + [Show history] 펼침 목록 + AI 요약 한 줄.
+ *
+ * 사건은 **실제 데이터에서만** 만든 `CaseEvent[]`를 옮긴 `HistoryView`다 (`../history.ts`). 시드 사건 줄에는
+ * Demo data. 요약은 어댑터(`history-summary-source.ts`) 값이 있을 때만 'AI suggests'와 함께 보인다.
+ */
+import { useId, useState } from 'react';
+
+import { Badge } from '../../_shared/badges';
+import { t } from '../../_shared/copy';
+import type { HistoryView } from '../desk-model';
+
+export function CaseHistoryCard({ history }: { history: HistoryView }) {
+  const [open, setOpen] = useState(false);
+  const listId = useId();
+  const sub =
+    history.spanDays === null
+      ? t(history.count === 1 ? 'case.history.subOneNoDays' : 'case.history.subNoDays', { count: history.count })
+      : t(history.count === 1 ? 'case.history.subOne' : 'case.history.sub', { count: history.count, days: history.spanDays });
+
+  return (
+    <section className="history-card" aria-labelledby="history-title">
+      <div className="history-head">
+        <h2 className="desk-card-title" id="history-title">
+          {t('case.history.title')}
+        </h2>
+        <span className="history-sub num">{sub}</span>
+        <span className="history-dots" aria-hidden="true">
+          {history.rows.map((row, index) => (
+            <span key={index} className="history-dot-wrap">
+              {index === 0 ? null : <span className="history-dot-line" />}
+              <span className={`history-dot history-dot-${row.tone}`} title={`${row.date} · ${row.text}`} />
+            </span>
+          ))}
+        </span>
+        <button
+          type="button"
+          className="desk-button-outline"
+          aria-expanded={open}
+          aria-controls={listId}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {t(open ? 'case.history.hide' : 'case.history.show')}
+          <span className={open ? 'desk-caret desk-caret-open' : 'desk-caret'} aria-hidden="true">
+            ▾
+          </span>
+        </button>
+      </div>
+
+      <ol id={listId} className="history-list" hidden={!open}>
+        {history.rows.map((row, index) => (
+          <li key={index} className="history-row">
+            <span className="history-date num">{row.date}</span>
+            <span className={`history-dot history-dot-${row.tone}`} aria-hidden="true" />
+            <span className="history-text">
+              <span>{row.text}</span>
+              {row.flagKeys.map((key) => (
+                <span key={key} className="desk-chip desk-chip-bad">
+                  {t(key)}
+                </span>
+              ))}
+              {row.demo ? <Badge kind="demo" /> : null}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {history.summary === null ? null : (
+        <p className="history-summary">
+          <Badge kind="aiSuggests" />
+          <span>
+            <strong>{t('case.history.summaryLabel')}</strong> {history.summary}
+          </span>
+        </p>
+      )}
+    </section>
+  );
+}

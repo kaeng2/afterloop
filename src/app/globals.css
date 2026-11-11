@@ -26,6 +26,18 @@
   --color-list-bg: #f1efea; /* Today 목록 영역 (시안 값) */
   --color-accent: #5b3cc4;
 
+  /* 강조색의 옅은·짙은 단계 (T076 시안 v4. 시안의 파랑 대신 — PayPal 파랑과 RGB 거리 60 이상) */
+  --color-accent-soft: #f1edfc; /* 고른 줄·알약 바탕 */
+  --color-accent-tint: #e6e0fa; /* 옅은 버튼 바탕 */
+  --color-accent-deep: #4a2499; /* 이번 주 카드 바탕 (그라데이션 시작) */
+  --color-accent-strong: #6a46d6; /* 이번 주 카드 바탕 (그라데이션 끝) */
+  --color-on-accent: #ffffff; /* 짙은 강조색 위 글자 */
+  --color-on-accent-muted: #ddd5f7; /* 짙은 강조색 위 작은 글자 */
+  --color-panel: #f6f7f9; /* 칸 안 회색 상자 (시안 값) */
+  --color-zone: #eef0f3; /* 구매자 메시지 구역 (시안 값, 파랑기 뺀 회색) */
+  --color-line: #cfd3d8; /* 입력칸 테두리·단계 줄 (시안 값) */
+  --color-ink: #000000; /* 주 버튼 (시안 값: 검정) */
+
   /* 뜻이 있는 색 (강조색과 따로) */
   --color-risk-high: #b42318;
   --color-risk-watch: #a15c07;
@@ -95,6 +107,17 @@
     --color-divider: #2e3136;
     --color-list-bg: #141517;
     --color-accent: #a996f0;
+
+    --color-accent-soft: #2a2235;
+    --color-accent-tint: #3a2f4a;
+    --color-accent-deep: #3b2a7a;
+    --color-accent-strong: #4a35a8;
+    --color-on-accent: #ffffff;
+    --color-on-accent-muted: #d8cff7;
+    --color-panel: #202226;
+    --color-zone: #1d1f23;
+    --color-line: #3a3e44;
+    --color-ink: #f2f2f2;
 
     --color-risk-high: #f97066;
     --color-risk-watch: #fdb022;

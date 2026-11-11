@@ -215,6 +215,8 @@ export type CaseView = {
    */
   messageSend: { blocked: boolean; reasonKey: string | null };
   demoFields: DemoField[];
+  /** 확대 위험 신호 그대로 (T076: 말풍선 "AI read" 태그 — 있는 판정만). 없으면 `null`. */
+  signals: EscalationSignals | null;
 };
 
 // ───────────────────────────── 문구 키 고르기 ─────────────────────────────
@@ -510,6 +512,7 @@ export function buildCaseView(input: CaseViewInput, params?: Params, rules?: Pol
       input.signalsAfterReply === null ? null : riskView(escalationRisk(input.signalsAfterReply, rules), demoSignals),
     messageSend: { blocked: offerFirst, reasonKey: offerFirst ? OFFER_FIRST_KEY : null },
     demoFields: [...input.demoFields],
+    signals: input.signals,
   };
 }
 

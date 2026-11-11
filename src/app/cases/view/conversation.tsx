@@ -11,9 +11,11 @@
  * 토글이 없어 서버 컴포넌트다. 받은 값은 이미 가려진 글이다.
  */
 import type { FactLocale } from '@/ai/tokens';
+import type { EscalationSignals } from '@/types';
 
 import { Badge } from '../../_shared/badges';
 import { t } from '../../_shared/copy';
+import { readTags, type ReadTag } from '../desk-model';
 import { shortDate, type CarrierLineView, type CaseMessageView } from '../model';
 import { Segments } from './segments';
 
@@ -38,7 +40,36 @@ export function timeline(messages: CaseMessageView[], carrierLine: CarrierLineVi
   return [...dated, ...undated];
 }
 
-function Bubble({ message, locale, markTitle }: { message: CaseMessageView; locale: FactLocale | null; markTitle: string }) {
+/** 말풍선 아래 "AI read" 태그 줄 (있는 판정만, `readTags`). 태그가 없으면 그리지 않는다. */
+function ReadTags({ tags }: { tags: ReadTag[] }) {
+  if (tags.length === 0) return null;
+  const byAi = tags.some((tag) => tag.by === 'ai');
+  const byCode = tags.some((tag) => tag.by === 'code');
+  return (
+    <div className="case-read">
+      <span className="case-read-label">{t('case.read.label')}</span>
+      {tags.map((tag) => (
+        <span key={tag.key} className={tag.tone === 'bad' ? 'desk-chip desk-chip-bad' : 'desk-chip'}>
+          {t(tag.key)}
+        </span>
+      ))}
+      {byCode ? <Badge kind="codeDecides" /> : null}
+      {byAi ? <Badge kind="aiSuggests" /> : null}
+    </div>
+  );
+}
+
+function Bubble({
+  message,
+  locale,
+  markTitle,
+  tags,
+}: {
+  message: CaseMessageView;
+  locale: FactLocale | null;
+  markTitle: string;
+  tags: ReadTag[];
+}) {
   // 같은 배지는 한 번만 (시연용 문의는 글 자체도, 시드 번역도 'Demo data'라 두 번 붙던 문제)
   const englishOnly = message.englishBadges.filter((kind) => !message.badges.includes(kind));
   // 꼬리("Dispute message · From PayPal" / 날짜 + Demo data)는 따로 줄을 두지 않고 마지막 줄 끝에 붙인다 (T068 재시도 1번)
@@ -74,28 +105,45 @@ function Bubble({ message, locale, markTitle }: { message: CaseMessageView; loca
           {meta}
         </p>
       )}
+      <ReadTags tags={tags} />
     </li>
   );
 }
+
+const hasMark = (message: CaseMessageView): boolean =>
+  [...message.original, ...(message.english ?? [])].some((segment) => segment.mark);
 
 export function Conversation({
   messages,
   carrierLine,
   locale,
+  signals = null,
+  languageKey = null,
 }: {
   messages: CaseMessageView[];
   carrierLine: CarrierLineView | null;
   locale: FactLocale | null;
+  /** 엔진 신호 (T076 "AI read" 태그 — 있는 판정만). 없으면 태그 없음. */
+  signals?: EscalationSignals | null;
+  /** 구매자 언어 키 (제목 옆 "Original, in Korean"). */
+  languageKey?: string | null;
 }) {
   const markTitle = t('case.view.cardCompanyMark');
   const entries = timeline(messages, carrierLine);
+  const lastReal = [...messages].reverse().find((message) => message.source === 'paypal') ?? null;
 
   return (
     <section className="case-conversation" aria-labelledby="case-conversation">
-      {/* 제목 줄은 화면 읽기 전용 (T068 재시도 1번: 세로 자리를 줄인다) */}
-      <h2 className="case-sr-only" id="case-conversation">
-        {t('case.view.conversation')}
-      </h2>
+      <div className="desk-card-head">
+        <h2 className="desk-card-title" id="case-conversation">
+          {t('case.view.conversation')}
+        </h2>
+        <span className="desk-card-sub">
+          {languageKey === null || locale === 'en'
+            ? t('case.view.conversationSubEn')
+            : t('case.view.conversationSub', { language: t(languageKey) })}
+        </span>
+      </div>
 
       {messages.length === 0 ? <p className="small muted">{t('case.view.noMessages')}</p> : null}
 
@@ -109,7 +157,13 @@ export function Conversation({
               ))}
             </li>
           ) : (
-            <Bubble key={`message-${index}`} message={entry.message} locale={locale} markTitle={markTitle} />
+            <Bubble
+              key={`message-${index}`}
+              message={entry.message}
+              locale={locale}
+              markTitle={markTitle}
+              tags={readTags({ marked: hasMark(entry.message), isLastReal: entry.message === lastReal, signals })}
+            />
           ),
         )}
       </ol>

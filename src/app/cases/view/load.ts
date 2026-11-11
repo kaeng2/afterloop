@@ -17,7 +17,7 @@ import { cache } from 'react';
 
 import { draftReply, type ReplyDraft } from '@/ai/reply';
 import { recommend } from '@/engine/recommend';
-import type { FactToken } from '@/types';
+import type { CaseEvent, FactToken } from '@/types';
 
 import { seedInquiries } from '../../../../seed/index';
 import type { Availability } from '../../_shared/availability';
@@ -25,6 +25,8 @@ import { linkFor } from '../../_shared/demo-links';
 import { pickBoard, type LoadedDispute } from '../../_shared/dispute-view';
 import { loadDemoDisputesForRequest } from '../../_server/disputes';
 import { getLlm } from '../../_server/llm';
+import { loadHistorySummary } from '../history-summary-source';
+import { caseEventsFor } from '../history';
 import { caseMessages, type CaseViewInput } from '../model';
 import { buyerLocaleOf, caseReplyFacts } from '../reply-facts';
 
@@ -38,6 +40,13 @@ export type CaseLoad =
       /** T042 초안. LLM을 쓸 수 없거나 실패하면 `ok: false`. */
       draft: ReplyDraft;
       llm: Availability;
+      /** 사건 기록 (T076). 실제 데이터에서만 (`caseEventsFor`). */
+      events: CaseEvent[];
+      /**
+       * 사건 기록 AI 요약 (T076 자리, T077 함수). 어댑터(`history-summary-source.ts`)가 `null`이면 줄을 숨긴다.
+       * AI 초안을 만드는 같은 길에서만 부른다 (`options.draft`가 거짓이면 부르지 않는다 — LLM 호출 0회).
+       */
+      historySummary: string | null;
     };
 
 /** 화면에 내도 되는 분쟁 번호인가 (연결 표의 `showOnScreen`). 표에 없으면 거짓. */
@@ -127,6 +136,10 @@ export async function loadCase(disputeId: string, options: { draft?: boolean } =
     demoFields: loaded.demoFields,
   };
 
+  // 4. 사건 기록 (실제 데이터만) + AI 요약 (어댑터. AI 초안과 같은 길에서만)
+  const events = caseEventsFor(loaded, seedInquiries);
+  const historySummary = options.draft === false ? null : await loadHistorySummary(events);
+
   // 초안이 없으면 (키 없음·호출 실패·출력 거부 모두) 화면은 "AI unavailable — showing rules only"
-  return { kind: 'ok', loaded, input, draft, llm: draft.ok ? { ok: true } : { ok: false } };
+  return { kind: 'ok', loaded, input, draft, llm: draft.ok ? { ok: true } : { ok: false }, events, historySummary };
 }
