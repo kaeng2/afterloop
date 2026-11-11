@@ -15,7 +15,7 @@ import { ActivityDrawer } from './activity-drawer';
 import { AutopilotToggle } from './autopilot-toggle';
 import { LanguageSwitch } from './language-switch';
 import { useT } from './locale-context';
-import { NAV_ITEMS, isActive } from './nav-items';
+import { NAV_ITEMS, isActive, type TabItem } from './nav-items';
 
 import './shell.css';
 
@@ -24,6 +24,12 @@ import './shell.css';
  * 다시 보이려면 이 값만 바꾼다.
  */
 const SHOW_AUTOPILOT = false;
+
+/**
+ * 탭 (T087 메뉴 연결): Today · "Black Friday rehearsal" → `/listing`(새 상품 등록 전 점검, Scene 3) · "Products"
+ * → `/products`(기존 AG Grid 화면, 지우지 않고 남긴다). `/listing`은 라우트 그룹 밖이라 이 막대가 없다.
+ */
+export const TOP_TABS: readonly TabItem[] = [NAV_ITEMS[0], { href: '/listing', copyKey: 'nav.listing' }, ...NAV_ITEMS.slice(1)];
 
 /**
  * 글자 로고 (T076, 시안 v4): "Dispute" + 강조색 "Less" + 그 아래 밑줄 곡선. 색은 css 변수(강조색)만 쓴다 —
@@ -78,7 +84,7 @@ export function TopBar({
         {dateLine === undefined ? null : <span className="shell-date">{dateLine}</span>}
 
         <nav className="shell-tabs nav" aria-label={t('shell.tabs')}>
-          {NAV_ITEMS.map((item) => (
+          {TOP_TABS.map((item) => (
             <Link
               key={item.href}
               href={item.href}

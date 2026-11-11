@@ -426,7 +426,7 @@ export type CaseEventKind =
 export type CaseEvent = {
   at: string; // ISO 날짜시각
   kind: CaseEventKind;
-  source: 'sandbox' | 'seed';
+  source: 'sandbox' | 'seed' | 'simulated'; // simulated = v2.14 Send 뒤 예상 시나리오 (화면에 Simulated 표시, 실제 기록 아님)
   text: string; // 화면 한 줄 (사실 그대로, 영어)
   flags?: ('threat' | 'angry' | 'unanswered')[]; // 코드·기존 판정에서 온 표시
 };
@@ -577,3 +577,46 @@ export type ListingParams = { feeCents: number; timeCostCents: number; refundSha
 export type ListingFixDraftInput = { productTitle: string; productDescription: string };
 export type ListingFixDraft = { ok: true; text: string } | { ok: false; reason: string };
 export type ListingFixDrafts = Record<ListingFixKey, ListingFixDraft>;
+
+// ───────────────────────────── v2.14 시안 동작 (사람 결정 2026-11-11 22:20) ─────────────────────────────
+
+/** 답장 칩 하나의 효과. deltaPp = 그 칩의 동작(빠진 것은 문장 넣기, 나쁜 것은 문장 빼기, 있는 좋은 것은 그 문장을 뺐을 때와의 차이)을
+ *  적용했을 때 차지백 위험의 변화(퍼센트포인트, 음수 = 위험이 내려감). 계산은 forecastReply를 두 번 돌린 차이 */
+export type ReplyChipKind = 'good' | 'missing' | 'bad';
+export type ReplyFeatureEffect = {
+  key: ReplyFeatureKey;
+  kind: ReplyChipKind;
+  sentence: string | null; // good·bad: 걸린 문장(hits), missing: 넣을 문장(snippets, 자리표시자 채운 것)
+  deltaPp: number; // good: 이 문장이 없을 때 대비 지금이 낮춘 양(음수), missing: 넣으면 바뀌는 양(음수), bad: 빼면 바뀌는 양(음수)
+};
+
+/** config/reply-snippets.json — 빠진 항목에 넣을 미리 정한 문장 (영어, 자리표시자 ⟦BUYER_NAME_1⟧·⟦DATE_1⟧는 코드가 채움). 환불 약속·도착 보장 없음 */
+export type ReplySnippets = { version: string; source: string; snippets: Partial<Record<ReplyFeatureKey, string>> };
+
+/** Send 뒤 예상 시나리오 단계 (전부 Simulated, 녹화 모드에서도 Send만 실제) */
+export type ScenarioStepKind = 'sent' | 'buyer_reply' | 'forwarded' | 'cleared';
+export type ScenarioPoint = { step: ScenarioStepKind; pChargeback: number };
+
+/** src/engine/forecast.ts (v2.14). text = 지금 답장 글 */
+export type ReplyFeatureEffectsFn = (
+  input: ReplyForecastInput,
+  snippets: Partial<Record<ReplyFeatureKey, string>>,
+  params?: Params,
+  rules?: PolicyConfig,
+  model?: ReplyModelConfig,
+) => ReplyFeatureEffect[];
+
+/** src/engine/forecast.ts (v2.14). 보낸 답장(input.text)에서 시작해 steps 순서대로 단계마다 차지백 위험. 단계의 신호 변화는 config/reply-model.json `scenario` (가정) */
+export type ScenarioRiskFn = (
+  input: ReplyForecastInput,
+  steps: ScenarioStepKind[],
+  params?: Params,
+  rules?: PolicyConfig,
+  model?: ReplyModelConfig,
+) => ScenarioPoint[];
+
+/** src/engine/recommend.ts 옆 (v2.14). 이 수를 실행했을 때 "이번 주" 카드에 더할 값 = 전액 환불 기대 손실 − 이 수의 기대 손실 (센트, 0 이상, 막힌 수·refund는 0) */
+export type ActionSavingsFn = (board: BoardState, move: Evaluation['move'], params?: Params, rules?: PolicyConfig) => number;
+
+/** src/engine (v2.14). 주문들에 추적번호를 넣었을 때 줄어드는 기대 손실 합 (센트, params의 tracking_24h 처방·상품별 확률·p_win 기준) */
+export type TrackingSavingsFn = (orders: { sku: string; amountCents: number }[], params?: ParamsConfig, rules?: PolicyConfig) => number;

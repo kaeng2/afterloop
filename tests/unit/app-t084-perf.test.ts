@@ -137,7 +137,8 @@ describe('T084 2: 요청 사이 읽기 캐시 (90초, 가짜 시계)', () => {
     expect(paypal.reads().filter((s) => s.path === detail)).toHaveLength(1);
     advance(1);
     await okClient(shared.reader()).get(detail);
-    expect(paypal.reads().filter((s) => s.path === detail)).toHaveLength(2);
+    // T088: 90초 뒤에는 지난 값을 바로 주고 뒤에서 다시 읽는다 (호출은 같은 1회)
+    await vi.waitFor(() => expect(paypal.reads().filter((s) => s.path === detail)).toHaveLength(2));
     expect(READ_CACHE_TTL_MS).toBe(90_000);
   });
 
