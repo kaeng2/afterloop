@@ -14,9 +14,9 @@
 녹화 동안 PayPal activity 서랍: Send는 "Simulated · not sent"(POST 줄은 기록만, 실제 호출 없음), 나머지는 GET 읽기뿐. 서버 로그에 실제 POST 0.
 
 ## 남은 차이 (inventory 예외 외에 눈으로 본 것)
-1. 앱의 AI 초안에 "Vague timing" 칩(−13 pts)이 하나 뜬다 — 초안의 "as soon as I receive it"을 엔진 정규식이 모호함으로 본다. 시안의 AI 초안은 "5 good"만. (엔진 정규식 문제, 숫자 일치 AC33에는 영향 없음)
+1. ~~앱의 AI 초안에 "Vague timing" 칩~~ → T101로 고침. (당시:(−13 pts)이 하나 뜬다 — 초안의 "as soon as I receive it"을 엔진 정규식이 모호함으로 본다. 시안의 AI 초안은 "5 good"만. 엔진 정규식 문제, 숫자 일치 AC33에는 영향 없음)
 2. ~~"Done today" 묶음~~ → T102로 반영 (화면 상태만, "Done today · Simulated").
 3. 위험 % 큰 숫자 40px (시안 44px), 판매자 점 색(앱은 강조색, 시안은 빨강) — T098b가 의도적으로 남김.
-4. Scene 3 점검 결과에 Assumption 배지가 8곳 (시안 0) — "최소한" 규칙에 비해 많다 (사람 결정 대기).
+4. Scene 3 점검 결과에 Assumption 배지가 8곳 (시안 0) — 사람 결정 11/12 "Keep as is": 그대로 둔다.
 5. 데이터 차이(예외): 사건 번호·이름·날짜·숫자는 실제/엔진 값, 시안의 "Nov 5 promise"·Refund backup·Expected delivery·Yuki·Lena 없음, 수수료 $15.
 6. 시안 11번(추적 누락 줄)은 자동 클릭이 못 찾음 — 시안 목록 줄 이름이 달라서. 앱은 찍힘.
