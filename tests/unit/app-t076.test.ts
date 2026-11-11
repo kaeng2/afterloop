@@ -39,7 +39,9 @@ import { RiskCurveCard } from '@/app/cases/view/risk-curve';
 import { CaseHistoryCard } from '@/app/cases/view/case-history';
 import { buildToday, weeklyView, type TrackingSummary } from '@/app/today/model';
 import { ProductFilterBar, TodayList } from '@/app/today/today-list';
+import { forecastReply } from '@/engine/forecast';
 import { recommend } from '@/engine/recommend';
+import { detectReplyFeatures } from '@/engine/reply-features';
 import type {
   BoardState,
   Cause,
@@ -256,16 +258,16 @@ async function replyBase(): Promise<Omit<ReplyViewInput, 'confirmed' | 'sendStat
 // ───────────────────────────── 1. 어댑터 null = 대체안 화면 ─────────────────────────────
 
 describe('완료 기준 1: 어댑터가 null이면 화면이 깨지지 않고 예측 칸만 숨는다', () => {
-  it('브라우저 어댑터는 지금 null을 돌려준다 (T079에서 엔진으로 바꾼다)', () => {
-    expect(forecastReplyClient({ text: 'x', anchorText: 'x', board: AFTER, signals: SIGNALS, delayDays: 0 })).toBeNull();
-    expect(detectReplyFeaturesClient('Sorry')).toBeNull();
+  it('브라우저 어댑터는 엔진 순수 함수 결과를 그대로 돌려준다 (T079)', () => {
+    const input = { text: 'x', anchorText: 'x', board: AFTER, signals: SIGNALS, delayDays: 0 };
+    expect(forecastReplyClient(input)).toEqual(forecastReply(input));
+    expect(detectReplyFeaturesClient('Sorry')).toEqual(detectReplyFeatures('Sorry'));
   });
 
-  it('서버 어댑터 파일은 server-only이고 함수 몸통이 모두 null', () => {
+  it('서버 어댑터 파일은 server-only (T079: 몸통은 엔진·AI 호출)', () => {
     for (const file of ['src/app/cases/forecast-source.ts', 'src/app/cases/history-summary-source.ts']) {
       const code = read(file);
       expect(code, file).toMatch(/import 'server-only';/);
-      expect(strip(code), file).not.toMatch(/return (?!null)[^;]+;/);
     }
   });
 
@@ -300,6 +302,9 @@ describe('완료 기준 1: 어댑터가 null이면 화면이 깨지지 않고 �
       languageKey: 'case.view.lang.KO',
       buyerShort: 'Seo-yeon',
       forecastBase: { signals: SIGNALS, delayDays: 2 },
+      // 어댑터가 쓸 수 없음(null)을 돌려주는 경우 (T079 뒤에는 엔진이 예외를 던질 때)
+      forecaster: () => null,
+      detector: () => null,
     });
     const markup = html(createElement(CaseView, { view: VIEW, desk, llmOk: true, reply }));
     expect(markup).not.toContain('class="curve-card"');
@@ -385,7 +390,10 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
     expect(markup).toContain(`class="reaction-mood-value">${t('case.mood.okay')}<`);
     expect(markup).toContain(t('case.reaction.moodNow', { mood: t('case.mood.angry') }));
     // 입력칸 모서리 "Chargeback 12%"
-    expect(markup).toContain(`class="reply-editor-pill num">${t('case.choice.chargeback', { percent: '12%' })}<`);
+    expect(markup).toContain(`class="reply-editor-pill num">${t('case.choice.chargeback', { percent: '12%' })}`);
+    // 입력칸 모서리 %에도 Assumption 배지 (T079)
+    const pill = markup.slice(markup.indexOf('class="reply-editor-pill num"'), markup.indexOf('class="reply-tray"'));
+    expect(pill).toContain(copyTables.en['badge.assumption']);
     // As you type 칩: 참인 특징만, 좋은 것 ✓ 먼저, 조심할 것 ! (걸린 문장은 title)
     const tray = markup.slice(markup.indexOf('class="reply-tray-chips"'), markup.indexOf('class="reply-block reply-box"'));
     expect(tray).toContain(t('case.reply.asYouType'));
@@ -412,7 +420,7 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
       }),
     );
     const anchor = buildReplyView({ ...base, confirmed: [], sendState: 'idle', outcome: null }).draftEn?.text;
-    expect(calls).toEqual([{ text: anchor, anchorText: anchor, board: AFTER, signals: SIGNALS, delayDays: 4 }]);
+    expect(calls).toEqual([{ text: anchor, anchorText: anchor, board: AFTER, signals: SIGNALS, delayDays: 4, translated: false }]);
   });
 
   it('선택지 카드 차지백 % = 수별 예측 그대로 (막힌 수·예측 없는 수는 없음)', () => {

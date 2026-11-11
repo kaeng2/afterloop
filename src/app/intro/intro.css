@@ -2,7 +2,7 @@
  * /intro 화면 (T078). 값은 시안 Scene1.dc.html의 배치·간격·카드 모양.
  * 색 값은 아래 변수 정의 줄에만 쓴다 (tests/unit/app-shared-design.test.ts가 검사). PayPal 파랑은 쓰지 않고
  * 링크·활성 탭·주 버튼은 강조색(--color-accent) 하나. 밝은 화면으로 고정 (시안이 밝은 화면).
- * 이 화면은 루트 layout의 위쪽 막대 위를 덮는다 (layout 수정 없이 껍데기 화면을 만들기 위해).
+ * 이 화면은 라우트 그룹 `(app)` 밖이라 위쪽 막대가 없다 (T079) — 덮개(position: fixed)를 쓰지 않는다.
  */
 .intro {
   --color-accent: #5b3cc4;
@@ -22,10 +22,6 @@
   --i-bar: #c9d3e0;
   --i-ring: rgba(91, 60, 196, 0.55);
 
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  overflow: auto;
   color-scheme: light;
   min-height: 100vh;
   background: var(--i-bg);

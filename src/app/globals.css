@@ -33,6 +33,7 @@
   --color-accent-strong: #6a46d6; /* 이번 주 카드 바탕 (그라데이션 끝) */
   --color-on-accent: #ffffff; /* 짙은 강조색 위 글자 */
   --color-on-accent-muted: #ddd5f7; /* 짙은 강조색 위 작은 글자 */
+  --color-on-accent-fill: rgba(255, 255, 255, 0.14); /* 짙은 강조색 위 채운 배지 바탕 (Demo data) */
   --color-panel: #f6f7f9; /* 칸 안 회색 상자 (시안 값) */
   --color-zone: #eef0f3; /* 구매자 메시지 구역 (시안 값, 파랑기 뺀 회색) */
   --color-line: #cfd3d8; /* 입력칸 테두리·단계 줄 (시안 값) */
@@ -114,6 +115,7 @@
     --color-accent-strong: #4a35a8;
     --color-on-accent: #ffffff;
     --color-on-accent-muted: #d8cff7;
+    --color-on-accent-fill: rgba(255, 255, 255, 0.12);
     --color-panel: #202226;
     --color-zone: #1d1f23;
     --color-line: #3a3e44;

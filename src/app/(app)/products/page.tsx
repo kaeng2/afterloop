@@ -5,14 +5,14 @@
  * - 숫자는 모두 엔진 결과 (`model.ts`). 처방 토글은 브라우저에서 다시 계산한다 (`products-screen.tsx`).
  * - 서버가 하는 일: 거래 조회 한 줄(GET만, 실패하면 숨김)과 색상 문구 서버 액션 연결. POST를 보내지 않는다.
  */
-import { seedDisputes, seedInquiries, seedProducts } from '../../../seed/index';
+import { seedDisputes, seedInquiries, seedProducts } from '../../../../seed/index';
 
-import { writeColorNoteAction } from './actions';
-import { colorComplaintsFor, selectSku } from './model';
-import { ProductsScreen } from './products-screen';
-import { loadTransactionLine } from './transactions-line';
+import { writeColorNoteAction } from '@/app/products/actions';
+import { colorComplaintsFor, selectSku } from '@/app/products/model';
+import { ProductsScreen } from '@/app/products/products-screen';
+import { loadTransactionLine } from '@/app/products/transactions-line';
 
-import './products.css';
+import '@/app/products/products.css';
 
 export const dynamic = 'force-dynamic';
 

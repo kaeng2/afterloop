@@ -282,7 +282,7 @@ describe('T047 보완 A: 가로 넘침과 메뉴', () => {
   });
 
   it('첫 화면 본문에 메뉴 목록을 다시 늘어놓지 않는다', () => {
-    const page = readFileSync(path.join(APP, 'page.tsx'), 'utf8');
+    const page = readFileSync(path.join(APP, '(app)/page.tsx'), 'utf8');
     expect(page).not.toMatch(/NAV_ITEMS/);
     expect(page).not.toMatch(/<ul/);
   });

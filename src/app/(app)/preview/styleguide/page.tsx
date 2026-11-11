@@ -7,12 +7,12 @@
  */
 import type { Metadata } from 'next';
 
-import { BADGES, BADGE_ORDER, RISK_ORDER } from '../../_shared/badge-keys';
-import { AssumptionBadge, Badge, DemoBadge, RiskLevel } from '../../_shared/badges';
-import { CompareCard } from '../../_shared/compare-card';
-import { t } from '../../_shared/copy';
-import { actionKeyFor } from '../../cases/model';
-import { compareSample } from './sample';
+import { BADGES, BADGE_ORDER, RISK_ORDER } from '@/app/_shared/badge-keys';
+import { AssumptionBadge, Badge, DemoBadge, RiskLevel } from '@/app/_shared/badges';
+import { CompareCard } from '@/app/_shared/compare-card';
+import { t } from '@/app/_shared/copy';
+import { actionKeyFor } from '@/app/cases/model';
+import { compareSample } from '@/app/preview/styleguide/sample';
 
 export const metadata: Metadata = {
   title: t('common.preview.title'),

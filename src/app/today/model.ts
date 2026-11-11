@@ -537,12 +537,18 @@ export type WeeklyView = {
   usesDemoData: boolean;
 };
 
-export function weeklyView(openDisputes: number, summary: WeeklySummary | null, usesDemoData: boolean): WeeklyView {
+/** `aiDraftsCounted: false` = AI 캐시가 없어 초안 수를 셀 수 없었다 → 0이라고 보이지 않고 칸을 숨긴다. */
+export function weeklyView(
+  openDisputes: number,
+  summary: WeeklySummary | null,
+  usesDemoData: boolean,
+  options: { aiDraftsCounted?: boolean } = {},
+): WeeklyView {
   if (summary === null) return { openDisputes, keepable: null, aiDrafts: null, usesDemoData };
   return {
     openDisputes: summary.openDisputes,
     keepable: Number.isInteger(summary.keepableCents) ? toDollarsRounded(summary.keepableCents) : null,
-    aiDrafts: summary.aiDrafts,
+    aiDrafts: options.aiDraftsCounted === false ? null : summary.aiDrafts,
     usesDemoData: summary.usesDemoData,
   };
 }

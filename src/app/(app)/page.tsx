@@ -7,16 +7,16 @@
  * - 이 화면은 POST를 보내지 않는다 (전송은 답장 칸 버튼 → 서버 액션, 추적 등록은 추적 상세 버튼 → 서버 액션만.
  *   추적 등록은 `liveGateFromEnv` 스위치가 꺼져 있으면 dry run).
  */
-import { loadTodayScreen } from './_server/today';
-import { reasonCopyKey } from './_shared/availability';
-import { t } from './_shared/copy';
-import { CaseDetail } from './cases/case-detail';
-import { addTrackingAction } from './today/actions';
-import { selectItem } from './today/model';
-import { ProductFilterBar, TodayList } from './today/today-list';
-import { TrackingDetail } from './today/tracking-detail';
+import { loadTodayScreen } from '@/app/_server/today';
+import { reasonCopyKey } from '@/app/_shared/availability';
+import { t } from '@/app/_shared/copy';
+import { CaseDetail } from '@/app/cases/case-detail';
+import { addTrackingAction } from '@/app/today/actions';
+import { selectItem } from '@/app/today/model';
+import { ProductFilterBar, TodayList } from '@/app/today/today-list';
+import { TrackingDetail } from '@/app/today/tracking-detail';
 
-import './today/today.css';
+import '@/app/today/today.css';
 
 export const dynamic = 'force-dynamic';
 

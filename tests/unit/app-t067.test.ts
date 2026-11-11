@@ -183,7 +183,7 @@ describe('T067 추적 등록 (가짜 호출기)', () => {
     expect(server).toMatch(/liveGateFromEnv\(\s*deps\.env/);
     expect(server).toMatch(/registerTrackers\(client/);
     expect(server).toMatch(/import 'server-only'/);
-    const page = readFileSync(path.join(APP, 'page.tsx'), 'utf8');
+    const page = readFileSync(path.join(APP, '(app)/page.tsx'), 'utf8');
     expect(page).toMatch(/<TrackingDetail tracking=\{view\.tracking\} register=\{addTrackingAction\} \/>/);
   });
 });

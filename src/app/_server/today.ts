@@ -4,7 +4,7 @@
  * - 분쟁: `loadDemoDisputesForRequest` (같은 요청 안에서 PayPal을 한 번만 읽는다. GET만)
  * - 추적: `summarizeTracking` (주문 상세 GET만. 등록 POST 없음). PayPal을 쓸 수 없으면 `null` → 항목 숨김
  * - 목록: `buildToday` (엔진 결과를 옮긴다). 상품 거르개(`?sku=`)는 같은 읽기 결과로 다시 묶기만 한다
- * - 이번 주 카드: 예측 어댑터 `loadWeeklySummary` (T076 자리 — 지금 `null`)
+ * - 이번 주 카드: 예측 어댑터 `loadWeeklySummary` (T079: 엔진 `weeklySummary` + AI 캐시 초안 수)
  *
  * 위쪽 막대(Today (N))와 Today 화면이 같은 요청 안에서 함께 부르므로 `cache`로 한 번만 읽는다.
  */
@@ -52,6 +52,13 @@ export async function loadTodayScreen(sku: string | undefined): Promise<TodayLoa
       ? base.view
       : buildToday({ disputes: base.disputes, tracking: base.tracking, products: seedProducts, now: new Date(), sku });
   const usesDemoData = base.disputes.some(hasDemoValues);
-  const summary = loadWeeklySummary({ boards: base.disputes.map(pickBoard), usesDemoData });
-  return { ...base, view, weekly: weeklyView(view.openDisputes, summary, usesDemoData) };
+  // 보이는 분쟁만 (거르개를 건 목록이 아니라 화면에 내는 분쟁 전체 — 열린 분쟁 수와 같은 범위)
+  const weekly = loadWeeklySummary({ boards: base.disputes.map(pickBoard), usesDemoData });
+  return {
+    ...base,
+    view,
+    weekly: weeklyView(view.openDisputes, weekly?.summary ?? null, usesDemoData, {
+      aiDraftsCounted: weekly?.aiDraftsCounted ?? false,
+    }),
+  };
 }

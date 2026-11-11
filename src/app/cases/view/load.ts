@@ -138,7 +138,11 @@ export async function loadCase(disputeId: string, options: { draft?: boolean } =
 
   // 4. 사건 기록 (실제 데이터만) + AI 요약 (어댑터. AI 초안과 같은 길에서만)
   const events = caseEventsFor(loaded, seedInquiries);
-  const historySummary = options.draft === false ? null : await loadHistorySummary(events);
+  // 이름은 넘기기 전에 토큰으로 바꾼다 (어댑터 안). Routine(Mike)은 `draft: false` 길이라 부르지 않는다
+  const historySummary =
+    options.draft === false
+      ? null
+      : await loadHistorySummary(events, { buyerId: loaded.buyer?.id ?? null, buyerName: loaded.buyer?.name ?? null });
 
   // 초안이 없으면 (키 없음·호출 실패·출력 거부 모두) 화면은 "AI unavailable — showing rules only"
   return { kind: 'ok', loaded, input, draft, llm: draft.ok ? { ok: true } : { ok: false }, events, historySummary };
