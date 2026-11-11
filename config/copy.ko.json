@@ -390,5 +390,22 @@
   "product.colorNote.lang.ko": "한국어",
   "product.colorNote.lang.en": "영어",
   "product.colorNote.lang.ja": "일본어",
-  "product.colorNote.lang.de": "독일어"
+  "product.colorNote.lang.de": "독일어",
+  "activity.title.readCases": "진행 중인 분쟁 읽기",
+  "activity.title.readCase": "분쟁 {{id}} 읽기",
+  "activity.title.readCaseMany": "분쟁 {{count}}건 읽기",
+  "activity.title.sendMessage": "메시지 보내기",
+  "activity.title.sendOffer": "제안 보내기",
+  "activity.title.addTracking": "추적 번호 등록",
+  "activity.title.readOrder": "주문 읽기",
+  "activity.title.readSales": "판매 기록 읽기",
+  "activity.title.other": "PayPal 호출",
+  "activity.summary.cases": "분쟁 {{count}}건",
+  "activity.summary.transactions": "거래 {{count}}건",
+  "activity.cached": "캐시",
+  "activity.cachedHint": "15분 캐시에서 가져온 값 — 새 PayPal 호출 없음.",
+  "activity.simulated": "가짜 전송 · 보내지 않음",
+  "activity.noResponse": "응답 없음",
+  "activity.calls": "호출 {{count}}건",
+  "activity.listLabel": "PayPal 호출, 최신 순"
 }

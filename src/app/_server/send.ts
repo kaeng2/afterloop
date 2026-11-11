@@ -66,6 +66,7 @@ import { t } from '../_shared/copy';
 import { demoLinks, linkFor } from '../_shared/demo-links';
 import { pickBoard } from '../_shared/dispute-view';
 import { loadDemoDisputes, type LoadDemoDisputesResult } from './disputes';
+import { recordCaller } from './activity';
 import { resolveDemoMode } from './mode';
 import { getPayPalClient } from './paypal';
 
@@ -158,7 +159,7 @@ export function createSimulatedCaller(): PayPalCaller {
 }
 
 /** 프로세스에 하나 (같은 요청 번호의 두 번째 실행을 `executeMove`가 기억으로 돌려주게). */
-const SIMULATED_CALLER: PayPalCaller = createSimulatedCaller();
+const SIMULATED_CALLER: PayPalCaller = recordCaller(createSimulatedCaller(), { simulated: true });
 
 let liveClient: PayPalClient | null = null;
 

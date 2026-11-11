@@ -11,7 +11,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { ActivityDrawer, type ActivityRecord } from './activity-drawer';
+import { ActivityDrawer } from './activity-drawer';
 import { AutopilotToggle } from './autopilot-toggle';
 import { t } from './copy';
 import { NAV_ITEMS, isActive } from './nav-items';
@@ -23,9 +23,6 @@ import './shell.css';
  * 다시 보이려면 이 값만 바꾼다.
  */
 const SHOW_AUTOPILOT = false;
-
-/** 기록은 T064가 채운다. 지금은 빈 목록 (건수 = 길이 = 0). */
-const NO_RECORDS: readonly ActivityRecord[] = [];
 
 /**
  * 로고 마크 (T067): 28px 원 + 고리 모양(돌아오는 화살표) 아이콘. 색은 css 변수(강조색 + 카드 바탕)만 쓴다 —
@@ -80,7 +77,8 @@ export function TopBar({
             </span>
           ) : null}
           {SHOW_AUTOPILOT ? <AutopilotToggle /> : null}
-          <ActivityDrawer records={NO_RECORDS} />
+          {/* 기록은 서랍이 서버에서 읽는다 (T064) */}
+          <ActivityDrawer />
           <span className="shell-seller" title={t('shell.seller', { shop: seller.shop })}>
             <span className="shell-avatar" aria-hidden="true">
               {seller.initial}

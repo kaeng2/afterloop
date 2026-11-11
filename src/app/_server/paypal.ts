@@ -21,6 +21,7 @@ import { createPayPalClient } from '@/paypal/client';
 import type { ClientDeps, PayPalClient, PayPalEnv } from '@/types';
 
 import type { UnavailableReason } from '../_shared/availability';
+import { recordClient } from './activity';
 import { resolveDemoMode } from './mode';
 
 /** 허용하는 단 하나의 baseUrl. live(실거래)는 쓰지 않는다 (CLAUDE.md). */
@@ -90,7 +91,9 @@ export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVar
   try {
     const client = createPayPalClient(paypalEnv, deps ?? liveDeps());
     // 모드 관문: recording이 아니면 쓰기는 PayPal로 나가지 않는다 (스위치 값과 무관)
-    return { ok: true, client: resolveDemoMode(env) === 'recording' ? client : blockWrites(client) };
+    const gated = resolveDemoMode(env) === 'recording' ? client : blockWrites(client);
+    // 기록기 (T064)는 관문 바깥: 막힌 쓰기는 "Simulated · not sent", 실제로 나간 요청만 응답 코드와 함께 남는다
+    return { ok: true, client: recordClient(gated) };
   } catch {
     // 클라이언트가 설정을 거부했다 (샌드박스 밖 주소 등). 예외 문구를 그대로 올리지 않는다.
     return { ok: false, reason: 'client_error' };
