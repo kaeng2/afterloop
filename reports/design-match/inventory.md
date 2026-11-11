@@ -59,7 +59,7 @@
 | `linear-gradient(150deg,#001C64 0%,#002991 55%,#0B48C4 100%)` | 1 | L124 <section> |  |  |  |
 | `linear-gradient(90deg,#002991,#0066F5,#60CDFF)` | 1 | L48 .zone-work::before |  |  |  |
 | `rgba(0,0,0,0.05)` | 2 | L44 .bub-in |  |  |  |
-| `rgba(0,0,0,0.25)` | 1 | L92 .toast |  |  |  |
+| `rgba(0,0,0,0.25)` | 1 | L92 .toast |  | 예외 | T067 사람 결정(그림자는 --shadow-selected 하나, tests/unit/app-shared-design) — 토스트는 src/app/cases/progress/case-progress.css .cprog-toast box-shadow: var(--shadow-selected). 나머지 토스트 값(#000·#60CDFF 원·16px·14px 20px·bottom 28px)은 그대로 |
 | `rgba(0,102,245,0.35)` | 1 | L26 .ai |  |  |  |
 | `rgba(0,41,145,0.10)` | 1 | L47 .zone-work |  |  |  |
 | `rgba(196,50,31,0.08)` | 1 | L179 <polygon> |  |  |  |
@@ -80,26 +80,26 @@
 | `.nav:hover` | 1 | L29 | color:#000000 | 예외 | DECISIONS 11/11 22:55 예외 "진입점(탭 없음)": `.nav` 탭 hover. T096에서 탭과 `.shell-tab*` CSS를 지웠다 (`src/app/_shared/shell.css`) |
 | `.npath:hover` | 1 | L69 | border-color:#6C7378 |  |  |
 | `.pf:hover` | 1 | L32 | border-color:#9AA0A6 |  |  |
-| `@keyframes flash` | 1 | L90 | 0%{background:#60CDFF}100%{background:transparent} |  |  |
-| `@keyframes ndot` | 1 | L85 | 0%,80%,100%{opacity:.3;transform:none}40%{opacity:1;transform:translateY(-3px)} |  |  |
+| `@keyframes flash` | 1 | L90 | 0%{background:#60CDFF}100%{background:transparent} | 구현함 | src/app/cases/progress/case-progress.css @keyframes cprog-flash (#60cdff → transparent), "이번 주" 카드 숫자 칸 3개에 붙임 (src/app/cases/progress/case-progress.tsx). tests/unit/app-t092.test.ts |
+| `@keyframes ndot` | 1 | L85 | 0%,80%,100%{opacity:.3;transform:none}40%{opacity:1;transform:translateY(-3px)} | 구현함 | src/app/cases/progress/case-progress.css @keyframes cprog-ndot (같은 값). tests/unit/app-t092.test.ts |
 | `@keyframes ping` | 1 | L88 | 0%{r:7;opacity:.6}100%{r:20;opacity:0} |  |  |
 | `@keyframes pop` | 1 | L63 | 0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none} |  |  |
-| `@keyframes rise` | 1 | L86 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} |  |  |
+| `@keyframes rise` | 1 | L86 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} | 구현함 | Send 뒤 칸: src/app/cases/progress/case-progress.css @keyframes cprog-rise (같은 값) — 단계·말풍선. 토스트는 가운데 맞춤을 지키는 cprog-toast-rise(같은 이동 + translateX(-50%)) |
 | `animation-delay: ' + (n * 0.12) + 's'` | 1 | L838 ~st |  |  |  |
-| `animation-delay: .15s` | 1 | L84 .ndots span:nth-child(2) |  |  |  |
-| `animation-delay: .3s` | 1 | L84 .ndots span:nth-child(3) |  |  |  |
-| `animation: flash 1.6s ease` | 1 | L91 .flash |  |  |  |
-| `animation: ndot 1s infinite ease-in-out` | 1 | L84 .ndots span |  |  |  |
+| `animation-delay: .15s` | 1 | L84 .ndots span:nth-child(2) |  | 구현함 | src/app/cases/progress/case-progress.css .cprog-dots span:nth-child(2) animation-delay: var(--cprog-dot-stagger) = config/motion.json caseProgress.typingDot.stagger 0.15s |
+| `animation-delay: .3s` | 1 | L84 .ndots span:nth-child(3) |  | 구현함 | src/app/cases/progress/case-progress.css .cprog-dots span:nth-child(3) calc(var(--cprog-dot-stagger) * 2) = 0.3s |
+| `animation: flash 1.6s ease` | 1 | L91 .flash |  | 구현함 | src/app/cases/progress/case-progress.css .cprog-flash animation: cprog-flash var(--cprog-flash) = config/motion.json caseProgress.flash 1.6s ease. tests/unit/app-t092.test.ts |
+| `animation: ndot 1s infinite ease-in-out` | 1 | L84 .ndots span |  | 구현함 | src/app/cases/progress/case-progress.css .cprog-dots span = config/motion.json caseProgress.typingDot 1s ease-in-out infinite. tests/unit/app-t092.test.ts |
 | `animation: ping 1.4s ease-out infinite` | 1 | L89 .ping |  |  |  |
 | `animation: pop .45s cubic-bezier(.2,1.4,.4,1) both` | 1 | L62 .gchip |  |  |  |
-| `animation: rise .35s ease` | 1 | L92 .toast |  |  |  |
-| `animation: rise .35s ease both` | 1 | L87 .rise |  |  |  |
+| `animation: rise .35s ease` | 1 | L92 .toast |  | 구현함 | src/app/cases/progress/case-progress.css .cprog-toast = config/motion.json caseProgress.toast 0.35s ease. tests/unit/app-t092.test.ts |
+| `animation: rise .35s ease both` | 1 | L87 .rise |  | 구현함 | Send 뒤 말풍선(bub-out·typing·bub-sim): src/app/cases/progress/case-progress.css .cprog-bubble-wrap = config/motion.json caseProgress.bubble 0.35s ease both |
 | `animation: rise .3s ease both` | 1 | L73 .nlint |  |  |  |
-| `animation: rise .45s cubic-bezier(.2,1.2,.4,1) both` | 1 | L82 .step |  |  |  |
-| `later 1300 * (k - 1) + 400` | 1 | L666 ~ | this.later(() => { |  |  |
-| `later 3000` | 1 | L638 ~id | toast(txt) { this.setState({ toast: txt }); const id = txt; this.later(() => { if (this.state.toast === id) this.setState({ toast: null }); }, 3000); } |  |  |
+| `animation: rise .45s cubic-bezier(.2,1.2,.4,1) both` | 1 | L82 .step |  | 구현함 | src/app/cases/progress/case-progress.css .cprog-step = config/motion.json caseProgress.step. tests/unit/app-t092.test.ts |
+| `later 1300 * (k - 1) + 400` | 1 | L666 ~ | this.later(() => { | 구현함 | src/app/cases/progress/progress-model.ts stepDelayMs(k) = stepMs·(k−1)+firstStepMs (config/motion.json caseProgress 1300·400). 손님 답장 k=2 → 1700ms, 전달 뒤 세관 통과는 stepMs. 예외(DECISIONS 22:55): k=3 Auto 대신 [Forward to carrier]에서 멈춤. tests/unit/app-t092.test.ts |
+| `later 3000` | 1 | L638 ~id | toast(txt) { this.setState({ toast: txt }); const id = txt; this.later(() => { if (this.state.toast === id) this.setState({ toast: null }); }, 3000); } | 구현함 | src/app/cases/progress/case-progress.tsx 토스트 3초 뒤 사라짐 = config/motion.json caseProgress.toast.hideMs 3000. tests/unit/app-t092.test.ts |
 | `setInterval 34` | 1 | L652 ~iv | this.iv = setInterval(() => { |  |  |
-| `setTimeout ms` | 1 | L637 later(fn, ms) | later(fn, ms) { this.tm = (this.tm \|\| []).concat([setTimeout(fn, ms)]); } |  |  |
+| `setTimeout ms` | 1 | L637 later(fn, ms) | later(fn, ms) { this.tm = (this.tm \|\| []).concat([setTimeout(fn, ms)]); } | 구현함 | src/app/cases/progress/case-progress.tsx later(fn, ms) — 타이머를 모아 Replay·떠날 때 모두 지운다 (시안 this.tm). prefers-reduced-motion이면 0ms |
 | `transition: all .3s ease` | 1 | L181 <polyline> |  |  |  |
 | `transition: background-color .15s` | 1 | L37 .it |  |  |  |
 | `transition: background-color .15s ease` | 1 | L18 .btn |  |  |  |
@@ -120,10 +120,10 @@
 | `onClick l.act` | 1 | L278 button.{{l.actCls}} | (정의 못 찾음) |  |  |
 | `onClick oc.run` | 1 | L354 button.btn | setState: dash, done, flash · 호출: bump |  |  |
 | `onClick p.pick` | 2 | L111 button.{{p.cls}} | setState: busy, draft, path, sel, sku · 호출: typeOut |  |  |
-| `onClick refundNow` | 1 | L324 button.btn | setState: cbDone, dash, done, flash · 호출: bump |  |  |
-| `onClick replay` | 1 | L339 button.btn | setState: cbDone, done, draft, path, phase, shown, typing |  |  |
+| `onClick refundNow` | 1 | L324 button.btn | setState: cbDone, dash, done, flash · 호출: bump | 예외 | DECISIONS 22:55 안전장치·약속: 'cb' 결과 분기 없음 — 보낼 수 있는 글은 검사 통과한 AI 초안뿐(editGate), 환불 실행·"POST …/refund · 201" 줄 없음 (쓰기 0회) |
+| `onClick replay` | 1 | L339 button.btn | setState: cbDone, done, draft, path, phase, shown, typing | 구현함 | src/app/cases/progress/case-progress.tsx [Replay this case] → 타이머 지움 + 답장 칸 처음(again() + AI 초안), 곡선 값 되돌림. tests/unit/app-t092.test.ts |
 | `onClick rushed` | 1 | L263 button.btn | setState: busy, draft, path · 호출: typeOut |  |  |
-| `onClick send` | 1 | L305 button.btn | setState: cbDone, dash, done, flash, out, phase, refundNowF, sentKo, sentP, sentTxt, shown, typing · 호출: blocked, bump, fc, send |  |  |
+| `onClick send` | 1 | L305 button.btn | setState: cbDone, dash, done, flash, out, phase, refundNowF, sentKo, sentP, sentTxt, shown, typing · 호출: blocked, bump, fc, send | 구현함 | Send 뒤 (T092 몫): reply-panel.tsx 전환 지점 한 곳(sendState done && ok) → CaseProgress (phase 'sent', shown 1, typing). 예외: out 'refund'·'cb' 분기·dash bump 고정 숫자 없음 (데이터·안전장치), 대시보드 숫자는 엔진 actionSavings 토스트만. Send 버튼·관문 자체는 T090/T091 |
 | `onClick toggleGoods` | 1 | L283 button.gmore | setState: goodsOpen |  |  |
 | `onClick toggleHist` | 1 | L202 button.hbtn | setState: histOpen |  |  |
 | `onClick useAi` | 1 | L264 button.btn | setState: busy, draft, path · 호출: typeOut |  |  |
@@ -147,23 +147,23 @@
 | `sc-if histOpen` | 1 | L204 <sc-if> |  |  |  |
 | `sc-if isOther` | 1 | L345 <sc-if> |  |  |  |
 | `sc-if isSeo` | 1 | L157 <sc-if> |  |  |  |
-| `sc-if isTyping` | 1 | L234 <sc-if> |  |  |  |
+| `sc-if isTyping` | 1 | L234 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx Bubbles: state.typing일 때 "<이름> is typing" + 점 세 개. tests/unit/app-t092.test.ts |
 | `sc-if l.hasAct` | 1 | L278 <sc-if> |  |  |  |
 | `sc-if lintEmpty` | 1 | L276 <sc-if> |  |  |  |
 | `sc-if m.hasTags` | 1 | L231 <sc-if> |  |  |  |
-| `sc-if m.isSim` | 1 | L227 <sc-if> |  |  |  |
-| `sc-if notSent` | 1 | L238 <sc-if> |  |  |  |
+| `sc-if m.isSim` | 1 | L227 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx 손님 답장 말풍선 "Simulated reply" 머리 + 점선 테두리(.cprog-bubble-sim). tests/unit/app-t092.test.ts |
+| `sc-if notSent` | 1 | L238 <sc-if> |  | 구현함 | reply-panel.tsx 전환 지점 + src/app/cases/progress/case-progress.css .work:has(.cprog) — 보낸 뒤 "지금 대응" 머리 줄·선택지 카드·답장 칸을 숨긴다 |
 | `sc-if p.hasCase` | 1 | L112 <sc-if> |  |  |  |
 | `sc-if p.rec` | 1 | L249 <sc-if> |  |  |  |
-| `sc-if resOn` | 1 | L330 <sc-if> |  |  |  |
+| `sc-if resOn` | 1 | L330 <sc-if> |  | 예외 | DECISIONS 22:55 데이터: 결과 상자("5 days · $0 lost", "23 days · 4 messages", "−$82")는 근거 없는 성과 숫자라 없음. 끝은 엔진 actionSavings 토스트 + 카드 flash |
 | `sc-if risk.hasFrom` | 1 | L191 <sc-if> |  |  |  |
-| `sc-if s.act` | 1 | L324 <sc-if> |  |  |  |
-| `sc-if s.auto` | 1 | L321 <sc-if> |  |  |  |
-| `sc-if s.hasP` | 1 | L321 <sc-if> |  |  |  |
-| `sc-if sent` | 1 | L313 <sc-if> |  |  |  |
+| `sc-if s.act` | 1 | L324 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx [Forward to carrier] 대기 줄(시안 act 줄 모양 '!' #FBE7E4) — 판매자가 누를 때까지 멈춤 (DECISIONS 22:55). 시안의 cb "Refund now" 용도는 예외(refundNow 행) |
+| `sc-if s.auto` | 1 | L321 <sc-if> |  | 예외 | DECISIONS 22:55 Send 이후: "Auto" 없음 → [Forward to carrier] 승인 버튼, 배송사 연동·"POST carrier/… 200"·추적 동기화 줄 없음. tests/unit/app-t092.test.ts |
+| `sc-if s.hasP` | 1 | L321 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx 단계 칩 "Risk N%" = 엔진 scenarioRisk (보낸 답장 줄은 시안처럼 없음) + 머리 Assumption. tests/unit/app-t092.test.ts |
+| `sc-if sent` | 1 | L313 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx CaseProgress 칸 (AI 알약 + 제목 "What happens next · Simulated" — DECISIONS 22:55 제목 예외) |
 | `sc-if showKo` | 1 | L293 <sc-if> |  |  |  |
-| `sc-if stepsRunning` | 1 | L328 <sc-if> |  |  |  |
-| `sc-if toastOn` | 1 | L361 <sc-if> |  |  |  |
+| `sc-if stepsRunning` | 1 | L328 <sc-if> |  | 구현함 | src/app/cases/progress/progress-model.ts progressRunning (끝나지 않았고 Forward 대기도 아닐 때) → src/app/cases/progress/case-progress.css .cprog-running 점 세 개 (padding-left 46px). tests/unit/app-t092.test.ts |
+| `sc-if toastOn` | 1 | L361 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx 토스트 (document.body로, role=status, "Dashboard updated · +$N kept", N = actionSavings). tests/unit/app-t092.test.ts |
 | `state goodsOpen` | 8 | L283 button.gmore |  |  |  |
 | `state histOpen` | 12 | L202 button.hbtn |  |  |  |
 
@@ -182,14 +182,14 @@
 | `kind === 'bad' ? ' ghost' : ''` | 1 | L788 ~kind |  |  |  |
 | `kind === 'bad' ? '#C4321F' : '#0A1B3D'` | 1 | L787 ~kind |  |  |  |
 | `line: i === 0 ? 'display:none' : 'flex:1;height:2px;background:#E4E6E9;min-width:6px'` | 1 | L752 ~i |  |  |  |
-| `lineSt: isLast ? 'display:none' : 'flex:1;width:2px;min-height:14px;background:#CFD3D8;margin:4px 0'` | 1 | L807 ~lineSt |  |  |  |
+| `lineSt: isLast ? 'display:none' : 'flex:1;width:2px;min-height:14px;background:#CFD3D8;margin:4px 0'` | 1 | L807 ~lineSt |  | 구현함 | src/app/cases/progress/case-progress.tsx row.last면 줄 없음, src/app/cases/progress/case-progress.css .cprog-line 같은 값 |
 | `n === 0 ? 'No cases' : n + (n === 1 ? ' case' : ' cases')` | 1 | L372 ~n |  |  |  |
 | `n === 1 ? ' case' : ' cases'` | 1 | L372 ~n |  |  |  |
 | `p >= 0.5 ? '#C4321F' : p >= 0.2 ? '#000000' : '#0066F5'` | 2 | L747 ~riskCol |  |  |  |
-| `pSt: st.p !== null && st.p >= 0.5 ? 'background:#FBE7E4;color:#9E2414' : 'background:#E3F3FF;color:#002991'` | 1 | L808 ~pSt |  |  |  |
+| `pSt: st.p !== null && st.p >= 0.5 ? 'background:#FBE7E4;color:#9E2414' : 'background:#E3F3FF;color:#002991'` | 1 | L808 ~pSt |  | 구현함 | src/app/cases/progress/progress-model.ts riskHigh (p ≥ 0.5, 그림 기준) → src/app/cases/progress/case-progress.css .cprog-chip / .cprog-chip-high 같은 색 |
 | `pf[k].p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'` | 1 | L781 ~color |  |  |  |
-| `resBg: resKey === 'cb' ? '#FBE7E4' : 'linear-gradient(120deg,#E3F3FF,#F5F9FF)'` | 1 | L851 ~resKey |  |  |  |
-| `resKey === 'cb' ? '#9E2414' : '#002991'` | 1 | L851 ~resKey |  |  |  |
+| `resBg: resKey === 'cb' ? '#FBE7E4' : 'linear-gradient(120deg,#E3F3FF,#F5F9FF)'` | 1 | L851 ~resKey |  | 예외 | DECISIONS 22:55 데이터: 결과 상자 없음 (resOn 행과 같은 이유) |
+| `resKey === 'cb' ? '#9E2414' : '#002991'` | 1 | L851 ~resKey |  | 예외 | DECISIONS 22:55 데이터: 결과 상자 없음 (resOn 행과 같은 이유) |
 | `s.done[i.id] ? ' done' : ''` | 1 | L709 ~sel |  |  |  |
 | `s.done[i.id] ? '#CFD3D8' : sevCol[i.risk]` | 1 | L708 ~background |  |  |  |
 | `s.goodsOpen ? 'transform:rotate(180deg)' : ''` | 1 | L838 ~transition |  |  |  |
