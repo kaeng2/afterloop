@@ -222,6 +222,13 @@ export type CurveView = {
   area: string;
   /** "Your draft" 점. 답장 예측이 없으면 `null`. */
   draft: { x: number; y: number; from: { x: number; y: number } } | null;
+  /**
+   * T098b: Send 뒤 단계 점 (시안 liveP — 보낸 답장 점 다음부터 단계마다 하나씩, 간격은 칸의 0.8배). 보내기 전이면 빈 배열.
+   * 값은 엔진 `scenarioRisk` 그대로(`trail`), 여기서는 자리에 놓기만 한다.
+   */
+  steps: { x: number; y: number }[];
+  /** Send 뒤인가 (시안 `curve.dash`: 보낸 뒤 실선 '0', 전에는 점선 '6 5'). */
+  sent: boolean;
   /** 큰 % (답장 예측이 있으면 그 값, 없으면 마지막 사건 점). */
   headline: string;
   /** 큰 % 글자색 단계 (시안 `riskCol`). */
@@ -239,10 +246,20 @@ const yOf = (p: number): number =>
 /**
  * 위험 곡선 (어댑터 `RiskPoint[]` + 답장 예측의 `pChargeback`). 점이 없으면 `null` (카드를 숨긴다).
  * 사건 점 수 = `points` 길이 그대로. 답장 예측이 있으면 맨 끝에 "Your draft" 점 하나를 더 그린다 (점선).
+ *
+ * T098b (시안 `send()` 뒤 liveP): `trail`이 있으면(Send 뒤 보인 단계의 엔진 `scenarioRisk` 값, 첫 값 = 보낸 답장)
+ * 첫 값이 "Your draft" 자리에, 나머지는 단계마다 칸의 0.8배씩 오른쪽에 점 하나씩 붙는다. 선은 실선, 큰 % = 마지막 값.
  */
-export function curveView(points: readonly RiskPoint[] | null, draftP: number | null): CurveView | null {
+export function curveView(
+  points: readonly RiskPoint[] | null,
+  draftP: number | null,
+  trail: readonly number[] = [],
+): CurveView | null {
   if (points === null || points.length === 0) return null;
-  const slots = points.length + (draftP === null ? 0 : 1);
+  const sent = trail.length > 0;
+  const firstLive = sent ? trail[0] : draftP;
+  const extra = sent ? trail.length - 1 : 0;
+  const slots = points.length + (firstLive === null ? 0 : 1) + extra * TRAIL_GAP;
   const step = slots <= 1 ? 0 : CURVE_BOX.width / (slots - 1);
   const dots = points.map((point, index) => ({
     x: Math.round(index * step),
@@ -254,19 +271,26 @@ export function curveView(points: readonly RiskPoint[] | null, draftP: number | 
   const lastP = points[points.length - 1].pChargeback;
   const line = dots.map((dot) => `${dot.x},${dot.y}`).join(' ');
   const area = `${dots[0].x},${CURVE_BOX.bottom} ${line} ${last.x},${CURVE_BOX.bottom}`;
-  const draft =
-    draftP === null ? null : { x: Math.round((slots - 1) * step), y: Math.round(yOf(draftP)), from: { x: last.x, y: last.y } };
+  const draftX = last.x + step;
+  const draft = firstLive === null ? null : { x: Math.round(draftX), y: Math.round(yOf(firstLive)), from: { x: last.x, y: last.y } };
+  const steps = trail.slice(1).map((p, index) => ({ x: Math.round(draftX + (index + 1) * step * TRAIL_GAP), y: Math.round(yOf(p)) }));
+  const shownP = sent ? trail[trail.length - 1] : draftP;
   return {
     dots,
     line,
     area,
     draft,
-    headline: toPercentRounded(draftP ?? lastP),
-    headlineTone: riskTone(draftP ?? lastP),
-    headlineKey: draftP === null ? 'case.curve.now' : 'case.curve.withDraft',
-    fromTo: draftP === null ? null : t('case.curve.fromTo', { from: toPercentRounded(lastP), to: toPercentRounded(draftP) }),
+    steps,
+    sent,
+    headline: toPercentRounded(shownP ?? lastP),
+    headlineTone: riskTone(shownP ?? lastP),
+    headlineKey: sent || draftP === null ? 'case.curve.now' : 'case.curve.withDraft',
+    fromTo: shownP === null ? null : t('case.curve.fromTo', { from: toPercentRounded(lastP), to: toPercentRounded(shownP) }),
   };
 }
+
+/** 시안 `lx += xStep * 0.8`: Send 뒤 단계 점 사이 간격 (칸 너비에 대한 몫 4/5, 그리기 자리 값 — 확률 아님). */
+const TRAIL_GAP = 4 / 5;
 
 // ───────────────────────────── 사례 화면 묶음 (서버가 만든다) ─────────────────────────────
 

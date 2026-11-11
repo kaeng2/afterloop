@@ -43,6 +43,7 @@ import {
   progressMotion,
   progressMotionVars,
   progressRunning,
+  riskTrail,
   stepDelayMs,
   stepRows,
   type ProgressState,
@@ -238,7 +239,7 @@ export function CaseProgress({
   const [at] = useState(() => new Date().toISOString());
   const root = useRef<HTMLElement | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const { setForecast } = useDraftForecast();
+  const { setForecast, setTrail } = useDraftForecast();
 
   const points = useMemo(() => (scenarioInput === null ? null : scenario(scenarioInput)), [scenario, scenarioInput]);
   const rows = stepRows({ state, points, live, disputeId, language, buyerName: buyerShort, at });
@@ -247,6 +248,11 @@ export function CaseProgress({
 
   function later(fn: () => void, ms: number) {
     timers.current.push(setTimeout(fn, prefersReducedMotion() ? 0 : ms));
+  }
+
+  /** 토스트 숨김 (T098b): 움직임 줄이기여도 시안처럼 3초 보인다 — 애니메이션만 끈다(css). 읽을 시간을 줄이지 않는다. */
+  function hideLater(fn: () => void, ms: number) {
+    timers.current.push(setTimeout(fn, ms));
   }
 
   // 대화 목록(서버가 그린 `.case-thread`)을 찾는다 — 찾으면 말풍선을 그 끝에 붙인다 (시안 thread.push)
@@ -268,12 +274,22 @@ export function CaseProgress({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 처음 한 번만 (시안 send())
   }, []);
 
-  // 곡선 카드 끝점·큰 % = 지금 단계의 엔진 값. 칸을 떠나면(Replay) 보내기 전 예측으로 되돌린다
+  // 곡선 카드: 단계마다 점이 하나씩 늘어난다 (T098b, 시안 liveP — 값은 엔진 scenarioRisk, 큰 % = 마지막 값).
+  // 칸을 떠나면(Replay) 점을 지우고 보내기 전 예측으로 되돌린다
+  const trail = useMemo(() => riskTrail(state, points), [state, points]);
   useEffect(() => {
-    if (baseForecast === null || risk === null) return;
-    setForecast({ ...baseForecast, pChargeback: risk });
+    setTrail(trail);
+  }, [trail, setTrail]);
+  useEffect(() => {
+    if (baseForecast !== null && risk !== null) setForecast(baseForecast);
   }, [baseForecast, risk, setForecast]);
-  useEffect(() => () => setForecast(baseForecast), [baseForecast, setForecast]);
+  useEffect(
+    () => () => {
+      setTrail([]);
+      setForecast(baseForecast);
+    },
+    [baseForecast, setForecast, setTrail],
+  );
 
   // 끝: "이번 주" 카드 숫자 칸 flash + 토스트 (시안 bump + toast, 3초 뒤 사라짐). 금액은 엔진 값만
   useEffect(() => {
@@ -292,7 +308,7 @@ export function CaseProgress({
     if (cents !== null && cents > 0) {
       const text = t('case.progress.toast', { amount: toDollarsRounded(cents) });
       setToast(text);
-      later(() => setToast((now) => (now === text ? null : now)), motion.toast.hideMs);
+      hideLater(() => setToast((now) => (now === text ? null : now)), motion.toast.hideMs);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 끝날 때 한 번
   }, [finished]);

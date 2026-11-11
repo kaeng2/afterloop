@@ -264,17 +264,31 @@ function simulatedEventOrReal(step: ScenarioStepKind, live: boolean, at: string,
   return live ? null : simulatedEvent(step, at, text);
 }
 
-/** 지금 단계까지의 위험 (곡선 끝점·큰 %). 시안 `curP`: 보인 단계 중 마지막 값. 엔진 값이 없으면 `null`. */
-export function currentRisk(state: ProgressState, points: readonly ScenarioPoint[] | null): number | null {
-  if (points === null) return null;
+/** 지금 보이는 단계 (shown 순서). */
+function visibleSteps(state: ProgressState): ScenarioStepKind[] {
   const visible: ScenarioStepKind[] = ['sent'];
   if (state.shown >= 2) visible.push('buyer_reply');
   if (state.shown >= 3) visible.push('forwarded');
   if (state.shown >= 4) visible.push('cleared');
-  let p: number | null = null;
-  for (const step of visible) {
+  return visible;
+}
+
+/** 지금 단계까지의 위험 (곡선 끝점·큰 %). 시안 `curP`: 보인 단계 중 마지막 값. 엔진 값이 없으면 `null`. */
+export function currentRisk(state: ProgressState, points: readonly ScenarioPoint[] | null): number | null {
+  const trail = riskTrail(state, points);
+  return trail.length === 0 ? null : trail[trail.length - 1];
+}
+
+/**
+ * T098b: 곡선에 그릴 Send 뒤 점 (시안 liveP — 보낸 답장 + 보인 단계마다 값이 있으면 하나씩). 엔진 `scenarioRisk`
+ * 값을 순서대로 옮기기만 한다. 엔진 값이 없으면 빈 배열 (곡선은 보내기 전 모양 그대로).
+ */
+export function riskTrail(state: ProgressState, points: readonly ScenarioPoint[] | null): number[] {
+  if (points === null) return [];
+  const out: number[] = [];
+  for (const step of visibleSteps(state)) {
     const point = pointOf(points, step);
-    if (point !== null) p = point.pChargeback;
+    if (point !== null) out.push(point.pChargeback);
   }
-  return p;
+  return out;
 }

@@ -111,7 +111,8 @@
   font-weight: 700;
   white-space: nowrap;
   color: var(--color-accent-deep);
-  background: var(--color-accent-soft);
+  /* T098b 시안 머리 알약 background #05378214 */
+  background: var(--color-tint);
   border-radius: var(--radius-pill);
 }
 
@@ -230,13 +231,14 @@
     border-color var(--motion-hover);
 }
 
+/* T098b 시안 `.b-tint{background:#05378214}.b-tint:hover{background:#05378227}` 그대로 */
 .desk-button-tint {
-  background: var(--color-accent-soft);
+  background: var(--color-tint);
   border: 0;
 }
 
 .desk-button-tint:hover {
-  background: var(--color-accent-tint);
+  background: var(--color-tint-hover);
 }
 
 .desk-button-outline {

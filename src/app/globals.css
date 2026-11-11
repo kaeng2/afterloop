@@ -8,7 +8,7 @@
  * - 글꼴 (T067): Figtree + Noto Sans KR. `layout.tsx`가 Next 글꼴 도구로 빌드 때 받아 자체 제공한다
  *   (`--font-figtree`·`--font-noto-kr`). 한국어(`:lang(ko)`)는 Noto Sans KR이 먼저.
  * - 카드 (T067): 테두리 2px, 모서리 20px. 알약(탭·상태 배지·버튼)은 완전히 둥글게(`--radius-pill`).
- * - 그림자는 `--shadow-selected` 하나만 (Today 목록의 고른 항목).
+ * - 그림자는 `--shadow-*` 변수만 쓰고, 값은 시안 그림자 목록 그대로 (T098b: 22:55 결정 "기준은 시안 파일 자체").
  * - 글자 크기 5단계, 간격 5단계.
  */
 
@@ -28,15 +28,14 @@
   /* 파랑 단계 (T089: 시안 v4 값 그대로. 남보라 없음) */
   --color-accent-soft: #e3f3ff; /* 고른 목록 줄·꼬리표·사건 요약 줄 바탕 */
   --color-accent-pale: #f5f9ff; /* 가장 옅은 파랑 바탕 */
-  --color-accent-tint: #c9e3ff; /* 옅은 버튼 바탕 */
   --color-accent-deep: #002991; /* 남색 글자·꼬리표 글자·예방 막대·고른 상품 칩 */
   --color-navy-ink: #0a1b3d; /* 고른 선택지 테두리·라디오·단계 번호 원·Chargeback 알약 */
   --color-bar-wait: #0066f5; /* 손님 반응 막대: 기다림 */
   --color-bar-refund: #99c2ff; /* 손님 반응 막대: 환불 */
   --color-bar-chargeback: #c4321f; /* 손님 반응 막대: 차지백 */
   --gradient-week: linear-gradient(150deg, #001c64 0%, #002991 55%, #0b48c4 100%); /* 이번 주 카드 */
-  --gradient-ai: linear-gradient(120deg, #002991, #0066f5 60%, #60cdff); /* AI 알약 */
-  --gradient-ai-line: linear-gradient(90deg, #002991, #0066f5 60%, #60cdff); /* 지금 대응 위쪽 선 */
+  --gradient-ai: linear-gradient(120deg, #002991 0%, #0066f5 55%, #60cdff 100%); /* AI 알약 (T098b 시안 `.ai` 그대로) */
+  --gradient-ai-line: linear-gradient(90deg, #002991, #0066f5, #60cdff); /* 지금 대응 위쪽 선 (T098b 시안 `.zone-work::before`) */
   --gradient-soft: linear-gradient(120deg, #e3f3ff, #f5f9ff); /* 연한 바탕 그라데이션 */
   --color-on-accent: #ffffff; /* 짙은 강조색 위 글자 */
   --color-on-accent-muted: #c9e3ff; /* 짙은 강조색 위 작은 글자 */
@@ -45,9 +44,19 @@
   --color-editor-high: #e8796b; /* T091 시안 editorSt: 위험 50% 이상 입력칸 테두리 */
   --color-on-accent-fill: rgba(255, 255, 255, 0.14); /* 짙은 강조색 위 채운 배지 바탕 (Demo data) */
   --color-panel: #f6f7f9; /* 칸 안 회색 상자 (시안 값) */
-  --color-zone: #eef0f3; /* 구매자 메시지 구역 (시안 값, 파랑기 뺀 회색) */
+  --color-zone: #eef1f5; /* 구매자 메시지 구역 (T098b 시안 `.zone-buyer` 그대로) */
   --color-line: #cfd3d8; /* 입력칸 테두리·단계 줄 (시안 값) */
   --color-ink: #000000; /* 주 버튼 (시안 값: 검정) */
+
+  /* T098b: 시안 Desk.dc.html 값 그대로 (inventory Desk 절) */
+  --color-ink-hover: #333333; /* `.b-black:hover` */
+  --color-tint: #05378214; /* `.b-tint` 옅은 버튼 바탕 */
+  --color-tint-hover: #05378227; /* `.b-tint:hover` */
+  --color-focus: #097ff5; /* `:focus-visible` 2px 선 */
+  --color-sub: #6c7378; /* `.stph .sub`·보조 글 (흰 바탕 위 4.8:1) */
+  --color-row-hover: #f5f7fb; /* `.it:hover` */
+  --color-on-accent-cell: rgba(255, 255, 255, 0.08); /* 이번 주 카드 숫자 칸 바탕 */
+  --color-curve-area: rgba(196, 50, 31, 0.08); /* 위험 곡선 아래 면 */
 
   /* 뜻이 있는 색 (강조색과 따로) */
   --color-risk-high: #b42318;
@@ -70,8 +79,18 @@
   --color-pill-neutral-bg: #eceef0;
   --color-pill-neutral-text: #3f4144;
 
-  /* 그림자 (하나만: Today 목록의 고른 항목. 시안 값) */
+  /* 그림자 (시안 v3 값 — /listing 카드) */
   --shadow-selected: rgba(0, 0, 0, 0.14) 4px 4px 28px 6px;
+  /* T098b: 시안 Desk.dc.html 그림자 목록 그대로 (outline·테두리로 바꿔 그리던 것을 되돌림. tests/unit/app-shared-design B-3) */
+  --shadow-ai: rgba(0, 102, 245, 0.35) 0 2px 8px; /* `.ai` (지금 대응·진행 칸 머리) */
+  --shadow-row-on: inset 4px 0 0 #0066f5; /* `.it.on` 고른 목록 줄 왼쪽 띠 */
+  --shadow-bubble: rgba(0, 0, 0, 0.05) 0 1px 3px; /* `.bub-in` 받은 말풍선 */
+  --shadow-work: rgba(0, 41, 145, 0.1) 0 10px 32px, rgba(0, 0, 0, 0.05) 0 2px 6px; /* `.zone-work` */
+  --shadow-focus: #ffffff 0 0 0 2px; /* `:focus-visible` 흰 띠 (+ outline 2px #097FF5) */
+  --shadow-editor-focus: #ffffff 0 0 0 2px, #097ff5 0 0 0 4px; /* `.editor:focus-within` */
+  --shadow-hairline: inset 0 0 0 1px #e4e6e9; /* `.gchip`·`.tsum` */
+  --shadow-ghost: inset 0 0 0 2px #e8796b; /* `.nmini.ghost` [Remove] */
+  --shadow-toast: rgba(0, 0, 0, 0.25) 0 8px 24px; /* `.toast` */
 
   /* 글꼴 (Figtree + Noto Sans KR, 빌드 때 받아 자체 제공. 이름 변수는 layout.tsx가 붙인다) */
   --font-sans: var(--font-figtree), var(--font-noto-kr), 'Apple SD Gothic Neo', Helvetica, Arial, sans-serif;
@@ -151,6 +170,25 @@ h3 {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/*
+ * T098b: 사례 화면·Today 버튼과 줄의 포커스 (시안 `.btn,.it,.pf,.npath,.nmini,.ndraft,.hbtn:focus-visible`
+ * {box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px} 그대로)
+ */
+.reply-button:focus-visible,
+.reply-button-quiet:focus-visible,
+.tracking-button:focus-visible,
+.desk-button-tint:focus-visible,
+.desk-button-outline:focus-visible,
+.today-item:focus-visible,
+.product-filter-chip:focus-visible,
+.choice-button:focus-visible,
+.reply-lint-button:focus-visible,
+.cprog-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
 }
 
 /* 금액·점수·건수: 숫자 폭을 일정하게 (공용 클래스 하나) */

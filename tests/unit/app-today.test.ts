@@ -648,10 +648,10 @@ describe('T060 옛 주소와 정적 검사', () => {
     }
   });
 
-  it('새 css는 변수 색만 쓰고 그림자(--shadow-selected 하나 밖)·100vw·360px 넘는 고정 폭이 없다', () => {
+  it('새 css는 변수 색만 쓰고 그림자(--shadow-* 변수 밖)·100vw·360px 넘는 고정 폭이 없다', () => {
     for (const file of ['src/app/_shared/shell.css', 'src/app/today/today.css', 'src/app/products/products.css']) {
-      // T067: 그림자는 `box-shadow: var(--shadow-selected)` 하나만 허용 (사람 결정)
-      const css = strip(readFileSync(path.join(ROOT, file), 'utf8')).replace(/box-shadow:\s*var\(--shadow-selected\);/g, '');
+      // T067: 그림자는 변수로만 → T098b(22:55 결정): 시안 그림자 목록의 `--shadow-*` 변수 (값 검사는 app-shared-design B-3)
+      const css = strip(readFileSync(path.join(ROOT, file), 'utf8')).replace(/box-shadow:\s*var\(--shadow-[a-z-]+\);/g, '');
       expect(css, file).not.toMatch(/box-shadow|100vw|#[0-9a-fA-F]{3,8}\b|rgba?\(/);
       // `@media (min-width: …)` 조건은 폭 지정이 아니므로 뺀다
       for (const match of css.matchAll(/(?<![-\w(])(min-)?width\s*:\s*([0-9.]+)(px|rem)/g)) {

@@ -71,7 +71,7 @@
 }
 
 .case-status {
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 /* 머리글의 위험 배지 = 펼침 버튼 */
@@ -99,7 +99,7 @@
 
 .case-risk-caret {
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .case-risk-panel {
@@ -152,7 +152,7 @@
 
 .desk-card-sub {
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 /* ── 위험 곡선 카드 ─────────────────────────────────────────────────────── */
@@ -219,9 +219,9 @@
   stroke-width: 1;
 }
 
+/* 시안 polygon fill rgba(196,50,31,0.08) */
 .curve-area {
-  fill: var(--color-pill-high-bg);
-  opacity: 0.6;
+  fill: var(--color-curve-area);
 }
 
 .curve-line {
@@ -241,6 +241,11 @@
   transition: all var(--motion-curve);
 }
 
+/* T098b: Send 뒤 선은 실선 (시안 curve.dash: sent ? '0' : '6 5') */
+.curve-draft-sent {
+  stroke-dasharray: none;
+}
+
 .curve-dot {
   fill: var(--color-dot-high);
   stroke: var(--color-surface);
@@ -256,6 +261,11 @@
 
 .curve-dot-seller_reply {
   fill: var(--color-heading);
+}
+
+/* T098b 시안 whoCol.buyer #3F4144 (구매자 메시지 점) */
+.curve-dot-buyer_message {
+  fill: var(--color-text);
 }
 
 .curve-dot-draft {
@@ -291,7 +301,7 @@
 
 .curve-side-sub {
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .curve-fromto {
@@ -319,7 +329,7 @@
 
 .history-sub {
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .history-dots {
@@ -353,8 +363,9 @@
   border-radius: 50%;
 }
 
+/* 시안 whoCol.buyer #3F4144 */
 .history-dot-buyer {
-  background: var(--color-heading);
+  background: var(--color-text);
 }
 
 .history-dot-bad {
@@ -392,7 +403,7 @@
 .history-date {
   padding-top: 1px;
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .history-text {
@@ -412,7 +423,9 @@
   padding: 12px 16px;
   font-size: var(--text-sm);
   line-height: 1.55;
-  background: var(--gradient-soft);
+  /* 시안 사건 요약 줄 background #F5F9FF, 글자 #0A1B3D */
+  color: var(--color-navy-ink);
+  background: var(--color-accent-pale);
   border-top: 1px solid var(--color-border);
 }
 
@@ -457,7 +470,7 @@
   min-width: 0;
 }
 
-/* 말풍선 (받은 글, T090): 흰 바탕 + 실선 테두리, 왼쪽 위 모서리만 작게 (시안 `.bub-in`. 그림자 대신 테두리 — 그림자는 한 변수만) */
+/* 말풍선 (받은 글, T090): 흰 바탕, 왼쪽 위 모서리만 작게 (T098b 시안 `.bub-in` box-shadow rgba(0,0,0,0.05) 0 1px 3px 그대로) */
 .case-bubble {
   display: flex;
   flex-direction: column;
@@ -466,8 +479,8 @@
   min-width: 0;
   padding: 12px 16px;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: 6px 18px 18px 18px;
+  box-shadow: var(--shadow-bubble);
 }
 
 /* 아래 한 줄 "Translated · 영어 · 날짜" (시안 12px, #3F4144, margin-top 4px) */
@@ -507,7 +520,7 @@
   gap: var(--space-2);
   font-size: var(--text-xs);
   white-space: normal;
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .case-bubble-meta:not(:first-child)::before {
@@ -541,7 +554,7 @@
   justify-content: center;
   gap: var(--space-2);
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
   text-align: center;
 }
 
@@ -569,7 +582,13 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 24px;
-  box-shadow: var(--shadow-selected);
+  /* T098b 시안 `.zone-work` 그림자 두 겹 그대로 */
+  box-shadow: var(--shadow-work);
+}
+
+/* 머리 "AI" 알약은 시안 `.ai` 기본 그림자 (다른 자리는 box-shadow:none) */
+.work-head > .ai-pill {
+  box-shadow: var(--shadow-ai);
 }
 
 .work::before {
@@ -651,7 +670,7 @@
 
 .desk-step-sub {
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 /* 1 선택지 카드 */
@@ -679,7 +698,7 @@
 }
 
 .choice:not(.choice-blocked):hover {
-  border-color: var(--color-muted);
+  border-color: var(--color-sub);
 }
 
 /* T091: 최선 수는 "Best" 알약만 (시안). 고른 모양은 `.choice[data-on='true']` — 처음 고른 수 = 최선 수 */
@@ -744,7 +763,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 /* 지호: 짧은 제안 카드 */
@@ -770,7 +789,7 @@
 
 .case-summary-codes {
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .case-summary-text {
@@ -786,7 +805,7 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .case-routine {
@@ -802,7 +821,7 @@
 
 .case-details summary {
   cursor: pointer;
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 @container (max-width: 44rem) {
@@ -873,9 +892,11 @@
   border-radius: 14px;
 }
 
+/* 시안 `.npath:focus-visible` (흰 띠 + #097FF5 선) */
 .choice-button:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
 }
 
 .choice-button:disabled {

@@ -182,17 +182,62 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
     expect(vars['--radius-pill']).toBe('999px');
   });
 
-  it('그림자는 `--shadow-selected` 변수 하나만 쓰고, 값은 시안의 rgba(0,0,0,0.14) 4px 4px 28px 6px다', () => {
+  // T098b (사람 결정 2026-11-11 22:55 "기준은 시안 파일 자체"): "그림자 하나만"(T067) → 시안 그림자 목록 그대로.
+  // 그림자는 여전히 `--shadow-*` 변수로만 쓰고, 변수 값은 시안 파일에 있는 box-shadow 값이어야 한다 (지어낸 그림자 없음).
+  it('그림자는 `--shadow-*` 변수로만 쓰고, 변수 값은 모두 시안 파일(Desk·v3)의 box-shadow 값이다', () => {
     const { light } = themeVars();
     expect(light['--shadow-selected']).toBe('rgba(0, 0, 0, 0.14) 4px 4px 28px 6px');
+    const norm = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/\s*,\s*/g, ',')
+        .replace(/\b0\.(\d)0\b/g, '0.$1')
+        .replace(/(^|[ ,(])\.(\d)/g, '$10.$2')
+        .trim();
+    const desk = readFileSync(path.join(ROOT, 'docs/design/mockup-v4/Desk.dc.html'), 'utf8');
+    const mockupShadows = new Set(
+      [...desk.matchAll(/box-shadow\s*:\s*([^;}"]+)/g)].map((match) => norm(match[1])).filter((value) => value !== 'none'),
+    );
+    mockupShadows.add(norm('rgba(0, 0, 0, 0.14) 4px 4px 28px 6px')); // 시안 v3 (/listing 카드, T067)
+    const shadowVars = Object.entries(light).filter(([name]) => name.startsWith('--shadow-'));
+    expect(shadowVars.length).toBeGreaterThanOrEqual(2);
+    for (const [name, value] of shadowVars) expect(mockupShadows.has(norm(value)), `${name}: ${value}`).toBe(true);
     for (const file of filesUnder(APP, ['.css'])) {
       for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
-        expect(match[1].trim(), `${path.relative(ROOT, file)}: ${match[0]}`).toBe('var(--shadow-selected)');
+        const value = match[1].trim();
+        expect(/^var\(--shadow-[a-z-]+\)$/.test(value), `${path.relative(ROOT, file)}: ${match[0]}`).toBe(true);
+        expect(value.slice(4, -1) in light, `${path.relative(ROOT, file)}: ${match[0]}`).toBe(true);
       }
     }
     for (const file of filesUnder(APP, ['.tsx'])) {
       expect(/boxShadow/.test(readFileSync(file, 'utf8')), path.relative(ROOT, file)).toBe(false);
     }
+  });
+
+  it('T098b: 시안 그림자 자리마다 그 그림자를 쓴다 (outline·테두리로 바꿔 그리지 않는다)', () => {
+    const css = (rel: string) => stripComments(readFileSync(path.join(APP, rel), 'utf8'));
+    const rule = (text: string, selector: string) => {
+      const at = text.indexOf(`${selector} {`);
+      expect(at, selector).toBeGreaterThanOrEqual(0);
+      return text.slice(at, text.indexOf('}', at));
+    };
+    const reply = css('cases/reply/reply.css');
+    const kase = css('cases/view/case.css');
+    const today = css('today/today.css');
+    expect(rule(reply, '.reply-editor:focus-within')).toContain('var(--shadow-editor-focus)');
+    expect(rule(reply, '.reply-editor:focus-within')).not.toContain('outline');
+    expect(rule(reply, '.reply-lint-button-ghost')).toContain('var(--shadow-ghost)');
+    expect(rule(reply, '.reply-lint-button-ghost')).not.toContain('border:');
+    expect(rule(reply, '.reply-chip-good')).toContain('var(--shadow-hairline)');
+    expect(rule(kase, '.case-bubble')).toContain('var(--shadow-bubble)');
+    expect(rule(kase, '.work')).toContain('var(--shadow-work)');
+    expect(rule(today, ".today-item[aria-current='true']")).toContain('var(--shadow-row-on)');
+    expect(rule(today, '.savings-toast')).toContain('var(--shadow-toast)');
+    expect(rule(css('cases/progress/case-progress.css'), '.cprog-toast')).toContain('var(--shadow-toast)');
+    const { light } = themeVars();
+    expect(light['--shadow-editor-focus']).toBe('#ffffff 0 0 0 2px, #097ff5 0 0 0 4px');
+    expect(light['--color-focus']).toBe('#097ff5');
   });
 });
 

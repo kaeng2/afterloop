@@ -311,12 +311,12 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
     expect(rule(TODAY_CSS, '.tracking-button')).toMatch(/border-radius:\s*var\(--radius-pill\)/);
   });
 
-  it('T076: 고른 항목 = 옅은 강조색 바탕 + 왼쪽 4px 강조색 띠 (시안 v4 모양, 파랑 대신 강조색)', () => {
+  it('T076 → T098b: 고른 항목 = 옅은 강조색 바탕 + 왼쪽 4px 강조색 띠 (시안 `.it.on` box-shadow inset 4px 0 0 #0066F5 그대로)', () => {
     const selected = rule(TODAY_CSS, ".today-item[aria-current='true']");
     expect(selected).toMatch(/background:\s*var\(--color-accent-soft\)/);
-    const band = rule(TODAY_CSS, ".today-item[aria-current='true']::before");
-    expect(band).toMatch(/width:\s*4px/);
-    expect(band).toMatch(/background:\s*var\(--color-accent\)/);
+    expect(selected).toMatch(/box-shadow:\s*var\(--shadow-row-on\)/);
+    const globals = readFileSync(path.join(APP, 'globals.css'), 'utf8');
+    expect(globals).toMatch(/--shadow-row-on:\s*inset 4px 0 0 #0066f5;/);
   });
 
   it('T076: 로고 = 글자 로고 "Dispute" + 강조색 "Less" + 밑줄 곡선(강조색) + "for PayPal sellers" 알약', () => {
@@ -369,8 +369,9 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
     expect(val('--color-bar-refund')).toBe('#99c2ff');
     expect(val('--color-bar-chargeback')).toBe('#c4321f');
     expect(val('--gradient-week')).toBe('linear-gradient(150deg, #001c64 0%, #002991 55%, #0b48c4 100%)');
-    expect(val('--gradient-ai')).toBe('linear-gradient(120deg, #002991, #0066f5 60%, #60cdff)');
-    expect(val('--gradient-ai-line')).toBe('linear-gradient(90deg, #002991, #0066f5 60%, #60cdff)');
+    // T098b: 시안 `.ai`·`.zone-work::before` 값 그대로 (60% 칸은 시안의 Auto 단계 아이콘 값 — Auto 없음 예외)
+    expect(val('--gradient-ai')).toBe('linear-gradient(120deg, #002991 0%, #0066f5 55%, #60cdff 100%)');
+    expect(val('--gradient-ai-line')).toBe('linear-gradient(90deg, #002991, #0066f5, #60cdff)');
     expect(val('--gradient-soft')).toBe('linear-gradient(120deg, #e3f3ff, #f5f9ff)');
     for (const [name, hex] of [
       ['--color-pill-high-bg', '#fbe7e4'],
