@@ -1,0 +1,7 @@
+{
+  "scene3": {
+    "source": "시안 docs/design/mockup-v4/scene3/Main.dc.html (setInterval 70ms). 기획자가 진행 표시를 2~3초로 줄이려면 intervalMs를 줄이거나 step을 키운다. 계산은 엔진이 실제로 끝낸다.",
+    "check": { "intervalMs": 70, "step": 5 },
+    "recalc": { "intervalMs": 70, "step": 25 }
+  }
+}

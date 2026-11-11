@@ -617,6 +617,18 @@
   border-radius: 50%;
   background: var(--ls-live);
   outline: 3px solid var(--ls-live-ring);
+  animation: ls-pulse 1.2s ease-in-out infinite;
+}
+@keyframes ls-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
 }
 
 .ls-btn {
@@ -906,6 +918,7 @@
 .ls-prog-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--ls-accent-deep), var(--ls-accent), var(--ls-accent-light));
+  transition: width 0.07s linear;
 }
 .ls-checks {
   gap: 8px;
@@ -1392,5 +1405,14 @@
   }
   .ls-done {
     padding: 24px 16px;
+  }
+}
+
+/* 움직임 줄이기 (T094): 모든 움직임을 끈다. 진행은 바로 결과 (progress.ts) */
+@media (prefers-reduced-motion: reduce) {
+  [class^='ls-'],
+  [class*=' ls-'] {
+    animation: none !important;
+    transition: none !important;
   }
 }
