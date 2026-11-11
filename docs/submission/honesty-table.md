@@ -25,12 +25,12 @@ DisputeLess is a hackathon prototype on the **PayPal sandbox** with a **fictiona
 | Seller time per dispute $2 | Cost of the seller's time. Assumption. |
 | Current habit: 50% full refund, 50% fight | Baseline behavior used for "as-is". Assumption. |
 
-**Not an assumption:** the **$15 dispute fee** is PayPal's published US Standard Dispute Fee. We charge it only when the seller loses (see limit 2).
+**Not an assumption:** the **$15 dispute fee** is PayPal's published US Standard Dispute Fee. We charge it only when the seller loses, which matches PayPal's published rule for the Standard fee. That Hannah is on the Standard fee is an assumption (see limit 2).
 
 ## Known limits
 
 1. **Probabilities are assumptions, not statistics.** The app starts from knitwear-style averages and says so; it does not learn from real history yet.
-2. **Fee rules are not confirmed (open question Q7).** We assume the $15 fee applies only when the seller loses, and that settling or an accepted offer is free. Whether a win also incurs the fee, and whether a refund after the claim stage carries a fee, is unconfirmed. [확인 필요: Q7 답 도착 여부]
+2. **We assume Hannah pays the Standard dispute fee ($15).** PayPal's published rules (fees page and User Agreement, updated Nov 4, 2026) waive the Standard fee when the seller wins, when the case is settled before it becomes a claim, and when an offer is accepted at that stage, so our formula matches them. Sellers with a claim rate of 1.5% or more and over 100 sales in the last three months pay the High Volume fee instead: $30, charged even on a win. The demo shop's history could put it in that tier; if so, replying still beats refunding in the Seo-yeon case, but with less margin (the win chance needed rises from about 17% to about 42%). Also not modeled: the fee on a refund made after a case becomes a claim, the waiver for unauthorized-payment cases, and the waiver for orders under $30.
 3. **Chargebacks are priced like PayPal disputes.** The same loss formula is used for card-issuer chargebacks. Real chargebacks have different rules, fees, and win rates.
 4. **The simulation range (P10 to P90) does not include uncertainty in the assumptions themselves.** It reflects random variation across 500 simulated futures with fixed inputs only. If the assumed rates are wrong, the whole range moves.
 5. **No carrier integration.** Carrier events are demo data. PayPal's tracking API accepts only a SHIPPED status, so real delivery or customs events are not read.
