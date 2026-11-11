@@ -269,7 +269,8 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
     expect(html).not.toMatch(/data-missing="size"/);
     expect(html).toMatch(/data-missing="customs bf"/);
     expect(html).toContain('<mark class="ls-blank">[__]</mark>');
-    expect(html).toContain('AI suggests');
+    // T090: AI 문구 표시는 "AI" 알약 (출처 표시 3종)
+    expect(html).toContain('class="ai-pill"');
     expect(html).toContain('Changed — recalculate');
 
     // Recalculate: 같은 진행 규칙

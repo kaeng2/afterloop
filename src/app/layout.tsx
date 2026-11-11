@@ -9,12 +9,17 @@
  * - 글자는 `config/copy.en.json`에서 읽는다.
  */
 import type { Metadata, Viewport } from 'next';
+import type { CSSProperties } from 'react';
 import { Figtree, Noto_Sans_KR } from 'next/font/google';
 
 import { initLocale } from './_server/locale';
 import { t } from './_shared/copy';
 import { LocaleProvider } from './_shared/locale-context';
+import { motionVars } from './_shared/motion';
 import './globals.css';
+
+/** 모션 시간 (T090): `config/motion.json` → css 변수. 움직임 줄이기면 globals.css가 0으로 덮는다. */
+const MOTION_STYLE = motionVars() as CSSProperties;
 
 const figtree = Figtree({ subsets: ['latin'], display: 'swap', variable: '--font-figtree' });
 // 한국어 글자는 Google이 나눈 unicode-range 조각으로 함께 제공된다. 미리 받기는 라틴만 (preload: false)
@@ -33,7 +38,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const locale = await initLocale();
   return (
-    <html lang={locale} className={`${figtree.variable} ${notoSansKr.variable}`}>
+    <html lang={locale} className={`${figtree.variable} ${notoSansKr.variable}`} style={MOTION_STYLE}>
       <body>
         <LocaleProvider locale={locale}>{children}</LocaleProvider>
       </body>

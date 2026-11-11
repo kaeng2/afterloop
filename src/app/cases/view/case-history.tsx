@@ -8,7 +8,7 @@
  */
 import { useId, useState } from 'react';
 
-import { Badge } from '../../_shared/badges';
+import { AiPill, Badge } from '../../_shared/badges';
 import { useT } from '../../_shared/locale-context';
 import type { HistoryView } from '../desk-model';
 
@@ -57,9 +57,10 @@ export function CaseHistoryCard({ history }: { history: HistoryView }) {
             <span className={`history-dot history-dot-${row.tone}`} aria-hidden="true" />
             <span className="history-text">
               <span>{row.text}</span>
+              {/* T090 시안: 빨간 "Before DisputeLess · <표시>" 알약 (표시는 실제 기록의 판정만) */}
               {row.flagKeys.map((key) => (
                 <span key={key} className="desk-chip desk-chip-bad">
-                  {t(key)}
+                  {t('case.history.beforeTag', { flag: t(key) })}
                 </span>
               ))}
               {row.demo ? <Badge kind="demo" /> : null}
@@ -70,7 +71,7 @@ export function CaseHistoryCard({ history }: { history: HistoryView }) {
 
       {history.summary === null ? null : (
         <p className="history-summary">
-          <Badge kind="aiSuggests" />
+          <AiPill />
           <span>
             <strong>{t('case.history.summaryLabel')}</strong> {history.summary}
           </span>

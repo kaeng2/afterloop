@@ -331,7 +331,8 @@ describe('AC18 5번: 선행 값이 없을 때', () => {
     expect(html).not.toContain('class="choice-paypal-only');
     expect(html).not.toContain('<del');
     expect(html).not.toContain(copyTables.en['case.view.arrow']);
-    expect(html).toContain(copyTables.en['case.view.noCarrier']);
+    // T090: "No carrier data" 한 줄은 선택지 카드 아래에서 답장 칸 Details 첫 줄로 옮겼다 (case-detail → ReplyPanel paypalOnly)
+    expect(html).not.toContain(copyTables.en['case.view.noCarrier']);
     expect(html).toContain(copyTables.en['common.llmUnavailable']);
   });
 });
@@ -541,8 +542,9 @@ describe('대화: 같은 배지는 한 번만', () => {
     });
     const v = buildCaseView(input({ messages }), P, R);
     const html = renderToStaticMarkup(createElement(Conversation, { messages: v.messages, carrierLine: null, locale: 'ko' }));
-    const demoItem = html.slice(html.indexOf('case-bubble-demo'));
-    const demoOnly = demoItem.slice(0, demoItem.indexOf('</li>'));
+    // T090: 시연용 말풍선은 테두리 모양 대신 끝의 "Demo data" 하나로 구분한다 → 그 글이 있는 말풍선 줄을 본다
+    const items = html.split('<li class="case-bubble-wrap">').slice(1);
+    const demoOnly = items.find((item) => item.includes(copyTables.en['badge.demo'])) ?? '';
     const demoLabel = copyTables.en['badge.demo'] ?? 'Demo data';
     expect(demoOnly.split(demoLabel).length - 1).toBe(1);
   });
@@ -554,8 +556,9 @@ describe('서연 화면 그리기', () => {
   const seoView = buildCaseView(input(), P, R);
   const html = renderToStaticMarkup(createElement(CaseView, { view: seoView, desk: deskOf(seoView, D2_AFTER), llmOk: true }));
 
-  it('T076: 선택지 카드(배송사 기록 반영 보드, 최선 = Best) + "PayPal data only: Full refund $74", 숫자는 엔진 값의 표시', () => {
-    expect(html).toContain(
+  it('T076: 선택지 카드(배송사 기록 반영 보드, 최선 = Best), 숫자는 엔진 값의 표시 (T090: "PayPal data only"는 카드 아래에 없다)', () => {
+    // T090: "PayPal data only" 줄은 답장 칸 Details 첫 줄로 옮겼다 (값은 desk.paypalOnly 그대로)
+    expect(html).not.toContain(
       t('case.choice.paypalOnly', {
         action: t('case.view.action.refund'),
         amount: toDollarsRounded(recommend(D2_BEFORE, P, R).best?.expectedLossCents as number),
@@ -568,8 +571,9 @@ describe('서연 화면 그리기', () => {
       t('case.choice.cost', { amount: toDollarsRounded(best?.expectedLossCents as number) }),
     );
     expect(bestCard.slice(0, bestCard.indexOf('</li>'))).toContain(t('case.choice.fight.title'));
-    expect(html).toContain('Code decides');
-    expect(html).toContain('From PayPal');
+    // T090: 출처 표시 3종만 — "Code decides" 없음, 말풍선 꼬리는 "Translated · 영어 · 날짜" (실제 글엔 Demo data 없음)
+    expect(html).not.toContain('Code decides');
+    expect(html).toContain('class="ai-pill"');
     expect(html).not.toContain('P123456789012');
     expect(html).not.toContain(copyTables.en['common.llmUnavailable']);
   });

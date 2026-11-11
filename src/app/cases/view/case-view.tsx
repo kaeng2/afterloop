@@ -16,7 +16,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { Badge } from '../../_shared/badges';
+import { AiPill, Badge } from '../../_shared/badges';
 import { t } from '../../_shared/copy';
 import { ProductTile } from '../../_shared/product-icon';
 import { deskFromView, type CaseDesk, type ChoiceView } from '../desk-model';
@@ -24,7 +24,6 @@ import type { CaseView as CaseViewData, SummaryView } from '../model';
 import { CaseHistoryCard } from './case-history';
 import { Conversation } from './conversation';
 import { RiskCurveCard } from './risk-curve';
-import { RiskToggle } from './risk-toggle';
 
 import './case.css';
 
@@ -71,7 +70,7 @@ export function CaseHeader({ view, desk: deskInput }: { view: CaseViewData; desk
           </p>
         </div>
       </div>
-      <RiskToggle risk={view.risk} riskAfterReply={view.riskAfterReply} />
+      {/* T090: "High · Score 6" 펼침은 뺀다 — 위험은 곡선 카드가 보여 준다 */}
     </header>
   );
 }
@@ -102,17 +101,12 @@ function Summary({ summary, noCarrier }: { summary: SummaryView | null; noCarrie
   );
 }
 
-/** 1 Pick a way to resolve — 엔진 수별 카드. 고르기는 엔진의 최선 수 (화면이 고르지 않는다). */
-export function ChoiceCards({
-  choices,
-  paypalOnly,
-  summary,
-}: {
-  choices: ChoiceView[];
-  paypalOnly: string | null;
-  /** 카드 아래 한 줄 요약 (없으면 그리지 않는다). */
-  summary?: ReactNode;
-}) {
+/**
+ * 1 Pick a way to resolve — 엔진 수별 카드. 고르기는 엔진의 최선 수 (화면이 고르지 않는다).
+ * T090: 카드 아래 두 줄(원인 요약 · "PayPal data only")은 그리지 않는다 — "PayPal data only"는 답장 칸 Details 첫 줄로.
+ * 카드를 눌러 바꾸는 동작은 T091 몫이다 (지금은 모양만).
+ */
+export function ChoiceCards({ choices }: { choices: ChoiceView[] }) {
   if (choices.length === 0) return null;
   return (
     <div className="desk-step">
@@ -124,7 +118,6 @@ export function ChoiceCards({
         <div className="desk-step-head">
           <h3 className="desk-step-title">{t('case.choice.title')}</h3>
           <span className="desk-step-sub">{t('case.choice.sub', { count: choices.length })}</span>
-          <Badge kind="codeDecides" />
           <Badge kind="assumption" />
         </div>
         <ul className="choice-list">
@@ -156,13 +149,6 @@ export function ChoiceCards({
             </li>
           ))}
         </ul>
-        {summary ?? null}
-        {paypalOnly === null ? null : (
-          <p className="choice-paypal-only small">
-            <span className="num">{paypalOnly}</span>
-            <Badge kind="demo" title={t('case.choice.paypalOnlyHint')} />
-          </p>
-        )}
       </div>
     </div>
   );
@@ -199,9 +185,9 @@ export function CaseView({
           {desk.history === null ? null : <CaseHistoryCard history={desk.history} />}
 
           <div className="case-body">
+            {/* T090: 대화 사이의 "Carrier: Customs hold" 줄은 그리지 않는다 (배송사 기록은 사건 기록 카드에) */}
             <Conversation
               messages={view.messages}
-              carrierLine={view.carrierLine}
               locale={view.header.buyerLocale}
               signals={view.signals}
               languageKey={view.header.languageKey}
@@ -210,15 +196,13 @@ export function CaseView({
 
           <section className="work" aria-labelledby="work-title">
             <div className="work-head">
-              <span className="work-ai" aria-hidden="true">
-                {t('case.work.ai')}
-              </span>
+              <AiPill />
               <h2 className="desk-card-title" id="work-title">
                 {t('case.work.title')}
               </h2>
               <span className="desk-card-sub">{t('case.work.sub')}</span>
             </div>
-            <ChoiceCards choices={desk.choices} paypalOnly={desk.paypalOnly} summary={summaryNode} />
+            <ChoiceCards choices={desk.choices} />
             {/* 선택지 카드가 없으면(엔진 추천 없이 그릴 때) 요약 한 줄만 */}
             {desk.choices.length === 0 ? summaryNode : null}
             {reply === undefined ? null : <div className="case-body-reply">{reply}</div>}

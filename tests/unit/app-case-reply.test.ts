@@ -307,7 +307,8 @@ describe('AC18 12번: 고정 초안이면 "Demo draft" 배지, AI suggests 없�
     const { draft, translation } = await prepare(DRAFT_EN, OUTGOING);
     const html = render(base(draft, translation, { draftSource: 'fixed' }));
     expect(html).toContain('Demo draft — written by the team, not generated live');
-    expect(html).not.toContain(copyTables.en['badge.aiSuggests']);
+    // T090: "AI" 알약(출처 표시)이 없다. "Use AI draft" 단추 안의 작은 장식 알약(ai-pill-small)은 단추 이름이다
+    expect(html).not.toMatch(/class="ai-pill"/);
   });
 });
 
@@ -349,8 +350,9 @@ describe('답장 칸 그리기', () => {
     expect(html).not.toMatch(/⟦|⟧/);
     expect(html).toContain('Send in Korean');
     expect(html).toContain('Simulated send');
-    expect(html).toContain(copyTables.en['badge.codeDecides']);
-    expect(html).toContain(copyTables.en['badge.aiSuggests']);
+    // T090: "Code decides" 배지는 그리지 않는다. 검사 줄은 Details 안 (통과면 접혀 있다)
+    expect(html).not.toContain(copyTables.en['badge.codeDecides']);
+    expect(html).toMatch(/class="reply-details"[^>]*hidden/);
     expect(html).toMatch(/<button[^>]*class="reply-button"(?![^>]*disabled)/);
   });
 
@@ -412,31 +414,27 @@ function caseInput(overrides: Partial<CaseViewInput> = {}): CaseViewInput {
 const renderCase = (input: CaseViewInput) =>
   renderToStaticMarkup(createElement(CaseView, { view: buildCaseView(input, P, R), llmOk: true }));
 
-describe('1번: 위험 점수는 머리글 배지 하나 (펼침 버튼)', () => {
-  it('"Escalation risk" 카드가 없고, 머리글 배지가 aria-expanded 버튼이다', () => {
+// T090: 머리글의 "High · Score 6" 펼침은 뺐다 (위험은 곡선 카드가 보여 준다). 보기용 값은 엔진 그대로 남는다
+describe('1번 → T090: 머리글에 위험 점수 펼침이 없다', () => {
+  it('"Escalation risk" 카드도, 머리글 배지 버튼도 없다', () => {
     const html = renderCase(caseInput());
     expect(html).not.toMatch(/<h2[^>]*>Escalation risk<\/h2>/);
     expect(html).not.toContain('id="case-risk"');
-    expect(html).toMatch(/<button[^>]*class="case-risk-button"[^>]*aria-expanded="false"/);
-    expect(html.match(/case-risk-button/g)?.length).toBe(1);
+    expect(html).not.toContain('case-risk-button');
   });
 
-  it('펼친 내용이 escalationRisk(...).parts와 같고 답장 뒤 점수도 같은 자리에 있다', () => {
+  it('보기용 값(점수 부분·답장 뒤 점수)은 escalationRisk(...) 그대로다', () => {
     const view = buildCaseView(caseInput(), P, R);
     const now = escalationRisk(SEOYEON_START, R);
     expect(view.risk?.parts.map(({ signal, points }) => ({ signal, points }))).toEqual(now.parts);
     expect(view.risk?.parts.map((p) => p.points)).toEqual([3, 2, 1, 0]);
     expect(view.riskAfterReply).toMatchObject({ score: escalationRisk(SEOYEON_AFTER_REPLY, R).score, band: 'Watch' });
-
-    const html = renderCase(caseInput());
-    for (const part of view.risk!.parts) expect(html).toContain(copyTables.en[part.labelKey]);
-    expect(html).toContain(copyTables.en['case.view.riskAfterReply']);
   });
 
-  it('신호가 없으면 버튼 없이 빈칸 문구', () => {
+  it('신호가 없어도 머리글이 그려진다 (버튼 없음)', () => {
     const html = renderCase(caseInput({ signals: null, signalsAfterReply: null }));
     expect(html).not.toContain('case-risk-button');
-    expect(html).toContain(copyTables.en['case.view.riskNone']);
+    expect(html).toContain('class="case-head"');
   });
 });
 
@@ -471,20 +469,19 @@ describe('3번 (T061): 원인 칸 대신 한 줄 요약', () => {
     return match![0];
   };
 
-  it('원인 카드가 없고, 요약은 엔진 원인 전환(A1 → A2)의 문구 + Code decides 한 번 + 코드는 보조 글자', () => {
+  it('원인 카드가 없고, 요약은 엔진 원인 전환(A1 → A2)의 문구 + 코드는 보조 글자 (T090: Code decides 배지 없음)', () => {
     const html = renderCase(caseInput());
     expect(html).not.toContain('case-cause-card');
     const box = summary(html);
     expect(box).toContain(copyTables.en['case.view.summary.A1_A2'].replace(/'/g, '&#x27;'));
-    expect(box.split(copyTables.en['badge.codeDecides']).length - 1).toBe(1);
+    expect(box).not.toContain(copyTables.en['badge.codeDecides']);
     expect(box).toMatch(/class="case-summary-codes num">A1 → A2</);
   });
 
-  it('통관 보류 상세 문구는 요약에 없고 대화 안 배송사 줄에 있다', () => {
+  it('통관 보류 상세 문구는 요약에 없고, T090부터 대화 사이 배송사 줄도 없다', () => {
     const html = renderCase(caseInput());
     expect(summary(html)).not.toContain(CUSTOMS_EVENT);
-    const line = html.slice(html.indexOf('class="case-carrier-line"'));
-    expect(line.slice(0, line.indexOf('</li>'))).toContain(CUSTOMS_EVENT);
+    expect(html).not.toContain('class="case-carrier-line"');
   });
 
   it('후 보드가 없으면 전 원인 하나 (전환 문구 없음) + "배송사 정보 없음" 한 줄', () => {

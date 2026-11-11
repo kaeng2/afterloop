@@ -120,6 +120,7 @@ export async function CaseDetail({ disputeId }: { disputeId: string }) {
                     : { signals: loaded.loaded.signals, delayDays, translated: anchor.translated }
                 }
                 offerRate={reply.offerRate}
+                paypalOnly={desk.paypalOnly ?? (caseView.compare.after === null ? t('case.view.noCarrier') : null)}
               />
             )
           }
