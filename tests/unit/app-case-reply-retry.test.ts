@@ -167,24 +167,24 @@ describe('1번: 대화·배송사 카드는 왼쪽 열에 위아래로', () => {
     demoFields: ['carrierEvents'],
   });
 
-  it('순서: 비교 → 원인 → 대화 → 배송사, 대화·배송사는 한 열(case-stack) 안. 나란히 놓는 격자(case-columns)가 없다', () => {
+  // T061: 배송사 카드는 없애고 배송사 줄이 대화 안으로 들어갔다. 대화와 답장 칸은 넓은 폭에서 두 칸이다
+  it('순서: 비교(case-hero) → 대화(case-body 안), 배송사 줄은 대화 안. 따로 있던 배송사 카드가 없다', () => {
     const html = renderToStaticMarkup(createElement(CaseView, { view: buildCaseView(caseInput(), P, R), llmOk: true }));
-    expect(html).not.toContain('case-columns');
-    const stack = html.indexOf('class="case-stack"');
-    expect(stack).toBeGreaterThan(0);
-    const conversation = html.indexOf('id="case-conversation"') >= 0 ? html.indexOf('id="case-conversation"') : html.indexOf('Conversation');
-    const carrier = html.indexOf('id="case-carrier"');
-    expect(html.indexOf('case-hero')).toBeLessThan(stack);
-    expect(conversation).toBeGreaterThan(stack);
-    expect(carrier).toBeGreaterThan(conversation);
+    expect(html).not.toContain('id="case-carrier"');
+    const body = html.indexOf('class="case-body');
+    const conversation = html.indexOf('id="case-conversation"');
+    const carrierLine = html.indexOf('class="case-carrier-line"');
+    expect(html.indexOf('case-hero')).toBeLessThan(body);
+    expect(conversation).toBeGreaterThan(body);
+    expect(carrierLine).toBeGreaterThan(conversation);
   });
 
-  it('CSS: case-stack은 세로 flex이고 grid가 아니다', () => {
+  // T068: 대화 | 답장 두 칸을 없애고 폭과 상관없이 한 열 (위에서 아래로 한 줄기)
+  it('CSS: 대화 → 답장은 늘 한 열 (두 칸으로 바꾸는 컨테이너 질의 없음)', () => {
     const css = readFileSync(path.join(ROOT, 'src/app/cases/view/case.css'), 'utf8');
-    const block = css.match(/\.case-stack\s*\{([^}]*)\}/)?.[1] ?? '';
-    expect(block).toMatch(/display:\s*flex/);
-    expect(block).toMatch(/flex-direction:\s*column/);
-    expect(block).not.toMatch(/grid/);
+    const block = css.match(/\.case-body\s*\{([^}]*)\}/)?.[1] ?? '';
+    expect(block).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\);/);
+    expect(css).not.toMatch(/@container/);
     expect(css).not.toContain('.case-columns');
   });
 });

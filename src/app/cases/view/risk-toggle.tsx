@@ -15,12 +15,16 @@ import { RISK_LEVEL } from '../../_shared/badge-keys';
 import { Badge, RiskLevel } from '../../_shared/badges';
 import { t } from '../../_shared/copy';
 import type { RiskView } from '../model';
+import { useSent } from './sent-state';
 
 export function RiskToggle({ risk, riskAfterReply }: { risk: RiskView | null; riskAfterReply: RiskView | null }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  // 이 화면에서 보낸 뒤에는 배지가 엔진의 답장 뒤 값으로 바뀐다 ("Score 6 → 3")
+  const { sent } = useSent();
 
   if (risk === null) return <span className="small muted">{t('case.view.riskNone')}</span>;
+  const shown = sent && riskAfterReply !== null ? riskAfterReply : risk;
 
   return (
     <div className="case-risk-wrap">
@@ -29,11 +33,15 @@ export function RiskToggle({ risk, riskAfterReply }: { risk: RiskView | null; ri
         className="case-risk-button"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={t('case.view.riskToggle', { score: risk.score, band: t(RISK_LEVEL[risk.band].copyKey) })}
+        aria-label={t('case.view.riskToggle', { score: shown.score, band: t(RISK_LEVEL[shown.band].copyKey) })}
         onClick={() => setOpen((value) => !value)}
       >
-        <RiskLevel band={risk.band} />
-        <span className="small num">{t('case.view.riskScore', { score: risk.score })}</span>
+        <RiskLevel band={shown.band} />
+        <span className="small num">
+          {shown === risk
+            ? t('case.view.riskScore', { score: risk.score })
+            : t('case.view.riskScoreAfter', { before: risk.score, after: shown.score })}
+        </span>
         <span className="case-risk-caret" aria-hidden="true">
           {open ? '▴' : '▾'}
         </span>

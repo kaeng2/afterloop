@@ -20,12 +20,13 @@
  * 보여 줄 글만 `formatFact`로 현지 표기한 사본을 `fillTokens`에 넣어 채운다.
  */
 import type { CommitmentCategory, ReplyDraft, ReplyNameProblem, ReplyTranslation } from '@/ai/reply';
-import { fillTokens, formatFact, type FactLocale } from '@/ai/tokens';
+import { extractTokens, fillTokens, formatFact, type FactLocale } from '@/ai/tokens';
 import { fillMessage } from '@/exec/message';
 import type { ActionPlan, BoardState, FactToken, TokenCheck } from '@/types';
 
 import type { BadgeKind } from '../_shared/badge-keys';
 import { toDollarsRounded } from '../_shared/money';
+import { shortDate } from '../_shared/short-date';
 import type { RiskView } from './model';
 
 /**
@@ -89,6 +90,11 @@ export type ReplyViewInput = {
   /** 1부 보기용 값의 `messageSend.blocked` (`offerComesFirst`). */
   offerFirst: boolean;
   mode: SendMode;
+  /**
+   * 연결 표에서 이 분쟁의 실제 전송이 허용되는가 (`liveSendAllowed`, 서버가 정한 값). 스위치가 켜져 있어도
+   * 거짓이면 "Live" 글자를 보이지 않는다 (T061 전송 상태 표시). 주지 않으면 허용으로 본다.
+   */
+  liveAllowed?: boolean;
   draftSource: DraftSource;
   /** 판매자가 화면에서 확인한 약속 범주. */
   confirmed: CommitmentCategory[];
@@ -109,9 +115,15 @@ export type CheckRowView = {
   ok: boolean;
   /** 걸린 글자 (토큰 이름·직접 쓴 값·약속 표현). 통과면 빈 배열. */
   items: string[];
+  /**
+   * 늘 보이는 줄인가 (T061 6번: Facts match · No new promises). 거짓인 줄은 "More checks" 접기 안에 두되,
+   * **실패하면 접기와 상관없이 보인다** (`visibleChecks`).
+   */
+  primary: boolean;
 };
 
-export type FactRowView = { token: string; labelKey: string; value: string };
+/** 사실값 줄. `primary`면 늘 보인다 (확인 기한 날짜). 나머지(이름·서명)는 접기 안. */
+export type FactRowView = { token: string; labelKey: string; value: string; primary: boolean };
 
 export type CommitmentView = { category: CommitmentCategory; labelKey: string; confirmed: boolean };
 
@@ -131,6 +143,8 @@ export type ReplyView = {
   sourceBadges: BadgeKind[];
   fixedDraftKey: string | null;
   coaching: string[];
+  /** "Suggested reply covers:" 칩 (`replyChips` + 토큰 채움). 빈 배열이면 칩 줄을 숨긴다. */
+  chips: string[];
   /** 영어 초안 (영어 표기로 채움). */
   draftEn: FilledText | null;
   /** 구매자 언어 전송본 (구매자 언어 표기로 채움). 실제로 나갈 글자와 같다 (`screenText`). */
@@ -197,7 +211,44 @@ export const REPLY_KEYS = {
   fixedDraft: 'case.reply.fixedDraft',
   modeSimulated: 'case.send.mode.simulated',
   modeLive: 'case.send.mode.live',
+  modeLiveNotAllowed: 'case.send.mode.liveNotAllowed',
 } as const;
+
+/**
+ * 전송 모드 글자 키 (T061 전송 상태 표시). 모드는 서버가 정한다 — 화면은 옮기기만.
+ * - 스위치 꺼짐 → "Simulated send — nothing goes to PayPal"
+ * - 켜짐 + 연결 표 허용 → "Live · PayPal sandbox"
+ * - 켜짐 + 연결 표 불허 → "Live send not allowed for this case — nothing goes to PayPal" (보내면 서버가 거부한다)
+ */
+export function sendModeKey(mode: SendMode, liveAllowed: boolean): string {
+  if (mode !== 'live') return REPLY_KEYS.modeSimulated;
+  return liveAllowed ? REPLY_KEYS.modeLive : REPLY_KEYS.modeLiveNotAllowed;
+}
+
+/**
+ * "Suggested reply covers:" 칩 글자 (T068). **화면은 칩 글자를 짓지 않는다.**
+ * - 초안에 `chips`(T069, AI가 만든 짧은 칩)가 있으면 그것을 그대로.
+ * - 비었거나 없으면(걸러져 `chips: []`, T069 병합 전, 고정 초안) 코칭 줄을 그대로 칩으로 쓴다 (긴 글자도 줄이지 않는다).
+ * - 초안이 없으면 빈 배열 (칩 줄을 숨긴다).
+ * 토큰(⟦DATE_1⟧ …)은 여기서 채우지 않는다 — `buildReplyView`가 영어 초안과 같은 길(`screenText`)로 채운다.
+ */
+export function replyChips(draft: ReplyDraft): string[] {
+  if (!draft.ok) return [];
+  const chips = (draft as { chips?: unknown }).chips;
+  if (Array.isArray(chips) && chips.every((chip): chip is string => typeof chip === 'string')) {
+    const kept = chips.map((chip) => chip.trim()).filter((chip) => chip !== '');
+    if (kept.length > 0) return kept;
+  }
+  return draft.coaching.map((line) => line.trim()).filter((line) => line !== '');
+}
+
+/** 검사 줄 나누기: 보이는 줄(늘 보이는 줄 + 실패한 줄)과 접기 안의 줄(통과한 나머지). */
+export function visibleChecks(rows: CheckRowView[]): { shown: CheckRowView[]; folded: CheckRowView[] } {
+  return {
+    shown: rows.filter((row) => row.primary || !row.ok),
+    folded: rows.filter((row) => !row.primary && row.ok),
+  };
+}
 
 /** 막힌 이유 키. `canSend`가 고른다. */
 export const BLOCK_KEYS = {
@@ -278,6 +329,22 @@ export function screenText(text: string, facts: FactToken[], locale: FactLocale,
   return filled.ok ? { text: filled.message, filled: true } : { text, filled: false };
 }
 
+/**
+ * 칩 글자 (T068 재시도 4번). 날짜 토큰만 **짧은 달 이름**("Nov 17")으로 먼저 채우고, 나머지는 영어 초안과
+ * 같은 길(`screenText`, 영어 벌)이다. 같은 날짜 값의 표시만 바꾼다 — 날짜를 계산하지 않고, 보내는 글·검사 줄의
+ * 날짜 꼴(`formatFact`)은 그대로다. 날짜 값이 ISO 꼴이 아니면 짧게 바꾸지 않는다 (`screenText`가 그대로 다룬다).
+ */
+export function chipText(chip: string, facts: FactToken[], money: MoneySource | null): string {
+  let text = chip;
+  for (const fact of facts) {
+    if (fact.kind !== 'DATE') continue;
+    const short = shortDate(fact.value);
+    if (short === fact.value) continue;
+    text = text.split(fact.token).join(short);
+  }
+  return screenText(text, facts, 'en', money).text;
+}
+
 /** 토큰을 채운 글 (금액 자리표시자 없음). 채울 수 없으면 원래 글을 `filled: false`로. */
 export function filledText(text: string, facts: FactToken[], locale: FactLocale): FilledText {
   return screenText(text, facts, locale, null);
@@ -289,10 +356,20 @@ export function filledText(text: string, facts: FactToken[], locale: FactLocale)
  */
 function checkRows(check: TokenCheck, nameProblems: ReplyNameProblem[]): CheckRowView[] {
   return [
-    { labelKey: 'case.reply.check.tokens', ok: check.missing.length === 0 && check.extra.length === 0, items: [...check.missing, ...check.extra] },
-    { labelKey: 'case.reply.check.literal', ok: check.literalFacts.length === 0, items: [...check.literalFacts] },
-    { labelKey: 'case.reply.check.promises', ok: check.newPromises.length === 0, items: [...check.newPromises] },
-    { labelKey: NAME_PROBLEM_KEY.honorific_after_name, ok: !nameProblems.includes('honorific_after_name'), items: [] },
+    {
+      labelKey: 'case.reply.check.tokens',
+      ok: check.missing.length === 0 && check.extra.length === 0,
+      items: [...check.missing, ...check.extra],
+      primary: true,
+    },
+    { labelKey: 'case.reply.check.literal', ok: check.literalFacts.length === 0, items: [...check.literalFacts], primary: false },
+    { labelKey: 'case.reply.check.promises', ok: check.newPromises.length === 0, items: [...check.newPromises], primary: true },
+    {
+      labelKey: NAME_PROBLEM_KEY.honorific_after_name,
+      ok: !nameProblems.includes('honorific_after_name'),
+      items: [],
+      primary: false,
+    },
   ];
 }
 
@@ -339,6 +416,7 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
       ? null
       : screenText(translation.outgoing, input.facts, input.buyerLocale, money);
   const coaching = (draft?.coaching ?? []).map((line) => screenText(line, draftFacts, 'en', money).text);
+  const chips = replyChips(input.draft).map((chip) => chipText(chip, draftFacts, money));
   const backTranslationEn =
     translation === null ? null : screenText(translation.backTranslationEn, draftFacts, 'en', money).text;
   const nameProblems = translation?.nameProblems ?? [];
@@ -348,11 +426,20 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
       ? { amountCents: input.plan.amountCents, amountDisplay: toDollarsRounded(input.plan.amountCents) }
       : null;
 
+  const usedInDraft = new Set(draft === null ? [] : extractTokens(draft.draftEn));
   const localFacts = input.buyerLocale === null ? null : localizedFacts(input.facts, input.buyerLocale);
   const factRows: FactRowView[] =
     draft === null || localFacts === null
       ? []
-      : localFacts.map((fact) => ({ token: fact.token, labelKey: FACT_LABEL[fact.kind], value: fact.value }));
+      : localFacts
+          // 영어 초안에 실제로 쓰인 토큰만 보인다 (T058). 쓰이지 않은 사실값 줄은 숨긴다 — 표시만 거른다
+          .filter((fact) => usedInDraft.has(fact.token))
+          .map((fact) => ({
+            token: fact.token,
+            labelKey: FACT_LABEL[fact.kind],
+            value: fact.value,
+            primary: fact.kind === 'DATE',
+          }));
 
   // 정책 밖 약속: 전송본을 만들 때 모듈이 다시 본 값이 있으면 그것, 없으면 초안의 값 (T053)
   const outside = translation?.outsidePolicy ?? draft?.outsidePolicy ?? [];
@@ -392,6 +479,7 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
     sourceBadges: draftOk && !fixed ? ['aiSuggests'] : [],
     fixedDraftKey: draftOk && fixed ? REPLY_KEYS.fixedDraft : null,
     coaching,
+    chips,
     draftEn,
     outgoing,
     backTranslationEn,
@@ -403,7 +491,7 @@ export function buildReplyView(input: ReplyViewInput): ReplyView {
     commitments,
     addedInTranslation: added.map((category) => ({ category, labelKey: commitmentKey(category) })),
     mode: input.mode,
-    modeKey: input.mode === 'live' ? REPLY_KEYS.modeLive : REPLY_KEYS.modeSimulated,
+    modeKey: sendModeKey(input.mode, input.liveAllowed ?? true),
     gate,
     result,
     canReset: input.mode === 'simulated' && succeeded,

@@ -213,9 +213,9 @@ describe('T047 보드 고르기', () => {
 
 // ───────────────────────────── 메뉴 ─────────────────────────────
 
-describe('T047 메뉴', () => {
-  it('메뉴는 4개이고 Case(S5)는 메뉴에 없다 (Inbox에서 들어간다)', () => {
-    expect(NAV_ITEMS.map((item) => item.href)).toEqual(['/', '/products', '/orders', '/inbox']);
+describe('T047 → T060 탭', () => {
+  it('탭은 Today / Products 두 개이고 Case는 탭에 없다 (Today 오른쪽 칸. 사람 결정 2026-11-10)', () => {
+    expect(NAV_ITEMS.map((item) => item.href)).toEqual(['/', '/products']);
     expect(NAV_ITEMS.some((item) => item.href.startsWith('/cases'))).toBe(false);
   });
 

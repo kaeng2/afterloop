@@ -1,0 +1,313 @@
+/*
+ * Today 탭 (T060 → T061 → T067). 색·글자 크기·간격·그림자는 `globals.css`의 변수만 쓴다 (새 색 값 없음).
+ *
+ * 배치 (시안 v3): 가운데 폭에 갇히지 않는다. 왼쪽 목록 칸(340px, 바탕 `--color-list-bg`)은 화면 왼쪽 끝에 붙고
+ * 위쪽 막대 아래부터 화면 끝까지 높이 전체를 채운다 (목록이 길면 그 칸만 스크롤). 오른쪽 상세(흰 바탕)가 남은 폭을
+ * 다 쓰고, 그 안의 글은 읽기 좋게 최대 폭(약 1280px, T061 값)을 두고 왼쪽 정렬한다.
+ * 56rem 아래: 목록 위, 상세 아래 한 열.
+ *
+ * 목록 한 줄 (T067): 왼쪽 점 = 위험 등급 색, 오른쪽 알약 = 상태(연한 바탕). 고른 항목 = 흰 카드 + `--shadow-selected`
+ * (이 그림자 하나만).
+ */
+
+/* Today 화면에서만 본문 칸의 여백을 풀어 화면 폭 전체를 쓴다 */
+.main:has(> .today) {
+  max-width: none;
+  padding: 0;
+}
+
+.today {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  min-width: 0;
+}
+
+@media (min-width: 56rem) {
+  .today {
+    grid-template-columns: minmax(0, 21.25rem) minmax(0, 1fr);
+    min-height: calc(100vh - 4.5rem);
+  }
+
+  .today-list {
+    position: sticky;
+    top: 4.5rem;
+    align-self: start;
+    height: calc(100vh - 4.5rem);
+    overflow-y: auto;
+  }
+}
+
+/* ── 왼쪽 목록 ──────────────────────────────────────────────────────────── */
+
+.today-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-list-bg);
+}
+
+.today-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+.today-date {
+  font-size: var(--text-xs);
+  font-weight: 650;
+  color: var(--color-muted);
+}
+
+.today-title {
+  font-size: 1.625em;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.today-store-link {
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-accent);
+}
+
+.today-store-link:hover {
+  text-decoration: underline;
+}
+
+.today-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.today-group-title {
+  padding: 0 var(--space-2) var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.today-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.today-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3);
+  color: var(--color-heading);
+  border-radius: var(--card-radius);
+}
+
+.today-item:hover {
+  background: var(--color-surface);
+}
+
+/* 고른 항목: 흰 카드 + 그림자 하나 (시안 값) */
+.today-item[aria-current='true'] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-selected);
+}
+
+/* 점 = 위험 등급 */
+.today-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 0.4em;
+  border-radius: 50%;
+  background: var(--color-dot-neutral);
+}
+
+.today-dot-high {
+  background: var(--color-dot-high);
+}
+
+.today-dot-watch {
+  background: var(--color-dot-watch);
+}
+
+.today-dot-low {
+  background: var(--color-dot-low);
+}
+
+.today-dot-neutral {
+  background: var(--color-dot-neutral);
+}
+
+.today-item-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.today-item-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.today-item-name {
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.today-item-label {
+  font-weight: 500;
+}
+
+.today-item-sub {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+/* 알약 = 상태 (연한 바탕 + 진한 글자, 완전히 둥글게) */
+.today-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 0.125rem 0.5625rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: var(--radius-pill);
+}
+
+.today-pill-high {
+  color: var(--color-pill-high-text);
+  background: var(--color-pill-high-bg);
+}
+
+.today-pill-watch {
+  color: var(--color-pill-watch-text);
+  background: var(--color-pill-watch-bg);
+}
+
+.today-pill-neutral {
+  color: var(--color-pill-neutral-text);
+  background: var(--color-pill-neutral-bg);
+}
+
+/* ── 오른쪽 상세 ────────────────────────────────────────────────────────── */
+
+.today-detail {
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--color-surface);
+}
+
+/* 글 줄 길이를 읽기 좋게: 상세 내용 최대 약 1280px, 넘으면 왼쪽 정렬 (T061 값) */
+.today-detail > * {
+  max-width: 80rem;
+}
+
+.today-detail-title {
+  font-size: 1.625em;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* 추적 표: 머리 줄·보통 줄·회색 줄이 한 표의 같은 열을 쓴다 (T061, T060 스크린샷 2번) */
+.tracking-table {
+  width: 100%;
+  font-size: var(--text-sm);
+  border-collapse: collapse;
+}
+
+.tracking-table th,
+.tracking-table td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.tracking-table th {
+  font-weight: 600;
+}
+
+.tracking-table tbody tr {
+  border-top: 1px solid var(--color-divider);
+}
+
+.tracking-row-excluded {
+  color: var(--color-muted);
+}
+
+/* 추적 등록 버튼 + 결과 줄 (T067) */
+.tracking-register {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.tracking-button {
+  padding: var(--space-2) var(--space-5);
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-surface);
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.tracking-button:disabled {
+  color: var(--color-muted);
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  cursor: progress;
+}
+
+.tracking-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.tracking-result-line {
+  font-weight: 700;
+}
+
+.tracking-result-added .tracking-result-line {
+  color: var(--color-success);
+}
+
+.tracking-result-simulated .tracking-result-line {
+  color: var(--color-muted);
+}
+
+.tracking-result-failed .tracking-result-line,
+.tracking-result-error .tracking-result-line,
+.tracking-result-unavailable .tracking-result-line {
+  color: var(--color-danger);
+}
+
+.tracking-result-rows {
+  list-style: none;
+  color: var(--color-muted);
+}
+
+.tracking-result-ok {
+  color: var(--color-text-body);
+}

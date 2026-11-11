@@ -15,6 +15,7 @@ import { COMMITMENT_CATEGORIES } from '@/ai/commitments';
 
 import { t } from '../_shared/copy';
 import { sendFromScreen, resolveSendMode } from '../_server/send';
+import { applySimulatedFailure, resolveSimulatedFailure } from './practice';
 import type { SendOutcome } from './reply-model';
 
 const SendFormSchema = z.object({
@@ -39,12 +40,15 @@ export async function sendReplyAction(form: unknown): Promise<SendOutcome> {
     };
   }
   try {
-    return await sendFromScreen({
+    const outcome = await sendFromScreen({
       disputeId: parsed.data.disputeId,
       kind: parsed.data.kind,
       replyId: parsed.data.replyId,
       confirmedCommitments: parsed.data.confirmedCommitments as (typeof COMMITMENT_CATEGORIES)[number][],
     });
+    // 녹화 연습용 실패 화면 (T061). 가짜 전송 성공일 때만 바뀐다. 실제 전송이면 변수를 읽지도 않는다
+    const practice = resolveSendMode() === 'simulated' ? resolveSimulatedFailure() : null;
+    return applySimulatedFailure(outcome, practice, parsed.data.kind);
   } catch {
     // 예외 문장은 싣지 않는다 (PayPal 응답 문장이 섞일 수 있다)
     return {

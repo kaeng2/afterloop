@@ -172,8 +172,9 @@ describe('AC18 1번: 전·후 칸은 같은 보드로 부른 recommend 결과다
     expect(copyTables.en[actionKeyFor(null)]).toBe('Handle manually');
   });
 
-  it('머리글: 분쟁 금액은 센트까지 ($72.00), 분쟁 번호·상태·언어', () => {
-    expect(view.header.amount).toEqual({ cents: 7200, display: '$72.00' });
+  // T068: 머리글 금액은 달러 반올림 ("Wool Sweater $72"). 센트 값은 그대로
+  it('머리글: 분쟁 금액은 달러 반올림 ($72), 분쟁 번호·상태·언어', () => {
+    expect(view.header.amount).toEqual({ cents: 7200, display: '$72' });
     expect(view.header.disputeId).toBe('PP-R-TEST-D2');
     expect(view.header.statusCode).toBe('WAITING_FOR_SELLER_RESPONSE');
     expect(copyTables.en[view.header.languageKey ?? '']).toBe('Korean');
@@ -366,7 +367,8 @@ describe('AC18 12번: 개인정보 가림과 실제·시연용 구분', () => {
 
   it('카드사 언급은 엔진 신호가 참일 때만 표시한다', () => {
     const real = view.messages.find((m) => m.source === 'paypal');
-    expect(real?.original.filter((s) => s.mark).map((s) => s.text)).toEqual(['카드사', '이의제기']);
+    // T061 4번: 짧은 틈("에 ")으로 붙은 두 낱말은 한 표시로 잇는다
+    expect(real?.original.filter((s) => s.mark).map((s) => s.text)).toEqual(['카드사에 이의제기']);
     expect(flat(real?.original ?? null)).not.toContain('P123456789012');
     const quiet = buildCaseView(input({ signals: { ...SEOYEON_START, mentionsCardCompany: false } }), P, R);
     expect(quiet.messages.every((m) => m.original.every((s) => !s.mark))).toBe(true);
@@ -517,8 +519,8 @@ describe('대화: 같은 배지는 한 번만', () => {
       includeInquiries: true,
     });
     const v = buildCaseView(input({ messages }), P, R);
-    const html = renderToStaticMarkup(createElement(Conversation, { messages: v.messages }));
-    const demoItem = html.slice(html.indexOf('case-message-demo'));
+    const html = renderToStaticMarkup(createElement(Conversation, { messages: v.messages, carrierLine: null, locale: 'ko' }));
+    const demoItem = html.slice(html.indexOf('case-bubble-demo'));
     const demoOnly = demoItem.slice(0, demoItem.indexOf('</li>'));
     const demoLabel = copyTables.en['badge.demo'] ?? 'Demo data';
     expect(demoOnly.split(demoLabel).length - 1).toBe(1);
