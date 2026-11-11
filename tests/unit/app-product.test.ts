@@ -30,7 +30,7 @@ import {
   transactionLineView,
 } from '@/app/products/model';
 import { paramsConfigFromFile } from '@/engine/params';
-import { FIX_ORDER, simInputFor, simulate } from '@/engine/sim';
+import { FIX_ORDER, fixSavings, simInputFor, simulate } from '@/engine/sim';
 import { pickPreventProduct, pickRepresentativeFuture, simulateStore } from '@/engine/storefront';
 import { createMemoryTransactionCache, lastDays, type TransactionSummary } from '@/paypal/transactions';
 import type { FixId, LlmCaller, ParamsConfig, PayPalClient, PolicyConfig, SeedProduct } from '@/types';
@@ -194,14 +194,62 @@ describe('처방 카드 4개', () => {
     expect(t('product.fix.badge.simulated')).toMatch(/^Simulated/);
   });
 
-  it('카드의 두 값 = 지금 묶음의 엔진 평균 → 그 처방 하나만 바꾼 묶음의 엔진 평균 (빼지 않는다)', () => {
-    const current = engineFor(CARDIGAN, ['tracking_24h', 'color_note']).after.meanLossCents;
+  it('카드 값 = 엔진 fixSavings의 savingCents (화면은 빼지 않는다), 켜짐 꼴 문구', () => {
+    const input = simInputFor(CARDIGAN.sku, CARDIGAN, ['tracking_24h', 'color_note'], P);
+    const savings = fixSavings(input, P, R);
     for (const card of view.fixes) {
-      const toggled = toggleFix(['tracking_24h', 'color_note'], card.id);
-      expect(card.effect.from.cents).toBe(current);
-      expect(card.effect.to.cents).toBe(engineFor(CARDIGAN, toggled).after.meanLossCents);
+      const saving = savings.find((x) => x.fix === card.id) as { savingCents: number };
+      expect(card.effect.saving.cents).toBe(saving.savingCents);
+      expect(card.effect.saving.text).toBe(toDollarsRounded(saving.savingCents));
+      expect(card.effect.text).toBe(
+        t(card.on ? 'product.fix.effect.on' : 'product.fix.effect.off', { saving: card.effect.saving.text }),
+      );
       expect(card.source).toBe(P.fixes[card.id].source);
     }
+    expect(t('product.fix.effect.off', { saving: '$1' })).toBe('could save $1');
+    expect(t('product.fix.effect.on', { saving: '$1' })).toBe('saving $1');
+  });
+
+  it('처음 상태(처방 0개): 큰 숫자 = as-is 하나, 카드 4개 모두 꺼짐 꼴 + fixSavings 0개 결과', () => {
+    const none = buildProductView(CARDIGAN, [], { config: P, rules: R });
+    const result = engineFor(CARDIGAN, []);
+    expect(none.fixesOn).toEqual([]);
+    expect(none.after).toBeNull();
+    expect(none.before.mean.cents).toBe(result.before.meanLossCents);
+    const savings = fixSavings(simInputFor(CARDIGAN.sku, CARDIGAN, [], P), P, R);
+    expect(none.fixes.map((c) => c.on)).toEqual([false, false, false, false]);
+    expect(none.fixes.map((c) => c.effect.saving.cents)).toEqual(savings.map((x) => x.savingCents));
+    expect(none.fixes.map((c) => c.effect.saving.text)).toEqual(savings.map((x) => toDollarsRounded(x.savingCents)));
+    for (const card of none.fixes) expect(card.effect.text).toMatch(/^could save /);
+    const markup = html(createElement(Rehearsal, { view: none, txLine: null }));
+    expect(markup).toContain(t('product.noFixes'));
+  });
+
+  it('처방 4개 모두 켜면 카드 4개 = fixSavings 4개 결과, 켜짐 꼴', () => {
+    const all = buildProductView(CARDIGAN, FIX_ORDER, { config: P, rules: R });
+    const savings = fixSavings(simInputFor(CARDIGAN.sku, CARDIGAN, [...FIX_ORDER], P), P, R);
+    expect(all.fixes.map((c) => c.effect.saving.cents)).toEqual(savings.map((x) => x.savingCents));
+    for (const card of all.fixes) expect(card.effect.text).toMatch(/^saving /);
+  });
+
+  it('토글할 때마다 엔진 값으로 다시 (16가지 조합 모두)', () => {
+    for (const fixes of ALL_COMBOS) {
+      const v = buildProductView(CARDIGAN, fixes, { config: P, rules: R });
+      const savings = fixSavings(simInputFor(CARDIGAN.sku, CARDIGAN, fixes, P), P, R);
+      expect(v.fixes.map((c) => c.effect.saving.cents)).toEqual(savings.map((x) => x.savingCents));
+    }
+  });
+
+  it('화면 처음 상태: 켠 처방 0개 (새로고침해도 같다), 처방 상태를 처음에 켜 두지 않는다', () => {
+    const source = read('src/app/products/products-screen.tsx');
+    expect(source).toMatch(/useState<FixId\[\]>\(\[\]\)/);
+    expect(source).not.toMatch(/useState<FixId\[\]>\(\[\.\.\.ALL_FIXES\]\)/);
+  });
+
+  it('화면 코드(model.ts)에서 처방 절감을 빼지 않는다', () => {
+    const source = read('src/app/products/model.ts');
+    expect(source).toContain('fixSavings');
+    expect(source).not.toMatch(/\.cents\s*-\s|Cents\s*-\s/);
   });
 
   it('통관 안내 카드에 Simulated 배지가 눈에 띄는 모양으로 그려진다, 4장', () => {

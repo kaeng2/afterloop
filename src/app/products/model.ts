@@ -5,9 +5,7 @@
  * - 큰 숫자·범위 문장: `simulate(simInputFor(sku, product, 켠 처방))`의 `before`·`after`
  * - 점 그림: `pickRepresentativeFuture` (어느 미래를 그릴지는 엔진이 정한다)
  * - 왼쪽 목록: `simulateStore` (행 순서도 엔진 순서 그대로)
- * - 처방 카드의 "켜면/끄면" 값: 그 처방 하나만 바꾼 처방 묶음으로 `simulate`를 다시 부른 `after` 평균.
- *   **두 값을 나란히 적기만 한다** — 화면이 빼서 "절감액"을 만들지 않는다 (엔진이 처방별 절감을 내주지 않는다.
- *   AC23 초안 "절감액·감소 비율은 화면에 적지 않는다").
+ * - 처방 카드의 "could save / saving $X": 엔진 `fixSavings`의 `savingCents`를 옮긴다 (T071). 화면은 빼지 않는다.
  * - 기본 상품: Today의 Prevent 상품 = `pickPreventProduct(simulateStore(상품, 처방 4개))`.
  *
  * 금액 표시는 `toDollarsRounded` 한 곳. 글자는 `product.*` 문구. 이 파일은 DOM·네트워크·시계·난수를 쓰지 않는다
@@ -15,7 +13,7 @@
  */
 import type { ColorNote, ColorNoteLocale } from '@/ai/color-note';
 import { paramsConfigFromFile } from '@/engine/params';
-import { FIX_ORDER, simInputFor, simulate } from '@/engine/sim';
+import { FIX_ORDER, fixSavings, simInputFor, simulate } from '@/engine/sim';
 import { pickPreventProduct, pickRepresentativeFuture, simulateStore } from '@/engine/storefront';
 import type { TransactionsResult } from '@/paypal/transactions';
 import type { FixId, ParamsConfig, PolicyConfig, SeedDispute, SeedInquiry, SeedProduct, SimSummary } from '@/types';
@@ -191,10 +189,10 @@ export type FixCardView = {
   /** 가정값 출처 (`config/params.json` `fixes[fix].source`). 'Assumption' 배지 설명 */
   source: string;
   /**
-   * 이 처방 하나만 바꾸면: 지금 평균(from) → 바꾼 묶음의 평균(to). 둘 다 엔진 `simulate`의 `after` 평균.
+   * 이 처방의 절감액 = 엔진 `fixSavings`의 `savingCents` (꺼진 카드: 켜면 줄어드는 금액, 켜진 카드: 끄면 늘어나는 금액).
    * 화면이 빼지 않는다.
    */
-  effect: { from: MoneyView; to: MoneyView; text: string };
+  effect: { saving: MoneyView; text: string };
 };
 
 export type ProductView = {
@@ -216,10 +214,6 @@ export type ProductView = {
   fixes: FixCardView[];
 };
 
-function meanWith(product: SeedProduct, fixes: readonly FixId[], config: ParamsConfig, rules?: PolicyConfig): number {
-  return simulate(simInputFor(product.sku, product, orderedFixes(fixes), config), config, rules).after.meanLossCents;
-}
-
 export function buildProductView(
   product: SeedProduct,
   fixesOn: readonly FixId[],
@@ -232,7 +226,7 @@ export function buildProductView(
 
   const before = outcome(result.before);
   const after = fixes.length === 0 ? null : outcome(result.after);
-  const current = money(result.after.meanLossCents);
+  const savings = fixSavings(input, config, engine.rules);
 
   const rangeParts = [
     t('product.range.asIs', {
@@ -255,7 +249,7 @@ export function buildProductView(
 
   const cards: FixCardView[] = FIX_ORDER.map((id) => {
     const on = fixes.includes(id);
-    const to = money(meanWith(product, toggleFix(fixes, id), config, engine.rules));
+    const saving = money((savings.find((s) => s.fix === id) as { savingCents: number }).savingCents);
     const kind = FIX_BADGE[id];
     return {
       id,
@@ -265,9 +259,8 @@ export function buildProductView(
       badge: { kind, text: t(`product.fix.badge.${kind}`) },
       source: config.fixes[id].source,
       effect: {
-        from: current,
-        to,
-        text: t(on ? 'product.fix.effect.on' : 'product.fix.effect.off', { from: current.text, to: to.text }),
+        saving,
+        text: t(on ? 'product.fix.effect.on' : 'product.fix.effect.off', { saving: saving.text }),
       },
     };
   });
