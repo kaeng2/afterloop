@@ -1,0 +1,549 @@
+/*
+ * /intro 화면 (T078). 값은 시안 Scene1.dc.html의 배치·간격·카드 모양.
+ * 색 값은 아래 변수 정의 줄에만 쓴다 (tests/unit/app-shared-design.test.ts가 검사). PayPal 파랑은 쓰지 않고
+ * 링크·활성 탭·주 버튼은 강조색(--color-accent) 하나. 밝은 화면으로 고정 (시안이 밝은 화면).
+ * 이 화면은 루트 layout의 위쪽 막대 위를 덮는다 (layout 수정 없이 껍데기 화면을 만들기 위해).
+ */
+.intro {
+  --color-accent: #5b3cc4;
+  --i-bg: #f1efea;
+  --i-surface: #ffffff;
+  --i-text: #000000;
+  --i-body: #3f4144;
+  --i-line: #e4e6e9;
+  --i-row-line: #f1efea;
+  --i-chip-bg: #eceef0;
+  --i-risk: #9e2414;
+  --i-risk-bg: #fbe7e4;
+  --i-risk-border: #f2b8af;
+  --i-risk-dot: #c4321f;
+  --i-ink: #0b0f14;
+  --i-line-btn: #cfd3d8;
+  --i-bar: #c9d3e0;
+  --i-ring: rgba(91, 60, 196, 0.55);
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: auto;
+  color-scheme: light;
+  min-height: 100vh;
+  background: var(--i-bg);
+  color: var(--i-text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.intro:lang(ko) {
+  font-family: var(--font-ko);
+}
+.intro *,
+.intro *::before,
+.intro *::after {
+  box-sizing: border-box;
+}
+.intro button {
+  font: inherit;
+}
+.intro [aria-disabled='true'] {
+  cursor: default;
+}
+
+/* 맨 위 띠 — 실제 PayPal 페이지가 아니라는 표시 (늘 보임) */
+.intro-band {
+  background: var(--i-ink);
+  color: var(--i-surface);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 16px;
+}
+
+.intro-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  padding: 0 32px;
+  background: var(--i-surface);
+  border-bottom: 1px solid var(--i-line);
+}
+.intro-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 72px;
+}
+.intro-logo {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--color-accent);
+  letter-spacing: -0.4px;
+}
+.intro-biz {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--i-body);
+}
+.intro-nav {
+  display: flex;
+  gap: 22px;
+  align-self: stretch;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.intro-tab {
+  min-height: 44px;
+  padding: 10px 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--i-body);
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.intro-tab.on {
+  color: var(--i-text);
+  border-bottom-color: var(--color-accent);
+}
+.intro-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.intro-lang {
+  display: inline-flex;
+  border: 2px solid var(--i-line-btn);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.intro-lang button {
+  min-height: 36px;
+  min-width: 44px;
+  padding: 4px 12px;
+  border: 0;
+  background: var(--i-surface);
+  color: var(--i-body);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.intro-lang button[aria-pressed='true'] {
+  background: var(--i-ink);
+  color: var(--i-surface);
+}
+
+.intro-ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--i-surface);
+  border: 0;
+  color: var(--i-body);
+}
+
+.intro-al-icon {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--i-ink);
+  text-decoration: none;
+}
+.intro-al-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 2px solid var(--i-ring);
+  animation: intro-pulse 1.6s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes intro-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+.intro-al-badge {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--i-risk-dot);
+  color: var(--i-surface);
+  font-size: 11px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--i-surface);
+}
+.intro-mark-accent {
+  stroke: var(--color-accent);
+}
+.intro-mark-white {
+  stroke: var(--i-surface);
+}
+.intro-mark-dot {
+  fill: var(--i-surface);
+}
+
+.intro-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--i-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+.intro-seller {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 말풍선 안내 */
+.intro-coach {
+  position: absolute;
+  top: 60px;
+  right: 150px;
+  width: 330px;
+  z-index: 5;
+  border-radius: 20px;
+  background: var(--i-text);
+  color: var(--i-surface);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: intro-rise 0.5s ease both 0.3s;
+}
+.intro-coach-arrow {
+  position: absolute;
+  top: -7px;
+  right: 92px;
+  width: 14px;
+  height: 14px;
+  background: var(--i-text);
+  transform: rotate(45deg);
+}
+.intro-coach-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.intro-new {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--i-surface);
+}
+.intro-coach-text {
+  font-size: 14px;
+  line-height: 1.45;
+}
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.intro-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.intro-h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.6px;
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 22px;
+  align-items: start;
+}
+.intro-col {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+.intro-card {
+  border-radius: 24px;
+  background: var(--i-surface);
+  border: 1px solid var(--i-line);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.intro-card-tight {
+  gap: 4px;
+}
+.intro-card-rc {
+  border: 2px solid var(--i-risk-border);
+}
+.intro-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.intro-card-tight .intro-card-head {
+  padding-bottom: 8px;
+}
+.intro-card-title {
+  font-size: 18px;
+}
+.intro-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--i-body);
+}
+.intro-label-plain {
+  font-size: 15px;
+  color: var(--i-body);
+}
+.intro-small {
+  font-size: 13px;
+  color: var(--i-body);
+}
+.intro-balance {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.intro-balance-amount {
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: -1.2px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.intro-btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.intro-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  border: 0;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+}
+.intro-btn-black {
+  background: var(--i-text);
+  color: var(--i-surface);
+}
+.intro-btn-line {
+  background: var(--i-surface);
+  color: var(--i-text);
+  border: 2px solid var(--i-line-btn);
+}
+.intro-btn-white {
+  background: var(--i-surface);
+  color: var(--i-text);
+  min-height: 38px;
+  padding: 6px 16px;
+  font-size: 14px;
+  align-self: flex-start;
+}
+.intro-btn-accent {
+  background: var(--color-accent);
+  color: var(--i-surface);
+}
+.intro .intro-btn:focus-visible,
+.intro .intro-tab:focus-visible,
+.intro .intro-rlink:focus-visible,
+.intro .intro-al-icon:focus-visible,
+.intro .intro-lang button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.intro-rlink {
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--color-accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  min-height: 24px;
+}
+
+.intro-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--i-row-line);
+}
+.intro-row-case {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.intro-avatar-row {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+.intro-row-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.intro-row-who {
+  font-size: 14px;
+}
+.intro-amount {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.intro-amount-hold {
+  color: var(--i-risk);
+}
+.intro-due {
+  font-size: 12px;
+  color: var(--i-body);
+}
+.intro-due-urgent {
+  font-weight: 700;
+  color: var(--i-risk);
+}
+
+.intro-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.intro-chip-count {
+  background: var(--i-risk-dot);
+  color: var(--i-surface);
+}
+.intro-chip-risk {
+  background: var(--i-risk-bg);
+  color: var(--i-risk);
+}
+
+.intro-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 90px;
+}
+.intro-bar {
+  flex: 1;
+  border-radius: 6px 6px 2px 2px;
+  background: var(--i-bar);
+}
+.intro-bar-last {
+  background: var(--color-accent);
+}
+
+@media (max-width: 900px) {
+  .intro-header {
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .intro-nav {
+    gap: 12px;
+    order: 3;
+    width: 100%;
+  }
+  .intro-tools {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .intro-coach {
+    position: static;
+    width: 100%;
+    order: 10;
+  }
+  .intro-coach-arrow {
+    display: none;
+  }
+  .intro-main {
+    padding: 16px;
+  }
+  .intro-h1 {
+    font-size: 24px;
+  }
+  .intro-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .intro-card {
+    padding: 16px;
+  }
+  .intro-balance-amount {
+    font-size: 36px;
+  }
+  .intro-seller {
+    display: none;
+  }
+  .intro-btn {
+    white-space: normal;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-al-icon::after,
+  .intro-coach {
+    animation: none;
+  }
+}
