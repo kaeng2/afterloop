@@ -18,3 +18,9 @@
 
 ## 컨트롤 타워에 요청할 결정
 - 없음. 실제 AI로 캐시를 만들 때 6칸 중 `rule_mismatch`가 나오는 칸이 있으면 프롬프트 문구 조정이 필요할 수 있다.
+
+## 후속 — color 칸 rule_mismatch 수정
+- 원인: 실제 AI가 "may look slightly different depending on the screen and the lighting"처럼 써서 color 정규식(daylight|indoor|natural light|color note|…)에 안 걸림.
+- 수정: `src/ai/prompts/listing-fixes.ts`의 color 지시만 바꿨다. 칸이 반드시 "Color note:"로 시작하고, 예시 문장 "Color note: Ivory may look slightly different depending on your screen and indoor or natural light."을 넣었다. 정규식·config·판정 코드·다른 칸 지시는 그대로.
+- 단위 테스트 2개 추가: 프롬프트 color 지시에 `Color note:` 있음 / 예시 문장이 config color 정규식 통과.
+- 실제 AI·PayPal 호출, 개발 서버 없음.
