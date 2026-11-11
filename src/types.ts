@@ -4,7 +4,7 @@
  * 이 파일은 Claude Code 설정(.claude/settings.json permissions.deny)으로 편집이 막혀 있다.
  * 바꿔야 하면 SPEC.md·DECISIONS.md에 이유를 적고 사람 승인을 받은 뒤 컨트롤 타워가 고친다.
  *
- * 기준: SPEC v2.9 (v2 이후 바뀐 것: v2.2 8부 시드 필드 2개, v2.5 3부 `DemoLink`·`ReplyPolicy`, 8부 `SeedCarrierEvent`, 9부 `FollowUpDateFn`, v2.7 3부 `ReplyCommitment`·`ReplyDraftPolicy`, v2.9 3부 `ReplyNames`·6부 `FactToken` 이름 종류 2개). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
+ * 기준: SPEC v2.11 (v2 이후 바뀐 것: v2.2 8부 시드 필드 2개, v2.5 3부 `DemoLink`·`ReplyPolicy`, 8부 `SeedCarrierEvent`, 9부 `FollowUpDateFn`, v2.7 3부 `ReplyCommitment`·`ReplyDraftPolicy`, v2.9 3부 `ReplyNames`·6부 `FactToken` 이름 종류 2개, v2.11 9부 답장 예측·위험 곡선·이번 주 요약). 바뀌면 SPEC 버전을 올리고 DECISIONS.md에 기록한다.
  * 1부: 분쟁 보드와 기대 손실 (v2: 16개 세부 유형, V·c·p_acc 곡선 삭제)
  * 2부: 실행 계약 (v1.1 그대로)
  * 3부: 설정 파일 (v2)
@@ -366,6 +366,82 @@ export type SeedOrder = {
   date: string; // 주문일 YYYY-MM-DD. 시연 시점(2026-11-10) 기준 90일 창 안 (v2.2)
 };
 
+// ───────────────────────────── 9부: 답장 예측·위험 곡선·이번 주 요약 (v2.11, 기획 시안 v4) ─────────────────────────────
+// 사람 결정 2026-11-11 20:40. 계산은 src/engine/에서만. 확률은 통계가 아니라 가정(config/reply-model.json, source "가정(기획 시안)").
+// 답장 특징은 코드 규칙으로 판정한다 (AI에게 확률을 묻지 않는다). 환불 약속 특징(backup·noRefund)은 없다.
+
+/** 답장 글에서 코드 규칙으로 찾는 특징 (시안의 RX에서 backup·noRefund·promise를 뺀 것) */
+export type ReplyFeatureKey = 'apology' | 'cause' | 'ask' | 'date' | 'lang' | 'blame' | 'vague' | 'refundNow';
+
+export type ReplyFeatures = Record<ReplyFeatureKey, boolean>;
+
+/** 특징마다 걸린 문장 (화면의 "As you type" 칩 근거). 없으면 null */
+export type ReplyFeatureHits = Partial<Record<ReplyFeatureKey, string>>;
+
+/** config/reply-model.json (v2.11). 값은 가정 — 엔진이 기존 가정값(p_win·f·t)에 맞춰 보정한다 */
+export type ReplyModelConfig = {
+  version: string;
+  source: string; // "가정(기획 시안)"
+  note?: string;
+  features: Record<ReplyFeatureKey, number>; // 로지스틱 가중치 (음수 = 차지백 위험을 낮춤)
+  base: { intercept: number; threat: number; unanswered: number; tone: number };
+  delayPerDay: number;
+  refundSplit: { intercept: number; vague: number; date: number; ask: number; cause: number; blame: number; refundNowShare: number };
+  mood: { wait: number; refund: number; refundNow: number; chargeback: number; calmFrom: number; okayFrom: number; annoyedFrom: number };
+};
+
+/**
+ * 답장 하나의 예측. 세 확률의 합은 1.
+ * expectedCostCents = 이 답장을 보냈을 때의 기대 비용(센트). **숫자 일치 조건 (AC33)**: 입력 글이 기준 초안(anchorText,
+ * 화면의 AI 기본 초안)과 같으면 expectedCostCents는 엔진의 기존 답장 기대 손실(recommend(board)의 fight 평가)과 같다.
+ */
+export type ReplyForecast = {
+  pWait: number; // 손님이 기다림 (해결)
+  pRefund: number; // 환불로 끝남
+  pChargeback: number; // 차지백·PayPal 심사로 감 = 화면의 "분쟁 위험 %"
+  expectedCostCents: number;
+  mood: number; // -1..1 근처
+  moodBand: 'calm' | 'okay' | 'annoyed' | 'angry';
+  parts: { key: ReplyFeatureKey | 'intercept' | 'threat' | 'unanswered' | 'tone' | 'delay' | 'calibration'; weight: number }[];
+};
+
+export type ReplyForecastInput = {
+  text: string; // 판매자가 쓰는 중인 글 (영어 또는 구매자 언어). 빈 글 = 아직 답장 안 함
+  anchorText: string; // 화면의 AI 기본 초안 (보정 기준점)
+  board: BoardState; // 엔진 보드 (배송사 기록 반영 뒤)
+  signals: EscalationSignals; // 카드사 언급·무응답·어조 (기존 신호)
+  delayDays: number; // 판매자 응답이 늦은 날 수 (0 이상, 코드가 데이터에서 셈)
+};
+
+/** 사건 기록 한 줄. 실제 데이터(샌드박스·시드)에서만 만든다 — 없는 사건을 지어내지 않는다 */
+export type CaseEventKind =
+  | 'order_paid'
+  | 'shipped'
+  | 'tracking_missing' // PayPal에 추적번호 없음
+  | 'carrier_event' // 배송사 기록 (시드, Demo data)
+  | 'buyer_message'
+  | 'seller_reply'
+  | 'dispute_opened';
+
+export type CaseEvent = {
+  at: string; // ISO 날짜시각
+  kind: CaseEventKind;
+  source: 'sandbox' | 'seed';
+  text: string; // 화면 한 줄 (사실 그대로, 영어)
+  flags?: ('threat' | 'angry' | 'unanswered')[]; // 코드·기존 판정에서 온 표시
+};
+
+/** 위험 곡선의 점. pChargeback은 그 사건까지의 정보로 본 차지백 위험 (같은 모델, 답장 특징 없음) */
+export type RiskPoint = { at: string; kind: CaseEventKind; pChargeback: number };
+
+/** 왼쪽 "이번 주 DisputeLess" 카드 — 계산 가능한 숫자만 */
+export type WeeklySummary = {
+  openDisputes: number; // 화면에 보이는 열린 분쟁 수 (실제 샌드박스)
+  keepableCents: number; // Σ(전액 환불 기대 손실 − 엔진 최선의 수 기대 손실), 보이는 분쟁만 (가정값 기반)
+  aiDrafts: number; // AI가 만든 답장 초안 수 (캐시 기준)
+  usesDemoData: boolean; // 배송사 기록 등 시드 값이 들어갔으면 true → Demo data 배지
+};
+
 // ───────────────────────────── 공개 함수 시그니처 ─────────────────────────────
 // 구현 파일은 `export const recommend = (...) => ... satisfies RecommendFn` 처럼 맞춘다.
 // params·rules를 넘기지 않으면 엔진이 config/params.json·config/rules.json을 읽는다.
@@ -400,3 +476,15 @@ export type CreatePayPalClientFn = (env: PayPalEnv, deps: ClientDeps) => PayPalC
 
 /** src/exec/execute.ts */
 export type ExecuteMoveFn = (input: ExecuteInput, deps: { call: PayPalCaller }) => Promise<ExecuteResult>;
+
+/** src/engine/reply-features.ts (v2.11). 코드 규칙(정규식). 같은 글이면 같은 결과 */
+export type DetectReplyFeaturesFn = (text: string) => { features: ReplyFeatures; hits: ReplyFeatureHits };
+
+/** src/engine/forecast.ts (v2.11). 숫자 일치 조건은 AC33 */
+export type ForecastReplyFn = (input: ReplyForecastInput, params?: Params, rules?: PolicyConfig, model?: ReplyModelConfig) => ReplyForecast;
+
+/** src/engine/forecast.ts (v2.11). events 순서대로 점 하나씩 (길이 같음) */
+export type RiskCurveFn = (events: CaseEvent[], board: BoardState, params?: Params, rules?: PolicyConfig, model?: ReplyModelConfig) => RiskPoint[];
+
+/** src/engine/forecast.ts (v2.11) */
+export type WeeklySummaryFn = (input: { boards: BoardState[]; aiDrafts: number; usesDemoData: boolean }, params?: Params, rules?: PolicyConfig) => WeeklySummary;

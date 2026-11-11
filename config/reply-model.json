@@ -1,0 +1,40 @@
+{
+  "version": "reply-model-2026-11-11.v1",
+  "source": "가정(기획 시안)",
+  "note": "SPEC v2.11 8-2장. 기획 시안 v4(docs/design/mockup-v4/Desk.dc.html)의 NW·NBASE·N_DELAY·qz 가중치를 옮김. 사람 결정 2026-11-11: 환불 약속 관련 특징 두 개는 뺀다(환불 약속 금지). 확률은 통계가 아니라 가정. 엔진(src/engine/forecast.ts)이 기존 가정값(p_win·f·t)에 맞춰 보정한다(숫자 일치 조건, AC33).",
+  "features": {
+    "apology": -0.4,
+    "cause": -0.5,
+    "ask": -0.4,
+    "date": -0.9,
+    "lang": -0.5,
+    "blame": 1.0,
+    "vague": 0.6,
+    "refundNow": -3.0
+  },
+  "base": {
+    "intercept": -0.5,
+    "threat": 0.9,
+    "unanswered": 0.4,
+    "tone": 0.4
+  },
+  "delayPerDay": 0.45,
+  "refundSplit": {
+    "intercept": -0.4,
+    "vague": 0.7,
+    "date": -0.8,
+    "ask": -0.5,
+    "cause": -0.4,
+    "blame": 0.5,
+    "refundNowShare": 0.97
+  },
+  "mood": {
+    "wait": 0.4,
+    "refund": -0.3,
+    "refundNow": 0.3,
+    "chargeback": -0.9,
+    "calmFrom": 0.25,
+    "okayFrom": 0.0,
+    "annoyedFrom": -0.5
+  }
+}
