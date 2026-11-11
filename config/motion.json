@@ -36,6 +36,16 @@
       "from": ".editor transition:border-color .3s ease, 알약 background-color .3s ease"
     }
   },
+  "caseProgress": {
+    "source": "시안 Desk.dc.html send(): this.later(..., 1300 * (k - 1) + 400) · .step rise .45s cubic-bezier(.2,1.2,.4,1) · .rise .35s · .ndots ndot 1s, 0.15s 간격 · .flash 1.6s · .toast rise .35s, 3000ms 뒤 사라짐 (T092). [Forward to carrier]는 판매자가 누를 때까지 멈춘다 (사람 결정 2026-11-11 22:55).",
+    "firstStepMs": 400,
+    "stepMs": 1300,
+    "step": { "duration": "0.45s", "easing": "cubic-bezier(.2,1.2,.4,1)" },
+    "bubble": { "duration": "0.35s", "easing": "ease" },
+    "typingDot": { "duration": "1s", "easing": "ease-in-out", "stagger": "0.15s" },
+    "flash": { "duration": "1.6s", "easing": "ease" },
+    "toast": { "duration": "0.35s", "easing": "ease", "hideMs": 3000 }
+  },
   "scene3": {
     "source": "시안 docs/design/mockup-v4/scene3/Main.dc.html (setInterval 70ms). 기획자가 진행 표시를 2~3초로 줄이려면 intervalMs를 줄이거나 step을 키운다. 계산은 엔진이 실제로 끝낸다.",
     "check": {

@@ -62,6 +62,7 @@ import {
   type SendOutcome,
   type SendState,
 } from '../reply-model';
+import { CaseProgress } from '../progress/case-progress';
 import { useDraftForecast } from '../view/draft-forecast';
 import { useSent } from '../view/sent-state';
 
@@ -552,6 +553,32 @@ export function ReplyPanel({
         {resultBlock}
         {riskAfterBlock}
       </section>
+    );
+  }
+
+  // ── T092: 보내기 성공(공개 모드는 Simulated 성공) 뒤 → "What happens next · Simulated" 칸 (Replay면 여기로 돌아온다)
+  if (sendState === 'done' && outcome !== null && outcome.ok) {
+    return (
+      <CaseProgress
+        disputeId={disputeId}
+        live={outcome.mode === 'live'}
+        language={language}
+        buyerShort={buyerShort}
+        sentText={view.outgoing?.text ?? null}
+        sentLocale={base.buyerLocale ?? null}
+        scenarioInput={
+          forecastBase === null || anchor === null || board === null
+            ? null
+            : { text: anchor, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays, translated }
+        }
+        board={board}
+        move={base.plan?.move ?? null}
+        baseForecast={forecast}
+        onReplay={() => {
+          again();
+          setText(anchor ?? '');
+        }}
+      />
     );
   }
 
