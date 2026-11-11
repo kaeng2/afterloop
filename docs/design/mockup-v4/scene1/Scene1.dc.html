@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EN · Scene 1 · Seller dashboard</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;900&amp;family=Noto+Sans+KR:wght@400;700;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.pp *{box-sizing:border-box}
+.pp a{color:#0066F5}
+.tab{min-height:44px;padding:10px 4px;font-size:15px;font-weight:700;color:#3F4144;text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:6px}
+.tab.on{color:#000000;border-bottom-color:#002991}
+.card{border-radius:24px;background:#FFFFFF;border:1px solid #E4E6E9;padding:22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:15px;font-weight:700;white-space:nowrap;text-decoration:none}
+.b-black{background:#000000;color:#FFFFFF !important}.b-black:hover{background:#333333}
+.b-line{background:#FFFFFF;color:#000000 !important;border:2px solid #CFD3D8}
+.ico{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF;border:0;color:#3F4144;cursor:pointer}
+.al-icon{position:relative;width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:#0B0F14;box-shadow:rgba(0,112,224,0.45) 0 4px 14px;text-decoration:none}
+.al-icon:focus-visible,.btn:focus-visible,.tab:focus-visible,.rlink:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,102,245,.55)}100%{box-shadow:0 0 0 16px rgba(0,102,245,0)}}
+.pulse{animation:pulse 1.6s ease-out infinite}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rise{animation:rise .5s ease both .3s}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #F1EFEA}
+.chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+.rlink{font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.ko{font-family:'Noto Sans KR',Figtree,sans-serif}
+</style>
+</helmet>
+<div class="pp" style="min-height: 100vh; background: #F1EFEA; color: #000000; font-family: Figtree, 'Noto Sans KR', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5">
+
+<header style="display: flex; align-items: center; gap: 28px; padding: 0 32px; background: #FFFFFF; border-bottom: 1px solid #E4E6E9; flex-wrap: wrap">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 72px">
+<span style="font-size: 22px; font-weight: 900; color: #002991; letter-spacing: -0.4px">PayPal</span>
+<span style="font-size: 15px; font-weight: 700; color: #3F4144">{{v.biz}}</span>
+<span class="chip" style="background: #ECEEF0; color: #3F4144">{{v.mock}}</span>
+</div>
+<nav aria-label="Main" style="display: flex; gap: 22px; align-self: stretch; align-items: flex-end">
+<a class="tab on" href="#">{{v.nav.home}}</a>
+<a class="tab" href="#">{{v.nav.activity}}</a>
+<a class="tab" href="#">{{v.nav.reports}}</a>
+<a class="tab" href="#">{{v.nav.money}}</a>
+<a class="tab" href="#">{{v.nav.rc}} <span class="chip" style="background: #C4321F; color: #FFFFFF">3</span></a>
+</nav>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; position: relative">
+<a class="al-icon pulse" href="{{deskHref}}" aria-label="{{v.alOpen}}" title="DisputeLess">
+<svg width="28" height="28" viewBox="30 70 200 110" aria-hidden="true"><path d="M92 112H146C176 112 192 126 206 158" fill="none" stroke="#00A8EA" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="56" cy="112" r="16" fill="#FFFFFF"></circle></svg>
+<span style="position: absolute; right: -5px; top: -5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 1000px; background: #C4321F; color: #FFFFFF; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF">3</span>
+</a>
+<button type="button" class="ico" aria-label="{{v.bell}}"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></button>
+<button type="button" class="ico" aria-label="{{v.help}}"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></button>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700"><span style="width: 36px; height: 36px; border-radius: 50%; background: #F1EFEA; display: inline-flex; align-items: center; justify-content: center; font-weight: 900">F</span>Fernwood Knits</span>
+
+<div class="rise" role="note" style="position: absolute; top: 60px; right: 150px; width: 330px; z-index: 5; border-radius: 20px; background: #000000; color: #FFFFFF; padding: 16px 18px; box-shadow: rgba(0,0,0,0.25) 0 12px 32px; display: flex; flex-direction: column; gap: 10px">
+<span style="position: absolute; top: -7px; right: 92px; width: 14px; height: 14px; background: #000000; transform: rotate(45deg)"></span>
+<div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 11px; font-weight: 900; padding: 2px 8px; border-radius: 1000px; background: linear-gradient(120deg,#0066F5,#60CDFF)">{{v.newTag}}</span><b>DisputeLess</b></div>
+<span style="font-size: 14px; line-height: 1.45">{{v.coach}}</span>
+<a class="btn" href="{{deskHref}}" style="background: #FFFFFF; color: #000000; min-height: 38px; padding: 6px 16px; font-size: 14px; align-self: flex-start">{{v.alOpen}} →</a>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1280px; margin: 0 auto; padding: 32px; display: flex; flex-direction: column; gap: 22px">
+<h1 style="margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -0.6px">{{v.hello}}</h1>
+
+<div style="display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 22px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 22px; min-width: 0">
+<section class="card">
+<span style="font-size: 14px; font-weight: 700; color: #3F4144">{{v.balT}}</span>
+<div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 44px; font-weight: 900; letter-spacing: -1.2px; line-height: 1">$4,218.40</span><span style="font-size: 15px; color: #3F4144">USD</span></div>
+<span style="font-size: 13px; color: #3F4144">{{v.balS}}</span>
+<div style="display: flex; gap: 10px"><button type="button" class="btn b-black">{{v.transfer}}</button><button type="button" class="btn b-line">{{v.request}}</button></div>
+</section>
+<section class="card" style="gap: 4px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px"><b style="font-size: 18px">{{v.actT}}</b><a class="rlink" href="#">{{v.seeAll}}</a></div>
+<sc-for list="{{v.acts}}" as="a" hint-placeholder-count="6">
+<div class="row">
+<span style="width: 40px; height: 40px; border-radius: 50%; background: #F1EFEA; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px">{{a.i}}</span>
+<div style="display: flex; flex-direction: column; min-width: 0"><b style="font-size: 14px">{{a.who}}</b><span style="font-size: 13px; color: #3F4144">{{a.what}}</span></div>
+<b style="{{a.st}}">{{a.amt}}</b>
+</div>
+</sc-for>
+</section>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 22px; min-width: 0">
+<section class="card" style="border: 2px solid #F2B8AF">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-size: 18px">{{v.nav.rc}}</b><span class="chip" style="background: #FBE7E4; color: #9E2414">{{v.rcOpen}}</span></div>
+<span style="font-size: 13px; color: #3F4144">{{v.rcS}}</span>
+<sc-for list="{{v.cases}}" as="c" hint-placeholder-count="3">
+<div class="row" style="grid-template-columns: minmax(0, 1fr) auto">
+<div style="display: flex; flex-direction: column; min-width: 0"><b style="font-size: 14px">{{c.t}}</b><span style="font-size: 13px; color: #3F4144">{{c.s}}</span><span style="{{c.dueSt}}">{{c.due}}</span></div>
+<a class="rlink" href="{{deskHref}}">{{v.respond}} →</a>
+</div>
+</sc-for>
+<a class="btn" href="{{deskHref}}" style="background: linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF); color: #FFFFFF; gap: 10px">
+<svg width="22" height="22" viewBox="30 70 200 110" aria-hidden="true"><path d="M92 112H146C176 112 192 126 206 158" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="56" cy="112" r="16" fill="#FFFFFF"></circle></svg>{{v.rcCta}}</a>
+</section>
+<section class="card">
+<b style="font-size: 18px">{{v.salesT}}</b>
+<div style="display: flex; align-items: flex-end; gap: 6px; height: 90px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="14"><span style="{{b}}"></span></sc-for>
+</div>
+<span style="font-size: 13px; color: #3F4144">{{v.salesS}}</span>
+</section>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+var LANG = 'en';
+var PV = {
+en: {
+  biz: 'Business', mock: 'Demo mock', nav: { home: 'Home', activity: 'Activity', reports: 'Reports', money: 'Money', rc: 'Resolution Center' },
+  bell: 'Notifications', help: 'Help', newTag: 'NEW', alOpen: 'Open DisputeLess',
+  coach: '3 cases need a reply. One buyer mentioned a chargeback — DisputeLess has a plan ready.',
+  hello: 'Good afternoon, Fernwood Knits', balT: 'PayPal balance', balS: 'Available · updated just now', transfer: 'Transfer money', request: 'Request payment',
+  actT: 'Recent activity', seeAll: 'See all',
+  acts: [
+    { i: 'D', who: 'Da-eun Lee', what: 'Payment received · Knit Cardigan', amt: '+$48.00', st: 'font-size:15px;color:#000000' },
+    { i: 'M', who: 'Mia Schulz', what: 'Payment received · Beanie + Scarf', amt: '+$35.00', st: 'font-size:15px;color:#000000' },
+    { i: 'S', who: 'Seo-yeon Kim', what: 'Case opened · Item not received', amt: '$72.00 on hold', st: 'font-size:15px;color:#9E2414' },
+    { i: 'J', who: 'Ji-ho Park', what: 'Case opened · Not as described', amt: '$48.00 on hold', st: 'font-size:15px;color:#9E2414' },
+    { i: 'A', who: 'Alex Moore', what: 'Payment received · Wool Sweater', amt: '+$72.00', st: 'font-size:15px;color:#000000' },
+    { i: 'Y', who: 'Yuki Tanaka', what: 'Payment received · Knit Cardigan', amt: '+$48.00', st: 'font-size:15px;color:#000000' }
+  ],
+  rcOpen: '3 open', rcS: 'Respond within 20 days or the case may close in the buyer’s favor.',
+  cases: [
+    { t: 'Item not received · $72.00', s: 'Seo-yeon Kim · Wool Sweater · PP-D-20002', due: 'Respond by Nov 12 · mentions chargeback', dueSt: 'font-size:12px;font-weight:700;color:#9E2414' },
+    { t: 'Not as described · $48.00', s: 'Ji-ho Park · Knit Cardigan · PP-D-20001', due: 'Respond by Nov 19', dueSt: 'font-size:12px;color:#3F4144' },
+    { t: 'Inquiry · $24.00', s: 'Lena K. · Beanie + Scarf', due: 'Refund promised Nov 6', dueSt: 'font-size:12px;color:#3F4144' }
+  ],
+  respond: 'Respond', rcCta: 'Handle all 3 with DisputeLess',
+  salesT: 'Sales · last 14 days', salesS: '$3,940 · 71 orders · Black Friday in 17 days'
+},
+ko: {
+  biz: '비즈니스', mock: '데모용 화면', nav: { home: '홈', activity: '활동', reports: '보고서', money: '자금', rc: '분쟁 해결 센터' },
+  bell: '알림', help: '도움말', newTag: 'NEW', alOpen: 'DisputeLess 열기',
+  coach: '답장이 필요한 건이 3개예요. 한 구매자가 차지백을 언급했어요 — DisputeLess에 대응 계획이 준비돼 있어요.',
+  hello: '안녕하세요, Fernwood Knits 님', balT: 'PayPal 잔액', balS: '사용 가능 · 방금 갱신', transfer: '송금하기', request: '결제 요청',
+  actT: '최근 활동', seeAll: '전체 보기',
+  acts: [
+    { i: 'D', who: '이다은', what: '결제 받음 · 니트 가디건', amt: '+$48.00', st: 'font-size:15px;color:#000000' },
+    { i: 'M', who: 'Mia Schulz', what: '결제 받음 · 비니+머플러', amt: '+$35.00', st: 'font-size:15px;color:#000000' },
+    { i: 'S', who: '김서연', what: '분쟁 접수 · 미수령', amt: '$72.00 보류', st: 'font-size:15px;color:#9E2414' },
+    { i: 'J', who: '박지호', what: '분쟁 접수 · 설명과 다름', amt: '$48.00 보류', st: 'font-size:15px;color:#9E2414' },
+    { i: 'A', who: 'Alex Moore', what: '결제 받음 · 울 스웨터', amt: '+$72.00', st: 'font-size:15px;color:#000000' },
+    { i: 'Y', who: 'Yuki Tanaka', what: '결제 받음 · 니트 가디건', amt: '+$48.00', st: 'font-size:15px;color:#000000' }
+  ],
+  rcOpen: '3건 진행 중', rcS: '20일 안에 답하지 않으면 구매자에게 유리하게 종료될 수 있어요.',
+  cases: [
+    { t: '미수령 · $72.00', s: '김서연 · 울 스웨터 · PP-D-20002', due: '11/12까지 답장 · 차지백 언급', dueSt: 'font-size:12px;font-weight:700;color:#9E2414' },
+    { t: '설명과 다름 · $48.00', s: '박지호 · 니트 가디건 · PP-D-20001', due: '11/19까지 답장', dueSt: 'font-size:12px;color:#3F4144' },
+    { t: '문의 · $24.00', s: 'Lena K. · 비니+머플러', due: '11/6 환불 약속', dueSt: 'font-size:12px;color:#3F4144' }
+  ],
+  respond: '답장', rcCta: 'DisputeLess로 3건 한 번에 처리',
+  salesT: '매출 · 최근 14일', salesS: '$3,940 · 주문 71건 · 블랙프라이데이까지 17일'
+}
+};
+var SALES = [180, 220, 160, 300, 260, 240, 310, 280, 350, 290, 330, 380, 300, 340];
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      v: PV[LANG], deskHref: LANG === 'ko' ? 'Desk-ko.dc.html' : 'Desk.dc.html',
+      bars: SALES.map((x, i) => 'flex:1;border-radius:6px 6px 2px 2px;height:' + Math.round(x / 380 * 90) + 'px;background:' + (i === SALES.length - 1 ? '#0066F5' : '#C9D3E0'))
+    };
+  }
+}
+</script>
+</body>
+</html>
