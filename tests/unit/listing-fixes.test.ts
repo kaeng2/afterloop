@@ -32,6 +32,21 @@ const GOOD: Record<ListingFixKey, string> = {
 
 const INPUT = { productTitle: 'Knit Cardigan, Oat', productDescription: 'Soft oat knit cardigan.' };
 
+describe('프롬프트 color 지시 (T086 후속)', () => {
+  const EXAMPLE = 'Color note: Ivory may look slightly different depending on your screen and indoor or natural light.';
+
+  it('프롬프트의 color 지시에 Color note:가 있다', async () => {
+    const { LISTING_FIX_SYSTEM } = await import('@/ai/prompts/listing-fixes');
+    const line = LISTING_FIX_SYSTEM.split('\n').find((l) => l.startsWith('- color:')) ?? '';
+    expect(line).toContain('Color note:');
+  });
+
+  it('그 예시 문장이 color 정규식을 통과한다', () => {
+    const rule = listingModel.rules.color;
+    expect(new RegExp(rule.pattern, rule.flags).test(EXAMPLE)).toBe(true);
+  });
+});
+
 describe('draftListingFixes', () => {
   it('정상 응답 → 6칸 ok, 각 칸이 자기 정규식에 걸린다, 호출 1회', async () => {
     const { calls, llm } = fakeLlm({ json: GOOD });

@@ -32,7 +32,7 @@ Numbers: never write a digit, and never write a number in words. Wherever a numb
 
 Fields:
 - size: a size table the seller can fill in. Name the measurements chest, length and sleeve per size, each as "[__] cm", and add one short line about how the fit runs, without inventing details.
-- color: say the color name only if <product> mentions one, and note that the color may look slightly different depending on the screen and the lighting (a color note). Never invent a color, material or dye.
+- color: the text must start with the exact words "Color note:". Then say the color name only if <product> mentions one, and note that it may look slightly different depending on your screen and indoor or natural light. Example: "Color note: Ivory may look slightly different depending on your screen and indoor or natural light." Never invent a color, material or dye.
 - ship: the handling time is "[__] business days" before shipping, and every order ships with tracking.
 - customs: for international buyers, say we ask for a customs ID (or tax ID) at checkout; you may name example countries.
 - bf: during Black Friday and the holiday peak season delivery may take longer than usual. No dates.
