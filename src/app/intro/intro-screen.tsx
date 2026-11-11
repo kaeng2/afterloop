@@ -72,6 +72,7 @@ export function IntroScreen() {
         <div className="intro-brand">
           <span className="intro-logo">{c.brand}</span>
           <span className="intro-biz">{c.biz}</span>
+          <span className="intro-chip intro-chip-mock">{c.mock}</span>
         </div>
         <nav aria-label={c.nav.label} className="intro-nav">
           <Inert className="intro-tab on">{c.nav.home}</Inert>
@@ -91,7 +92,7 @@ export function IntroScreen() {
               한국어
             </button>
           </div>
-          <Link className="intro-al-icon" href={TODAY_HREF} aria-label={c.alOpen} title="DisputeLess">
+          <Link className="intro-al-icon intro-pulse" href={TODAY_HREF} aria-label={c.alOpen} title="DisputeLess">
             <Mark size={28} mode="accent" />
             <span className="intro-al-badge">{c.openCount}</span>
           </Link>

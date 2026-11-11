@@ -3,6 +3,7 @@
  * 상태를 바꾸지 않고 `buildView` 값만 그린다 (시험이 정적 렌더로 본다). 손잡이는 `handlers`로 받는다.
  *
  * - 쇼핑몰 껍데기(왼쪽 메뉴·검색창·가게 이름)는 고정 데모 — 버튼은 `aria-disabled`, 핸들러 없음.
+ * - "Add photo"는 시안처럼 동작한다 (T098a): 고른 사진을 이 브라우저에서만 "Your photo"로 보여 준다. 올리지 않고 계산과 무관.
  * - 숫자 옆 "≈ Assumption", 고칠 문구 옆 "AI suggests". 색은 listing.css 변수(우리 강조색)만.
  */
 import { AiSuggestsBadge, AssumptionBadge } from '../_shared/badges';
@@ -20,6 +21,8 @@ export type ListingHandlers = {
   backEdit: () => void;
   restart: () => void;
   insert: (fix: ListingFixKey) => void;
+  /** 시안 onChange addPhoto: 고른 사진을 이 브라우저 안에서만 보여 준다 (올리지 않는다, 계산과 무관) */
+  addPhoto: (file: File) => void;
 };
 
 const NOOP: ListingHandlers = {
@@ -32,6 +35,17 @@ const NOOP: ListingHandlers = {
   backEdit: () => {},
   restart: () => {},
   insert: () => {},
+  addPhoto: () => {},
+};
+
+/** 시안 L73 왼쪽 메뉴 아이콘 (선 그림, currentColor) */
+const NAV_ICON: Record<'home' | 'orders' | 'products' | 'customers' | 'analytics' | 'marketing', string> = {
+  home: 'M4 11l8-7 8 7v9h-5v-6H9v6H4z',
+  orders: 'M5 4h14v16H5zM9 9h6M9 13h6',
+  products: 'M4 8l8-4 8 4-8 4zM4 8v8l8 4 8-4V8M12 12v8',
+  customers: 'M8 11a3 3 0 1 0 0-.01M2 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 1 0 0-.01M14 15c3 0 6 1.6 6 5',
+  analytics: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  marketing: 'M4 10v4l12 5V5zM16 9a3 3 0 0 1 0 6',
 };
 
 function Mark({ size = 14 }: { size?: number }) {
@@ -160,7 +174,10 @@ function Shell({ v, children }: { v: ListingView; children: React.ReactNode }) {
         <nav aria-label={n.label} className="ls-side">
           {(['home', 'orders', 'products', 'customers', 'analytics', 'marketing'] as const).map((k) => (
             <button key={k} type="button" className={k === 'products' ? 'ls-snav on' : 'ls-snav'} aria-disabled="true">
-              {n[k]}
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path d={NAV_ICON[k]} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{n[k]}</span>
             </button>
           ))}
           <span className="ls-side-h">{n.apps}</span>
@@ -188,7 +205,7 @@ function Shell({ v, children }: { v: ListingView; children: React.ReactNode }) {
   );
 }
 
-function Editor({ v, h }: { v: ListingView; h: ListingHandlers }) {
+function Editor({ v, h, userPhotos }: { v: ListingView; h: ListingHandlers; userPhotos: string[] }) {
   const c = v.c;
   const isDetail = v.screen === 'detail';
   return (
@@ -209,13 +226,32 @@ function Editor({ v, h }: { v: ListingView; h: ListingHandlers }) {
               <span className="ls-phl">{p.label}</span>
             </div>
           ))}
-          <span className="ls-addph" aria-disabled="true">
+          {userPhotos.map((src) => (
+            <div key={src} className="ls-ph" data-user-photo="">
+              {/* eslint-disable-next-line @next/next/no-img-element -- 사용자가 고른 사진 (blob URL, 올리지 않음) */}
+              <img src={src} alt={c.yours} />
+              <span className="ls-phl">{c.yours}</span>
+            </div>
+          ))}
+          <label className="ls-addph">
+            <input
+              type="file"
+              accept="image/*"
+              aria-label={c.addPhoto}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) h.addPhoto(file);
+                e.target.value = '';
+              }}
+            />
             <span className="ls-addic" aria-hidden="true">
-              +
+              <svg width="22" height="22" viewBox="0 0 24 24">
+                <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+              </svg>
             </span>
             <span className="ls-addph-t">{c.addPhoto}</span>
             <span className="ls-addph-h">{c.addHint}</span>
-          </span>
+          </label>
         </div>
       </div>
       <div className="ls-grid3">
@@ -299,7 +335,7 @@ function Panel({ v, h }: { v: ListingView; h: ListingHandlers }) {
               </span>
               <AssumptionBadge />
             </div>
-            <span className="ls-sub">
+            <span className="ls-sub" data-part="probSub">
               {p.probSub} · {p.before}
             </span>
           </div>
@@ -394,11 +430,21 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                 <svg className="ls-spin" width="96" height="96" viewBox="0 0 96 96">
                   <circle cx="48" cy="48" r="40" className="ls-spin-track" strokeWidth="8" />
                   <path d="M48 8a40 40 0 0 1 40 40" className="ls-spin-arc" strokeWidth="8" strokeLinecap="round" />
+                  <defs>
+                    <linearGradient id="ls-spg" x1="48" y1="8" x2="88" y2="48" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" className="ls-spg-a" />
+                      <stop offset="1" className="ls-spg-b" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <svg className="ls-pulse-ic" width="40" height="40" viewBox="0 0 24 24">
+                  <path d="M4 18l5-6 4 3 7-9" className="ls-pulse-line" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="20" cy="6" r="2" className="ls-pulse-dot" />
                 </svg>
               </div>
               <div className="ls-group-tight">
                 <b className="ls-an-t">{c.anT}</b>
-                <span className="ls-sub">{s.anS}</span>
+                <span className="ls-an-s">{s.anS}</span>
                 <ol className="ls-steps">
                   {s.steps.map((st, i) => (
                     <li key={i} className={`ls-step ${st.mark}`}>
@@ -424,7 +470,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
               >
                 <div className="ls-prog-fill" style={{ width: `${((s.done / s.total) * 100).toFixed(1)}%` }} />
               </div>
-              <span className="ls-tiny" data-progress={`${s.done}/${s.total}`} aria-live="polite">
+              <span className="ls-run-t" data-progress={`${s.done}/${s.total}`} aria-live="polite">
                 {s.runTxt}
               </span>
             </div>
@@ -448,7 +494,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                 <span className="ls-hero-n" data-value="prob">
                   {s.prob}
                 </span>
-                <span className="ls-sub">
+                <span className="ls-hero-sub">
                   {s.probSub} <AssumptionBadge />
                 </span>
               </div>
@@ -478,7 +524,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                     </div>
                     <div className="ls-top-n">
                       <b>{t.pct}</b>
-                      <span className="ls-tiny">{t.of}</span>
+                      <span className="ls-top-of">{t.of}</span>
                     </div>
                     <span className="ls-sub">{t.why}</span>
                   </div>
@@ -524,7 +570,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                   </b>
                 </div>
                 <span className="ls-sub">{s.lossRange}</span>
-                <span className="ls-lab">{c.lossHow}</span>
+                <span className="ls-loss-how">{c.lossHow}</span>
                 <span className="ls-sub">{s.lossTip}</span>
               </div>
             </div>
@@ -553,16 +599,16 @@ function Done({ v, h }: { v: ListingView; h: ListingHandlers }) {
           ✓
         </span>
         <b className="ls-done-t">{v.c.doneT}</b>
-        <span className="ls-sub">{d.title}</span>
+        <span className="ls-done-s">{d.title}</span>
         <div className="ls-done-box">
           <b className={d.improved ? 'ls-done-prob good' : 'ls-done-prob'} data-value="doneProb">
             {d.prob} <AssumptionBadge />
           </b>
-          <span className="ls-sub" data-value="doneLoss">
+          <span className="ls-done-disp" data-value="doneLoss">
             {d.loss} · {d.disp}
           </span>
         </div>
-        <span className="ls-tiny">{d.note}</span>
+        <span className="ls-done-note">{d.note}</span>
         <div className="ls-done-actions">
           <button type="button" className="ls-btn ls-b-tint" data-action="backEdit" onClick={h.backEdit}>
             {v.c.backEdit}
@@ -576,13 +622,21 @@ function Done({ v, h }: { v: ListingView; h: ListingHandlers }) {
   );
 }
 
-export function ListingScreenView({ view, handlers = NOOP }: { view: ListingView; handlers?: ListingHandlers }) {
+export function ListingScreenView({
+  view,
+  handlers = NOOP,
+  userPhotos = [],
+}: {
+  view: ListingView;
+  handlers?: ListingHandlers;
+  userPhotos?: string[];
+}) {
   const showEditor = view.screen !== 'done';
   return (
     <Shell v={view}>
       {showEditor ? (
         <div className={view.screen === 'detail' ? 'ls-layout ls-layout-detail' : 'ls-layout'}>
-          <Editor v={view} h={handlers} />
+          <Editor v={view} h={handlers} userPhotos={userPhotos} />
           <Panel v={view} h={handlers} />
         </div>
       ) : null}

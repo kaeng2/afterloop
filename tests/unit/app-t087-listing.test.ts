@@ -181,7 +181,8 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
     // 타이머 간격은 설정값 (시안 70ms)
     expect(h.frames.intervals).toEqual([70]);
     expect(MOTION.scene3.check).toEqual({ intervalMs: 70, step: 5 });
-    expect(MOTION.scene3.recalc).toEqual({ intervalMs: 70, step: 25 });
+    // T098a: 시안 L570 recalc = setInterval 60ms, +25
+    expect(MOTION.scene3.recalc).toEqual({ intervalMs: 60, step: 25 });
 
     // 한 번 울리면 5 / 500
     h.frames.tick();
@@ -277,7 +278,7 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
     h.dispatch({ type: 'recalc' });
     expect(h.state.run?.purpose).toBe('recalc');
     h.frames.tick();
-    expect(h.frames.intervals.at(-1)).toBe(70);
+    expect(h.frames.intervals.at(-1)).toBe(MOTION.scene3.recalc.intervalMs);
     expect(h.html()).toContain(`Recalculating… ${MOTION.scene3.recalc.step} / 500`);
     h.drain();
     const after = checkListing(toCheckInput(h.state.form));
@@ -390,7 +391,9 @@ describe('T087 진행 표시: setInterval·가짜 카운터 없음 (정적 검�
     const kf = css.match(/@keyframes ls-pulse\s*\{[\s\S]*?\n\}/)?.[0].replace(/\s+/g, ' ') ?? '';
     expect(kf).toMatch(/0%, 100% \{ opacity: 0?\.5; transform: scale\(0?\.92\); \}/);
     expect(kf).toMatch(/50% \{ opacity: 1; transform: scale\(1\.06\); \}/);
-    expect(css).toMatch(/\.ls-livedot\s*\{[^}]*animation:\s*ls-pulse 1\.2s/);
+    // T098a: 시안 .pulse는 점검 모달 회전 고리 가운데 아이콘(L184)에 붙는다. .livedot(L37)은 움직이지 않는다
+    expect(css).toMatch(/\.ls-pulse-ic\s*\{[^}]*animation:\s*ls-pulse 1\.2s ease-in-out infinite/);
+    expect(css.match(/\.ls-livedot\s*\{[^}]*\}/)?.[0]).not.toMatch(/animation/);
     expect(css).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*animation: none !important[\s\S]*transition: none !important/);
   });
 

@@ -1,7 +1,7 @@
 /*
  * /intro 화면 (T078). 값은 시안 Scene1.dc.html의 배치·간격·카드 모양.
- * 색 값은 아래 변수 정의 줄에만 쓴다 (tests/unit/app-shared-design.test.ts가 검사). PayPal 파랑은 쓰지 않고
- * 링크·활성 탭·주 버튼은 강조색(--color-accent) 하나. 밝은 화면으로 고정 (시안이 밝은 화면).
+ * 색 값은 아래 변수 정의 줄에만 쓴다 (tests/unit/app-shared-design.test.ts가 검사). T098a: 색·그림자·모션은
+ * 시안 파일 값 그대로 (로고 안 색 #00A8EA만 예외 — DECISIONS 11/11 22:55). 밝은 화면으로 고정 (시안이 밝은 화면).
  * 이 화면은 라우트 그룹 `(app)` 밖이라 위쪽 막대가 없다 (T079) — 덮개(position: fixed)를 쓰지 않는다.
  */
 .intro {
@@ -20,7 +20,18 @@
   --i-ink: #0b0f14;
   --i-line-btn: #cfd3d8;
   --i-bar: #c9d3e0;
-  --i-ring: rgba(0, 102, 245, 0.55);
+  /* T098a: 시안 Scene1.dc.html 값 그대로 (L20 .tab.on, L23 .b-black:hover, L27 focus, L64·L104 그라디언트) */
+  --i-deep: #002991;
+  --i-focus: #097ff5;
+  --i-black-hover: #333333;
+  --i-grad-cta: linear-gradient(120deg, #002991, #0066f5 60%, #60cdff);
+  --i-grad-new: linear-gradient(120deg, #0066f5, #60cdff);
+  /* 그림자 (시안 L26 .al-icon, L27 focus, L28 pulse, L62 말풍선) */
+  --i-shadow-icon: rgba(0, 112, 224, 0.45) 0 4px 14px;
+  --i-shadow-focus: #ffffff 0 0 0 2px;
+  --i-shadow-pulse-from: 0 0 0 0 rgba(0, 102, 245, 0.55);
+  --i-shadow-pulse-to: 0 0 0 16px rgba(0, 102, 245, 0);
+  --i-shadow-coach: rgba(0, 0, 0, 0.25) 0 12px 32px;
 
   color-scheme: light;
   min-height: 100vh;
@@ -73,7 +84,7 @@
 .intro-logo {
   font-size: 22px;
   font-weight: 900;
-  color: var(--color-accent);
+  color: var(--i-deep);
   letter-spacing: -0.4px;
 }
 .intro-biz {
@@ -103,7 +114,7 @@
 }
 .intro-tab.on {
   color: var(--i-text);
-  border-bottom-color: var(--color-accent);
+  border-bottom-color: var(--i-deep);
 }
 .intro-tools {
   margin-left: auto;
@@ -157,25 +168,19 @@
   align-items: center;
   justify-content: center;
   background: var(--i-ink);
+  box-shadow: var(--i-shadow-icon);
   text-decoration: none;
 }
-.intro-al-icon::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  border: 2px solid var(--i-ring);
+/* 시안 L28–29: .pulse{animation:pulse 1.6s ease-out infinite} — 아이콘 자체의 box-shadow 고리 */
+.intro-pulse {
   animation: intro-pulse 1.6s ease-out infinite;
-  pointer-events: none;
 }
 @keyframes intro-pulse {
   0% {
-    transform: scale(1);
-    opacity: 1;
+    box-shadow: var(--i-shadow-pulse-from);
   }
   100% {
-    transform: scale(1.45);
-    opacity: 0;
+    box-shadow: var(--i-shadow-pulse-to);
   }
 }
 .intro-al-badge {
@@ -234,6 +239,7 @@
   background: var(--i-text);
   color: var(--i-surface);
   padding: 16px 18px;
+  box-shadow: var(--i-shadow-coach);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -258,7 +264,7 @@
   font-weight: 900;
   padding: 2px 8px;
   border-radius: var(--radius-pill);
-  background: var(--color-accent);
+  background: var(--i-grad-new);
   color: var(--i-surface);
 }
 .intro-coach-text {
@@ -367,19 +373,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 44px;
   padding: 10px 20px;
   border-radius: var(--radius-pill);
   border: 0;
   font-size: 15px;
   font-weight: 700;
+  white-space: nowrap;
   text-decoration: none;
   text-align: center;
 }
 .intro-btn-black {
   background: var(--i-text);
   color: var(--i-surface);
+}
+.intro-btn-black:hover {
+  background: var(--i-black-hover);
 }
 .intro-btn-line {
   background: var(--i-surface);
@@ -395,15 +405,18 @@
   align-self: flex-start;
 }
 .intro-btn-accent {
-  background: var(--color-accent);
+  background: var(--i-grad-cta);
   color: var(--i-surface);
+  gap: 10px;
 }
+/* 시안 L27: box-shadow #FFFFFF 0 0 0 2px + outline 2px solid #097FF5, offset 2px */
 .intro .intro-btn:focus-visible,
 .intro .intro-tab:focus-visible,
 .intro .intro-rlink:focus-visible,
 .intro .intro-al-icon:focus-visible,
 .intro .intro-lang button:focus-visible {
-  outline: 2px solid var(--color-accent);
+  box-shadow: var(--i-shadow-focus);
+  outline: 2px solid var(--i-focus);
   outline-offset: 2px;
 }
 
@@ -467,6 +480,10 @@
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+.intro-chip-mock {
+  background: var(--i-chip-bg);
+  color: var(--i-body);
 }
 .intro-chip-count {
   background: var(--i-risk-dot);
@@ -538,7 +555,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .intro-al-icon::after,
+  .intro-pulse,
   .intro-coach {
     animation: none;
   }
