@@ -488,3 +488,92 @@ export type RiskCurveFn = (events: CaseEvent[], board: BoardState, params?: Para
 
 /** src/engine/forecast.ts (v2.11) */
 export type WeeklySummaryFn = (input: { boards: BoardState[]; aiDrafts: number; usesDemoData: boolean }, params?: Params, rules?: PolicyConfig) => WeeklySummary;
+
+// ───────────────────────────── v2.12 새 상품 등록 전 점검 (Scene 3, 사람 결정 2026-11-11 21:40) ─────────────────────────────
+
+/** 새 상품 점검의 분쟁 유형 (시안 LK 순서 = 난수를 쓰는 순서). X = 도용 결제 */
+export type ListingDisputeType = 'A1' | 'A2' | 'B1' | 'B2' | 'X';
+
+/** 고칠 점 6개 = 입력칸 판정 6개 (코드 규칙) */
+export type ListingFixKey = 'size' | 'color' | 'ship' | 'customs' | 'bf' | 'ret';
+
+export type ListingFeatures = Record<ListingFixKey, boolean>;
+
+/** 판정에 쓰는 입력칸 글 (상품명·사진은 판정에 쓰지 않는다) */
+export type ListingFields = { desc: string; size: string; ship: string; ret: string };
+
+/** config/listing-model.json (v2.12). 값은 시안 코드에서 옮긴 가정 — source "가정(기획 시안)" */
+export type ListingModelConfig = {
+  version: string;
+  source: string; // "가정(기획 시안)"
+  note?: string;
+  types: ListingDisputeType[]; // 난수를 쓰는 순서
+  runs: number; // 시뮬레이션 횟수 (500)
+  seedBase: number; // 시드 = seedBase + units
+  progressChunkRuns: number; // 화면이 한 프레임에 계산하는 횟수 (진행 표시 = 실제로 끝낸 횟수)
+  baseRate: Record<ListingDisputeType, number>; // 주문 1건당 유형별 분쟁 확률
+  peak: { from: string; to: string; multiplier: Partial<Record<ListingDisputeType, number>> }; // 판매 기간이 이 구간과 겹치면 성수기
+  fixMultiplier: Record<ListingFixKey, Partial<Record<ListingDisputeType, number>>>; // 판정이 참이면 곱한다
+  pWin: Record<ListingDisputeType, number>; // 다퉜을 때 이길 확률 (고칠 점 없음)
+  pWinWithFix: Partial<Record<ListingDisputeType, { fix: ListingFixKey; value: number }>>; // 그 고칠 점이 참이면 이 값
+  rules: Record<ListingFixKey, { field: keyof ListingFields; pattern: string; flags: string }>; // 입력칸 판정 정규식
+};
+
+export type ListingCheckInput = {
+  fields: ListingFields;
+  priceCents: number;
+  units: number; // 판매 수량 = 시뮬레이션 주문 수
+  saleFrom: string; // YYYY-MM-DD
+  saleTo: string; // YYYY-MM-DD
+};
+
+export type ListingTypeResult = {
+  expectedDisputes: number; // 판매 기간 1회당 평균 건수
+  pPerOrder: number; // expectedDisputes / units
+  meanLossCents: number; // 정수 센트 (반올림)
+};
+
+/** 새 상품 점검 결과. 같은 입력이면 같은 결과 */
+export type ListingCheckResult = {
+  features: ListingFeatures;
+  peak: boolean;
+  runs: number;
+  units: number;
+  expectedDisputes: number; // 판매 기간 1회당 평균 분쟁 수
+  pPerOrder: number; // = expectedDisputes / units ("주문당 분쟁 확률")
+  meanLossCents: number; // 평균 손실 (정수 센트)
+  p10LossCents: number;
+  p90LossCents: number;
+  byType: Record<ListingDisputeType, ListingTypeResult>;
+};
+
+/** 진행 표시용 단계 계산기. step(n)은 최대 n회를 더 계산하고 지금까지 끝낸 횟수를 돌려준다 */
+export type ListingSim = {
+  total: number; // = runs
+  step: (maxRuns: number) => number;
+  done: () => boolean;
+  result: () => ListingCheckResult; // 다 끝나기 전에 부르면 예외
+};
+
+/** 고칠 점 하나만 더했을 때 주문당 분쟁 확률이 줄어드는 양 (0..1). 이미 참이면 0, 성수기가 아닌데 bf면 null */
+export type ListingFixGains = Record<ListingFixKey, number | null>;
+
+/** src/engine/listing.ts (v2.12). 코드 규칙(정규식) */
+export type DetectListingFeaturesFn = (fields: ListingFields, model?: ListingModelConfig) => ListingFeatures;
+
+/** src/engine/listing.ts (v2.12). params를 안 주면 config/params.json (feeCents·timeCostCents·habitRefundShare) */
+export type CheckListingFn = (input: ListingCheckInput, params?: ListingParams, model?: ListingModelConfig) => ListingCheckResult;
+
+/** src/engine/listing.ts (v2.12). 끝까지 돌린 result()는 CheckListingFn과 같다 */
+export type CreateListingSimFn = (input: ListingCheckInput, params?: ListingParams, model?: ListingModelConfig) => ListingSim;
+
+/** src/engine/listing.ts (v2.12) */
+export type ListingFixGainsFn = (input: ListingCheckInput, params?: ListingParams, model?: ListingModelConfig) => ListingFixGains;
+
+/** 새 상품 점검이 쓰는 기존 가정값 (config/params.json) */
+export type ListingParams = { feeCents: number; timeCostCents: number; refundShare: number };
+
+/** src/ai/listing-fixes.ts (v2.12). AI 고칠 문구 6개 — 한 번 부르고 캐시. 실패한 칸은 ok:false (기본 문구 없음) */
+export type ListingFixDraftInput = { productTitle: string; productDescription: string };
+export type ListingFixDraft = { ok: true; text: string } | { ok: false; reason: string };
+export type ListingFixDrafts = Record<ListingFixKey, ListingFixDraft>;

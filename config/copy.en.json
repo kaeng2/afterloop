@@ -90,6 +90,7 @@
   "badge.hint.assumption": "Built from assumed rates and costs you can change.",
   "badge.hint.cached": "Saved result from an earlier read, not fetched just now.",
   "common.paypalUnavailable": "PayPal sandbox unavailable",
+  "common.loading": "Loading…",
   "common.reason.not_configured": "Credentials are not set on the server",
   "common.reason.not_sandbox": "Only the PayPal sandbox is allowed",
   "common.reason.client_error": "The PayPal client could not be created",

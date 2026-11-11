@@ -55,7 +55,8 @@ export function TopBar({
   modeNote,
   dateLine,
 }: {
-  todayCount: number;
+  /** 없으면(읽는 중, T084 Suspense 자리) 숫자 없이 "Today"만 */
+  todayCount?: number;
   seller: { initial: string; shop: string };
   /** 공개 모드 한 줄 (public일 때만). PayPal activity 버튼 왼쪽에 작은 글씨로 */
   modeNote?: string;
@@ -84,7 +85,7 @@ export function TopBar({
               className="shell-tab"
               aria-current={isActive(pathname, item.href) ? 'page' : undefined}
             >
-              {item.href === '/' ? t('shell.todayTab', { count: todayCount }) : t(item.copyKey)}
+              {item.href === '/' && todayCount !== undefined ? t('shell.todayTab', { count: todayCount }) : t(item.copyKey)}
             </Link>
           ))}
         </nav>

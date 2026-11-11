@@ -610,3 +610,47 @@
   border: 1px dashed currentColor;
   border-radius: var(--radius-pill);
 }
+
+/* 탭 이동 로딩 표시 (T084, `(app)/loading.tsx`). 강조색 막대가 좌우로 움직인다 (움직임 줄이기 설정이면 멈춘다) */
+.app-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+}
+
+.app-loading-bar {
+  position: relative;
+  display: block;
+  width: 160px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+}
+
+.app-loading-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  animation: app-loading-slide 1s ease-in-out infinite alternate;
+}
+
+@keyframes app-loading-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(150%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loading-bar::after {
+    animation: none;
+  }
+}

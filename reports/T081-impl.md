@@ -79,3 +79,11 @@
 | npm run build | 성공 |
 
 컨트롤 타워에 요청할 결정: 없음.
+
+## main 병합(T084 위)
+
+- main(T083·T084 속도 개선, T085·T086)을 lane/ui에 병합했다. 충돌 파일 `src/app/(app)/layout.tsx`는 컨트롤 타워가 T084의 Suspense 구조 + T081의 `initLocale()`로 풀어 두었다.
+- 남은 실패 1건: `tests/unit/app-t084-perf.test.ts`의 "(app)/layout은 Today (N)을 Suspense로 뗀다"가 `export default async function`이 없어야 한다고 검사했다. T081 때문에 layout이 `initLocale()`을 await하므로 layout은 async다.
+- 수정: 시험을 뜻대로 고쳤다 — AppLayout 본문에 `loadTodayForRequest`가 없고, `TopBarWithCount` 안에서만 `await loadTodayForRequest()`가 있고, Suspense fallback이 있다.
+- `layout.tsx`는 머리 주석에 T081(언어)만 추가했다. 그 밖의 코드·숫자·문구·관문 무변경.
+- 확인: npm test 60 파일 2282 통과(storefront 시간 초과 없음), tsc 0, lint 0, test:acceptance 177 통과·9 skip, build 성공. 실제 AI·PayPal 호출 없음, 개발 서버 없음.

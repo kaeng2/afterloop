@@ -1,4 +1,4 @@
-# SPEC v2.11 (2026-11-11 20:32 KST)
+# SPEC v2.12 (2026-11-11 21:50 KST)
 
 > **계약 변경 규칙.** 이 문서, `src/types.ts`, `tests/acceptance/`는 계약이다. 바꿔야 하면 컨트롤 타워가 변경 내용·이유·영향받는 작업을 `DECISIONS.md`에 먼저 적고, 사람이 승인한 뒤에만 바꾼다. 바꿀 때마다 위 버전을 올린다. 작업 세션은 이 세 곳과 `DECISIONS.md`, `TASKS.md`, `tasks/`를 고치지 않는다 (`.claude/settings.json`에서 편집이 막혀 있다).
 
@@ -26,6 +26,7 @@
 - **화면 구조 (v2.10, 사람 결정 2026-11-10: 두 탭 + 서랍, 기획 시안 v3 채택)**: 위 S1~S5는 장면·기능의 이름으로 남기고, 화면은 다음 세 자리로 묶는다. ① **위쪽 막대**: 로고, Today(건수) / Products 탭, Autopilot 토글, PayPal activity 버튼(건수), 판매자 칩. ② **Today 탭** = 왼쪽 할 일 목록(S1+S4: 맨 위 날짜·블프까지 남은 날·가게 전체 예상 손실 한 줄, 묶음 Needs you / Prevent / Routine) + 오른쪽 고른 건의 상세(S5 서연·지호·Mike, S3 추적 미등록 주문). ③ **Products 탭** = S2 (왼쪽 상품 목록 AG Grid Community, 가운데 리허설, 오른쪽 처방 카드 4개. 분포 막대는 만들지 않는다). ④ **PayPal activity 서랍** = 이번 실행에서 앱이 실제로 부른 PayPal 호출(제목·메서드·경로·응답 코드·시각·한 줄 요약, 비밀값·구매자 개인정보 없음) + Autopilot을 켜면 실제 판정만. Today 목록에 넣지 않는 것: Lena 환불, 한국 통관부호 3건, Yuki 사이즈 문의. 시안은 참고용(배치·여백·둥근 모양·글자 위계)이고 숫자·문구는 PRD v3(`inbox/2026-11-10-prd-v3.md`)와 엔진 결과를 쓴다. 디자인: 강조색 하나(보라빛 남색, PayPal 파랑과 구분), 주 버튼 색 하나, 출처 배지 5종 작게, 위험 점수는 작은 배지.
 
 - **화면 구조 v4 (v2.11, 사람 결정 2026-11-11 20:40: 기획 시안 v4 반영)**: 시안 `docs/design/mockup-v4/Desk.dc.html`의 배치·크기·간격·글꼴·모서리·그림자를 따른다. 색은 PayPal 계열 파랑(#002991·#0066F5·#60CDFF)을 쓰지 않고 우리 강조색. 위쪽: 글자 로고 + "for PayPal sellers" + 날짜 줄, 상품 거르개 줄, 메뉴 Today / **Black Friday rehearsal**(= Products, AG Grid 표 포함), PayPal activity 서랍, 공개 데모 표시. 왼쪽: "이번 주 DisputeLess" 카드(계산 가능한 숫자만, `WeeklySummary`) + 묶음 Reply needed / Prevent / Routine (Lena 환불·Yuki 문의·통관부호 묶음은 범위 밖이라 없음). 사례: 머리글(PayPal 분쟁 번호·실제 마감일) → 위험 곡선(`riskCurve`) + 지금 위험 % → 사건 기록 + AI 요약(실제 기록에서, 캐시) → 구매자 메시지(AI read 태그는 있는 판정만) → 선택지 카드(엔진 수별 기대 손실 + 예상 차지백 %) → 답장(예측 입력칸, 보내는 글은 검사 통과한 AI 초안만) + As-you-type 칩 → 예상 반응 3분할·기대 비용·손님 기분(`forecastReply`, Assumption 배지) → 검사 줄·전송 모드·승인 버튼. **넣지 않는 것**: 근거 없는 성과 숫자, 없는 사건("11/5 약속" 등), 환불 약속 칩·문장, 보낸 뒤 가상 진행 단계.
+- **Scene 3 새 상품 등록 전 점검 (v2.12, 사람 결정 2026-11-11 21:40)**: 경로 `/listing`. 시안 `docs/design/mockup-v4/scene3/Main.dc.html`. 쇼핑몰 관리자 "상품 추가" 폼 → Publish product → DisputeLess 점검 모달(실제 진행 단계 → 결과: 주문당 분쟁 확률·예상 건수·예상 손실·유형별 확률과 이유·Black Friday 배송 안내) → "See details and fix" → 입력칸마다 Missing 표시 + AI 문구 넣기 → Recalculate → 확률 내려감 → Publish. 쇼핑몰 껍데기(왼쪽 메뉴·검색창·가게 이름 Fernwood Knits)는 `/intro`처럼 고정 데모 화면. 숫자 옆 "≈ Assumption" 배지. 위쪽 막대 "Black Friday rehearsal" → `/listing`, 기존 Products 화면(AG Grid)은 지우지 않고 메뉴에서 갈 수 있게 남긴다.
 - **S5 서연 장면 (v2.3, Q14)**: 실제 샌드박스 분쟁(D2)은 추적번호가 없는 주문 O13에 걸려 있다. 화면 설명은 "판매자가 PayPal에 추적번호 등록을 빠뜨렸고, 배송사 정보에서 통관 보류를 찾아냈다"이다. 배송사 정보(시드: 발송됨 + 한국 세관 보류)를 **반영하기 전·후**의 엔진 결과를 나란히 보여 준다 — 전: 추적 없는 미수령(A1) → 환불 추천, 후: 통관 보류(A2) → 답장 추천 (지금 가정값으로 7400¢ → 3680¢). 이 전·후 비교가 서연 화면의 주인공이다. **표시는 달러로 반올림한다 ($74 → $37. 엔진 값은 센트 그대로 두고 화면 표시만 반올림한다, v2.4).** 화면은 엔진이 계산한 두 결과를 옮기기만 한다 (화면에서 계산하지 않는다). 배송사 추적·통관 이벤트는 시연용 데이터이고 'Demo data' 배지를 붙인다 (10장).
 - 로드맵 (만들지 않음): 택배사 비교, 정책 설정 화면, 원인 분석 리포트, 기한 타임라인, 부분 환불 제안 UI, 재발 예방(원문 10-7).
 - P1: 환불 실행(F11), 한국 통관 안내(F12), 웹훅(원문 13장 12·13번), provide-evidence, make-offer 실행(오토파일럿 승인 후).
@@ -127,6 +128,18 @@
 - **숫자 일치 조건 (AC33)**: AI 기본 초안(`anchorText`)일 때 `forecastReply`의 기대 비용 = 엔진의 기존 답장 기대 손실 (서연 3680¢). 엔진이 기존 가정값(p_win·f·t)에 맞춰 보정하고 방법을 DECISIONS에 적는다. 글이 바뀌면 같은 보정 위에서 특징 가중치만큼 움직인다.
 - 위험 곡선(`riskCurve`): 실제 사건 기록(샌드박스·시드)마다 그 시점까지의 정보로 본 차지백 위험. 없는 사건을 만들지 않는다.
 - 이번 주 카드(`weeklySummary`): 열린 분쟁 수, Σ(전액 환불 − 최선의 수) 기대 손실, AI 초안 수(캐시). 시드 값이 섞이면 Demo data.
+
+### 8-3. 새 상품 등록 전 점검 (v2.12, 사람 결정 2026-11-11 21:40)
+- 모델 값은 `config/listing-model.json` (source "가정(기획 시안)" — 시안 코드의 유형·기본 확률·성수기 배수·고칠 점 배수·승률·정규식을 옮김). 계산은 `src/engine/listing.ts`에서만.
+- **입력칸 판정** (`detectListingFeatures`): 6개(size·color·ship·customs·bf·ret)를 설정의 정규식으로 해당 입력칸 글에서 찾는다. AI에게 판정을 맡기지 않는다.
+- **성수기**: 판매 기간 [saleFrom, saleTo]이 설정 구간 [peak.from, peak.to]과 겹치면 (`saleFrom <= peak.to && saleTo >= peak.from`, 문자열 비교).
+- **유형별 확률** q[k] = baseRate[k] × (성수기면 peak.multiplier[k], 없으면 1) × Π(참인 고칠 점 fx의 fixMultiplier[fx][k], 없으면 1). 승률 = pWinWithFix[k]의 fix가 참이면 그 value, 아니면 pWin[k].
+- **시뮬레이션 절차 (고정 — 인수 테스트 AC34의 숫자가 이것에 묶인다)**: 난수는 `src/engine/rng.ts`의 `mulberry32(seedBase + units)` 하나. 횟수 run = 0..runs−1, 주문 o = 0..units−1, 유형 j = 0..types.length−1 순서로 **매 (run, o, j)마다 난수 3개 u, v, w를 이 순서로 뽑는다** (이미 그 주문에 분쟁이 났어도 뽑는다 — 같은 난수 원칙). 그 주문에 아직 분쟁이 없고 u < q[k]이면 분쟁 1건: v < refundShare면 환불 손실 = price + t, 아니면 다툼: w < 승률이면 t, 아니면 price + f + t. 실수(double) 그대로 비교한다.
+- f·t·refundShare는 `config/params.json`의 feeCents·timeCostCents·habitRefundShare (시안의 $8·$2 대신).
+- 결과: 평균 분쟁 수(총 건수 / runs), 주문당 확률(= 평균 분쟁 수 / units), 평균 손실(반올림 정수 센트), P10·P90(횟수별 손실을 오름차순 정렬해 floor(runs×0.1)·floor(runs×0.9)번째), 유형별 평균 건수·주문당 확률·평균 손실.
+- **진행 표시**: `createListingSim`의 `step(n)`으로 나눠 계산하고, 화면의 "n / 500"은 **실제로 끝낸 횟수**다. 한 프레임에 `progressChunkRuns`회. 타이머로 늘이거나 가짜로 세지 않는다.
+- **고칠 점별 줄어드는 양** (`listingFixGains`): 지금 입력에 그 고칠 점 하나만 참으로 더했을 때의 주문당 확률 차이 (같은 난수). 이미 참이면 0, 성수기가 아닌데 bf면 null.
+- **AI 고칠 문구** (`src/ai/listing-fixes.ts`): 6개를 한 번에 영어로 쓴다. 숫자(치수·일수·날짜)는 판매자가 채울 자리표시자 `[__]`로 두고 글에 숫자를 쓰지 않는다. "반드시 도착"·무료·보장 같은 새 약속 금지 (T020 검사 재사용). **코드 판정**: 각 문구는 자기 고칠 점의 정규식에 걸려야 한다 — 안 걸리거나 검사에 걸리면 그 칸만 `ok:false` (기본 문구 없음, 화면은 넣기 버튼을 숨김). 입력은 상품명과 Publish 시점의 설명뿐 (캐시가 맞게).
 
 ## 9. 실행과 PayPal 연동
 ### 9-1. 실행 (`executeMove`, v1.1 그대로)

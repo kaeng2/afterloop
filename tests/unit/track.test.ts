@@ -12,6 +12,7 @@ import {
   DRY_RUN_GATE,
   disputedOrderKeys,
   isOrderUntracked,
+  LIST_UNTRACKED_CONCURRENCY,
   listUntracked,
   liveGateFromEnv,
   registerTrackers,
@@ -124,6 +125,115 @@ describe('listUntracked', () => {
     expect(rows.find((r) => r.key === failing)?.state).toBe('unknown');
     expect(JSON.stringify(rows)).not.toContain('SECRET');
     expect(rows.filter((r) => r.state === 'untracked').length).toBe(freeKeys.length - 1);
+  });
+});
+
+describe('listUntracked 동시 조회 (T083)', () => {
+  // 10건: 2건은 분쟁, 1건 404, 1건 예외(status·debugId), 1건 추적 있음, 나머지 미등록
+  const orders = Array.from({ length: 10 }, (_, i) => ({
+    key: `P${String(i + 1).padStart(2, '0')}`,
+    orderId: `ORDER-${i + 1}`,
+    buyer: 'b',
+    sku: 's',
+  }));
+  const disputes = [
+    { key: 'D1', orderKey: 'P02' },
+    { key: 'D2', orderKey: 'P02', demoExcluded: true },
+    { key: 'D3', orderKey: 'P07' },
+  ];
+
+  const reply = (path: string): Reply => {
+    if (path.endsWith('/ORDER-4')) return { status: 404, body: { name: 'RESOURCE_NOT_FOUND', details: [{ issue: 'INVALID_RESOURCE_ID' }], debug_id: 'dbg4' } };
+    if (path.endsWith('/ORDER-6')) return Object.assign(new Error('boom Bearer SECRET'), { status: 503, debugId: 'dbg6' });
+    if (path.endsWith('/ORDER-9')) return { status: 200, body: trackedBody };
+    return { status: 200, body: { purchase_units: [] } };
+  };
+
+  /** 조회마다 `delayMs` 기다리는 가짜 클라이언트. 동시에 나간 최대 수를 센다. */
+  function slowClient(delayMs: number) {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const paths: string[] = [];
+    const client: PayPalClient = {
+      get: async (path) => {
+        paths.push(path);
+        inFlight += 1;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await new Promise((r) => setTimeout(r, delayMs));
+        inFlight -= 1;
+        const r = reply(path);
+        if (r instanceof Error) throw r;
+        return r;
+      },
+      call: async () => {
+        throw new Error('POST는 없어야 한다');
+      },
+    };
+    return { client, paths, max: () => maxInFlight };
+  }
+
+  /** 이전 구현과 같은 순차 동작: 주문을 한 건씩 차례로 조회해 이어 붙인다. */
+  async function sequential(client: PayPalClient) {
+    const rows = [];
+    for (const order of orders) rows.push(...(await listUntracked(client, [order], disputes)));
+    return rows;
+  }
+
+  // 이전(순차) 구현이 내던 값 그대로 고정
+  const expected = [
+    { key: 'P01', orderId: 'ORDER-1', state: 'untracked', excluded: false },
+    { key: 'P02', orderId: 'ORDER-2', state: 'unknown', excluded: true, disputeKeys: ['D1', 'D2'], note: '분쟁 진행 중이라 제외' },
+    { key: 'P03', orderId: 'ORDER-3', state: 'untracked', excluded: false },
+    { key: 'P04', orderId: 'ORDER-4', state: 'unknown', excluded: false, note: '주문 조회 → RESOURCE_NOT_FOUND · INVALID_RESOURCE_ID · debug_id=dbg4' },
+    { key: 'P05', orderId: 'ORDER-5', state: 'untracked', excluded: false },
+    { key: 'P06', orderId: 'ORDER-6', state: 'unknown', excluded: false, note: '호출 실패 · Error · 503 · debug_id=dbg6' },
+    { key: 'P07', orderId: 'ORDER-7', state: 'unknown', excluded: true, disputeKeys: ['D3'], note: '분쟁 진행 중이라 제외' },
+    { key: 'P08', orderId: 'ORDER-8', state: 'untracked', excluded: false },
+    { key: 'P09', orderId: 'ORDER-9', state: 'tracked', excluded: false },
+    { key: 'P10', orderId: 'ORDER-10', state: 'untracked', excluded: false },
+  ];
+
+  it('조회마다 100ms 지연 10건: 순차의 1/3 미만 시간, 결과는 순차와 같다 (실패 2건 섞임)', async () => {
+    const seq = slowClient(100);
+    const t0 = performance.now();
+    const seqRows = await sequential(seq.client);
+    const seqMs = performance.now() - t0;
+
+    const par = slowClient(100);
+    const t1 = performance.now();
+    const parRows = await listUntracked(par.client, orders, disputes);
+    const parMs = performance.now() - t1;
+
+    expect(parRows).toEqual(seqRows);
+    expect(parRows).toEqual(expected);
+    expect(parMs).toBeLessThan(seqMs / 3);
+    expect(par.max()).toBeLessThanOrEqual(LIST_UNTRACKED_CONCURRENCY);
+    expect(par.max()).toBeGreaterThan(1);
+    // 분쟁 주문은 GET 0회, 나머지는 1회씩
+    expect([...par.paths].sort()).toEqual(
+      orders.filter((o) => !['P02', 'P07'].includes(o.key)).map((o) => `/v2/checkout/orders/${o.orderId}`).sort(),
+    );
+    expect(JSON.stringify(parRows)).not.toContain('SECRET');
+  });
+
+  it('응답이 늦게 오는 순서가 달라도 결과 순서는 입력 순서', async () => {
+    const client: PayPalClient = {
+      get: async (path) => {
+        const n = Number(path.split('-').pop());
+        await new Promise((r) => setTimeout(r, (11 - n) * 5)); // 뒤 주문이 먼저 끝난다
+        const r = reply(path);
+        if (r instanceof Error) throw r;
+        return r;
+      },
+      call: async () => ({ status: 500, body: {} }),
+    };
+    expect(await listUntracked(client, orders, disputes)).toEqual(expected);
+  });
+
+  it('빈 목록은 호출 0회로 빈 배열', async () => {
+    const { client, calls } = fake();
+    expect(await listUntracked(client, [], disputes)).toEqual([]);
+    expect(calls).toHaveLength(0);
   });
 });
 
