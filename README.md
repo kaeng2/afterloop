@@ -1,4 +1,4 @@
-# AfterLoop
+# DisputeLess
 
 판매자에게 들어온 PayPal 분쟁 1건을 바둑판처럼 놓고, 허용된 대응마다 기대 손실을 계산해 가장 손실이 적은 수를 추천한다. 판매자가 승인하면 그 수를 PayPal API(샌드박스)로 실행한다. PayPal AI Hackathon 제출작 (마감 KST 2026-11-13 05:00).
 

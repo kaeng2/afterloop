@@ -2,7 +2,7 @@
 
 # What is real, what is assumed
 
-AfterLoop is a hackathon prototype on the **PayPal sandbox** with a **fictional seller** (Hannah Cole, Fernwood Knits). Every number on screen is an example, not a forecast.
+DisputeLess is a hackathon prototype on the **PayPal sandbox** with a **fictional seller** (Hannah Cole, Fernwood Knits). Every number on screen is an example, not a forecast.
 
 | Column | What it covers |
 |---|---|

@@ -1,10 +1,10 @@
 <!-- Devpost 소개글 초안 (영어). 근거: PRD v3, SPEC v2.10, DECISIONS. [확인 필요]는 제출 전 사람이 채운다. -->
 
-# AfterLoop
+# DisputeLess
 
 **PayPal data alone says refund. One carrier event changes the answer.**
 
-Seo-yeon, a buyer in Korea, writes in Korean that her sweater has not arrived and that she will go to her card company. The seller, Hannah, can't read the message. On PayPal data alone, the safe move is a full refund, about $74 counting her time. But a carrier record shows the parcel is not lost. It is held at Korean customs, waiting for one number from the buyer. With that, AfterLoop's code switches the recommendation from a refund to a reply, expected loss about $37. AI translates her message and drafts a reply in natural Korean. Hannah checks it and sends it through PayPal.
+Seo-yeon, a buyer in Korea, writes in Korean that her sweater has not arrived and that she will go to her card company. The seller, Hannah, can't read the message. On PayPal data alone, the safe move is a full refund, about $74 counting her time. But a carrier record shows the parcel is not lost. It is held at Korean customs, waiting for one number from the buyer. With that, DisputeLess's code switches the recommendation from a refund to a reply, expected loss about $37. AI translates her message and drafts a reply in natural Korean. Hannah checks it and sends it through PayPal.
 
 (Carrier feed is demo data; dispute reads, the message and the send are real PayPal sandbox calls.)
 
@@ -14,12 +14,12 @@ Small sellers who ship abroad often lose disputes they could have settled, becau
 
 ## What it does
 
-AfterLoop is a post-purchase copilot for small sellers on PayPal. The demo runs one morning for a fictional seller, Hannah Cole of Fernwood Knits.
+DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo runs one morning for a fictional seller, Hannah Cole of Fernwood Knits.
 
-- **Products.** For the 120 cardigans she has left, AfterLoop replays the next 120 sales 500 times. Selling as-is, the average dispute loss is about $216. With four fixes switched on, the same 500 futures cost about $44. The range and the assumptions are shown. The product table is built on AG Grid.
+- **Products.** For the 120 cardigans she has left, DisputeLess replays the next 120 sales 500 times. Selling as-is, the average dispute loss is about $216. With four fixes switched on, the same 500 futures cost about $44. The range and the assumptions are shown. The product table is built on AG Grid.
 - **Today.** One list of what needs her. Two orders shipped without tracking in PayPal; one click adds tracking through PayPal's API.
 - **Case detail (Seo-yeon).** A before/after comparison ("PayPal data only" vs "with carrier data"), the Korean original with an English translation, a reply for Hannah to review in English and Korean, checks on facts and promises, and a **Send in Korean** button. After sending, her risk score drops from 6 to 3.
-- **PayPal activity drawer.** Every call AfterLoop makes for Hannah, with method, path, and response code.
+- **PayPal activity drawer.** Every call DisputeLess makes for Hannah, with method, path, and response code.
 
 **AI suggests, code decides.** AI translates, writes coaching and drafts, and judges tone. Code decides the cause, the expected loss and suggested amount, the follow-up date, and whether a message may be sent. Dates, amounts and names reach the AI only as tokens and are filled in by code.
 
@@ -45,7 +45,7 @@ AfterLoop is a post-purchase copilot for small sellers on PayPal. The demo runs 
 
 - **Bulk tracking was blocked.** PayPal's `trackers-batch` returned 403 in our app, so we register tracking order by order with `/v2/checkout/orders/{id}/track`.
 - **Tracked orders skipped our demo.** A "not received" dispute on an order with tracking moved to PayPal review within minutes, where messages and offers are not available. We re-filed Seo-yeon's dispute on an order without tracking, and the app never registers tracking on an order that already has a dispute.
-- **Message first, offer closed.** Once a seller sends a message, PayPal closes the make-offer link until the buyer replies. For cases where an offer is the best move, AfterLoop sends the offer first and puts the explanation in its note.
+- **Message first, offer closed.** Once a seller sends a message, PayPal closes the make-offer link until the buyer replies. For cases where an offer is the best move, DisputeLess sends the offer first and puts the explanation in its note.
 - **AI changed what a date meant.** In one run the follow-up date was "delivery by this day", in another "reship if it doesn't arrive". We now tell the model what the date means (the day the seller checks and writes back), let code compute it, and block promises of refunds, reshipping or discounts outside the seller's policy. Code checks every draft.
 - **Honest numbers.** Probabilities and win rates are assumptions. We label them, show a range, and say where the data is demo data.
 
@@ -55,7 +55,7 @@ AfterLoop is a post-purchase copilot for small sellers on PayPal. The demo runs 
 - A clear line between what AI writes and what code decides, enforced by checks, not by trust.
 - Every PayPal call listed in a drawer, so the real parts can be seen.
 
-## What's next for AfterLoop
+## What's next for DisputeLess
 
 - A recurrence report: group closed disputes by cause, product and country, and feed them into next month's check.
 - Carrier comparison and real carrier integration.
