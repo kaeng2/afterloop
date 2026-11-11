@@ -478,7 +478,7 @@ export function ReplyPanel({
   const inFlight = useRef(false);
   const { setSent } = useSent();
   const { setForecast } = useDraftForecast();
-  const { report } = useSavings();
+  const { report, markDone, unmarkDone } = useSavings();
   const desk = useDeskSelection();
 
   const view = buildReplyView({ ...base, confirmed, sendState, outcome });
@@ -706,6 +706,8 @@ export function ReplyPanel({
     setSent(next.ok);
     // T091: 보내기(가짜 전송 포함)가 끝나면 이번 주 카드에 "+$N just now" (엔진 actionSavings 값, 화면 상태만)
     if (next.ok) report(savings);
+    // T102: 같은 순간 Today 목록에서 "Done today"로 (화면 상태만. 가짜 전송은 Simulated로 표시)
+    if (next.ok) markDone(disputeId, { simulated: next.mode === 'simulated' });
   }
 
   /** T100: 고친 글을 서버에서 번역·검사한다 (보내지 않는다). 결과는 지금 글자에 묶는다. */
@@ -726,6 +728,7 @@ export function ReplyPanel({
     setOutcome(null);
     setSendState('idle');
     setSent(false);
+    unmarkDone(disputeId);
   }
 
   const result = view.result;

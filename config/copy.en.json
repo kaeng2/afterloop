@@ -53,6 +53,8 @@
   "today.group.needsYou": "Reply needed",
   "today.group.prevent": "Prevent",
   "today.group.routine": "Routine",
+  "today.group.done": "Done today",
+  "today.group.doneSimulated": "Done today · Simulated",
   "today.buyerUnknown": "Unknown buyer",
   "today.kind.A2": "customs hold",
   "today.kind.B1": "color case",

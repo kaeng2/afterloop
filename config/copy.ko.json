@@ -53,6 +53,8 @@
   "today.group.needsYou": "답장 필요",
   "today.group.prevent": "예방",
   "today.group.routine": "일상",
+  "today.group.done": "오늘 완료",
+  "today.group.doneSimulated": "오늘 완료 · 시뮬레이션",
   "today.buyerUnknown": "알 수 없는 구매자",
   "today.kind.A2": "통관 보류",
   "today.kind.B1": "색상 분쟁",

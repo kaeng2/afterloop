@@ -7,7 +7,8 @@
  * 게이트는 `liveGateFromEnv` — 스위치가 꺼져 있으면 "Simulated · nothing was sent to PayPal". 이 파일은 PayPal을 부르지 않는다.
  */
 import { t } from '../_shared/copy';
-import type { TrackingOrderView, TrackingSummary } from './model';
+// T102: 등록이 끝나면(가짜 포함) 왼쪽 목록의 추적 항목을 "Done today"로 옮긴다 (화면 상태만)
+import { TRACKING_ITEM_ID, type TrackingOrderView, type TrackingSummary } from './model';
 import { TrackingRegister } from './tracking-register';
 import { addButtonLabel, type TrackingOutcome } from './tracking-result';
 
@@ -42,7 +43,7 @@ export function TrackingDetail({
       </h2>
       <p>{count === 1 ? t('today.tracking.detailOne', { count }) : t('today.tracking.detail', { count })}</p>
       {register === undefined || count === 0 ? null : (
-        <TrackingRegister label={addButtonLabel(count)} action={register} savings={savings} />
+        <TrackingRegister label={addButtonLabel(count)} action={register} savings={savings} doneId={TRACKING_ITEM_ID} />
       )}
       <div className="card">
         <table className="tracking-table">
