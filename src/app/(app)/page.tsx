@@ -16,6 +16,7 @@ import { addTrackingAction } from '@/app/today/actions';
 import { selectItem } from '@/app/today/model';
 import { SavingsProvider } from '@/app/today/savings';
 import { trackingSavingsDisplay } from '@/app/today/savings-values';
+import { PreventCard } from '@/app/today/prevent-card';
 import { ProductFilterBar, TodayList } from '@/app/today/today-list';
 import { TrackingDetail } from '@/app/today/tracking-detail';
 
@@ -56,6 +57,8 @@ export default async function TodayPage({ searchParams }: Props) {
                 register={addTrackingAction}
                 savings={trackingSavingsDisplay(view.tracking)}
               />
+            ) : selected.kind === 'prevent' && selected.prevent !== undefined ? (
+              <PreventCard detail={selected.prevent} />
             ) : selected.kind === 'dispute' ? (
               <CaseDetail key={selected.id} disputeId={selected.id} />
             ) : null}

@@ -602,7 +602,7 @@ export function ReplyPanel({
   const language = languageKey === null ? t('case.send.languageUnknown') : t(languageKey);
   // 시안 "She'll see (Korean)" — 언어 이름은 데이터(구매자 언어)에서
   const readsLabel =
-    buyerShort === null ? t('case.reply.buyerReadsUnknown', { language }) : t('case.reply.sheSees', { language });
+    buyerShort === null ? t('case.reply.buyerReadsUnknown', { language }) : t('case.reply.sheSees', { name: buyerShort, language });
 
   // Details ⌄ (T090): 검사가 하나라도 실패하면 자동으로 펼친다 (닫을 수 없다). [Send]는 관문이 이미 끈다
   const detailsForced = detailsMustOpen(shownView);

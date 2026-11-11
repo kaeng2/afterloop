@@ -313,7 +313,7 @@ describe('완료 기준 1: 어댑터가 null이면 화면이 깨지지 않고 �
     expect(markup).not.toContain('class="history-summary"');
     expect(markup).not.toMatch(/Chargeback \d+%/);
     // T090: 전송본 제목은 시안 "She’ll see (Korean)"
-    const sheSees = t('case.reply.sheSees', { language: t('case.view.lang.KO') });
+    const sheSees = t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') });
     for (const needle of ['class="history-card"', 'class="choice-list"', 'class="reply-textarea"', sheSees, 'class="reply-foot"', 'Send in Korean']) {
       expect(markup, needle).toContain(needle);
     }

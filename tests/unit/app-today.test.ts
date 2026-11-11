@@ -300,7 +300,9 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     expect(selectItem(view, D1)?.id).toBe(D1);
     expect(selectItem(view, TRACKING_ITEM_ID)?.id).toBe(TRACKING_ITEM_ID);
     expect(selectItem(view, 'PP-R-HEY-10197767')?.id).toBe(D2);
-    expect(selectItem(view, 'FK-CD-OAT')?.id).toBe(D2);
+    // T099: 주소로 고른 Prevent는 짧은 카드로 열린다. 처음 열 때는 고르지 않는다
+    expect(selectItem(view, 'FK-CD-OAT')?.id).toBe('FK-CD-OAT');
+    expect(selectItem(view, undefined)?.kind).not.toBe('prevent');
   });
 
   it('주소: 분쟁은 /?item=, 추적은 /?item=tracking, Prevent는 /products?sku=', () => {
@@ -308,7 +310,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     const byId = Object.fromEntries(items(view).map((item) => [item.id, item.href]));
     expect(byId[D2]).toBe(`/?item=${D2}`);
     expect(byId[TRACKING_ITEM_ID]).toBe('/?item=tracking');
-    expect(byId['FK-CD-OAT']).toBe('/products?sku=FK-CD-OAT');
+    expect(byId['FK-CD-OAT']).toBe('/?item=FK-CD-OAT'); // T099: /products 링크 없음
   });
 
   it('고른 항목에만 aria-current가 붙는다 (링크라 키보드로 고를 수 있다)', () => {
@@ -523,8 +525,8 @@ describe('T060 추적 항목 조회 (GET만)', () => {
 
 describe('T060 위쪽 막대', () => {
   it('기본 탭은 Today / Products (T087: "Black Friday rehearsal"은 /listing으로 — 위쪽 막대 TOP_TABS가 끼운다)', () => {
-    expect(NAV_ITEMS.map((item) => item.href)).toEqual(['/', '/products']);
-    expect(NAV_ITEMS.map((item) => t(item.copyKey))).toEqual(['Today', 'Products']);
+    expect(NAV_ITEMS.map((item) => item.href)).toEqual(['/']); // T099: /products 항목 정리
+    expect(NAV_ITEMS.map((item) => t(item.copyKey))).toEqual(['Today']);
   });
 
   it('판매자 칩 글자는 설정의 서명에서 온다', () => {

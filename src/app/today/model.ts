@@ -16,12 +16,13 @@ import { decideAutopilot } from '@/engine/autopilot';
 import { escalationRisk } from '@/engine/escalation';
 import { paramsFromConfig, rulesFromConfig } from '@/engine/params';
 import { recommend } from '@/engine/recommend';
-import { FIX_ORDER } from '@/engine/sim';
+import { FIX_ORDER, fixSavings, simInputFor } from '@/engine/sim';
 import { pickPreventProduct, simulateStore, type PreventPick } from '@/engine/storefront';
 import type {
   AutopilotDecision,
   BoardState,
   Evaluation,
+  FixId,
   ParamsConfig,
   PolicyConfig,
   SeedBuyer,
@@ -114,6 +115,20 @@ export type TodayItem = {
   dueDate: string;
   /** 시안 v4 한 줄 (T076). 글자는 데이터·문구에서, 숫자는 세기만. */
   row: TodayRowView;
+  /** Prevent 항목의 오른쪽 짧은 카드 값 (T099). 엔진 값을 옮긴 것이다. 다른 항목은 없다. */
+  prevent?: PreventDetail;
+};
+
+/** Prevent 카드 값 (T099). 손실은 `pickPreventProduct`(센트), 처방별 절감은 `fixSavings`(센트)를 그대로 옮긴다. */
+export type PreventDetail = {
+  sku: string;
+  name: string;
+  stock: number;
+  beforeCents: number;
+  afterCents: number;
+  cutPercent: number;
+  /** 절감이 0보다 큰 처방만 (`FIX_ORDER` 순서). 절감 = 처방 하나만 켠 평균 손실 감소 (`fixSavings`). */
+  fixes: { fix: FixId; savingCents: number }[];
 };
 
 /** 시안 v4 목록 한 줄: 상품 아이콘 · "PP-R-… · Wool Sweater" · 범주 알약 · "Reply by Nov 30" · "Seo-yeon Kim · KR". */
@@ -392,12 +407,39 @@ function compareNeedsYou(a: TodayItem, b: TodayItem): number {
 // 고르기·비율은 엔진 `pickPreventProduct`(T066)가 한다. 화면은 옮기기만 한다.
 export type { PreventPick };
 
-function preventItem(pick: PreventPick, product: SeedProduct): TodayItem {
+/** 처방 하나씩 켰을 때의 절감 (`fixSavings`, 처방을 모두 끈 상태에서). 0 이하는 뺀다. */
+function preventFixes(product: SeedProduct, params?: ParamsConfig, rules?: PolicyConfig): PreventDetail['fixes'] {
+  const input = simInputFor(product.sku, product, [], params);
+  return fixSavings(input, params, rules)
+    .filter((row) => row.savingCents > 0)
+    .map((row) => ({ fix: row.fix, savingCents: row.savingCents }));
+}
+
+function selectedSkuOf(input: Pick<TodayInput, 'products' | 'sku'>): string | null {
+  return input.sku !== undefined && input.products.some((product) => product.sku === input.sku) ? input.sku : null;
+}
+
+function preventItem(
+  pick: PreventPick,
+  product: SeedProduct,
+  fixes: PreventDetail['fixes'],
+  sku: string | null,
+): TodayItem {
   return {
     id: pick.sku,
     kind: 'prevent',
     group: 'prevent',
-    href: `/products?sku=${encodeURIComponent(pick.sku)}`,
+    // T099: Products 탭으로 가지 않는다. 오른쪽 칸에 짧은 카드로 연다 (`/?item=<SKU>`)
+    href: todayHref(sku, pick.sku),
+    prevent: {
+      sku: pick.sku,
+      name: product.itemName,
+      stock: product.stock,
+      beforeCents: pick.beforeCents,
+      afterCents: pick.afterCents,
+      cutPercent: pick.cutPercent,
+      fixes,
+    },
     name: product.itemName,
     label: null,
     sub: t('today.prevent.sub', { stock: product.stock, percent: pick.cutPercent }),
@@ -488,7 +530,9 @@ export function buildToday(input: TodayInput): TodayView {
   const pickedProduct = pick === null ? undefined : input.products.find((product) => product.sku === pick.sku);
   const prevent = [
     ...(tracking === null ? [] : [tracking]),
-    ...(pick === null || pickedProduct === undefined ? [] : [preventItem(pick, pickedProduct)]),
+    ...(pick === null || pickedProduct === undefined
+      ? []
+      : [preventItem(pick, pickedProduct, preventFixes(pickedProduct, input.params, input.rules), selectedSkuOf(input))]),
   ];
 
   const allGroups = (
@@ -500,8 +544,7 @@ export function buildToday(input: TodayInput): TodayView {
   ).filter((group) => group.items.length > 0);
 
   // 상품 거르개: 아는 SKU일 때만 거른다. 항목 주소는 거르개를 지킨다
-  const selectedSku =
-    input.sku !== undefined && input.products.some((product) => product.sku === input.sku) ? input.sku : null;
+  const selectedSku = selectedSkuOf(input);
   const groups: TodayGroup[] = allGroups
     .map((group) => ({
       key: group.key,
@@ -562,9 +605,11 @@ export function weeklyView(
 
 /**
  * 오른쪽 상세에 보일 항목. 주소의 `item`이 상세가 있는 항목(분쟁·추적)이면 그것, 아니면 목록 첫 항목.
- * Prevent 항목은 Products 탭으로 가므로 고르지 않는다.
+ * Prevent 항목은 주소로 고르면 짧은 카드로 열린다 (T099). 처음 열 때는 고르지 않는다.
  */
 export function selectItem(view: Pick<TodayView, 'groups'>, requested: string | undefined): TodayItem | null {
-  const selectable = view.groups.flatMap((group) => group.items).filter((item) => item.kind !== 'prevent');
-  return selectable.find((item) => item.id === requested) ?? selectable[0] ?? null;
+  const all = view.groups.flatMap((group) => group.items);
+  // 처음 열 때는 Prevent가 아니라 첫 분쟁·추적. 주소로 고른 Prevent는 카드를 연다 (T099)
+  const first = all.find((item) => item.kind !== 'prevent');
+  return all.find((item) => item.id === requested) ?? first ?? null;
 }
