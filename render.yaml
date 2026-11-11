@@ -7,7 +7,7 @@
 # - region·plan은 자리만 둔다. 요금제는 사람이 정한다.
 services:
   - type: web
-    name: afterloop
+    name: disputeless
     runtime: node
     region: oregon
     plan: free
