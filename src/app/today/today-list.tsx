@@ -116,9 +116,7 @@ export function WeeklyCard({ weekly, storeLine }: { weekly: WeeklyView; storeLin
           </div>
         )}
       </div>
-      <Link href="/products" className="weekly-link">
-        {storeLine}
-      </Link>
+      <p className="weekly-link">{storeLine}</p>
     </section>
   );
 }

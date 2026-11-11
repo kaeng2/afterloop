@@ -130,7 +130,7 @@ describe('T081: 언어 고르기', () => {
           createElement(
             Provider,
             { locale },
-            createElement(TopBar, { todayCount: 2, seller: { initial: 'F', shop: 'Fernwood Knits' } }),
+            createElement(TopBar, { seller: { initial: 'F', shop: 'Fernwood Knits' } }),
           ),
         );
       } finally {
@@ -140,12 +140,11 @@ describe('T081: 언어 고르기', () => {
     const en = bar('en');
     expect(en).toMatch(/<button[^>]*aria-pressed="true"[^>]*>EN<\/button>/);
     expect(en).toMatch(/<button[^>]*aria-pressed="false"[^>]*>한국어<\/button>/);
-    expect(en).toContain('Today (2)');
+    expect(en).not.toContain('Today (');
     const ko = bar('ko');
     expect(ko).toMatch(/<button[^>]*aria-pressed="true"[^>]*>한국어<\/button>/);
     expect(ko).toMatch(/<button[^>]*aria-pressed="false"[^>]*>EN<\/button>/);
-    expect(ko).toContain(t('shell.todayTab', { count: 2 }, 'ko'));
-    expect(ko).not.toContain('Today (2)');
+    expect(ko).not.toContain(t('shell.todayTab', { count: 2 }, 'ko'));
   });
 });
 
@@ -243,6 +242,8 @@ describe('T081: 문구 파일', () => {
       'case.reply.rushedExample', // 구매자에게 나가는 영어 답장 예시 (영어 그대로가 맞다)
       'case.reply.refundDraft', // T091: 환불 카드의 영어 입력칸 글 (입력칸은 영어 — 예측 규칙이 영어 글을 본다)
       'case.reply.refundDraftNoName', // T091: 같은 글, 이름을 모를 때
+      'case.progress.buyer.original', // T092: 손님의 시뮬레이션 답장 원문 (구매자 언어 한국어 그대로가 맞다)
+      'case.progress.buyer.english', // T092: 그 답장의 영어 번역 줄 ("Translated · …", 두 언어 모두 영어)
     ]);
     const same = copyKeys(copyTables.en).filter((key) => copyTables.en[key] === copyTables.ko[key]);
     expect(same.filter((key) => !allowed.has(key))).toEqual([]);

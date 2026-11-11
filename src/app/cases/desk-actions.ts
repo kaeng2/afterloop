@@ -27,6 +27,17 @@ export function draftForMove(move: Evaluation['move'], drafts: MoveDrafts): stri
   return typeof text === 'string' && text.trim() !== '' ? text : null;
 }
 
+/**
+ * 환불 카드를 고른 상태에서 예측할 글 (컨트롤 타워 결정 2026-11-12): 큰 위험 %·반응 막대 = 카드에 보인 숫자
+ * (엔진 `forecastMoves`의 refund = AI 초안 특징 + refundNow). 특징은 문장마다 판정해 합치므로, AI 초안 끝에 환불 안내 글의
+ * refundNow 문장을 넣은 글을 엔진 `forecastReply`에 넘기면 그 수의 엔진 값이 나온다. 숫자를 만들지 않는다 (글만 고른다).
+ * 문장이 없으면 `null` (지금 글 그대로 예측).
+ */
+export function refundMoveText(anchor: string, refundNowSentence: string | null | undefined): string | null {
+  if (typeof refundNowSentence !== 'string' || refundNowSentence.trim() === '') return null;
+  return appendSentence(anchor, refundNowSentence);
+}
+
 // ───────────────────────────── 타이핑 효과 ─────────────────────────────
 
 /** 다음에 보일 글자 수 (시안 `i = Math.min(text.length, i + 2)`). */

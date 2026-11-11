@@ -46,6 +46,7 @@ import {
   filledSnippets,
   lintSummary,
   quoteCut,
+  refundMoveText,
   typeOutFrames,
   type DeskPath,
   type EffectRows,
@@ -80,6 +81,7 @@ import {
   type SendOutcome,
   type SendState,
 } from '../reply-model';
+import { CaseProgress } from '../progress/case-progress';
 import { useDeskSelection } from '../view/desk-selection';
 import { useDraftForecast } from '../view/draft-forecast';
 import { useSent } from '../view/sent-state';
@@ -570,17 +572,24 @@ export function ReplyPanel({
   // 예측 (브라우저 어댑터 = 엔진 순수 함수. 쓸 수 없으면 null → 칸이 숨는다). 입력 글이 바뀔 때마다 다시 받는다
   const board = base.board ?? null;
   const translated = forecastBase?.translated === true;
+  // 환불 카드를 고른 상태(path 'refund' — 글을 고치면 custom이 된다): 카드에 보인 그 수의 엔진 값(forecastMoves refund)을 보인다.
+  // 환불 안내 글 자체가 아니라 AI 초안 + 그 글의 refundNow 문장을 예측한다 (`refundMoveText`, 컨트롤 타워 결정 2026-11-12)
+  const refundPath = desk.path === 'refund';
+  const forecastText = useMemo(() => {
+    if (!refundPath || anchor === null) return text;
+    return refundMoveText(anchor, detector(refundNote, { translated })?.hits.refundNow) ?? text;
+  }, [refundPath, anchor, text, detector, refundNote, translated]);
   const forecast: ReplyForecast | null = useMemo(() => {
     if (forecastBase === null || anchor === null || board === null || view.offer !== null) return null;
     return forecaster({
-      text,
+      text: forecastText,
       anchorText: anchor,
       board,
       signals: forecastBase.signals,
       delayDays: forecastBase.delayDays,
       translated,
     });
-  }, [forecaster, forecastBase, anchor, board, text, view.offer, translated]);
+  }, [forecaster, forecastBase, anchor, board, forecastText, view.offer, translated]);
   useEffect(() => {
     setForecast(forecast);
   }, [forecast, setForecast]);
@@ -799,6 +808,32 @@ export function ReplyPanel({
         {resultBlock}
         {riskAfterBlock}
       </section>
+    );
+  }
+
+  // ── T092: 보내기 성공(공개 모드는 Simulated 성공) 뒤 → "What happens next · Simulated" 칸 (Replay면 여기로 돌아온다)
+  if (sendState === 'done' && outcome !== null && outcome.ok) {
+    return (
+      <CaseProgress
+        disputeId={disputeId}
+        live={outcome.mode === 'live'}
+        language={language}
+        buyerShort={buyerShort}
+        sentText={view.outgoing?.text ?? null}
+        sentLocale={base.buyerLocale ?? null}
+        scenarioInput={
+          forecastBase === null || anchor === null || board === null
+            ? null
+            : { text: anchor, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays, translated }
+        }
+        board={board}
+        move={base.plan?.move ?? null}
+        baseForecast={forecast}
+        onReplay={() => {
+          again();
+          setText(anchor ?? '');
+        }}
+      />
     );
   }
 

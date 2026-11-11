@@ -307,8 +307,7 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
     for (const tone of ['high', 'watch', 'neutral']) {
       expect(rule(TODAY_CSS, `.today-pill-${tone}`)).toMatch(new RegExp(`background:\\s*var\\(--color-pill-${tone}-bg\\)`));
     }
-    // 탭·버튼도 알약
-    expect(rule(SHELL_CSS, '.shell-tab')).toMatch(/border-radius:\s*var\(--radius-pill\)/);
+    // 버튼도 알약 (T096: 탭은 없다)
     expect(rule(TODAY_CSS, '.tracking-button')).toMatch(/border-radius:\s*var\(--radius-pill\)/);
   });
 

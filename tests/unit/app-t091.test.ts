@@ -25,12 +25,14 @@ import {
   nextTyped,
   ppText,
   quoteCut,
+  refundMoveText,
   typeOutFrames,
 } from '@/app/cases/desk-actions';
 import { caseReplyFacts } from '@/app/cases/reply-facts';
 import { buildReplyView, editGate, type ReplyViewInput } from '@/app/cases/reply-model';
 import { actionSavingsDisplay, trackingSavingsDisplay } from '@/app/today/savings-values';
-import { appendSentence, forecastReply, removeSentence, replyFeatureEffects } from '@/engine/forecast';
+import { appendSentence, forecastMoves, forecastReply, removeSentence, replyFeatureEffects } from '@/engine/forecast';
+import { detectReplyFeatures } from '@/engine/reply-features';
 import { planMove } from '@/engine/plan';
 import { recommend } from '@/engine/recommend';
 import { actionSavings, trackingSavings } from '@/engine/savings';
@@ -207,6 +209,38 @@ describe('만들 것 1 · 완료 기준 1: 선택지 카드 누르기', () => {
     // 보내는 글은 그대로 — 글이 다르면 Send는 관문이 끈다
     expect(markup).toMatch(/<button type="button" class="reply-button" disabled=""/);
     expect(markup).toContain(t('case.reply.autoTr', { language: t('case.view.lang.KO') }));
+  });
+
+  it('환불 카드를 고른 상태: 큰 위험 %·반응 막대 = 카드 숫자 (엔진 forecastMoves refund, 컨트롤 타워 결정 2026-11-12)', async () => {
+    const b = await base();
+    const anchor = anchorOf(b);
+    const card = forecastMoves({ anchorText: anchor, board: AFTER, signals: SIGNALS, delayDays: DELAY, translated: true }).find(
+      (m) => m.move === 'refund',
+    );
+    expect(card?.pChargeback).not.toBeNull();
+    const choice = choicesView(recommend(AFTER), [{ move: 'refund', pChargeback: card?.pChargeback as number }]).find(
+      (c) => c.move === 'refund',
+    );
+    // 환불 안내 글의 refundNow 문장 + AI 초안 = 그 수의 엔진 값 (같은 수 — 반올림 없이 같다)
+    const hit = detectReplyFeatures(REFUND_NOTE, { translated: true }).hits.refundNow;
+    expect(hit).toBeDefined();
+    const moveText = refundMoveText(anchor, hit) as string;
+    const engine = forecastReply(input(moveText, anchor));
+    expect(engine.pChargeback).toBeCloseTo(card?.pChargeback as number, 12);
+    // 환불 안내 글 자체의 예측과는 다르다 (그래서 바꾼다)
+    expect(forecastReply(input(REFUND_NOTE, anchor)).pChargeback).not.toBeCloseTo(engine.pChargeback, 6);
+
+    const markup = html(
+      createElement(DeskSelectionProvider, { initialPath: 'refund' }, panel(b, { initialText: REFUND_NOTE })),
+    );
+    const r = reactionView(engine, true);
+    expect(r?.chargeback).toBe(choice?.chargeback);
+    expect(markup).toContain(t('case.choice.chargeback', { percent: choice?.chargeback as string }));
+    for (const part of r?.parts ?? []) expect(markup).toContain(`style="--seg:${part.p}"`);
+    // 입력칸 글은 환불 안내 글 그대로 (보이는 글은 바꾸지 않는다)
+    expect(markup).toContain(REFUND_NOTE);
+    // 고치면 custom → 다시 글 그대로 예측 (기존 시험과 같은 길)
+    expect(refundMoveText(anchor, undefined)).toBeNull();
   });
 });
 

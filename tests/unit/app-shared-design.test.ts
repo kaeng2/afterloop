@@ -38,13 +38,11 @@ function varsIn(block: string): Record<string, string> {
   return out;
 }
 
-/** 첫 `:root { … }` (밝은 모드)와 `prefers-color-scheme: dark` 안의 `:root { … }`. */
-function themeVars(): { light: Record<string, string>; dark: Record<string, string> } {
+/** 첫 `:root { … }` (밝은 모드 — T096부터 유일한 모드). */
+function themeVars(): { light: Record<string, string> } {
   const css = stripComments(CSS);
   const lightBlock = /^:root\s*\{([\s\S]*?)\n\}/m.exec(css)?.[1] ?? '';
-  const darkMedia = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
-  const darkBlock = /:root\s*\{([\s\S]*?)\}/.exec(darkMedia)?.[1] ?? '';
-  return { light: varsIn(lightBlock), dark: varsIn(darkBlock) };
+  return { light: varsIn(lightBlock) };
 }
 
 const rgb = (hex: string): [number, number, number] => {
@@ -82,8 +80,8 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
   });
 
   it('T089: 강조색은 밝은·어두운 모드 모두 6자리 색이고, 밝은 모드는 시안 v4 #0066F5이며, 흰 글자 대비가 3:1 이상(큰 글자·굵은 버튼 글자)이다', () => {
-    const { light, dark } = themeVars();
-    for (const accent of [light['--color-accent'], dark['--color-accent']]) {
+    const { light } = themeVars();
+    for (const accent of [light['--color-accent']]) {
       expect(accent).toMatch(/^#[0-9a-fA-F]{6}$/);
     }
     expect(light['--color-accent'].toLowerCase()).toBe('#0066f5');
@@ -93,8 +91,8 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
   });
 
   it('위험 3색·성공·실패 색은 강조색과 다른 변수이고 값도 다르다', () => {
-    const { light, dark } = themeVars();
-    for (const vars of [light, dark]) {
+    const { light } = themeVars();
+    for (const vars of [light]) {
       for (const name of ['--color-risk-high', '--color-risk-watch', '--color-risk-low', '--color-success', '--color-danger']) {
         expect(vars[name], name).toMatch(/^#[0-9a-fA-F]{6}$/);
         expect(vars[name].toLowerCase(), name).not.toBe(vars['--color-accent'].toLowerCase());
@@ -102,8 +100,8 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
     }
   });
 
-  it('밝은·어두운 모드 모두 글자색 대비가 4.5:1 이상이다 (바탕·카드 바탕 위)', () => {
-    const { light, dark } = themeVars();
+  it('밝은 모드 글자색 대비가 4.5:1 이상이다 (바탕·카드 바탕 위)', () => {
+    const { light } = themeVars();
     const textVars = [
       '--color-text',
       '--color-muted',
@@ -114,7 +112,7 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
       '--color-success',
       '--color-danger',
     ];
-    for (const [mode, vars] of Object.entries({ light, dark })) {
+    for (const [mode, vars] of Object.entries({ light })) {
       for (const bg of ['--color-bg', '--color-surface']) {
         for (const fg of textVars) {
           const ratio = contrast(vars[fg], vars[bg]);
@@ -124,11 +122,14 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
     }
   });
 
-  it('어두운 모드가 밝은 모드의 색 변수를 모두 다시 정한다', () => {
-    const { light, dark } = themeVars();
-    const colorNames = Object.keys(light).filter((name) => name.startsWith('--color-'));
-    expect(colorNames.length).toBeGreaterThanOrEqual(11);
-    for (const name of colorNames) expect(dark[name], name).toBeDefined();
+  it('T096: 밝은 모드 고정 — color-scheme: light 가 있고 어두운 모드 분기는 src/app 어디에도 없다', () => {
+    expect(stripComments(CSS)).toMatch(/color-scheme:\s*light/);
+    expect(stripComments(CSS)).not.toMatch(/color-scheme:\s*dark/);
+    for (const file of filesUnder(APP, ['.css', '.tsx', '.ts'])) {
+      expect(stripComments(readFileSync(file, 'utf8')), path.relative(ROOT, file)).not.toMatch(/prefers-color-scheme:\s*dark/);
+    }
+    const { light } = themeVars();
+    expect(Object.keys(light).filter((name) => name.startsWith('--color-')).length).toBeGreaterThanOrEqual(11);
   });
 });
 
@@ -182,9 +183,8 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
   });
 
   it('그림자는 `--shadow-selected` 변수 하나만 쓰고, 값은 시안의 rgba(0,0,0,0.14) 4px 4px 28px 6px다', () => {
-    const { light, dark } = themeVars();
+    const { light } = themeVars();
     expect(light['--shadow-selected']).toBe('rgba(0, 0, 0, 0.14) 4px 4px 28px 6px');
-    expect(dark['--shadow-selected']).toBeDefined();
     for (const file of filesUnder(APP, ['.css'])) {
       for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
         expect(match[1].trim(), `${path.relative(ROOT, file)}: ${match[0]}`).toBe('var(--shadow-selected)');

@@ -105,67 +105,9 @@
   --gutter: var(--space-5);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* 색 — 어두운 모드 (시안에 없어 밝은 모드 역할에 맞춰 정했다) */
-    --color-bg: #111214;
-    --color-surface: #1a1c1f;
-    --color-text: #e3e5e8;
-    --color-text-body: #e3e5e8;
-    --color-heading: #ffffff;
-    --color-muted: #a3a7ae;
-    --color-border: #2e3136;
-    --color-divider: #2e3136;
-    --color-list-bg: #141517;
-    --color-accent: #60a5ff;
-
-    --color-accent-soft: #14283f;
-    --color-accent-pale: #101e30;
-    --color-accent-tint: #1f3a5c;
-    --color-accent-deep: #8fb4f5; /* 어두운 바탕 위 남색 글자·막대 자리 (밝게) */
-    --color-navy-ink: #8fb4f5;
-    --color-bar-wait: #60a5ff;
-    --color-bar-refund: #3f6aa8;
-    --color-bar-chargeback: #f97066;
-    --gradient-week: linear-gradient(150deg, #0d2563 0%, #1a3fa8 55%, #2a5fd6 100%);
-    --gradient-ai: linear-gradient(120deg, #1a3fa8, #3b82f6 60%, #60cdff);
-    --gradient-ai-line: linear-gradient(90deg, #1a3fa8, #3b82f6 60%, #60cdff);
-    --gradient-soft: linear-gradient(120deg, #14283f, #101e30);
-    --color-on-accent: #ffffff;
-    --color-on-accent-muted: #cfe3ff;
-    --color-flash: #60cdff;
-    --color-choice-on: #23262b;
-    --color-editor-high: #e8796b;
-    --color-on-accent-fill: rgba(255, 255, 255, 0.12);
-    --color-panel: #202226;
-    --color-zone: #1d1f23;
-    --color-line: #3a3e44;
-    --color-ink: #f2f2f2;
-
-    --color-risk-high: #f97066;
-    --color-risk-watch: #fdb022;
-    --color-risk-low: #47cd89;
-    --color-success: #4fc38a;
-    --color-danger: #ff7b72;
-
-    --color-dot-high: #f97066;
-    --color-dot-watch: #fdb022;
-    --color-dot-low: #47cd89;
-    --color-dot-neutral: #80868b;
-
-    --color-pill-high-bg: #45201c;
-    --color-pill-high-text: #ffb4a9;
-    --color-pill-watch-bg: #3d2f0d;
-    --color-pill-watch-text: #fdd47b;
-    --color-pill-neutral-bg: #2a2d31;
-    --color-pill-neutral-text: #d5d8dc;
-
-    --shadow-selected: rgba(0, 0, 0, 0.55) 4px 4px 28px 6px;
-  }
-
-  html {
-    color-scheme: dark;
-  }
+/* 밝은 모드 고정 (T096, 사람 결정 2026-11-11 22:50 — 시안은 밝은 화면뿐). 어두운 모드 토큰·분기 없음 */
+html {
+  color-scheme: light;
 }
 
 /* ── 기본 ──────────────────────────────────────────────────────────────── */

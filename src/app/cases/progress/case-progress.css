@@ -1,0 +1,393 @@
+/*
+ * Send 뒤 "What happens next · Simulated" 칸 (T092). 값은 시안 Desk.dc.html의 `.step`·`.sic`·`.ndots`·`.bub-out`·
+ * `.bub-sim`·`.flash`·`.toast` 그대로. 시간은 config/motion.json `caseProgress` → `--cprog-*` 변수(화면이 붙인다)만 쓴다.
+ * 색 값은 아래 변수 정의 줄에만 쓴다 (tests/unit/app-shared-design.test.ts). 그림자는 `--shadow-selected` 하나만.
+ * prefers-reduced-motion이면 globals.css가 모든 애니메이션·전환을 끈다 (화면은 간격도 0으로 줄인다).
+ */
+.cprog,
+.cprog-bubble-wrap,
+.cprog-toast,
+.cprog-flash {
+  --cprog-navy: #002991;
+  --cprog-on-navy: #ffffff;
+  --cprog-on-navy-muted: #c9e3ff;
+  --cprog-buyer-bg: #f1efea;
+  --cprog-buyer-ink: #000000;
+  --cprog-act-bg: #fbe7e4;
+  --cprog-act-ink: #9e2414;
+  --cprog-chip-bg: #e3f3ff;
+  --cprog-chip-ink: #002991;
+  --cprog-line: #cfd3d8;
+  --cprog-dot-color: #9aa0a6;
+  --cprog-dash: #9aa0a6;
+  --cprog-ink: #000000;
+  --cprog-ink-hover: #333333;
+  --cprog-body: #3f4144;
+  --cprog-muted: #6c7378;
+  --cprog-surface: #ffffff;
+  --cprog-sim-bg: #eceef0;
+  --cprog-light: #60cdff;
+  --cprog-focus: #097ff5;
+}
+
+/* 보낸 뒤에는 "지금 대응" 칸의 머리 줄·선택지 카드를 숨긴다 (시안: notSent 칸 → sent 칸) */
+.work:has(.cprog) > .work-head,
+.work:has(.cprog) > .desk-step,
+.work:has(.cprog) > .case-summary {
+  display: none;
+}
+
+.cprog {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.cprog-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── 단계 (시안 .step) ─────────────────────────────────────────────── */
+
+.cprog-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: relative;
+}
+
+.cprog-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  animation: cprog-rise var(--cprog-step) both;
+}
+
+.cprog-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cprog-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  background: var(--cprog-navy);
+  color: var(--cprog-on-navy);
+}
+
+.cprog-icon-buyer {
+  background: var(--cprog-buyer-bg);
+  color: var(--cprog-buyer-ink);
+}
+
+.cprog-icon-pending {
+  background: var(--cprog-act-bg);
+  color: var(--cprog-act-ink);
+}
+
+/* 시안 lineSt: flex:1;width:2px;min-height:14px;background:#CFD3D8;margin:4px 0 (마지막 줄은 없음) */
+.cprog-line {
+  flex: 1;
+  width: 2px;
+  min-height: 14px;
+  margin: 4px 0;
+  background: var(--cprog-line);
+}
+
+.cprog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  min-width: 0;
+}
+
+.cprog-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cprog-title {
+  font-size: 15px;
+  color: var(--cprog-ink);
+}
+
+.cprog-sub {
+  font-size: 13px;
+  color: var(--cprog-body);
+}
+
+/* 시안 .chip + pSt (낮음: 파랑, 0.5 이상: 빨강) */
+.cprog-chip,
+.cprog-sim {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--cprog-chip-bg);
+  color: var(--cprog-chip-ink);
+}
+
+.cprog-chip-high {
+  background: var(--cprog-act-bg);
+  color: var(--cprog-act-ink);
+}
+
+.cprog-sim {
+  background: var(--cprog-sim-bg);
+  color: var(--cprog-body);
+}
+
+.cprog-act {
+  margin-top: 6px;
+}
+
+/* [Forward to carrier] — 시안 .btn.b-black.b-sm */
+.cprog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--cprog-ink);
+  color: var(--cprog-surface);
+  transition: background-color var(--motion-hover);
+}
+
+.cprog-btn:hover {
+  background: var(--cprog-ink-hover);
+}
+
+.cprog-btn:focus-visible {
+  outline: 2px solid var(--cprog-focus);
+  outline-offset: 2px;
+}
+
+/* 시안 stepsRunning 줄 */
+.cprog-running {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding-left: 46px;
+  font-size: 13px;
+  color: var(--cprog-muted);
+}
+
+.cprog-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── typing 점 세 개 (시안 .ndots) ─────────────────────────────────── */
+
+.cprog-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.cprog-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cprog-dot-color);
+  animation: cprog-ndot var(--cprog-dot) infinite;
+}
+
+.cprog-dots span:nth-child(2) {
+  animation-delay: var(--cprog-dot-stagger);
+}
+
+.cprog-dots span:nth-child(3) {
+  animation-delay: calc(var(--cprog-dot-stagger) * 2);
+}
+
+/* ── 말풍선 (대화 목록 끝에 붙는다. 시안 .bub-out · .bub-sim · typing) ───────── */
+
+.cprog-thread {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cprog-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  list-style: none;
+  animation: cprog-rise var(--cprog-bubble) both;
+}
+
+.cprog-bubble-wrap-out {
+  align-items: flex-end;
+}
+
+.cprog-bubble {
+  max-width: 78%;
+  min-width: 0;
+  padding: 12px 16px;
+}
+
+.cprog-bubble-text {
+  margin: 0;
+}
+
+.cprog-bubble-out {
+  background: var(--cprog-navy);
+  color: var(--cprog-on-navy);
+  border-radius: 18px 6px 18px 18px;
+}
+
+.cprog-bubble-out .cprog-bubble-sub {
+  color: var(--cprog-on-navy-muted);
+}
+
+.cprog-bubble-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--cprog-muted);
+}
+
+.cprog-bubble-sim {
+  background: var(--cprog-surface);
+  border: 2px dashed var(--cprog-dash);
+  border-radius: 6px 18px 18px 18px;
+}
+
+.cprog-bubble-tag {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--cprog-muted);
+}
+
+/* 시안 bub-in + inline-flex gap 8px 13px. 그림자 대신 테두리 (그림자는 한 변수만) */
+.cprog-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cprog-body);
+  background: var(--cprog-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px 18px 18px 18px;
+}
+
+/* ── "이번 주" 카드 숫자 칸 flash · 토스트 (시안 .flash · .toast) ─────────────── */
+
+.cprog-flash {
+  animation: cprog-flash var(--cprog-flash);
+}
+
+.cprog-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 20;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 20px;
+  border-radius: 16px;
+  background: var(--cprog-ink);
+  color: var(--cprog-surface);
+  box-shadow: var(--shadow-selected);
+  transform: translateX(-50%);
+  animation: cprog-toast-rise var(--cprog-toast);
+}
+
+.cprog-toast-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cprog-light);
+  color: var(--cprog-navy);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+@keyframes cprog-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 시안 rise와 같은 움직임. 가운데 맞춤(translateX)을 지키려고 같은 이동에 -50%를 함께 둔다 */
+@keyframes cprog-toast-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes cprog-ndot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: none;
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes cprog-flash {
+  0% {
+    background: var(--cprog-light);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@media (max-width: 640px) {
+  .cprog-bubble {
+    max-width: 100%;
+  }
+}
