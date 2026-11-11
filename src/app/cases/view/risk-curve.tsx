@@ -28,7 +28,12 @@ const tickAt = (y: number): CSSProperties => ({ '--tick-at': y / CURVE_BOX.heigh
  */
 export function RiskCurveGraphic({ curve }: { curve: CurveView }) {
   const t = useT();
-  const end = curve.draft ?? curve.dots[curve.dots.length - 1];
+  const end = curve.steps[curve.steps.length - 1] ?? curve.draft ?? curve.dots[curve.dots.length - 1];
+  // 시안 curve.live: 마지막 사건 점 → 보낸 답장(또는 Your draft) 점 → Send 뒤 단계 점들 (보낸 뒤 실선)
+  const live =
+    curve.draft === null
+      ? null
+      : [curve.draft.from, curve.draft, ...curve.steps].map((point) => `${point.x},${point.y}`).join(' ');
   return (
     <div className="curve-plot">
       <svg
@@ -43,16 +48,16 @@ export function RiskCurveGraphic({ curve }: { curve: CurveView }) {
         <line className="curve-base" x1="0" x2={CURVE_BOX.width} y1={CURVE_BOX.bottom} y2={CURVE_BOX.bottom} />
         <polygon className="curve-area" points={curve.area} />
         <polyline className="curve-line" points={curve.line} />
-        {curve.draft === null ? null : (
-          <polyline
-            className="curve-draft"
-            points={`${curve.draft.from.x},${curve.draft.from.y} ${curve.draft.x},${curve.draft.y}`}
-          />
+        {live === null ? null : (
+          <polyline className={curve.sent ? 'curve-draft curve-draft-sent' : 'curve-draft'} points={live} />
         )}
         {curve.dots.map((dot, index) => (
           <circle key={index} className={`curve-dot curve-dot-${dot.kind}`} cx={dot.x} cy={dot.y} r="4.5" />
         ))}
         {curve.draft === null ? null : <circle className="curve-dot-draft" cx={curve.draft.x} cy={curve.draft.y} r="5" />}
+        {curve.steps.map((point, index) => (
+          <circle key={`step-${index}`} className="curve-dot-draft curve-dot-step" cx={point.x} cy={point.y} r="5" />
+        ))}
         {end === undefined ? null : (
           <circle className="curve-ping" cx={end.x} cy={end.y} r={pingStartRadius()} data-testid="curve-ping" />
         )}
@@ -69,8 +74,8 @@ export function RiskCurveGraphic({ curve }: { curve: CurveView }) {
 
 export function RiskCurveCard({ points }: { points: RiskPoint[] | null }) {
   const t = useT();
-  const { forecast } = useDraftForecast();
-  const curve = curveView(points, forecast?.pChargeback ?? null);
+  const { forecast, trail } = useDraftForecast();
+  const curve = curveView(points, forecast?.pChargeback ?? null, trail);
   if (curve === null) return null;
   return (
     <section className="curve-card" aria-labelledby="curve-title">

@@ -15,10 +15,12 @@
   padding: 0;
 }
 
+/* T098b: 시안 `.dk` 바탕 #FFFFFF (왼쪽 칸도 흰 바탕) */
 .today-page {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: var(--color-surface);
 }
 
 /* ── 상품 거르개 줄 ─────────────────────────────────────────────────────── */
@@ -181,7 +183,8 @@
   gap: 2px;
   min-width: 0;
   padding: 10px 12px;
-  background: color-mix(in srgb, var(--color-on-accent) 10%, transparent);
+  /* 시안 `background: rgba(255,255,255,0.08)` */
+  background: var(--color-on-accent-cell);
   border-radius: 16px;
 }
 
@@ -267,14 +270,14 @@
 
 .today-group-count {
   font-weight: 700;
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .today-group-hint {
   margin-left: auto;
   font-size: var(--text-xs);
   text-align: right;
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .today-items {
@@ -299,23 +302,15 @@
   transition: background-color var(--motion-hover);
 }
 
+/* 시안 `.it:hover{background:#F5F7FB}` */
 .today-item:hover {
-  background: var(--color-panel);
+  background: var(--color-row-hover);
 }
 
-/* 고른 줄: 옅은 강조색 바탕 + 왼쪽 4px 띠 (시안 값의 모양, 색은 강조색. 그림자 대신 띠 요소) */
+/* 고른 줄 (T098b 시안 `.it.on{background:#E3F3FF;box-shadow:inset 4px 0 0 #0066F5}` 그대로) */
 .today-item[aria-current='true'] {
   background: var(--color-accent-soft);
-}
-
-.today-item[aria-current='true']::before {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 4px;
-  content: '';
-  background: var(--color-accent);
+  box-shadow: var(--shadow-row-on);
 }
 
 /* 점 = 위험 등급 (상품 아이콘 오른쪽 위) */
@@ -327,12 +322,13 @@
   background: var(--color-dot-high);
 }
 
+/* T098b 시안 sevCol {high:#C4321F, med:#002991, low:#9AA0A6} 그대로 (Watch = med) */
 .today-dot-watch {
-  background: var(--color-dot-watch);
+  background: var(--color-accent-deep);
 }
 
 .today-dot-low {
-  background: var(--color-dot-low);
+  background: var(--color-dot-neutral);
 }
 
 .today-dot-neutral {
@@ -384,7 +380,7 @@
 
 .today-item-sub {
   font-size: var(--text-xs);
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 /* 알약 = 범주 (연한 바탕 + 진한 글자, 완전히 둥글게) */
@@ -488,7 +484,7 @@
 }
 
 .tracking-row-excluded {
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 /* 추적 등록 버튼 + 결과 줄 (T067 → T076 시안 v4: 검정 주 버튼) */
@@ -509,13 +505,20 @@
   border: 1px solid var(--color-ink);
   border-radius: var(--radius-pill);
   cursor: pointer;
+  /* 시안 `.btn` transition:background-color .15s ease */
+  transition: background-color var(--motion-hover);
 }
 
+/* 시안 `.b-black:hover{background:#333333}` */
+.tracking-button:hover:not(:disabled) {
+  background: var(--color-ink-hover);
+  border-color: var(--color-ink-hover);
+}
+
+/* 시안 `.btn:disabled{opacity:.45;cursor:default}` */
 .tracking-button:disabled {
-  color: var(--color-muted);
-  background: var(--color-bg);
-  border-color: var(--color-border);
-  cursor: progress;
+  opacity: 0.45;
+  cursor: default;
 }
 
 .tracking-result {
@@ -534,7 +537,7 @@
 }
 
 .tracking-result-simulated .tracking-result-line {
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .tracking-result-failed .tracking-result-line,
@@ -545,7 +548,7 @@
 
 .tracking-result-rows {
   list-style: none;
-  color: var(--color-muted);
+  color: var(--color-sub);
 }
 
 .tracking-result-ok {
@@ -586,7 +589,8 @@
   color: var(--color-on-accent);
   background: var(--color-ink);
   border-radius: 16px;
-  /* 시안 그림자(rgba(0,0,0,.25) 0 8px 24px)는 그리지 않는다 — 그림자는 `--shadow-selected` 하나만 (T047 B-3) */
+  /* T098b: 시안 그림자 rgba(0,0,0,.25) 0 8px 24px 그대로 */
+  box-shadow: var(--shadow-toast);
   transform: translateX(-50%);
   animation: motion-toast-rise var(--motion-toast);
 }

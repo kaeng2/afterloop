@@ -408,9 +408,11 @@ describe('만들 것 2~5·10: 사례 화면', () => {
     const demo = items.filter((item) => item.includes(t('badge.demo')));
     expect(demo).toHaveLength(1);
     expect(demo[0].split(t('badge.demo')).length - 1).toBe(1);
-    // 흰 바탕 실선 (점선 시연용 말풍선 모양은 없다)
+    // 흰 바탕 + 시안 `.bub-in` 그림자 (T098b — 점선 시연용 말풍선 모양은 없다)
     const css = read('src/app/cases/view/case.css');
-    expect(css.match(/\.case-bubble\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/border:\s*1px solid/);
+    const bubble = css.match(/\.case-bubble\s*\{([^}]*)\}/)?.[1] ?? '';
+    expect(bubble).toMatch(/box-shadow:\s*var\(--shadow-bubble\)/);
+    expect(bubble).not.toMatch(/dashed/);
     expect(css).not.toContain('.case-bubble-demo');
   });
 
