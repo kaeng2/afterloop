@@ -11,12 +11,12 @@ import 'server-only';
 
 import {
   createMemoryTransactionCache,
-  getTransactions,
   lastDays,
   type TransactionCache,
 } from '@/paypal/transactions';
 import type { PayPalClient } from '@/types';
 
+import { getTransactionsRecorded } from '../_server/activity';
 import { getPayPalClient } from '../_server/paypal';
 import { transactionLineView, type TransactionLineView } from './model';
 
@@ -42,7 +42,7 @@ export async function loadTransactionLine(deps: TransactionLineDeps = {}): Promi
             return paypal.ok ? paypal.client : null;
           })();
     const now = deps.now ?? (() => Date.now());
-    const result = await getTransactions(client, lastDays(now(), TRANSACTION_DAYS), {
+    const result = await getTransactionsRecorded(client, lastDays(now(), TRANSACTION_DAYS), {
       now,
       cache: deps.cache ?? processCache,
     });

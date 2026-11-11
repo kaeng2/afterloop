@@ -390,5 +390,22 @@
   "product.colorNote.lang.ko": "Korean",
   "product.colorNote.lang.en": "English",
   "product.colorNote.lang.ja": "Japanese",
-  "product.colorNote.lang.de": "German"
+  "product.colorNote.lang.de": "German",
+  "activity.title.readCases": "Read your open cases",
+  "activity.title.readCase": "Read case {{id}}",
+  "activity.title.readCaseMany": "Read {{count}} cases",
+  "activity.title.sendMessage": "Send message",
+  "activity.title.sendOffer": "Send offer",
+  "activity.title.addTracking": "Add tracking",
+  "activity.title.readOrder": "Read order",
+  "activity.title.readSales": "Read sales",
+  "activity.title.other": "PayPal call",
+  "activity.summary.cases": "{{count}} cases",
+  "activity.summary.transactions": "{{count}} transactions",
+  "activity.cached": "cached",
+  "activity.cachedHint": "Served from the 15-minute cache — no new PayPal call.",
+  "activity.simulated": "Simulated · not sent",
+  "activity.noResponse": "No response",
+  "activity.calls": "{{count}} calls",
+  "activity.listLabel": "PayPal calls, newest first"
 }
