@@ -97,7 +97,7 @@
 | T094 | Scene 3 모션 시안 그대로 (진행 표시는 시안 속도·설정, 계산은 실제) | ui | 완료 | v2.15 | T089 | 녹화 | 모델 `claude-sonnet-5-5`. `tasks/T094.md` | 병합. 검증 통과(시안과 다른 2곳은 후속으로 맞춤) |
 | T095 | AI 캐시 스크립트에 Scene 3 고칠 문구(en·ko 기본값) 더하기 | ops | 완료 | v2.15 | T086, T087 | — | 모델 `claude-sonnet-5-5`. `tasks/T095.md` | 병합. 실제 AI 캐시 17개(listing en 6/6·ko 6/6) |
 | T096 | 화면 진입점 정정: 탭 없애기, /listing·/products 링크 없애기 (주소로만) | ui | 대기 (T090 뒤) | v2.15 | T090 | — | 모델 `claude-sonnet-5-5`. `tasks/T096.md` |
-| T097 | 시안 목록 자동 추출 → reports/design-match/inventory.md (색·모션·동작·접힘·조건부 스타일, 상태·근거 칸) | ops | 진행중 | v2.15 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T097.md` |
+| T097 | 시안 목록 자동 추출 → reports/design-match/inventory.md (색·모션·동작·접힘·조건부 스타일, 상태·근거 칸) | ops | 완료 | v2.15 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T097.md` | 병합. 316행 (Desk 162·Scene1 35·Scene3 119). 독립 검증은 생략(도구 스크립트, 자체 시험 + 컨트롤 타워가 출력 확인) |
 | T098 | 시안 맞추기 마무리: inventory.md 빈칸 0 + Playwright 나란히 스크린샷·녹화 | ui | 대기 (T091·T092·T096 뒤) | v2.15 | T097, T091, T092, T096 | design-match | 모델 `claude-opus-5-5`. 지시서는 그때 |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 완료 | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
 | T065 | **Products 상품 표 AG Grid** (As-is → With fixes, 처방 토글 시 셀 깜빡임) | ui | 대기 (T064 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T065.md` |
