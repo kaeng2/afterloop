@@ -14,7 +14,7 @@ Seo-yeon, a buyer in Korea, writes in Korean that her sweater has not arrived an
 
 ## Inspiration
 
-Small sellers who ship abroad often lose disputes they could have settled, because they can't read the buyer's language or know the customs rules. Many just refund. We wanted a tool that works in the settlement window, before a dispute becomes a chargeback, and that tells the seller *why* it is happening. The buyer gains too: an answer in their own language and a real explanation.
+Small sellers who ship abroad often lose disputes they could have settled, because they can't read the buyer's language or know the customs rules. Many just refund. A dispute costs more than the order: Chargebacks911 estimates merchants lose on average more than four dollars for every dollar disputed ([Chargebacks911](https://chargebacks911.com/consumer-pricing/), merchant survey estimate). On PayPal, a US seller pays a $15 Standard Dispute Fee ([PayPal US merchant fees](https://www.paypal.com/us/business/paypal-business-fees)). And a parcel that never arrives costs the customer too: 57.4% of shoppers in Sendcloud's survey of eight European countries say they won't buy again from that retailer ([Sendcloud, 2025](https://www.sendcloud.com/how-delivery-frustrations-impact-repeat-purchases/)). We wanted a tool that works in the settlement window, before a dispute becomes a chargeback, and that tells the seller *why* it is happening. The buyer gains too: an answer in their own language and a real explanation.
 
 ## What it does
 
