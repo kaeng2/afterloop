@@ -21,3 +21,13 @@
 2. [낮음] `/cases/[disputeId]`와 `/preview/styleguide`는 `applyLangParam`을 부르지 않아 그 주소의 `?lang=ko`는 무시된다(쿠키는 동작). 지시서 3번 "주소 우선" 취지상 사소한 누락(Today·Products·intro는 동작).
 3. [낮음] 버튼 클릭이 `window.location.reload()` 전체 새로고침 (보고서에 이미 명시). 
 4. [참고] 실제 브라우저 시각 확인은 이 검증에서도 하지 않음(개발 서버 금지).
+
+## 재검증 (커밋 6ea2fa5)
+
+### 판정: 통과
+
+1. 명령: `npm test` 57 파일 2232 통과 / 실패 0 (storefront 시간 초과 없음), `npx tsc --noEmit` 오류 0, `npm run lint` 오류 0, `npm run test:acceptance` 167 통과·9 skipped·실패 0, `npm run build` 성공.
+2. 열린 리다이렉트: `src/app/_server/safe-next.ts`(역슬래시·제어문자·공백 거부, `//` 거부, origin 비교)를 읽고, 임시 vitest(검증 후 삭제)로 route `GET`에 직접 넣어 확인. `/\evil.com`, `/\tevil.com`, `/\t/evil.com`, `/\n/`, `/\r/`, `/ /evil.com`, `//evil.com`, `https://evil.com`, `javascript:alert(1)`, `/.//evil.com`, `/..//evil.com`, `/./\evil.com` -> 모두 `/`. `/%5Cevil.com`, `/%2F%2Fevil.com`, `/%09/evil.com`, `/%0a/evil.com`은 인코딩된 채 같은 origin 경로(`localhost:3000/%5Cevil.com` 등)로 가며 외부로 가지 않는다. `/products?item=x`는 그대로. 17건 모두 origin 동일.
+3. `applyLangParam` 호출: `cases/[disputeId]/page.tsx`, `preview/styleguide/page.tsx`에 추가됨.
+4. `git diff aca0596 6ea2fa5 --stat`: 7개 파일(리포트, 두 page, safe-next.ts, route.ts, 테스트 2개)만. 엔진·AI·PayPal·exec·types·acceptance·send/mode/activity 변경 0. (기존 테스트 app-today.test.ts에 `_server/locale` import 허용 1줄 완화 있음 — 지시 범위 내 합리적.)
+5. `.next/static`에 금지 문자열 0건.
