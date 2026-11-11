@@ -21,7 +21,7 @@
 | 6 | ~18초 | 서연 칩·답장 두 칸·검사 줄 | 칩(Apology · Customs hold · Ask for code · Follow-up: 날짜), You write / Seo-yeon reads, ✓ Facts match · ✓ No new promises · Follow-up date | "Code fills in the date" — 날짜는 "다시 연락하는 날"이지 도착일이 아니다 |
 | 7 | **≤10초** | **실제 전송** (경희 녹화분) | [Send in Korean] → "Sent · send-message 200 · PP-R-GMS-10197661", 위험 6 → 3 | — |
 | 8 | ~5초 | PayPal 샌드박스 분쟁 화면 (경희 녹화분) | 같은 한국어 문장 2~3초. **메시지 부분만** (주문일 안 보이게) | — |
-| 9 | ~8초 | 위쪽 막대 **PayPal activity** 서랍 | Send message 200 · Add tracking 201 · Read sales 200 cached · Read cases 200 (최신이 위) | "Every PayPal step you just saw was a real sandbox call." (배송사 기록은 실제 호출이 아니므로 "모든 단계"라고 하지 않는다) |
+| 9 | ~8초 | 위쪽 막대 **PayPal activity** 서랍 | 맨 위 **Send message 200**, 그 아래 Add tracking 201(O05·O07), Read sales 200 cached, Read your open cases 200 (최신이 위). 화면을 열 때마다 생기는 실제 조회 줄(Read order·Read case 등)도 정직하게 남으므로 **위 2~3줄만 잡거나 서랍을 연 직후 위쪽을 확대** | "Every PayPal step you just saw was a real sandbox call." (배송사 기록은 실제 호출이 아니므로 "모든 단계"라고 하지 않는다) |
 | 10 | ~15초 | 로드맵 + 로고 | — | — |
 
 **넣지 않는 것**: Autopilot, 지호 장면, Mike 장면, 가게 전체 숫자($717 / $253)를 말로 하기.
