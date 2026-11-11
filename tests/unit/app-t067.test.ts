@@ -268,13 +268,14 @@ describe('T067 배치: 전체 폭', () => {
     expect(rule(SHELL_CSS, '.shell-bar-inner')).not.toMatch(/max-width|margin:\s*0 auto/);
   });
 
-  it('목록 칸은 왼쪽 끝 · 340px 이하 · 위쪽 막대 아래부터 화면 끝까지 (그 칸만 스크롤)', () => {
-    expect(rule(TODAY_CSS, '.main:has(> .today)')).toMatch(/padding:\s*0/);
+  it('T076 시안 v4: 상품 거르개 줄(옅은 회색) 아래 왼쪽 칸 약 400px(카드들) + 오른쪽 상세(흰 바탕)', () => {
+    expect(rule(TODAY_CSS, '.main:has(> .today-page)')).toMatch(/padding:\s*0/);
     const columns = /grid-template-columns:\s*minmax\(0,\s*([0-9.]+)rem\)\s*minmax\(0,\s*1fr\)/.exec(TODAY_CSS);
-    expect(Number(columns?.[1]) * 16).toBeLessThanOrEqual(340);
-    expect(Number(columns?.[1]) * 16).toBeGreaterThanOrEqual(320);
-    expect(TODAY_CSS).toMatch(/\.today-list\s*\{[^}]*height:\s*calc\(100vh - 4\.5rem\)[^}]*overflow-y:\s*auto/);
-    expect(rule(TODAY_CSS, '.today-list')).toMatch(/background:\s*var\(--color-list-bg\)/);
+    expect(Number(columns?.[1]) * 16).toBe(400);
+    expect(rule(TODAY_CSS, '.product-filter')).toMatch(/background:\s*var\(--color-panel\)/);
+    expect(rule(TODAY_CSS, '.product-filter')).toMatch(/overflow-x:\s*auto/);
+    expect(rule(TODAY_CSS, '.today-group')).toMatch(/border-radius:\s*20px/);
+    expect(rule(TODAY_CSS, '.weekly')).toMatch(/border-radius:\s*24px/);
     expect(rule(TODAY_CSS, '.today-detail')).toMatch(/background:\s*var\(--color-surface\)/);
     expect(TODAY_CSS).toMatch(/\.today-detail > \*\s*\{[^}]*max-width:\s*80rem/); // T061 값 유지
   });
@@ -308,18 +309,23 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
     expect(rule(TODAY_CSS, '.tracking-button')).toMatch(/border-radius:\s*var\(--radius-pill\)/);
   });
 
-  it('고른 항목 = 흰 카드 + --shadow-selected', () => {
+  it('T076: 고른 항목 = 옅은 강조색 바탕 + 왼쪽 4px 강조색 띠 (시안 v4 모양, 파랑 대신 강조색)', () => {
     const selected = rule(TODAY_CSS, ".today-item[aria-current='true']");
-    expect(selected).toMatch(/background:\s*var\(--color-surface\)/);
-    expect(selected).toMatch(/box-shadow:\s*var\(--shadow-selected\)/);
+    expect(selected).toMatch(/background:\s*var\(--color-accent-soft\)/);
+    const band = rule(TODAY_CSS, ".today-item[aria-current='true']::before");
+    expect(band).toMatch(/width:\s*4px/);
+    expect(band).toMatch(/background:\s*var\(--color-accent\)/);
   });
 
-  it('로고: 28px 원형 마크(인라인 SVG, 강조색) + 굵은 이름', () => {
+  it('T076: 로고 = 글자 로고 "Dispute" + 강조색 "Less" + 밑줄 곡선(강조색) + "for PayPal sellers" 알약', () => {
     const bar = readFileSync(path.join(APP, '_shared/top-bar.tsx'), 'utf8');
-    expect(bar).toMatch(/<svg className="shell-logo-mark" width="28" height="28"/);
-    expect(bar).toMatch(/<circle className="shell-logo-disc"/);
-    expect(rule(SHELL_CSS, '.shell-logo-disc')).toMatch(/fill:\s*var\(--color-accent\)/);
-    expect(rule(SHELL_CSS, '.shell-logo')).toMatch(/font-weight:\s*800/);
+    expect(bar).toMatch(/className="shell-wordmark" role="img" aria-label=\{name\}/);
+    expect(bar).toMatch(/<svg className="shell-wordmark-curve"/);
+    expect(rule(SHELL_CSS, '.shell-wordmark-accent')).toMatch(/color:\s*var\(--color-accent\)/);
+    expect(rule(SHELL_CSS, '.shell-wordmark-curve path')).toMatch(/stroke:\s*var\(--color-accent\)/);
+    expect(rule(SHELL_CSS, '.shell-wordmark')).toMatch(/font-weight:\s*900/);
+    expect(t('nav.appName').endsWith(t('nav.appNameAccent'))).toBe(true);
+    expect(t('nav.forSellers')).toBe('for PayPal sellers');
   });
 
   it('#0066F5·#0070E0·#003087 계열 파랑이 css 어디에도 없다 (RGB 거리 60 미만 금지)', () => {
@@ -329,8 +335,22 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
       return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
     };
     const distance = (a: string, b: string) => Math.hypot(...rgb(a).map((x, i) => x - rgb(b)[i]));
-    const BLUES = ['#0066F5', '#0070E0', '#003087', '#0070BA', '#002991', '#60CDFF'];
-    for (const file of filesUnder(APP, '.css')) {
+    // T076 강화: 시안 v4의 파랑(그라데이션 끝 #60CDFF·#0B48C4·#001C64, 포커스 #097FF5, 로고 #00A8EA)도 금지
+    const BLUES = [
+      '#0066F5',
+      '#0070E0',
+      '#003087',
+      '#0070BA',
+      '#002991',
+      '#60CDFF',
+      '#001C64',
+      '#0B48C4',
+      '#097FF5',
+      '#00A8EA',
+      '#009CDE',
+    ];
+    // css만이 아니라 화면 코드(tsx·ts)도 본다 (인라인 색·SVG 속성)
+    for (const file of [...filesUnder(APP, '.css'), ...filesUnder(APP, '.tsx'), ...filesUnder(APP, '.ts')]) {
       // 주석(금지 색 이름을 적어 둔 설명)은 빼고 본다
       for (const [hex] of strip(readFileSync(file, 'utf8')).matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)) {
         for (const blue of BLUES) {

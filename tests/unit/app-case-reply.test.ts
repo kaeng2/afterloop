@@ -441,7 +441,8 @@ describe('2번: PayPal 상태를 쉬운 말로', () => {
     expect(copyTables.en['case.status.RESOLVED']).toBe('Resolved');
     const html = renderCase(caseInput());
     expect(html).toContain('Waiting for your reply');
-    expect(html).toMatch(/class="case-headline num" title="WAITING_FOR_SELLER_RESPONSE"/);
+    // T076: 머리글 제목(분쟁 번호 · 상품)의 title로
+    expect(html).toMatch(/class="case-title num" title="WAITING_FOR_SELLER_RESPONSE"/);
   });
 
   it('표에 없는 상태는 원래 코드만', () => {

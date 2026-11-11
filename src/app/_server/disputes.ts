@@ -41,11 +41,11 @@ import type {
   SeedCarrierEvent,
   SeedProduct,
 } from '@/types';
-import { carrierEventsFor, seedBuyers, seedDisputes, seedInquiries, seedProducts } from '../../../seed/index';
+import { carrierEventsFor, seedBuyers, seedDisputes, seedInquiries, seedOrders, seedProducts } from '../../../seed/index';
 
 import type { Availability } from '../_shared/availability';
 import { demoLinks, screenLinks, withoutDemoExcluded } from '../_shared/demo-links';
-import type { DemoField, LoadedDispute } from '../_shared/dispute-view';
+import type { DemoField, DisputeTimeline, LoadedDispute } from '../_shared/dispute-view';
 import { getLlm, unavailableLlm } from './llm';
 import { getPayPalClient } from './paypal';
 
@@ -366,7 +366,17 @@ export async function loadDemoDisputes(deps: LoadDemoDisputesDeps = {}): Promise
       angryTone,
     );
 
+    // 사건 기록 재료 (T076). 실제 값(샌드박스 시각)과 시드 주문일만 — 지어내지 않는다
+    const seedOrder = seed === undefined ? undefined : seedOrders.find((order) => order.id === seed.orderId);
+    const timeline: DisputeTimeline = {
+      openedAt: detail.create_time ?? null,
+      buyerMessages: buyerMessagesWithTime(detail).map(({ text, at }) => ({ text: maskPersonal(text), at })),
+      sellerReplies: sellerRepliesWithTime(detail),
+      orderDate: seedOrder?.date ?? null,
+    };
+
     disputes.push({
+      timeline,
       key: link.seedDisputeId ?? link.paypalDisputeId,
       disputeId: detail.dispute_id,
       statusCode: detail.status ?? '',

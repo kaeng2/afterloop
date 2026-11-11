@@ -16,6 +16,7 @@ import 'server-only';
 import { cache } from 'react';
 
 import { translateReply, type ReplyDraft, type ReplyTranslation } from '@/ai/reply';
+import { paramsFromConfig } from '@/engine/params';
 import { planMove } from '@/engine/plan';
 import { recommend } from '@/engine/recommend';
 import type { ActionPlan, FactToken } from '@/types';
@@ -33,7 +34,7 @@ import { buyerShortName } from '../../today/model';
 import { buildCaseView } from '../model';
 import { liveSendAllowedFor } from '../practice';
 import { caseReplyFacts } from '../reply-facts';
-import type { ReplyViewInput } from '../reply-model';
+import { buildReplyView, type ReplyViewInput } from '../reply-model';
 import { loadCase } from '../view/load';
 
 /** 브라우저로 넘기는 값 (직렬화할 수 있는 것만). 전송 상태는 답장 칸이 들고 있다. */
@@ -46,6 +47,13 @@ export type ReplyLoad = {
   languageKey: string | null;
   /** "<이름> reads (<언어>)"의 이름 (시드 이름에서 목록과 같은 규칙으로). 모르면 `null`. */
   buyerShort: string | null;
+  /**
+   * 답장 입력칸의 처음 글 = 예측의 기준 초안 (T076). 화면이 보여 주는 영어 초안과 같은 글(`buildReplyView`의
+   * `draftEn.text`). 초안이 없으면 `null` (입력칸 없음).
+   */
+  anchorText: string | null;
+  /** 제안 비율 (엔진 가정값 `offerRate`, 제안 카드 "Offer N% back"). 표시만. */
+  offerRate: number;
 };
 
 const UNAVAILABLE: ReplyDraft = { ok: false, reason: 'ai_unavailable', detail: 'llm_failed:LlmConfigError' };
@@ -129,25 +137,31 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
         })
       : null;
 
+  const base: ReplyLoad['base'] = {
+    draft,
+    translation,
+    facts,
+    draftFacts,
+    board,
+    statusCode: loaded.loaded.statusCode,
+    buyerLocale,
+    plan,
+    offerFirst: caseView.messageSend.blocked,
+    mode: resolveSendMode(),
+    liveAllowed: liveSendAllowedFor(disputeId),
+    draftSource,
+    riskAfterReply: caseView.riskAfterReply,
+  };
+  // 입력칸 처음 글 = 화면의 영어 초안 그대로 (같은 함수로 채운 글)
+  const shown = buildReplyView({ ...base, confirmed: [], sendState: 'idle', outcome: null });
+
   return {
     disputeId,
-    base: {
-      draft,
-      translation,
-      facts,
-      draftFacts,
-      board,
-      statusCode: loaded.loaded.statusCode,
-      buyerLocale,
-      plan,
-      offerFirst: caseView.messageSend.blocked,
-      mode: resolveSendMode(),
-      liveAllowed: liveSendAllowedFor(disputeId),
-      draftSource,
-      riskAfterReply: caseView.riskAfterReply,
-    },
+    base,
     replyId,
     languageKey: caseView.header.languageKey,
     buyerShort: caseView.header.buyerName === null ? null : buyerShortName(caseView.header.buyerName),
+    anchorText: shown.draftEn?.text ?? null,
+    offerRate: paramsFromConfig().offerRate,
   };
 });

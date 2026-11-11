@@ -26,12 +26,16 @@ import type {
   PolicyConfig,
   SeedBuyer,
   SeedProduct,
+  WeeklySummary,
 } from '@/types';
 
 import type { RiskBand } from '../_shared/badge-keys';
 import { copyTables, t } from '../_shared/copy';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
 import { toDollarsRounded } from '../_shared/money';
+import { shortDate } from '../_shared/short-date';
+import { categoryLabel, latinName, productIconOf, type ProductIconKind } from '../cases/desk-model';
+import { productShortName } from '../cases/model';
 
 // ── 구매자 이름 ─────────────────────────────────────────────────────────────
 
@@ -108,9 +112,42 @@ export type TodayItem = {
   score: number | null;
   /** 정렬용 응답 기한 (분쟁만, ISO 8601. 모르면 빈 글자). */
   dueDate: string;
+  /** 시안 v4 한 줄 (T076). 글자는 데이터·문구에서, 숫자는 세기만. */
+  row: TodayRowView;
 };
 
-export type TodayGroup = { key: TodayGroupKey; title: string; items: TodayItem[] };
+/** 시안 v4 목록 한 줄: 상품 아이콘 · "PP-R-… · Wool Sweater" · 범주 알약 · "Reply by Nov 30" · "Seo-yeon Kim · KR". */
+export type TodayRowView = {
+  icon: ProductIconKind;
+  /** 굵은 머리 (분쟁 번호 · "2 orders" · 상품 이름). */
+  head: string;
+  /** 머리 뒤 상품 이름. 없으면 `null`. */
+  product: string | null;
+  category: string | null;
+  categoryTone: 'high' | 'neutral';
+  /** "Reply by Nov 30" (PayPal 응답 기한). 없으면 `null`. */
+  due: string | null;
+  /** 아래 줄 (구매자 · 나라 / 엔진 판정 글). 없으면 `null`. */
+  who: string | null;
+  /** 이 항목이 걸린 상품 SKU (상품 거르개). */
+  skus: string[];
+};
+
+export type TodayGroup = { key: TodayGroupKey; title: string; hint: string; items: TodayItem[] };
+
+/** 상품 거르개 줄의 알약 하나. `sku`가 `null`이면 "All products". */
+export type ProductChipView = {
+  sku: string | null;
+  name: string;
+  sub: string;
+  icon: ProductIconKind;
+  /** 이 상품에 걸린 화면 속 열린 분쟁 수 (세기만). */
+  cases: number;
+  href: string;
+  selected: boolean;
+};
+
+export type ProductFilterView = { chips: ProductChipView[]; summary: string; selectedSku: string | null };
 
 /** 추적 등록 안 된 주문 한 줄 (보기용). */
 export type TrackingOrderView = { key: string; buyerName: string | null; productName: string | null };
@@ -129,9 +166,13 @@ export type TodayView = {
   dateLine: string;
   storeLine: StoreLine;
   groups: TodayGroup[];
-  /** 목록에 실제로 보이는 항목 수 (위쪽 막대 Today (N)). */
+  /** 목록에 실제로 보이는 항목 수 (위쪽 막대 Today (N)). 상품 거르개와 상관없이 전체. */
   count: number;
   tracking: TrackingSummary | null;
+  /** 상품 거르개 줄 (T076). */
+  filter: ProductFilterView;
+  /** 화면에 보이는 열린 분쟁 수 (세기만. 이번 주 카드). */
+  openDisputes: number;
 };
 
 export type TodayInput = {
@@ -141,6 +182,8 @@ export type TodayInput = {
   now: Date;
   params?: ParamsConfig;
   rules?: PolicyConfig;
+  /** 상품 거르개 (`?sku=`). 모르는 SKU면 거르지 않는다. */
+  sku?: string;
 };
 
 /**
@@ -246,6 +289,11 @@ function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: Param
   const routine = decision.verdict === 'skipped' && decision.rule === 'suspected_abuse';
   const band = risk?.band ?? null;
 
+  const who =
+    loaded.buyer === null
+      ? null
+      : t('today.row.who', { name: latinName(loaded.buyer.name), country: loaded.buyer.country });
+
   return {
     id: loaded.disputeId,
     kind: 'dispute',
@@ -260,16 +308,37 @@ function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: Param
     status: disputeStatus(band, decision, routine),
     score: risk?.score ?? null,
     dueDate: board.dueDate,
+    row: {
+      icon: productIconOf(loaded.product?.itemName),
+      head: loaded.disputeId,
+      product: loaded.product === null ? null : productShortName(loaded.product.itemName),
+      category: categoryLabel(board.reason, board.cause?.subtype),
+      categoryTone: !routine && band === 'High' ? 'high' : 'neutral',
+      due: board.dueDate === '' ? null : t('today.row.due', { date: shortDate(board.dueDate) }),
+      who,
+      skus: loaded.product === null ? [] : [loaded.product.sku],
+    },
   };
 }
 
-function trackingItem(tracking: TrackingSummary): TodayItem | null {
+/** 추적 미등록 주문의 상품 SKU (상품 이름이 같은 시드 상품). */
+function skusOfOrders(orders: readonly TrackingOrderView[], products: readonly SeedProduct[]): string[] {
+  const skus = orders
+    .map((order) => products.find((product) => product.itemName === order.productName)?.sku)
+    .filter((sku): sku is string => sku !== undefined);
+  return [...new Set(skus)];
+}
+
+/** 추적 미등록 주문 (T076: Prevent 묶음 — 분쟁이 생기기 전에 막는 일). */
+function trackingItem(tracking: TrackingSummary, products: readonly SeedProduct[]): TodayItem | null {
   const count = tracking.untracked.length;
   if (count === 0) return null;
+  const skus = skusOfOrders(tracking.untracked, products);
+  const onlyProduct = skus.length === 1 ? products.find((product) => product.sku === skus[0]) : undefined;
   return {
     id: TRACKING_ITEM_ID,
     kind: 'tracking',
-    group: 'needsYou',
+    group: 'prevent',
     href: `/?item=${TRACKING_ITEM_ID}`,
     name: count === 1 ? t('today.tracking.titleOne', { count }) : t('today.tracking.title', { count }),
     label: null,
@@ -279,6 +348,16 @@ function trackingItem(tracking: TrackingSummary): TodayItem | null {
     status: STATUS_WATCH,
     score: null,
     dueDate: '',
+    row: {
+      icon: onlyProduct === undefined ? 'multi' : productIconOf(onlyProduct.itemName),
+      head: count === 1 ? t('today.row.ordersOne', { count }) : t('today.row.orders', { count }),
+      product: onlyProduct === undefined ? t('today.row.severalProducts') : productShortName(onlyProduct.itemName),
+      category: t('today.row.missingTracking'),
+      categoryTone: 'neutral',
+      due: null,
+      who: count === 1 ? t('today.tracking.detailOne', { count }) : t('today.tracking.detail', { count }),
+      skus,
+    },
   };
 }
 
@@ -320,6 +399,65 @@ function preventItem(pick: PreventPick, product: SeedProduct): TodayItem {
     status: STATUS_PREVENT,
     score: null,
     dueDate: '',
+    row: {
+      icon: productIconOf(product.itemName),
+      head: productShortName(product.itemName),
+      product: null,
+      category: t('today.row.rehearsal'),
+      categoryTone: 'neutral',
+      due: null,
+      who: t('today.prevent.sub', { stock: product.stock, percent: pick.cutPercent }),
+      skus: [product.sku],
+    },
+  };
+}
+
+// ── 상품 거르개 (T076) ─────────────────────────────────────────────────────
+
+/** 거르개를 지킨 주소. `item`이 있으면 함께. */
+export function todayHref(sku: string | null, item: string | null): string {
+  const params = new URLSearchParams();
+  if (sku !== null) params.set('sku', sku);
+  if (item !== null) params.set('item', item);
+  const query = params.toString();
+  return query === '' ? '/' : `/?${query}`;
+}
+
+function productFilter(
+  products: readonly SeedProduct[],
+  disputeItems: readonly TodayItem[],
+  selectedSku: string | null,
+): ProductFilterView {
+  const casesOf = (sku: string) => disputeItems.filter((item) => item.row.skus.includes(sku)).length;
+  const units = products.reduce((sum, product) => sum + product.stock, 0);
+  const all: ProductChipView = {
+    sku: null,
+    name: t('today.filter.all'),
+    sub: t('today.filter.allSub', { count: products.length, units }),
+    icon: 'multi',
+    cases: disputeItems.length,
+    href: todayHref(null, null),
+    selected: selectedSku === null,
+  };
+  const chips = products.map((product) => {
+    const cases = casesOf(product.sku);
+    return {
+      sku: product.sku,
+      name: productShortName(product.itemName),
+      sub:
+        cases === 0
+          ? t('today.filter.subNone', { units: product.stock })
+          : t(cases === 1 ? 'today.filter.subOne' : 'today.filter.sub', { units: product.stock, cases }),
+      icon: productIconOf(product.itemName),
+      cases,
+      href: todayHref(product.sku, null),
+      selected: selectedSku === product.sku,
+    };
+  });
+  return {
+    chips: [all, ...chips],
+    summary: t('today.filter.summary', { products: products.length, units, cases: disputeItems.length }),
+    selectedSku,
   };
 }
 
@@ -334,23 +472,41 @@ export function buildToday(input: TodayInput): TodayView {
     const item = disputeItem(loaded, input.rules, input.params);
     (item.group === 'routine' ? routine : needsYou).push(item);
   }
-  const tracking = input.tracking === null ? null : trackingItem(input.tracking);
-  if (tracking !== null) needsYou.push(tracking);
   needsYou.sort(compareNeedsYou);
+  const disputeItems = [...needsYou, ...routine];
 
+  // Prevent (T076): 추적 미등록 주문 → 엔진이 고른 상품 순
+  const tracking = input.tracking === null ? null : trackingItem(input.tracking, input.products);
   const pick = pickPreventProduct(store);
   const pickedProduct = pick === null ? undefined : input.products.find((product) => product.sku === pick.sku);
-  const prevent = pick === null || pickedProduct === undefined ? [] : [preventItem(pick, pickedProduct)];
+  const prevent = [
+    ...(tracking === null ? [] : [tracking]),
+    ...(pick === null || pickedProduct === undefined ? [] : [preventItem(pick, pickedProduct)]),
+  ];
 
-  const groups: TodayGroup[] = (
+  const allGroups = (
     [
       { key: 'needsYou', items: needsYou },
       { key: 'prevent', items: prevent },
       { key: 'routine', items: routine },
     ] as const
-  )
-    .filter((group) => group.items.length > 0)
-    .map((group) => ({ key: group.key, title: t(`today.group.${group.key}`), items: [...group.items] }));
+  ).filter((group) => group.items.length > 0);
+
+  // 상품 거르개: 아는 SKU일 때만 거른다. 항목 주소는 거르개를 지킨다
+  const selectedSku =
+    input.sku !== undefined && input.products.some((product) => product.sku === input.sku) ? input.sku : null;
+  const groups: TodayGroup[] = allGroups
+    .map((group) => ({
+      key: group.key,
+      title: t(`today.group.${group.key}`),
+      hint: t(`today.groupHint.${group.key}`),
+      items: group.items
+        .filter((item) => selectedSku === null || item.row.skus.includes(selectedSku))
+        .map((item) =>
+          selectedSku === null || item.kind === 'prevent' ? item : { ...item, href: todayHref(selectedSku, item.id) },
+        ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return {
     dateLine: dateLine(input.now),
@@ -360,8 +516,34 @@ export function buildToday(input: TodayInput): TodayView {
       text: t('today.storeLine', { before: toDollarsRounded(store.beforeCents), after: toDollarsRounded(store.afterCents) }),
     },
     groups,
-    count: groups.reduce((sum, group) => sum + group.items.length, 0),
+    count: allGroups.reduce((sum, group) => sum + group.items.length, 0),
     tracking: input.tracking,
+    filter: productFilter(input.products, disputeItems, selectedSku),
+    openDisputes: disputeItems.length,
+  };
+}
+
+// ── 이번 주 카드 (T076) ────────────────────────────────────────────────────
+
+/** 왼쪽 "DisputeLess this week" 카드. 계산 가능한 숫자만 (`WeeklySummary`, 어댑터). */
+export type WeeklyView = {
+  /** 열린 분쟁 수 (엔진 요약이 있으면 그 값, 없으면 목록에서 센 수). */
+  openDisputes: number;
+  /** 지킬 수 있는 돈 (`keepableCents` 표기, Assumption). 요약이 없으면 `null` → 숨김. */
+  keepable: string | null;
+  /** AI 답장 초안 수 (캐시 기준). 요약이 없으면 `null` → 숨김. */
+  aiDrafts: number | null;
+  /** 시드 값이 섞였으면 참 → Demo data. */
+  usesDemoData: boolean;
+};
+
+export function weeklyView(openDisputes: number, summary: WeeklySummary | null, usesDemoData: boolean): WeeklyView {
+  if (summary === null) return { openDisputes, keepable: null, aiDrafts: null, usesDemoData };
+  return {
+    openDisputes: summary.openDisputes,
+    keepable: Number.isInteger(summary.keepableCents) ? toDollarsRounded(summary.keepableCents) : null,
+    aiDrafts: summary.aiDrafts,
+    usesDemoData: summary.usesDemoData,
   };
 }
 

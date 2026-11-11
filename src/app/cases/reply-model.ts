@@ -527,6 +527,19 @@ export function canSendOffer(view: Pick<ReplyView, 'gate'>): SendGate {
   return contentGate(g);
 }
 
+/** 입력칸 글이 검사받은 초안과 다를 때의 이유 키 (T076). */
+export const EDITED_KEY = 'case.reply.editedCantSend';
+
+/**
+ * 답장 입력칸(T076)의 관문. **보내는 글은 늘 서버가 기억한 검사 통과 초안**이다 — 입력칸 글은 예측을 바꾸는 용도이고
+ * 서버로 가지 않는다. 그래서 입력칸 글이 초안(`anchor`)과 한 글자라도 다르면 [Send]를 끈다 (이유: "use AI draft").
+ * 같으면 지금 관문(`canSend`) 결과를 **그대로** 돌려준다.
+ */
+export function editGate(gate: SendGate, text: string, anchor: string | null): SendGate {
+  if (anchor === null || text === anchor) return gate;
+  return { ok: false, reasonKey: EDITED_KEY };
+}
+
 /** 두 버튼이 함께 쓰는 글 검사 + 전송 상태. 순서: 초안 → 전송본 → 번역이 더한 약속 → 토큰 → 이름 → 약속 확인 → 상태. */
 function contentGate(g: GateFacts): SendGate {
   const blocked = (reasonKey: string): SendGate => ({ ok: false, reasonKey });

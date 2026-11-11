@@ -184,7 +184,8 @@ describe('1번: 대화·배송사 카드는 왼쪽 열에 위아래로', () => {
     const css = readFileSync(path.join(ROOT, 'src/app/cases/view/case.css'), 'utf8');
     const block = css.match(/\.case-body\s*\{([^}]*)\}/)?.[1] ?? '';
     expect(block).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\);/);
-    expect(css).not.toMatch(/@container/);
+    // T076: 컨테이너 질의는 선택지 카드·곡선 카드를 좁은 폭에서 한 열로 접을 때만 쓴다 (.case-body는 건드리지 않는다)
+    for (const query of css.match(/@container[^{]*\{[\s\S]*?\n\}/g) ?? []) expect(query).not.toMatch(/\.case-body/);
     expect(css).not.toContain('.case-columns');
   });
 });
@@ -362,8 +363,9 @@ describe('4번: 지호 — 주 버튼은 엔진 제안 금액, 메시지 버튼�
       createElement(ReplyPanel, { disputeId: D1_ID, base: reply.base, replyId: reply.replyId, languageKey: reply.languageKey }),
     );
     expect(html).toContain(copyTables.en['case.send.offerButton'].replace('{{amount}}', '$7'));
-    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Send in Korean<\/button>/);
-    expect(html).toContain(copyTables.en['case.view.offerFirst']);
+    // T076 시안 v4 짧은 카드: 메시지만 보내는 버튼(제안이 먼저라 늘 꺼져 있던 것)은 그리지 않는다. 관문 판정은 위 canSend 그대로
+    expect(html).toContain('class="reply offer-card"');
+    expect(html).not.toMatch(/>Send in Korean<\/button>/);
     // 보내는 글 미리보기에 남은 토큰 없음
     expect(view.outgoing?.text).not.toMatch(/\{\{|⟦/);
   });

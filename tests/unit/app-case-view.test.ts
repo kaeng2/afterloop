@@ -15,8 +15,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { classifyDispute } from '@/ai/classify';
-import { copyTables } from '@/app/_shared/copy';
+import { copyTables, t } from '@/app/_shared/copy';
 import { CompareCard } from '@/app/_shared/compare-card';
+import { buildCaseDesk, type CaseDesk } from '@/app/cases/desk-model';
+import type { CaseView as CaseViewData } from '@/app/cases/model';
 import { toDollarsRounded } from '@/app/_shared/money';
 import { actionKeyFor, buildCaseView, caseMessages, segmentsOf, type CaseViewInput } from '@/app/cases/model';
 import { CaseView } from '@/app/cases/view/case-view';
@@ -89,6 +91,22 @@ const SEOYEON_AFTER_REPLY: EscalationSignals = {
 
 const REAL_TEXT = '이번 주 안에 연락 없으면 카드사에 이의제기할게요. 개인통관고유부호 P123456789012';
 const DEMO_INQUIRY = { date: '2026-11-02', buyerId: 'B01', original: '배송 조회가 일주일째 그대로예요.', english: 'Tracking has not changed.' };
+
+/** T076: 시안 v4 칸 (선택지 카드 = 엔진 recommend(board). 예측 어댑터 없음 = null). */
+function deskOf(view: CaseViewData, board: BoardState): CaseDesk {
+  return buildCaseDesk({
+    view,
+    board,
+    buyer: null,
+    productName: 'Wool Sweater, Navy',
+    openDays: null,
+    recommendation: recommend(board, P, R),
+    moveForecasts: null,
+    history: null,
+    curvePoints: null,
+    band: view.risk?.band ?? null,
+  });
+}
 
 function input(overrides: Partial<CaseViewInput> = {}): CaseViewInput {
   return {
@@ -306,8 +324,11 @@ describe('AC18 5번: 선행 값이 없을 때', () => {
   });
 
   it('(나) 후 보드가 없어도 화면이 그려진다 (예외 없음, 화살표·취소선 없음)', () => {
-    const html = renderToStaticMarkup(createElement(CaseView, { view: buildCaseView(input({ boardDemo: null }), P, R), llmOk: false }));
+    const view = buildCaseView(input({ boardDemo: null }), P, R);
+    const html = renderToStaticMarkup(createElement(CaseView, { view, desk: deskOf(view, D2_BEFORE), llmOk: false }));
     expect(html).toContain('$74');
+    // T076: 배송사 기록이 없으면 선택지 카드가 이미 PayPal 정보만의 값이라 "PayPal data only" 줄이 없다
+    expect(html).not.toContain('class="choice-paypal-only');
     expect(html).not.toContain('<del');
     expect(html).not.toContain(copyTables.en['case.view.arrow']);
     expect(html).toContain(copyTables.en['case.view.noCarrier']);
@@ -530,21 +551,33 @@ describe('대화: 같은 배지는 한 번만', () => {
 // ── 화면 전체 (글자) ───────────────────────────────────────────────────────
 
 describe('서연 화면 그리기', () => {
-  const html = renderToStaticMarkup(createElement(CaseView, { view: buildCaseView(input(), P, R), llmOk: true }));
+  const seoView = buildCaseView(input(), P, R);
+  const html = renderToStaticMarkup(createElement(CaseView, { view: seoView, desk: deskOf(seoView, D2_AFTER), llmOk: true }));
 
-  it('"PayPal data only · Full refund" → "With carrier data · Reply", 숫자는 엔진 값의 표시', () => {
-    expect(html).toContain('PayPal data only · Full refund');
-    expect(html).toContain('With carrier data · Reply');
-    expect(html).toContain(toDollarsRounded(recommend(D2_BEFORE, P, R).best?.expectedLossCents as number));
-    expect(html).toContain(toDollarsRounded(recommend(D2_AFTER, P, R).best?.expectedLossCents as number));
+  it('T076: 선택지 카드(배송사 기록 반영 보드, 최선 = Best) + "PayPal data only: Full refund $74", 숫자는 엔진 값의 표시', () => {
+    expect(html).toContain(
+      t('case.choice.paypalOnly', {
+        action: t('case.view.action.refund'),
+        amount: toDollarsRounded(recommend(D2_BEFORE, P, R).best?.expectedLossCents as number),
+      }),
+    );
+    const best = recommend(D2_AFTER, P, R).best;
+    expect(best?.move).toBe('fight');
+    const bestCard = html.slice(html.indexOf('class="choice choice-best"'));
+    expect(bestCard.slice(0, bestCard.indexOf('</li>'))).toContain(
+      t('case.choice.cost', { amount: toDollarsRounded(best?.expectedLossCents as number) }),
+    );
+    expect(bestCard.slice(0, bestCard.indexOf('</li>'))).toContain(t('case.choice.fight.title'));
     expect(html).toContain('Code decides');
     expect(html).toContain('From PayPal');
     expect(html).not.toContain('P123456789012');
     expect(html).not.toContain(copyTables.en['common.llmUnavailable']);
   });
 
-  it('주인공 숫자(.hero-number)는 비교 카드의 오른쪽 숫자 하나뿐이다', () => {
-    expect(html.match(/hero-number/g)).toHaveLength(1);
+  it('T076: 최선 수 카드는 하나뿐이고(Best), 막힌 수는 흐리게 + 이유 (지어낸 % 없음 — 예측 어댑터가 null)', () => {
+    expect(html.match(/class="choice choice-best"/g)).toHaveLength(1);
+    expect(html.match(/choice-best-tag/g)).toHaveLength(1);
+    expect(html).not.toMatch(/Chargeback \d+%/);
   });
 });
 

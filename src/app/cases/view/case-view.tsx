@@ -1,32 +1,36 @@
 /**
- * 분쟁 상세 (T061 → T068 "위에서 아래로 한 줄기"). 한 열, 위에서 아래로:
+ * 분쟁 상세 (T061 → T068 → T076 시안 v4). 한 열, 위에서 아래로:
  *
- *  1. 머리글 두 줄 — "Case … · 상품 금액 · 상태" / "구매자 이름 · writes in <언어>" + 오른쪽 작은 위험 배지(펼침)
- *  2. 비교 카드(주인공, 가로 전체 폭) — 전 칸 아래 "incl. $N of your time" + **카드 안 아래쪽** 한 줄 요약
- *  3. 대화(말풍선, 배송사 줄 포함)
- *  4. 답장 칸(`reply`로 받는다: 칩 줄 → 답장 두 칸 → 검사 줄 + 보내기)
+ *  1. 머리글 — 상품 아이콘 + "PP-R-… · Wool Sweater" + 범주 알약 / "$72 · 이름 · 나라 · reads Korean · Open N days"
+ *     + 오른쪽 작은 위험 배지(펼침, 지금 것)
+ *  2. 위험 곡선 카드 (어댑터 `RiskPoint[]`. 없으면 카드 없음)
+ *  3. 사건 기록 카드 (실제 데이터의 `CaseEvent[]` + AI 요약 어댑터)
+ *  4. 구매자 메시지 (말풍선 + 배송사 줄 + "AI read" 태그 — 있는 판정만)
+ *  5. Respond now — 1 선택지 카드(엔진 `recommend` 수별 기대 손실, 최선 "Best", 막힌 수 흐리게) + "PayPal data only" 한 줄
+ *     → 2 답장 칸(`reply`로 받는다)
  *
- * 1920×1080에서 비교 카드와 보내기 버튼이 스크롤 없이 함께 보이게 한다 (T068 가장 중요한 규칙 1).
+ * "제안이 먼저"인 분쟁(지호)은 시안의 짧은 카드: 머리글 + 제안 카드(`reply`가 짧은 모양으로 그린다)만.
  *
- * **계산하지 않는다.** 모든 숫자·판정은 `buildCaseView`(엔진 결과를 옮긴 값)에서 온다.
+ * **계산하지 않는다.** 모든 숫자·판정은 `buildCaseView`·`CaseDesk`(엔진·어댑터 결과를 옮긴 값)에서 온다.
  * 글자는 모두 `case.*`·`badge.*`·`common.*` 문구에서 읽는다.
  */
 import type { ReactNode } from 'react';
 
 import { Badge } from '../../_shared/badges';
-import { CompareCard } from '../../_shared/compare-card';
 import { t } from '../../_shared/copy';
-import type { CaseView as CaseViewData, CompareSideView, SummaryView } from '../model';
+import { ProductTile } from '../../_shared/product-icon';
+import { deskFromView, type CaseDesk, type ChoiceView } from '../desk-model';
+import type { CaseView as CaseViewData, SummaryView } from '../model';
+import { CaseHistoryCard } from './case-history';
 import { Conversation } from './conversation';
+import { RiskCurveCard } from './risk-curve';
 import { RiskToggle } from './risk-toggle';
 
 import './case.css';
 
-function sideCaption(side: CompareSideView): string {
-  return t('case.view.sideCaption', { source: t(side.sourceKey), action: t(side.actionKey) });
-}
+export type { CaseDesk };
 
-/** 머리글 첫 줄: "Case PP-R-… · Wool Sweater, Navy $72 · Waiting for your reply". */
+/** 머리글 첫 줄 (옛 꼴, 화면 읽기·시험용): "Case … · Wool Sweater $72 · Waiting for your reply". */
 export function headLine(header: CaseViewData['header']): string {
   const status =
     header.statusCode === ''
@@ -42,21 +46,30 @@ export function headLine(header: CaseViewData['header']): string {
   });
 }
 
-/** 머리글 (두 줄 + 위험 배지). Mike 상세도 같은 머리글을 쓴다. */
-export function CaseHeader({ view }: { view: CaseViewData }) {
+/** 머리글 (시안 v4). Mike 상세도 같은 머리글을 쓴다. */
+export function CaseHeader({ view, desk: deskInput }: { view: CaseViewData; desk?: CaseDesk }) {
   const { header } = view;
+  const desk = deskInput ?? deskFromView(view);
+  const status =
+    header.statusCode === '' ? null : header.statusKey === null ? header.statusCode : t(header.statusKey);
   return (
     <header className="case-head">
-      <div className="case-head-text">
-        <p className="case-headline num" title={header.statusCode === '' ? undefined : header.statusCode}>
-          {headLine(header)}
-        </p>
-        <h2 className="case-name">
-          {header.buyerName ?? t('case.view.buyerUnknown')}
-          {header.languageKey === null ? null : (
-            <span className="case-writes"> · {t('case.view.writesIn', { language: t(header.languageKey) })}</span>
-          )}
-        </h2>
+      <div className="case-head-main">
+        <ProductTile kind={desk.icon} size="lg" />
+        <div className="case-head-text">
+          <div className="case-head-line">
+            <h2 className="case-title num" title={header.statusCode === '' ? undefined : header.statusCode}>
+              {desk.title}
+            </h2>
+            {desk.category === null ? null : (
+              <span className={`desk-chip ${desk.categoryTone === 'high' ? 'desk-chip-bad' : ''}`}>{desk.category}</span>
+            )}
+          </div>
+          <p className="case-meta num">
+            {desk.meta.join(' · ')}
+            {status === null ? null : <span className="case-status"> · {status}</span>}
+          </p>
+        </div>
       </div>
       <RiskToggle risk={view.risk} riskAfterReply={view.riskAfterReply} />
     </header>
@@ -64,8 +77,8 @@ export function CaseHeader({ view }: { view: CaseViewData }) {
 }
 
 /**
- * 한 줄 요약 + 판정 배지 (T068: 비교 카드 **안** 아래쪽 한 줄. 따로 있던 회색 요약 상자는 없앴다).
- * 세부 유형 코드("A1 → A2")는 보조 글자.
+ * 한 줄 요약 (T061 → T076: 선택지 카드 아래). 엔진 원인 전환(전 → 후 세부 유형)의 문구 + 판정 배지 + 보조 코드.
+ * 배송사 기록이 없으면 "배송사 정보 없음" 한 줄.
  */
 function Summary({ summary, noCarrier }: { summary: SummaryView | null; noCarrier: boolean }) {
   return (
@@ -89,50 +102,129 @@ function Summary({ summary, noCarrier }: { summary: SummaryView | null; noCarrie
   );
 }
 
-export function CaseView({ view, llmOk, reply }: { view: CaseViewData; llmOk: boolean; reply?: ReactNode }) {
-  const { compare } = view;
-  const noValue = t('common.noValue');
-  const before = compare.before;
+/** 1 Pick a way to resolve — 엔진 수별 카드. 고르기는 엔진의 최선 수 (화면이 고르지 않는다). */
+export function ChoiceCards({
+  choices,
+  paypalOnly,
+  summary,
+}: {
+  choices: ChoiceView[];
+  paypalOnly: string | null;
+  /** 카드 아래 한 줄 요약 (없으면 그리지 않는다). */
+  summary?: ReactNode;
+}) {
+  if (choices.length === 0) return null;
+  return (
+    <div className="desk-step">
+      <div className="desk-rail" aria-hidden="true">
+        <span className="desk-step-num">1</span>
+        <span className="desk-rail-line" />
+      </div>
+      <div className="desk-step-body">
+        <div className="desk-step-head">
+          <h3 className="desk-step-title">{t('case.choice.title')}</h3>
+          <span className="desk-step-sub">{t('case.choice.sub', { count: choices.length })}</span>
+          <Badge kind="codeDecides" />
+          <Badge kind="assumption" />
+        </div>
+        <ul className="choice-list">
+          {choices.map((choice) => (
+            <li
+              key={choice.move}
+              className={['choice', choice.best ? 'choice-best' : '', choice.blocked ? 'choice-blocked' : '']
+                .filter((name) => name !== '')
+                .join(' ')}
+              aria-current={choice.best ? 'true' : undefined}
+            >
+              <span className="choice-top">
+                <span className={choice.best ? 'choice-radio choice-radio-on' : 'choice-radio'} aria-hidden="true" />
+                <span className="choice-title">{t(choice.titleKey)}</span>
+                {choice.best ? <span className="choice-best-tag">{t('case.choice.best')}</span> : null}
+              </span>
+              <span className="choice-how">{choice.blockedKey === null ? t(choice.howKey) : t(choice.blockedKey)}</span>
+              {choice.expectedLoss === null ? null : (
+                <span className="choice-numbers num">
+                  {choice.chargeback === null ? null : (
+                    <>
+                      <strong className="choice-cb">{t('case.choice.chargeback', { percent: choice.chargeback })}</strong>
+                      {' · '}
+                    </>
+                  )}
+                  {t('case.choice.cost', { amount: choice.expectedLoss.display })}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+        {summary ?? null}
+        {paypalOnly === null ? null : (
+          <p className="choice-paypal-only small">
+            <span className="num">{paypalOnly}</span>
+            <Badge kind="demo" title={t('case.choice.paypalOnlyHint')} />
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function CaseView({
+  view,
+  desk: deskInput,
+  llmOk,
+  reply,
+}: {
+  view: CaseViewData;
+  /** 시안 v4 칸의 값. 없으면 `deskFromView` (머리글만). */
+  desk?: CaseDesk;
+  llmOk: boolean;
+  reply?: ReactNode;
+}) {
+  const desk = deskInput ?? deskFromView(view);
+  const offerFirst = view.messageSend.blocked;
+  const summaryNode = <Summary summary={view.summary} noCarrier={view.compare.after === null} />;
 
   return (
     <div className="case-page">
-      <CaseHeader view={view} />
+      <CaseHeader view={view} desk={desk} />
 
       {llmOk ? null : <p className="notice">{t('common.llmUnavailable')}</p>}
 
-      {/* 주인공: 전 → 후 비교 (가로 전체 폭), 카드 안 아래쪽에 한 줄 요약 */}
-      <div className="case-hero">
-        <CompareCard
-          label={t(compare.labelKey)}
-          badges={compare.badges.map((kind) => (
-            <Badge key={kind} kind={kind} />
-          ))}
-          before={{
-            caption: sideCaption(before),
-            display: before.expectedLoss?.display ?? noValue,
-            badge: before.badges.length === 0 ? undefined : before.badges.map((kind) => <Badge key={kind} kind={kind} />),
-            note: before.timeCost === null ? undefined : t('case.view.timeCost', { amount: before.timeCost.display }),
-          }}
-          after={
-            compare.after === null
-              ? null
-              : {
-                  caption: sideCaption(compare.after),
-                  display: compare.after.expectedLoss?.display ?? noValue,
-                  badge: compare.after.badges.map((kind) => <Badge key={kind} kind={kind} />),
-                }
-          }
-          footer={<Summary summary={view.summary} noCarrier={compare.after === null} />}
-          arrowLabel={t('case.view.arrow')}
-          previousLabel={t('case.view.previous')}
-        />
-      </div>
+      {offerFirst ? (
+        // 지호: 시안의 짧은 카드 (제안 카드는 답장 칸이 그린다)
+        reply === undefined ? null : <div className="case-offer">{reply}</div>
+      ) : (
+        <>
+          <RiskCurveCard points={desk.curvePoints} />
+          {desk.history === null ? null : <CaseHistoryCard history={desk.history} />}
 
-      {/* 한 열: 대화 → 답장 (T068, 시안의 위에서 아래로 한 줄기) */}
-      <div className="case-body">
-        <Conversation messages={view.messages} carrierLine={view.carrierLine} locale={view.header.buyerLocale} />
-        {reply === undefined ? null : <div className="case-body-reply">{reply}</div>}
-      </div>
+          <div className="case-body">
+            <Conversation
+              messages={view.messages}
+              carrierLine={view.carrierLine}
+              locale={view.header.buyerLocale}
+              signals={view.signals}
+              languageKey={view.header.languageKey}
+            />
+          </div>
+
+          <section className="work" aria-labelledby="work-title">
+            <div className="work-head">
+              <span className="work-ai" aria-hidden="true">
+                {t('case.work.ai')}
+              </span>
+              <h2 className="desk-card-title" id="work-title">
+                {t('case.work.title')}
+              </h2>
+              <span className="desk-card-sub">{t('case.work.sub')}</span>
+            </div>
+            <ChoiceCards choices={desk.choices} paypalOnly={desk.paypalOnly} summary={summaryNode} />
+            {/* 선택지 카드가 없으면(엔진 추천 없이 그릴 때) 요약 한 줄만 */}
+            {desk.choices.length === 0 ? summaryNode : null}
+            {reply === undefined ? null : <div className="case-body-reply">{reply}</div>}
+          </section>
+        </>
+      )}
     </div>
   );
 }

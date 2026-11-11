@@ -53,6 +53,21 @@ export type LoadedDispute = {
   signalsAfterReply: EscalationSignals | null;
   /** 이 분쟁에 실제 전송을 해도 되는가 (연결 표의 `liveSendAllowed`). */
   liveSendAllowed: boolean;
+  /**
+   * 사건 기록 재료 (T076, 계약 9부 `CaseEvent`). 실제 값만: 분쟁 접수 시각·구매자/판매자 글 시각(샌드박스),
+   * 시드 주문일. 없으면(옛 시험 데이터) 사건 기록은 배송사·문의만으로 만든다.
+   */
+  timeline?: DisputeTimeline;
+};
+
+/** 사건 기록 재료. 구매자 글은 가린 글이다. 판매자 글은 시각만 (글 내용을 싣지 않는다). */
+export type DisputeTimeline = {
+  /** PayPal 분쟁 `create_time`. 없으면 `null`. */
+  openedAt: string | null;
+  buyerMessages: { text: string; at: string }[];
+  sellerReplies: { at: string }[];
+  /** 시드 주문일 (`SeedOrder.date`, 연결 표의 시드 분쟁 → 주문). 모르면 `null`. */
+  orderDate: string | null;
 };
 
 /**

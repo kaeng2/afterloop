@@ -54,6 +54,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           todayCount={today.view.count}
           seller={seller}
           modeNote={mode === 'public' ? t('mode.public') : undefined}
+          dateLine={today.view.dateLine}
         />
         <main className="main" id="main">
           {children}

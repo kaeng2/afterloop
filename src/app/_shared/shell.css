@@ -54,6 +54,228 @@
   stroke-linejoin: round;
 }
 
+/* ── 글자 로고 + "for PayPal sellers" + 날짜 줄 (T076 시안 v4) ───────────────── */
+
+.shell-brand {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.shell-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  padding-bottom: 6px;
+  font-size: 1.375em;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--color-heading);
+}
+
+.shell-wordmark-accent {
+  position: relative;
+  color: var(--color-accent);
+}
+
+.shell-wordmark-curve {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: calc(100% + 8px);
+  height: 9px;
+  margin-top: 1px;
+  overflow: visible;
+}
+
+.shell-wordmark-curve path {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.shell-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 var(--space-1);
+  background: var(--color-line);
+}
+
+.shell-for {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-pill);
+}
+
+.shell-date {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/* ── 공용 작은 부품 (T076): 상품 아이콘 · 알약 · 옅은 버튼 · AI 표시 ─────────────── */
+
+.product-tile {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: var(--color-list-bg);
+  border-radius: 12px;
+}
+
+.product-tile-sm {
+  width: 36px;
+  height: 36px;
+}
+
+.product-tile-lg {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+}
+
+.product-icon {
+  width: 60%;
+  height: 60%;
+}
+
+.product-icon path {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 아이콘 오른쪽 위 점 (목록: 위험 등급) */
+.product-tile-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+}
+
+/* 아이콘 오른쪽 위 숫자 (상품 거르개: 열린 분쟁 수) */
+.product-tile-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-on-accent);
+  background: var(--color-dot-high);
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-pill);
+}
+
+.desk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.125rem 0.5625rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--color-pill-neutral-text);
+  background: var(--color-pill-neutral-bg);
+  border-radius: var(--radius-pill);
+}
+
+.desk-chip-bad {
+  color: var(--color-pill-high-text);
+  background: var(--color-pill-high-bg);
+}
+
+.desk-button-tint,
+.desk-button-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 34px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--color-heading);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.desk-button-tint {
+  background: var(--color-accent-soft);
+  border: 0;
+}
+
+.desk-button-tint:hover {
+  background: var(--color-accent-tint);
+}
+
+.desk-button-outline {
+  background: var(--color-surface);
+  border: 2px solid var(--color-line);
+}
+
+.desk-button-outline:hover {
+  border-color: var(--color-heading);
+}
+
+.desk-button-tint:disabled,
+.desk-button-outline:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.desk-caret {
+  display: inline-block;
+}
+
+.desk-caret-open {
+  transform: rotate(180deg);
+}
+
+/* "AI" 표시 (시안의 파랑 그라데이션 대신 강조색 그라데이션) */
+.work-ai {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: var(--text-xs);
+  font-weight: 900;
+  color: var(--color-on-accent);
+  white-space: nowrap;
+  background: linear-gradient(120deg, var(--color-accent-deep) 0%, var(--color-accent) 60%, var(--color-accent-strong) 100%);
+  border-radius: var(--radius-pill);
+}
+
+.work-ai-small {
+  padding: 1px 7px;
+}
+
 /* 탭 묶음: 알약 하나 안에 탭 두 개 */
 .shell-tabs {
   gap: var(--space-1);
@@ -252,6 +474,16 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+/* 2차 리뷰 ⑤: "Close" 글자가 꺾이지 않게 (버튼은 줄지 않고 한 줄) */
+.drawer-close {
+  flex: none;
+  white-space: nowrap;
+}
+
+.drawer-titles {
+  min-width: 0;
 }
 
 .drawer-titles {

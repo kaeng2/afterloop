@@ -25,16 +25,25 @@ import './shell.css';
 const SHOW_AUTOPILOT = false;
 
 /**
- * 로고 마크 (T067): 28px 원 + 고리 모양(돌아오는 화살표) 아이콘. 색은 css 변수(강조색 + 카드 바탕)만 쓴다 —
- * 시안의 파랑 계열 색은 쓰지 않는다. 장식이라 읽히지 않는다 (이름은 옆 글자).
+ * 글자 로고 (T076, 시안 v4): "Dispute" + 강조색 "Less" + 그 아래 밑줄 곡선. 색은 css 변수(강조색)만 쓴다 —
+ * 시안의 파랑 그라데이션은 쓰지 않는다. 읽히는 이름은 `nav.appName` 하나 (`aria-label`).
  */
-function LogoMark() {
+function Wordmark() {
+  const name = t('nav.appName');
+  const accent = t('nav.appNameAccent');
+  const head = name.endsWith(accent) ? name.slice(0, name.length - accent.length) : name;
   return (
-    <svg className="shell-logo-mark" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <circle className="shell-logo-disc" cx="16" cy="16" r="14" />
-      <path className="shell-logo-ring" d="M10 16a6 6 0 1 0 6-6" strokeWidth="3" />
-      <path className="shell-logo-ring" d="M16 6.5l3 3.5-3.6 2.6" strokeWidth="2.5" />
-    </svg>
+    <span className="shell-wordmark" role="img" aria-label={name}>
+      <span aria-hidden="true">{head}</span>
+      {name.endsWith(accent) ? (
+        <span className="shell-wordmark-accent" aria-hidden="true">
+          {accent}
+          <svg className="shell-wordmark-curve" viewBox="0 0 100 10" preserveAspectRatio="none" focusable="false">
+            <path d="M2 3H80C89 3 94 5 98 9" />
+          </svg>
+        </span>
+      ) : null}
+    </span>
   );
 }
 
@@ -42,20 +51,27 @@ export function TopBar({
   todayCount,
   seller,
   modeNote,
+  dateLine,
 }: {
   todayCount: number;
   seller: { initial: string; shop: string };
   /** 공개 모드 한 줄 (public일 때만). PayPal activity 버튼 왼쪽에 작은 글씨로 */
   modeNote?: string;
+  /** "Wed, Nov 11 · Black Friday in 16 days" (`buildToday`의 `dateLine`). 없으면 숨김. */
+  dateLine?: string;
 }) {
   const pathname = usePathname() ?? '/';
   return (
     <header className="shell-bar">
       <div className="shell-bar-inner">
-        <Link href="/" className="shell-logo">
-          <LogoMark />
-          {t('nav.appName')}
-        </Link>
+        <div className="shell-brand">
+          <Link href="/" className="shell-logo">
+            <Wordmark />
+          </Link>
+          <span className="shell-divider" aria-hidden="true" />
+          <span className="shell-for">{t('nav.forSellers')}</span>
+        </div>
+        {dateLine === undefined ? null : <span className="shell-date">{dateLine}</span>}
 
         <nav className="shell-tabs nav" aria-label={t('shell.tabs')}>
           {NAV_ITEMS.map((item) => (

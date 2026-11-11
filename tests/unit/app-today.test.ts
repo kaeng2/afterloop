@@ -27,6 +27,7 @@ import {
   daysUntil,
   ordinal,
   selectItem,
+  type TodayItem,
   type TrackingSummary,
 } from '@/app/today/model';
 import { summarizeTracking } from '@/app/today/tracking';
@@ -200,9 +201,9 @@ describe('T060 날짜 줄', () => {
     expect(daysUntil(new Date('2026-11-11T06:00:00.000Z'), t('today.peakDate'), t('today.sellerTimeZone'))).toBe(16);
   });
 
-  it('"Tue, Nov 10 · 17 days to Black Friday"', () => {
-    expect(dateLine(NOW)).toBe('Tue, Nov 10 · 17 days to Black Friday');
-    expect(dateLine(new Date('2026-11-26T15:00:00.000Z'))).toBe('Thu, Nov 26 · 1 day to Black Friday');
+  it('"Tue, Nov 10 · Black Friday in 17 days" (T076 시안 v4 꼴, 계산은 그대로)', () => {
+    expect(dateLine(NOW)).toBe('Tue, Nov 10 · Black Friday in 17 days');
+    expect(dateLine(new Date('2026-11-26T15:00:00.000Z'))).toBe('Thu, Nov 26 · Black Friday in 1 day');
     expect(dateLine(new Date('2026-12-01T15:00:00.000Z'))).toBe('Tue, Dec 1');
   });
 });
@@ -210,21 +211,22 @@ describe('T060 날짜 줄', () => {
 // ───────────────────────────── 목록 ─────────────────────────────
 
 describe('T060 Today 목록 (데이터에서 만든다)', () => {
-  it('Needs you = 서연 · 추적(2) · 지호 순, Prevent = 가디건, Routine = Mike', () => {
+  it('T076: Reply needed = 서연 · 지호, Prevent = 추적(2) · 가디건, Routine = Mike', () => {
     const view = today();
     expect(view.groups.map((group) => group.key)).toEqual(['needsYou', 'prevent', 'routine']);
-    expect(view.groups.map((group) => group.title)).toEqual(['Needs you', 'Prevent', 'Routine']);
+    expect(view.groups.map((group) => group.title)).toEqual(['Reply needed', 'Prevent', 'Routine']);
 
     const [needsYou, prevent, routine] = view.groups;
-    expect(needsYou.items.map((item) => item.id)).toEqual([D2, TRACKING_ITEM_ID, D1]);
-    expect(needsYou.items.map((item) => item.name)).toEqual(['Seo-yeon', '2 orders without tracking', 'Ji-ho']);
-    expect(prevent.items.map((item) => item.id)).toEqual(['FK-CD-OAT']);
-    expect(prevent.items[0].name).toBe('Knit Cardigan, Oat');
+    expect(needsYou.items.map((item) => item.id)).toEqual([D2, D1]);
+    expect(needsYou.items.map((item) => item.name)).toEqual(['Seo-yeon', 'Ji-ho']);
+    expect(prevent.items.map((item) => item.id)).toEqual([TRACKING_ITEM_ID, 'FK-CD-OAT']);
+    expect(prevent.items.map((item) => item.name)).toEqual(['2 orders without tracking', 'Knit Cardigan, Oat']);
     expect(routine.items.map((item) => item.name)).toEqual(['Mike Morgan']);
   });
 
   it('유형 짧은 이름 · 아래 줄 · 위험 배지', () => {
-    const [seoyeon, tracking, jiho] = today().groups[0].items;
+    const [seoyeon, jiho] = today().groups[0].items;
+    const tracking = today().groups[1].items[0];
     expect(seoyeon.label).toBe('customs hold');
     expect(seoyeon.sub).toBe('Korean · mentions the card company');
     expect(seoyeon.band).toBe('High');
@@ -255,8 +257,8 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
       d.disputeId === D1 ? { ...d, signals: { ...quiet, mentionsCardCompany: true, unansweredOver24h: true, angryTone: true } } : d,
     );
     const view = buildToday({ disputes, tracking: TRACKING, products: seedProducts, now: NOW });
-    // 지호 3+2+1 = 6 > 서연 3+2 = 5 → 지호가 먼저
-    expect(view.groups[0].items.map((item) => item.id)).toEqual([D1, D2, TRACKING_ITEM_ID]);
+    // 지호 3+2+1 = 6 > 서연 3+2 = 5 → 지호가 먼저 (추적 항목은 T076부터 Prevent 묶음)
+    expect(view.groups[0].items.map((item) => item.id)).toEqual([D1, D2]);
   });
 
   it('Today (N)의 N = 목록에 보이는 항목 수', () => {
@@ -314,7 +316,8 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     const html = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D1, paypalNotice: null }));
     expect(html.match(/aria-current="true"/g)?.length).toBe(1);
     expect(html).toMatch(new RegExp(`aria-current="true" href="/\\?item=${D1}"`));
-    expect(html).toContain('Tue, Nov 10 · 17 days to Black Friday');
+    // T076: 날짜 줄은 위쪽 막대로 옮겼다 (TopBar dateLine). 가게 전체 한 줄은 이번 주 카드 아래 링크
+    expect(view.dateLine).toBe('Tue, Nov 10 · Black Friday in 17 days');
     expect(html).toContain('href="/products"');
   });
 });
@@ -349,14 +352,15 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
     expect(pick?.sku).toBe(top.sku);
     expect(pick?.cutPercent).toBe(Math.round(top.ratio * 100));
 
-    const prevent = today().groups[1].items[0];
-    expect(prevent.sub).toBe(t('today.prevent.sub', { stock: product('FK-CD-OAT').stock, percent: pick?.cutPercent as number }));
-    expect(prevent.sub).toBe('120 left · fixes cut likely loss by about 80%');
+    const prevent = today().groups[1].items.find((item) => item.kind === 'prevent');
+    expect(prevent?.sub).toBe(t('today.prevent.sub', { stock: product('FK-CD-OAT').stock, percent: pick?.cutPercent as number }));
+    expect(prevent?.sub).toBe('120 left · fixes cut likely loss by about 80%');
+    expect(prevent?.row.who).toBe(prevent?.sub);
   });
 
   it('Prevent 항목은 엔진 `pickPreventProduct` 값 그대로다 (화면에 고르기 함수가 없다, T067)', () => {
     const pick = pickPreventProduct(store);
-    const prevent = today().groups[1].items[0];
+    const prevent = today().groups[1].items.find((item) => item.kind === 'prevent') as TodayItem;
     expect(prevent.id).toBe(pick?.sku);
     const code = readFileSync(path.join(ROOT, 'src/app/today/model.ts'), 'utf8');
     expect(code).toMatch(/pickPreventProduct\(store\)/);
@@ -369,17 +373,18 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
 describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
   it('서연 High · 추적 Watch · 지호 Waiting approval · 가디건 Prevent · Mike Skipped', () => {
     const [needsYou, prevent, routine] = today().groups;
-    const [seoyeon, tracking, jiho] = needsYou.items;
+    const [seoyeon, jiho] = needsYou.items;
+    const [tracking, cardigan] = prevent.items;
     const statusText = (item: { status: { key: string } }) => t(item.status.key);
 
-    expect([seoyeon, tracking, jiho, prevent.items[0], routine.items[0]].map(statusText)).toEqual([
+    expect([seoyeon, tracking, jiho, cardigan, routine.items[0]].map(statusText)).toEqual([
       'High',
       'Watch',
       'Waiting approval',
       'Prevent',
       'Skipped',
     ]);
-    expect([seoyeon, tracking, jiho, prevent.items[0], routine.items[0]].map((item) => item.status.tone)).toEqual([
+    expect([seoyeon, tracking, jiho, cardigan, routine.items[0]].map((item) => item.status.tone)).toEqual([
       'high',
       'watch',
       'neutral',
@@ -391,7 +396,7 @@ describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
     expect(tracking.dot).toBe('watch');
     expect(jiho.band).not.toBeNull();
     expect(jiho.dot).toBe(({ High: 'high', Watch: 'watch', Low: 'low' } as const)[jiho.band as 'High' | 'Watch' | 'Low']);
-    expect(prevent.items[0].dot).toBe('neutral');
+    expect(cardigan.dot).toBe('neutral');
     expect(routine.items[0].dot).toBe('neutral');
   });
 
@@ -405,15 +410,20 @@ describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
     expect(jiho?.dot).toBe('high');
   });
 
-  it('목록 마크업: 점(장식) + 알약 글자, 위험 기호 부품(RiskLevel)은 쓰지 않는다', () => {
+  it('목록 마크업 (T076 시안 v4): 아이콘 위 점(장식) + 범주 알약, 상태는 화면 읽기 글자, 위험 기호 부품(RiskLevel)은 쓰지 않는다', () => {
     const view = today();
     const markup = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
-    expect(markup).toContain('<span class="today-dot today-dot-high" aria-hidden="true"></span>');
-    expect(markup).toContain('<span class="today-pill today-pill-high">High</span>');
-    expect(markup).toContain('<span class="today-pill today-pill-watch">Watch</span>');
-    expect(markup).toContain('<span class="today-pill today-pill-neutral">Waiting approval</span>');
-    expect(markup).toContain('<span class="today-pill today-pill-neutral">Prevent</span>');
-    expect(markup).toContain('<span class="today-pill today-pill-neutral">Skipped</span>');
+    // 점은 상품 아이콘(장식, aria-hidden) 안 오른쪽 위
+    expect(markup).toMatch(/<span class="product-tile product-tile-sm" aria-hidden="true">.*?<span class="product-tile-dot today-dot today-dot-high"><\/span><\/span>/);
+    // 알약 = 범주 (서연은 위험 High라 빨강)
+    expect(markup).toContain('<span class="today-pill today-pill-high">Not received · Customs hold</span>');
+    expect(markup).toContain('<span class="today-pill today-pill-neutral">Not as described · Color</span>');
+    expect(markup).toContain('<span class="today-pill today-pill-neutral">Missing tracking</span>');
+    expect(markup).toContain('<span class="today-pill today-pill-neutral">Not received · Repeat claim</span>');
+    // 상태(High · Watch · Waiting approval · Prevent · Skipped)는 화면 읽기 글자로 남는다
+    for (const status of ['High', 'Watch', 'Waiting approval', 'Prevent', 'Skipped']) {
+      expect(markup).toMatch(new RegExp(`<span class="today-sr-only">[^<]*· ${status}</span>`));
+    }
     expect(markup).not.toMatch(/class="risk /);
     expect(markup.match(/aria-current="true"/g)?.length).toBe(1);
   });
@@ -500,9 +510,9 @@ describe('T060 추적 항목 조회 (GET만)', () => {
 // ───────────────────────────── 위쪽 막대 · 서랍 ─────────────────────────────
 
 describe('T060 위쪽 막대', () => {
-  it('탭은 Today / Products 두 개', () => {
+  it('탭은 Today / Black Friday rehearsal(= Products) 두 개 (T076 메뉴 이름)', () => {
     expect(NAV_ITEMS.map((item) => item.href)).toEqual(['/', '/products']);
-    expect(NAV_ITEMS.map((item) => t(item.copyKey))).toEqual(['Today', 'Products']);
+    expect(NAV_ITEMS.map((item) => t(item.copyKey))).toEqual(['Today', 'Black Friday rehearsal']);
   });
 
   it('판매자 칩 글자는 설정의 서명에서 온다', () => {

@@ -20,6 +20,10 @@ import { shortDate } from '@/app/_shared/short-date';
 import { caseReplyFacts } from '@/app/cases/reply-facts';
 import { buildReplyView, OFFER_STATUS, replyChips, type ReplyViewInput } from '@/app/cases/reply-model';
 import { CaseView, headLine } from '@/app/cases/view/case-view';
+import { buildCaseDesk } from '@/app/cases/desk-model';
+import { toDollarsCents } from '@/app/_shared/money';
+import { toPercentRounded } from '@/app/_shared/percent';
+import { recommend } from '@/engine/recommend';
 import type { ActionPlan, BoardState, Cause, EscalationSignals, FactToken, LlmCaller, SeedBuyer, SeedProduct } from '@/types';
 
 import { P, R } from '../acceptance/boards';
@@ -145,6 +149,19 @@ function replyBase(draft: ReplyDraft, translation: ReplyTranslation | null, over
 }
 
 const VIEW = buildCaseView(caseInput(), P, R);
+// T076: 시안 v4 칸 (선택지 카드 = 엔진 recommend, 예측 어댑터 없음 = null)
+const DESK = buildCaseDesk({
+  view: VIEW,
+  board: AFTER,
+  buyer: SEOYEON,
+  productName: SWEATER.itemName,
+  openDays: 5,
+  recommendation: recommend(AFTER, P, R),
+  moveForecasts: null,
+  history: null,
+  curvePoints: null,
+  band: VIEW.risk?.band ?? null,
+});
 
 async function fullMarkup(over: Partial<ReplyViewInput> = {}, draftOverride?: ReplyDraft): Promise<string> {
   const { draft, translation } = await prepare();
@@ -155,7 +172,7 @@ async function fullMarkup(over: Partial<ReplyViewInput> = {}, draftOverride?: Re
     languageKey: 'case.view.lang.KO',
     buyerShort: 'Seo-yeon',
   });
-  return html(createElement(CaseView, { view: VIEW, llmOk: true, reply }));
+  return html(createElement(CaseView, { view: VIEW, desk: DESK, llmOk: true, reply }));
 }
 
 // ── 1. 머리글 ──────────────────────────────────────────────────────────
@@ -187,7 +204,7 @@ describe('1번: 머리글 "Case … · Wool Sweater $72 · Waiting for your repl
 // ── 2~6. 한 열 배치 ────────────────────────────────────────────────────
 
 describe('배치: 한 열, 위에서 아래로', () => {
-  it('순서: 머리글 → 비교 카드(안에 한 줄 요약) → 대화 → 칩 → 답장 두 칸 → 검사 줄 + 보내기', async () => {
+  it('T076 순서: 머리글 → 구매자 메시지 → Respond now(1 선택지 카드 → 2 입력칸·칩 → 전송본) → 검사 줄 + 보내기', async () => {
     const { draft } = await prepare();
     if (!draft.ok) throw new Error('draft failed');
     const markup = await fullMarkup({}, { ...draft, chips: ['Apology', 'Follow-up: ⟦DATE_1⟧'] } as ReplyDraft);
@@ -198,36 +215,36 @@ describe('배치: 한 열, 위에서 아래로', () => {
     };
     const order = [
       at('class="case-head"'),
-      at('class="card cc-card"'),
-      at('class="case-summary"'),
       at('id="case-conversation"'),
-      at('class="reply-chips"'),
-      at('class="reply-pair"'),
+      at('id="work-title"'),
+      at('class="choice-list"'),
+      at('class="reply-textarea"'),
+      at('class="reply-tray-chips"'),
+      at('class="reply-block reply-box"'),
       at('class="reply-foot"'),
       at('Send in Korean'),
     ];
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+    // 예측 어댑터가 없으면(null) 위험 곡선 카드는 그리지 않는다. 비교 카드는 선택지 카드로 바뀌었다
+    expect(markup).not.toContain('class="curve-card"');
+    expect(markup).not.toContain('class="card cc-card"');
   });
 
-  it('한 줄 요약은 비교 카드 **안** (카드 맨 아래), 따로 있던 회색 요약 상자(section)는 없다', async () => {
+  it('T076: 선택지 카드 아래 "PayPal data only" 한 줄 = 배송사 기록 전 보드의 엔진 값 + Demo data', async () => {
     const markup = await fullMarkup();
-    const card = markup.slice(markup.indexOf('class="card cc-card"'), markup.indexOf('id="case-conversation"'));
-    expect(card).toContain('class="label cc-footer"><div class="case-summary"');
-    expect(card).toContain(copyTables.en['case.view.summary.A1_A2'].replace(/'/g, '&#x27;'));
-    expect(card).toContain(copyTables.en['badge.codeDecides']);
-    expect(card).toMatch(/class="case-summary-codes num">A1 → A2</);
-    expect(markup).not.toContain('<section class="case-summary"');
-
-    const css = read('src/app/cases/view/case.css');
-    const box = css.match(/\.case-summary\s*\{([^}]*)\}/)?.[1] ?? '';
-    expect(box).not.toMatch(/background|border/);
+    const line = markup.slice(markup.indexOf('class="choice-paypal-only'), markup.indexOf('class="case-body-reply"'));
+    const before = recommend(BEFORE, P, R).best;
+    expect(before?.move).toBe('refund');
+    expect(line).toContain(
+      t('case.choice.paypalOnly', { action: t('case.view.action.refund'), amount: toDollarsRounded(before?.expectedLossCents as number) }),
+    );
+    expect(line).toContain(copyTables.en['badge.demo']);
   });
 
-  it('비교 카드는 상세에서 가로 전체 폭 (fit-content 해제), 대화 → 답장은 늘 한 열', () => {
+  it('대화 → 답장은 늘 한 열 (컨테이너 질의가 .case-body를 두 칸으로 바꾸지 않는다)', () => {
     const css = read('src/app/cases/view/case.css');
-    expect(css.match(/\.case-hero \.cc-card\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/width:\s*auto/);
     expect(css.match(/\.case-body\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/grid-template-columns:\s*minmax\(0, 1fr\);/);
-    expect(css).not.toMatch(/@container/);
+    for (const block of css.match(/@container[^{]*\{[\s\S]*?\n\}/g) ?? []) expect(block).not.toMatch(/\.case-body/);
   });
 
   it('말풍선은 내용 폭만큼 (왼쪽 정렬, 최대 폭만 둔다)', () => {
@@ -236,16 +253,17 @@ describe('배치: 한 열, 위에서 아래로', () => {
     expect(bubble).toMatch(/max-width:/);
   });
 
-  it('답장 두 칸 나란히: 왼쪽 "You write (English)", 오른쪽 "Seo-yeon reads (Korean)", 둘 다 AI suggests', async () => {
+  it('T076 두 칸 나란히: 왼쪽 입력칸(영어 초안 미리보기), 오른쪽 "Seo-yeon reads (Korean)" 검사받은 전송본 + AI suggests', async () => {
     const markup = await fullMarkup();
     const pair = markup.slice(markup.indexOf('class="reply-pair"'), markup.indexOf('class="reply-foot"'));
-    const boxes = pair.split('class="reply-block reply-box"').slice(1);
-    expect(boxes).toHaveLength(2);
-    expect(boxes[0]).toContain('You write (English)');
-    expect(boxes[0]).toContain('lang="en"');
-    expect(boxes[1]).toContain('Seo-yeon reads (Korean)');
-    expect(boxes[1]).toContain('lang="ko"');
-    for (const box of boxes) expect(box).toContain(copyTables.en['badge.aiSuggests']);
+    const editor = pair.slice(0, pair.indexOf('class="reply-block reply-box"'));
+    expect(editor).toMatch(/<textarea[^>]*class="reply-textarea"[^>]*lang="en"/);
+    const outgoing = pair.slice(pair.indexOf('class="reply-block reply-box"'));
+    expect(outgoing).toContain('Seo-yeon reads (Korean)');
+    expect(outgoing).toContain('lang="ko"');
+    expect(outgoing).toContain(copyTables.en['badge.aiSuggests']);
+    // 칩 받침(입력칸 아래)에도 AI suggests
+    expect(editor).toContain(copyTables.en['badge.aiSuggests']);
     // 대명사 없음 (성별 데이터가 없다)
     expect(markup).not.toMatch(/\b(She|He) reads\b/);
 
@@ -312,9 +330,10 @@ describe('배치: 한 열, 위에서 아래로', () => {
     for (const key of ['badge.assumption', 'badge.demo', 'badge.aiSuggests', 'badge.codeDecides']) {
       expect(markup, key).toContain(copyTables.en[key]);
     }
-    const card = markup.slice(markup.indexOf('class="card cc-card"'), markup.indexOf('class="label cc-footer"'));
-    expect(card).toContain(copyTables.en['badge.assumption']);
-    expect(card).toContain(copyTables.en['badge.demo']);
+    // T076: 기대 손실(선택지 카드)에 Assumption, "PayPal data only" 줄에 Demo data
+    const step = markup.slice(markup.indexOf('class="desk-step"'), markup.indexOf('class="case-body-reply"'));
+    expect(step).toContain(copyTables.en['badge.assumption']);
+    expect(step).toContain(copyTables.en['badge.demo']);
   });
 });
 
@@ -358,7 +377,8 @@ describe('칩: replyChips(draft)', () => {
     expect(formatFact('DATE', date!.value, 'en')).toBe('November 17');
 
     const markup = await fullMarkup({}, withChips);
-    const row = markup.slice(markup.indexOf('class="reply-chips"'), markup.indexOf('class="reply-pair"'));
+    // T076: 칩은 입력칸 아래 받침 (특징 판정 어댑터가 null일 때 지금 칩 그대로)
+    const row = markup.slice(markup.indexOf('class="reply-tray-chips"'), markup.indexOf('class="reply-block reply-box"'));
     expect(row).toContain('Suggested reply covers:');
     expect(row).toContain(`<li class="reply-chip">${view.chips[1]}</li>`);
     expect(row).toContain(copyTables.en['badge.aiSuggests']);
@@ -375,13 +395,13 @@ describe('칩: replyChips(draft)', () => {
     const { draft } = await prepare();
     if (!draft.ok) throw new Error('draft failed');
     const markup = await fullMarkup({}, { ...draft, chips: [] } as ReplyDraft);
-    expect(markup).toContain('class="reply-chips"');
+    expect(markup).toContain('class="reply-tray-chips"');
     expect(markup).toContain('Suggested reply covers:');
   });
 
   it('칩도 코칭 줄도 없으면(초안 실패) 칩 줄을 숨긴다', async () => {
     const markup = await fullMarkup({}, { ok: false, reason: 'ai_unavailable', detail: 'test' } as ReplyDraft);
-    expect(markup).not.toContain('class="reply-chips"');
+    expect(markup).not.toContain('class="reply-tray-chips"');
     expect(markup).not.toContain('Suggested reply covers:');
   });
 
@@ -400,8 +420,8 @@ describe('칩: replyChips(draft)', () => {
 
 // ── 지호 꼴 (제안이 먼저) ────────────────────────────────────────────────
 
-describe('지호 꼴: 같은 틀, 주 버튼 "Send offer · $N" + 메시지 버튼 꺼짐 안내', () => {
-  it('맨 아래 줄 오른쪽에 제안 버튼(강조) → 메시지 버튼(조용), 꺼짐 이유 글자 그대로', async () => {
+describe('지호 꼴 (T076 시안 v4 짧은 카드): "Offer N% back ($X), the buyer keeps it" + [Send offer · $N]', () => {
+  it('제안 카드: 제목의 금액 = 엔진 계획 금액, 비율 = 엔진 가정값, 버튼 하나(관문 그대로), 메시지 버튼 없음', async () => {
     const { draft, translation } = await prepare();
     const plan: ActionPlan = {
       planId: 'p-test',
@@ -420,18 +440,20 @@ describe('지호 꼴: 같은 틀, 주 버튼 "Send offer · $N" + 메시지 버�
         base: replyBase(draft, translation, { plan, offerFirst: true, statusCode: OFFER_STATUS }),
         replyId: 'r-1',
         languageKey: 'case.view.lang.KO',
+        offerRate: P.offerRate,
       }),
     );
+    expect(markup).toContain('class="reply offer-card"');
+    expect(markup).toContain(
+      t('case.offer.title.keep', { percent: toPercentRounded(P.offerRate), amount: toDollarsCents(700) }).replace(/\$/g, '$'),
+    );
     const actions = markup.slice(markup.indexOf('class="reply-actions"'));
-    const offer = actions.indexOf(t('case.send.offerButton', { amount: toDollarsRounded(700) }));
-    const message = actions.indexOf('Send in Korean');
-    const why = actions.indexOf(t('case.view.offerFirst'));
-    // 재시도 3번: [Send in Korean](조용) → 그 아래 꺼짐 이유 → 주 버튼 [Send offer · $7]이 오른쪽 끝
-    expect(message).toBeGreaterThan(0);
-    expect(why).toBeGreaterThan(message);
-    expect(offer).toBeGreaterThan(why);
-    expect(actions.slice(offer)).not.toContain('<button');
-    expect(actions).toMatch(/class="reply-button-quiet" disabled=""/);
+    expect(actions).toMatch(
+      new RegExp(`<button type="button" class="reply-button"[^>]*>${t('case.send.offerButton', { amount: toDollarsRounded(700) }).replace(/[$·]/g, '.')}</button>`),
+    );
+    // 메시지만 보내는 버튼은 없다 (제안이 먼저인 건에서 늘 꺼져 있던 버튼 — 관문 판정은 그대로)
+    expect(actions).not.toContain('Send in Korean');
+    expect((actions.match(/<button/g) ?? []).length).toBe(1);
     const css = read('src/app/cases/reply/reply.css');
     expect(css.match(/\.reply-send\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/flex-direction:\s*column/);
     expect(css.match(/\.reply-foot\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/flex-wrap:\s*nowrap/);
@@ -486,7 +508,7 @@ describe('재시도 2번: 원문이 영어면 번역 줄 없음 (영어가 두 �
   });
 
   it('그림: 원문만 한 번, "English translation unavailable"·AI suggests 없음, 꼬리 줄은 남는다', () => {
-    const view = buildCaseView(caseInput({ buyer: KO, messages: jihoMessages(JIHO_EN) }), P, R);
+    const view = buildCaseView(caseInput({ buyer: KO, messages: jihoMessages(JIHO_EN), signals: null }), P, R);
     const markup = html(createElement(CaseView, { view, llmOk: true }));
     const thread = markup.slice(markup.indexOf('class="case-thread"'), markup.indexOf('</ol>'));
     expect(thread.split(JIHO_EN).length - 1).toBe(1);
@@ -506,9 +528,9 @@ describe('재시도 2번: 원문이 영어면 번역 줄 없음 (영어가 두 �
 });
 
 describe('재시도 1번: 1920×1080 한 화면 (세로 자리 줄이기)', () => {
-  it('"Conversation" 제목 줄은 화면 읽기 전용, 말풍선 꼬리는 영어 줄 끝 같은 줄', async () => {
+  it('T076: "Buyer messages" 제목 줄(시안 v4) + 말풍선 꼬리는 영어 줄 끝 같은 줄', async () => {
     const markup = await fullMarkup();
-    expect(markup).toMatch(/<h2 class="case-sr-only" id="case-conversation">/);
+    expect(markup).toMatch(/<h2 class="desk-card-title" id="case-conversation">Buyer messages<\/h2>/);
     const start = markup.indexOf('class="case-bubble"');
     const bubble = markup.slice(start, markup.indexOf('</li>', start));
     const en = bubble.slice(bubble.indexOf('class="case-bubble-en"'));
@@ -530,9 +552,10 @@ describe('재시도 4번: 칩 날짜는 짧은 달 이름', () => {
     const { draft } = await prepare();
     if (!draft.ok) throw new Error('draft failed');
     const markup = await fullMarkup({}, { ...draft, chips: ['Apology', 'Follow-up: ⟦DATE_1⟧'] } as ReplyDraft);
-    const row = markup.slice(markup.indexOf('class="reply-chips"'), markup.indexOf('class="reply-pair"'));
+    const row = markup.slice(markup.indexOf('class="reply-tray-chips"'), markup.indexOf('class="reply-block reply-box"'));
     expect(row).toContain('<li class="reply-chip">Follow-up: Nov 17</li>');
-    expect(markup.slice(markup.indexOf('class="reply-text reply-english"'))).toContain('November 17');
+    // T076: 영어 초안은 입력칸의 처음 글
+    expect(markup.slice(markup.indexOf('class="reply-textarea"'))).toContain('November 17');
     const at = markup.indexOf('class="reply-inline');
     expect(markup.slice(at, markup.indexOf('</ul>', at))).toContain('11월 17일');
   });

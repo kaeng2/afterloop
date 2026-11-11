@@ -21,6 +21,8 @@ import { caseReplyFacts } from '@/app/cases/reply-facts';
 import { buildReplyView, sendModeKey, visibleChecks, type ReplyViewInput } from '@/app/cases/reply-model';
 import { CaseView, headLine } from '@/app/cases/view/case-view';
 import { Conversation, timeline } from '@/app/cases/view/conversation';
+import { buildCaseDesk } from '@/app/cases/desk-model';
+import { recommend } from '@/engine/recommend';
 import { toDollarsRounded } from '@/app/_shared/money';
 import { buildToday, routineLine, decideFor } from '@/app/today/model';
 import { TodayList } from '@/app/today/today-list';
@@ -115,30 +117,49 @@ function input(overrides: Partial<CaseViewInput> = {}): CaseViewInput {
 }
 
 const VIEW = buildCaseView(input(), P, R);
-const CASE_HTML = html(createElement(CaseView, { view: VIEW, llmOk: true }));
+// T076: 시안 v4 칸 (선택지 카드 = 엔진 recommend. 예측 어댑터 없음 = null)
+const DESK = buildCaseDesk({
+  view: VIEW,
+  board: D2_AFTER,
+  buyer: SEOYEON,
+  productName: SWEATER.itemName,
+  openDays: 3,
+  recommendation: recommend(D2_AFTER, P, R),
+  moveForecasts: null,
+  history: null,
+  curvePoints: null,
+  band: VIEW.risk?.band ?? null,
+});
+const CASE_HTML = html(createElement(CaseView, { view: VIEW, desk: DESK, llmOk: true }));
 
 // ── 1. 머리글 ──────────────────────────────────────────────────────────
 
-describe('1번: 머리글 두 줄 + 작은 위험 배지', () => {
-  it('첫 줄 "Case <번호> · <상품> <금액> · <상태 쉬운 말>", 둘째 줄 "<이름> · writes in Korean"', () => {
-    // T068: 상품은 쉼표 앞 부분, 금액은 달러 반올림 (둘 다 데이터에서)
+describe('1번: 머리글 (T076 시안 v4) + 작은 위험 배지', () => {
+  it('제목 "<PayPal 분쟁 번호> · <상품>" + 범주 알약, 둘째 줄 "$72 · Seo-yeon Kim · Korea · reads Korean · Open N days"', () => {
+    // 옛 첫 줄 꼴(headLine)은 화면 읽기·시험용으로 남아 있다
     expect(headLine(VIEW.header)).toBe(
       `Case ${ID} · ${SWEATER.itemName.split(',')[0].trim()} ${toDollarsRounded(D2_BASE.amountCents)} · ${copyTables.en['case.status.WAITING_FOR_SELLER_RESPONSE']}`,
     );
-    const name = CASE_HTML.match(/<h2 class="case-name">([\s\S]*?)<\/h2>/)?.[1] ?? '';
-    expect(text(name).trim()).toBe(`${SEOYEON.name} · writes in Korean`);
+    const title = CASE_HTML.match(/<h2 class="case-title num"[^>]*>([\s\S]*?)<\/h2>/)?.[1] ?? '';
+    expect(text(title)).toBe(`${ID} · ${SWEATER.itemName.split(',')[0].trim()}`);
+    expect(CASE_HTML).toContain('Not received · Customs hold');
+    const meta = CASE_HTML.match(/<p class="case-meta num">([\s\S]*?)<\/p>/)?.[1] ?? '';
+    expect(text(meta).trim()).toBe(
+      `${toDollarsRounded(D2_BASE.amountCents)} · Seo-yeon Kim · Korea · reads Korean · Open 3 days · ${copyTables.en['case.status.WAITING_FOR_SELLER_RESPONSE']}`,
+    );
     expect(CASE_HTML.match(/case-risk-button/g)).toHaveLength(1);
   });
 });
 
-// ── 2. 비교 카드 + "incl. $N of your time" ─────────────────────────────
+// ── 2. 선택지 카드 (T076: 비교 카드 → 엔진 수별 카드) ──────────────────────
 
-describe('2번: 비교 카드와 대응 시간 비용', () => {
-  it('"incl. $N of your time"의 금액 = 가정값 timeCostCents의 표시 (전액 환불 칸에만)', () => {
+describe('2번: 선택지 카드와 대응 시간 비용', () => {
+  it('대응 시간 비용(timeCostCents)은 보기용 값에 남아 있고, 환불 카드의 기대 손실은 recommend 값 그대로', () => {
     expect(VIEW.compare.before.move).toBe('refund');
     expect(VIEW.compare.before.timeCost).toEqual({ cents: P.timeCostCents, display: toDollarsRounded(P.timeCostCents) });
     expect(VIEW.compare.after?.timeCost).toBeNull();
-    expect(CASE_HTML).toContain(t('case.view.timeCost', { amount: toDollarsRounded(P.timeCostCents) }));
+    const refund = recommend(D2_AFTER, P, R).all.find((e) => e.move === 'refund');
+    expect(DESK.choices.find((c) => c.move === 'refund')?.expectedLoss?.cents).toBe(refund?.expectedLossCents);
   });
 
   it('가정값을 바꾸면 따라 바뀐다 (숫자를 적어 두지 않았다)', () => {
@@ -146,10 +167,10 @@ describe('2번: 비교 카드와 대응 시간 비용', () => {
     expect(buildCaseView(input(), P2, R).compare.before.timeCost?.display).toBe(toDollarsRounded(500));
   });
 
-  it('Assumption 배지(카드 머리)와 Demo data 배지(오른쪽 칸)가 남아 있다', () => {
-    const card = CASE_HTML.match(/<section class="card cc-card"[\s\S]*?<\/section>/)?.[0] ?? '';
-    expect(card).toContain(copyTables.en['badge.assumption']);
-    expect(card.indexOf(copyTables.en['badge.demo'])).toBeGreaterThan(card.indexOf('With carrier data'));
+  it('Assumption 배지(단계 머리)와 Demo data 배지("PayPal data only" 줄)가 남아 있다', () => {
+    const step = CASE_HTML.slice(CASE_HTML.indexOf('class="desk-step"'));
+    expect(step).toContain(copyTables.en['badge.assumption']);
+    expect(step.indexOf(copyTables.en['badge.demo'])).toBeGreaterThan(step.indexOf('PayPal data only'));
   });
 });
 
@@ -274,19 +295,19 @@ function replyBase(draft: ReplyDraft, translation: ReplyTranslation | null, over
 }
 
 describe('5~6번: 답장 칸 — 접기와 검사 줄', () => {
-  // T068: 코칭 접기는 칩 줄로 바뀌었고, 답장은 "You write (English)" | "<이름> reads (Korean)" 좌우 두 칸
-  it('코칭 접기 없음(칩으로 대체), 왼쪽 영어 → 오른쪽 구매자 글 (이름은 데이터에서)', async () => {
+  // T076: 왼쪽은 입력칸(영어 초안 미리보기), 오른쪽은 "<이름> reads (Korean)" 검사받은 전송본
+  it('코칭 접기 없음(칩으로 대체), 왼쪽 영어 입력칸 → 오른쪽 구매자 글 (이름은 데이터에서)', async () => {
     const { draft, translation } = await prepare();
     const markup = html(
       createElement(ReplyPanel, { disputeId: ID, base: replyBase(draft, translation), replyId: null, languageKey: 'case.view.lang.KO', buyerShort: 'Seo-yeon' }),
     );
     expect(markup).not.toContain('coaching tips');
     const reads = markup.indexOf('Seo-yeon reads (Korean)');
-    const write = markup.indexOf('You write (English)');
+    const write = markup.indexOf('class="reply-textarea"');
     expect(write).toBeGreaterThan(0);
     expect(reads).toBeGreaterThan(write);
     expect(markup).toContain('class="reply-text reply-outgoing" lang="ko"');
-    expect(markup).toContain('class="reply-text reply-english" lang="en"');
+    expect(markup).toMatch(/<textarea[^>]*class="reply-textarea" lang="en"/);
     // 역번역은 접기 안
     expect(markup).toMatch(/<summary class="reply-fold-summary"><span>Back-translation to English<\/span>/);
   });
@@ -591,10 +612,10 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     now: new Date('2026-11-10T17:00:00.000Z'),
   });
 
-  it('5줄: Needs you 3 (서연 · 추적 · 지호) + Prevent 1 + Routine 1', () => {
+  it('5줄 (T076): Reply needed 2 (서연 · 지호) + Prevent 2 (추적 · 가디건) + Routine 1', () => {
     expect(view.groups.map((g) => [g.key, g.items.length])).toEqual([
-      ['needsYou', 3],
-      ['prevent', 1],
+      ['needsYou', 2],
+      ['prevent', 2],
       ['routine', 1],
     ]);
     expect(view.count).toBe(5);
@@ -612,7 +633,8 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     expect(mike.dot).toBe('neutral');
     const markup = html(createElement(TodayList, { view, selectedId: null, paypalNotice: null }));
     const row = markup.slice(markup.indexOf('Mike Morgan'));
-    expect(row.slice(0, row.indexOf('</li>'))).toContain('<span class="today-pill today-pill-neutral">Skipped</span>');
+    // T076: 알약은 범주, 상태 "Skipped"는 화면 읽기 글자로
+    expect(row.slice(0, row.indexOf('</li>'))).toMatch(/<span class="today-sr-only">[^<]*· Skipped<\/span>/);
     expect(row.slice(0, row.indexOf('</li>'))).not.toContain('risk-low');
     for (const item of view.groups[0].items) expect(item.status.key).not.toBe('today.skipped');
   });

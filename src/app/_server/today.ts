@@ -1,9 +1,10 @@
 /**
- * Today 탭 서버 읽기 (T060). **서버에서만** 부른다.
+ * Today 탭 서버 읽기 (T060 → T076). **서버에서만** 부른다.
  *
  * - 분쟁: `loadDemoDisputesForRequest` (같은 요청 안에서 PayPal을 한 번만 읽는다. GET만)
  * - 추적: `summarizeTracking` (주문 상세 GET만. 등록 POST 없음). PayPal을 쓸 수 없으면 `null` → 항목 숨김
- * - 목록: `buildToday` (엔진 결과를 옮긴다)
+ * - 목록: `buildToday` (엔진 결과를 옮긴다). 상품 거르개(`?sku=`)는 같은 읽기 결과로 다시 묶기만 한다
+ * - 이번 주 카드: 예측 어댑터 `loadWeeklySummary` (T076 자리 — 지금 `null`)
  *
  * 위쪽 막대(Today (N))와 Today 화면이 같은 요청 안에서 함께 부르므로 `cache`로 한 번만 읽는다.
  */
@@ -13,12 +14,14 @@ import { cache } from 'react';
 
 import { seedBuyers, seedDisputes, seedOrders, seedProducts } from '../../../seed/index';
 import type { Availability } from '../_shared/availability';
-import { buildToday, type TodayView, type TrackingSummary } from '../today/model';
+import { hasDemoValues, pickBoard, type LoadedDispute } from '../_shared/dispute-view';
+import { loadWeeklySummary } from '../cases/forecast-source';
+import { buildToday, weeklyView, type TodayView, type TrackingSummary, type WeeklyView } from '../today/model';
 import { summarizeTracking } from '../today/tracking';
 import { loadDemoDisputesForRequest } from './disputes';
 import { getPayPalClient } from './paypal';
 
-export type TodayLoad = { view: TodayView; paypal: Availability };
+export type TodayLoad = { view: TodayView; paypal: Availability; disputes: LoadedDispute[]; tracking: TrackingSummary | null };
 
 export const loadTrackingForRequest = cache(async (): Promise<TrackingSummary | null> => {
   const resolved = getPayPalClient();
@@ -36,5 +39,19 @@ export const loadTodayForRequest = cache(async (): Promise<TodayLoad> => {
   return {
     view: buildToday({ disputes: disputes.disputes, tracking, products: seedProducts, now: new Date() }),
     paypal: disputes.paypal,
+    disputes: disputes.disputes,
+    tracking,
   };
 });
+
+/** Today 화면용: 상품 거르개를 넣어 다시 묶은 목록 + 이번 주 카드. PayPal은 다시 읽지 않는다. */
+export async function loadTodayScreen(sku: string | undefined): Promise<TodayLoad & { weekly: WeeklyView }> {
+  const base = await loadTodayForRequest();
+  const view =
+    sku === undefined
+      ? base.view
+      : buildToday({ disputes: base.disputes, tracking: base.tracking, products: seedProducts, now: new Date(), sku });
+  const usesDemoData = base.disputes.some(hasDemoValues);
+  const summary = loadWeeklySummary({ boards: base.disputes.map(pickBoard), usesDemoData });
+  return { ...base, view, weekly: weeklyView(view.openDisputes, summary, usesDemoData) };
+}
