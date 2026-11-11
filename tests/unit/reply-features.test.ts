@@ -25,6 +25,39 @@ describe('특징별 규칙 (영어·한국어)', () => {
     });
   }
 
+  it('T080: 격식체·해요체 한국어 규칙', () => {
+    const yes: [ReplyFeatureKey, string][] = [
+      ['blame', '저희 책임이 아닙니다.'],
+      ['blame', '택배사 잘못입니다.'],
+      ['blame', '세관 탓이에요.'],
+      ['blame', '고객님 잘못이에요.'],
+      ['blame', '판매자 책임이 아니에요.'],
+      ['blame', '직접 세관에 문의해 주세요.'],
+      ['blame', '직접 택배사에 연락하세요.'],
+      ['vague', '금방 도착합니다.'],
+      ['vague', '금방 갈 거예요.'],
+      ['apology', '죄송합니다.'],
+      ['apology', '죄송해요.'],
+      ['apology', '미안합니다.'],
+      ['apology', '사과드립니다.'],
+      ['ask', '개인통관고유부호를 알려 주세요.'],
+      ['ask', '통관부호를 회신해 주세요.'],
+      ['ask', '통관번호 보내 주시겠어요?'],
+      ['date', '11월 17일까지 보내 드릴게요.'],
+      ['date', '17일까지 부탁드립니다.'],
+    ];
+    for (const [key, t] of yes) expect(on(t, key), `${key}: ${t}`).toBe(true);
+  });
+
+  it('T080: 서연 기본 한국어 전송본은 blame·vague가 꺼져 있다', () => {
+    const t =
+      '서연님, 기다리게 해서 정말 죄송해요. 세관 확인 중이라 개인통관고유부호를 보내 주시겠어요? 11월 17일까지 확인하고 다시 연락드릴게요.';
+    const { features } = detectReplyFeatures(t);
+    expect(features.blame).toBe(false);
+    expect(features.vague).toBe(false);
+    expect(features.apology && features.ask && features.date).toBe(true);
+  });
+
   it('걸리지 않는 글', () => {
     const plain = 'Thanks for your order. Have a nice day.';
     const { features } = detectReplyFeatures(plain);
