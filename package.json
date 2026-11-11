@@ -20,7 +20,8 @@
     "sandbox:orders": "tsx scripts/create-sandbox-orders.ts",
     "sandbox:capture": "tsx scripts/capture-sandbox-orders.ts",
     "eval:classifier": "tsx scripts/eval-classifier.ts",
-    "seed": "tsx seed/generate.ts"
+    "seed": "tsx seed/generate.ts",
+    "ai-cache:build": "tsx scripts/ai-cache/build.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",

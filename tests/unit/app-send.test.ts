@@ -226,7 +226,7 @@ describe('AC18 8번: 스위치는 정확히 "1"일 때만 켜진다', () => {
   it('AFTERLOOP_REAL_SEND: 앞의 다섯은 simulated, "1"만 live', () => {
     for (const value of offValues) expect(resolveSendMode({ AFTERLOOP_REAL_SEND: value })).toBe('simulated');
     expect(resolveSendMode({})).toBe('simulated');
-    expect(resolveSendMode({ AFTERLOOP_REAL_SEND: '1' })).toBe('live');
+    expect(resolveSendMode({ AFTERLOOP_REAL_SEND: '1', DEMO_MODE: 'recording' })).toBe('live');
   });
 
   it('AFTERLOOP_FIXED_DRAFT: 앞의 다섯은 ai, "1"만 fixed', () => {

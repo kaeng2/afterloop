@@ -331,7 +331,7 @@ describe('전송 상태 표시: 모드 글자는 서버 모드에서', () => {
 
   it('꺼짐 / 켜짐 / 연결 표 불허', () => {
     const off = resolveSendMode({});
-    const on = resolveSendMode({ AFTERLOOP_REAL_SEND: '1' });
+    const on = resolveSendMode({ AFTERLOOP_REAL_SEND: '1', DEMO_MODE: 'recording' });
     expect(t(sendModeKey(off, liveSendAllowedFor(ID, LINKS)))).toBe('Simulated send — nothing goes to PayPal');
     expect(t(sendModeKey(on, liveSendAllowedFor(ID, LINKS)))).toBe('Live · PayPal sandbox');
     expect(liveSendAllowedFor('PP-R-TEST-NO', LINKS)).toBe(false);
@@ -496,7 +496,7 @@ describe('연습용: 가짜 모드는 몇 번이고, 실패 화면 미리 보기
     for (const value of [undefined, '', 'PAYPAL_ERROR', 'boom', ' paypal_error']) {
       expect(resolveSimulatedFailure({ AFTERLOOP_SIMULATE_FAILURE: value })).toBeNull();
     }
-    const env = new Proxy({ AFTERLOOP_REAL_SEND: '1', AFTERLOOP_SIMULATE_FAILURE: 'paypal_error' } as Record<string, string>, {
+    const env = new Proxy({ AFTERLOOP_REAL_SEND: '1', DEMO_MODE: 'recording', AFTERLOOP_SIMULATE_FAILURE: 'paypal_error' } as Record<string, string>, {
       get(target, key: string) {
         if (key === 'AFTERLOOP_SIMULATE_FAILURE') throw new Error('실제 모드에서 읽었다');
         return target[key];

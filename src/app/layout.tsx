@@ -15,6 +15,7 @@ import { Figtree, Noto_Sans_KR } from 'next/font/google';
 
 import { loadReplyNames } from '@/ai/names';
 
+import { resolveDemoMode } from './_server/mode';
 import { loadTodayForRequest } from './_server/today';
 import { t } from './_shared/copy';
 import { sellerChip } from './_shared/nav-items';
@@ -40,6 +41,8 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const today = await loadTodayForRequest();
   const seller = sellerChip(loadReplyNames().sellerSignature);
+  // 모드 이름만 화면에 (T070). public이면 "Public demo · simulated sends" 한 줄
+  const mode = resolveDemoMode();
 
   return (
     <html lang="en" className={`${figtree.variable} ${notoSansKr.variable}`}>
@@ -48,6 +51,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           {t('nav.skipToContent')}
         </a>
         <TopBar todayCount={today.view.count} seller={seller} />
+        {mode === 'public' ? (
+          <p className="muted small mode-note" role="note">
+            {t('mode.public')}
+          </p>
+        ) : null}
         <main className="main" id="main">
           {children}
         </main>

@@ -4,6 +4,8 @@
  * 안전 규칙:
  * - 대상은 서버가 다시 정한다: `listUntracked`(GET만)에서 **분쟁이 걸리지 않은 미등록 주문**만 (지금 O05·O07).
  *   분쟁이 걸린 주문(O02·O04·O13 …)은 대상 목록에 들어가지 않는다. 브라우저가 보낸 주문 키는 받지 않는다.
+ * - 모드 관문 (T070): `DEMO_MODE`가 `recording`이 아니면(public) 아래 스위치를 보지 않고 dry run — POST 0회.
+ *   클라이언트(`getPayPalClient`)도 public이면 쓰기를 막는다 (이중 잠금).
  * - 실제 등록(POST)은 `registerTrackers`가 `liveGateFromEnv(env, …)` 게이트로만 한다. 스위치
  *   (`AFTERLOOP_TRACK_LIVE`·`AFTERLOOP_TRACK_LIVE_ORDERS`·`AFTERLOOP_TRACK_RECORDING`)가 꺼져 있으면 dry run — POST 0회.
  *   `registerTrackers`는 분쟁 판정을 한 번 더 한다 (이중 잠금).
@@ -14,11 +16,12 @@
  */
 import 'server-only';
 
-import { liveGateFromEnv, listUntracked, registerTrackers } from '@/paypal/track';
+import { DRY_RUN_GATE, liveGateFromEnv, listUntracked, registerTrackers } from '@/paypal/track';
 import { readTrackOrders } from '@/paypal/track-orders';
 import type { PayPalClient } from '@/types';
 
 import { TRACKING_UNAVAILABLE, trackingOutcome, type TrackingOutcome } from '../today/tracking-result';
+import { resolveDemoMode } from './mode';
 
 export type RegisterTrackingDeps = {
   /** `getPayPalClient()` 결과 그대로. 쓸 수 없으면 아무것도 부르지 않는다. */
@@ -41,10 +44,14 @@ export async function registerTrackingFromScreen(deps: RegisterTrackingDeps): Pr
   const { client } = deps.paypal;
   const data = readTrackOrders(deps.manifest);
   const targets = await registerTargets(client, deps.manifest);
-  const live = liveGateFromEnv(
-    deps.env,
-    data.orders.map((order) => order.key),
-  );
+  // 모드 관문 (T070): recording일 때만 스위치를 본다. public이면 스위치 값과 무관하게 dry run (POST 0회)
+  const live =
+    resolveDemoMode(deps.env) === 'recording'
+      ? liveGateFromEnv(
+          deps.env,
+          data.orders.map((order) => order.key),
+        )
+      : DRY_RUN_GATE;
   const batch = await registerTrackers(client, { data, selectedKeys: targets, live });
   return trackingOutcome(batch);
 }
