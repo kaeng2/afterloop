@@ -60,16 +60,17 @@
 | T009 | **S5 Case** (서연 SC4): 대화 토글, AI 원인 ↔ 코드 점수, 코칭 → 영어 초안 → 한국어 전송본 → 토큰 검사 → send-message | ui | 진행중 (2부) | v2.2 | T003, T006, T008, T010, T018 | AC18 (작성 예정). 대표 시나리오 **v2.3**: 배송사 정보 반영 전(환불 추천) → 후(답장 추천) 두 값을 나란히 (SPEC 2장). 실제 전송은 시연 녹화 때 한 번만 (SPEC 9-4). 2부 재시도 중 (배치·이름 토큰·미리보기 채움·지호 제안 버튼, SPEC v2.9) |
 | T056 | 답장 이름 토큰 ⟦BUYER_NAME_1⟧·⟦SELLER_NAME_1⟧ (`nameFactsPair`, 프롬프트에 이름 값 없음, 호칭 겹침 막기) | ai | 완료 | v2.9 | 계약 v2.9 | AC32 | 모델 `claude-opus-5-5`. T009 2부 재시도 앞. `tasks/T056.md` |
 | T057 | 제안 답장 문장 꼴: "PayPal에서 제안을 수락하면 바로 환불" (답장으로 수락 금지) | ai | 완료 | v2.9 | T056 | 실제 AI 3회(컨트롤 타워) | 모델 `claude-sonnet-5-5`. `tasks/T057.md` |
-| T058 | 확인 칸: 초안에 쓰이지 않은 사실값 줄 숨기기 (지호 Follow-up date) | ui | 진행중 | v2.9 | T009 | — | 모델 `claude-sonnet-5-5`. `tasks/T058.md` |
+| T058 | 확인 칸: 초안에 쓰이지 않은 사실값 줄 숨기기 (지호 Follow-up date) | ui | 완료 | v2.9 | T009 | — | 모델 `claude-sonnet-5-5`. `tasks/T058.md` |
 | T059 | 시드 B04 이름 "buyer_m***" → "Mike Morgan" | data | 완료 | v2.10 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T059.md` |
-| T060 | **공용 틀**: 위쪽 막대(Today(N)/Products, Autopilot, PayPal activity, 판매자 칩) + Today 목록·상세 틀 + 서랍 껍데기 | ui | 검토 (스크린샷 확인 대기) | v2.10 | T058, T059 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T060.md` |
-| T061 | **서연 상세 합치기** (오른쪽 칸 한 프레임 1920×1080: 머리글 → 비교 카드(+incl. $2) → 한 줄 요약 → 한국어 말풍선+배송사 줄 → 코칭 접기·한국어 크게 → 검사 3줄 → 보내기), 전송 모드 표시, 연습용 실패 화면, Mike 한 줄, Autopilot 토글 숨김 | ui | 검토 (스크린샷 확인 대기) | v2.10 | T060 | 스크린샷 1440·1920 | 모델 `claude-opus-5-5`. `tasks/T061.md` |
-| T062 | **Products**: 큰 숫자($216 → $44) + 점 그림(4 → 2) + 처방 카드 4개(통관 안내 Simulated) + 거래 조회 한 줄. 폭포·분포 막대 없음 | ui | 대기 (T061 뒤) | v2.10 | T061 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T062.md` |
+| T060 | **공용 틀**: 위쪽 막대(Today(N)/Products, Autopilot, PayPal activity, 판매자 칩) + Today 목록·상세 틀 + 서랍 껍데기 | ui | 완료 | v2.10 | T058, T059 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T060.md` |
+| T061 | **서연 상세 합치기** (오른쪽 칸 한 프레임 1920×1080: 머리글 → 비교 카드(+incl. $2) → 한 줄 요약 → 한국어 말풍선+배송사 줄 → 코칭 접기·한국어 크게 → 검사 3줄 → 보내기), 전송 모드 표시, 연습용 실패 화면, Mike 한 줄, Autopilot 토글 숨김 | ui | 완료 | v2.10 | T060 | 스크린샷 1440·1920 | 모델 `claude-opus-5-5`. `tasks/T061.md` |
+| T062 | **Products**: 큰 숫자($216 → $44) + 점 그림(4 → 2) + 처방 카드 4개(통관 안내 Simulated) + 거래 조회 한 줄. 폭포·분포 막대 없음 | ui | 진행중 | v2.10 | T061 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T062.md` |
 | T063 | **추적 항목 상세**: [Add both to PayPal], O05·O07은 녹화 때만 실제, 분쟁 주문 회색 | ui | 대기 (T065 뒤) | v2.10 | T065 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T063.md` 등록 버튼은 T067로 당김 — 남은 것은 등록 뒤 목록 갱신·기록 연결 확인 |
 | T066 | 엔진: Today Prevent 상품 고르기 `pickPreventProduct` (줄어드는 비율 최대) | engine | 완료 | v2.10 | — | — | 모델 `claude-sonnet-5-5`. `tasks/T066.md` |
-| T067 | **공용 틀 디자인 = 시안 값** (전체 폭, 목록 #F1EFEA·상세 흰색, Figtree+Noto Sans KR, 카드 2px·16~24px, 알약, 점=위험 등급·배지=상태, 고른 항목 그림자, 로고 마크) + 추적 표 "Add both to PayPal" 버튼(T063에서 당김) | ui | 검토 (스크린샷 확인 대기) | v2.10 | T061, T066 | 스크린샷 1920·1440 | 모델 `claude-opus-5-5`. `tasks/T067.md` |
-| T068 | **서연·지호 상세 한 줄기 재배치** (머리글 → 전체 폭 비교 카드+요약 한 줄 → 말풍선 → 칩 → 답장 좌우 두 칸 같은 글자 크기 → 검사 한 줄+Send) | ui | 검토 (스크린샷 확인 대기) | v2.10 | T067 | 스크린샷 1920 서연·지호 + 시안 비교 | 모델 `claude-opus-5-5`. `tasks/T068.md` |
+| T067 | **공용 틀 디자인 = 시안 값** (전체 폭, 목록 #F1EFEA·상세 흰색, Figtree+Noto Sans KR, 카드 2px·16~24px, 알약, 점=위험 등급·배지=상태, 고른 항목 그림자, 로고 마크) + 추적 표 "Add both to PayPal" 버튼(T063에서 당김) | ui | 완료 | v2.10 | T061, T066 | 스크린샷 1920·1440 | 모델 `claude-opus-5-5`. `tasks/T067.md` |
+| T068 | **서연·지호 상세 한 줄기 재배치** (머리글 → 전체 폭 비교 카드+요약 한 줄 → 말풍선 → 칩 → 답장 좌우 두 칸 같은 글자 크기 → 검사 한 줄+Send) | ui | 완료 | v2.10 | T067 | 스크린샷 1920 서연·지호 + 시안 비교 | 모델 `claude-opus-5-5`. `tasks/T068.md` |
 | T069 | 답장 칩 `chips` (짧은 이름 3~5개, 금액·환불 칩 없음, 지호 Offer in PayPal) | ai | 완료 | v2.10 | — | 실제 AI 서연·지호 각 2회(컨트롤 타워) | 모델 `claude-sonnet-5-5`. `tasks/T069.md` |
+| T070 | **배포 준비**: DEMO_MODE(public 기본 = PayPal 쓰기 0회·AI 캐시+횟수 제한 / recording만 실제 전송), render.yaml, /api/health, reports/deploy.md(환경변수 이름만) | ops | 진행중 | v2.10 | — | 쓰기 0회 테스트 | 모델 `claude-opus-5-5`. 새 레인 `lane/ops`. `tasks/T070.md` |
 | T064 | **PayPal activity 서랍**: 실제 호출 기록(최신 위, 비밀값·개인정보·본문 없음, HEY·GAH 없음, 가짜 전송은 실제로 안 보이게) | ui | 대기 (T062 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T064.md`. Autopilot은 빼고 시간 남으면 맨 나중 |
 | T065 | **Products 상품 표 AG Grid** (As-is → With fixes, 처방 토글 시 셀 깜빡임) | ui | 대기 (T064 뒤) | v2.10 | T062 | 스크린샷 1440 | 모델 `claude-opus-5-5`. `tasks/T065.md` |
 | T012 | **S4 Inbox + Autopilot** (P0 가벼운 버전): AG Grid 표, [Run autopilot], 규칙 3줄, 로그 | ui | 대체됨 | v2.2 | T003, T004, T007 | AC19 (작성 예정). M7, Q3 확정 (P0). AG Grid Community만 **2026-11-10 화면 구조 변경으로 T060~T064로 다시 쪼갬.** 이 지시서의 세부 규칙(리허설·색상 문구·거래 조회 한 줄·추적 등록 안전 규칙·로그 규칙)은 새 지시서가 참조한다 |
