@@ -36,5 +36,15 @@
     "calmFrom": 0.25,
     "okayFrom": 0.0,
     "annoyedFrom": -0.5
+  },
+  "scenario": {
+    "source": "가정(기획 시안)",
+    "note": "SPEC v2.14 8-4장. Send 뒤 'What happens next · Simulated' 단계마다 신호를 바꾼다(steps 순서대로 앞 단계에서 이어 누적). sent는 바꾸지 않는다: forecastReply가 이미 '이 답장을 보냈을 때'의 예측이라 첫 점 = forecastReply(input).pChargeback. threat·unanswered·tone은 참/거짓으로 바꾸기, delayDays는 늦은 날 수로 바꾸기, shift는 z에 더하는 로지스틱 값(누적). 확률은 통계가 아니라 가정.",
+    "steps": {
+      "sent": {},
+      "buyer_reply": { "unanswered": false, "tone": false, "delayDays": 0, "shift": -0.3 },
+      "forwarded": { "threat": false, "shift": -0.5 },
+      "cleared": { "shift": -2.0 }
+    }
   }
 }

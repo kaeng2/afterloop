@@ -1,0 +1,19 @@
+{
+  "version": "reply-snippets-2026-11-11.v1",
+  "source": "가정(기획 시안)",
+  "note": "SPEC v2.14 8-4장. 답장 칩 'Missing: … + Add'가 넣는 미리 정한 영어 문장. 자리표시자 ⟦BUYER_NAME_1⟧·⟦DATE_1⟧는 코드가 채운다(⟦DATE_1⟧ = 판매자가 확인해서 다시 연락하는 날, SPEC 3장 v2.7). 숫자·금액·환불 약속·도착 보장 없음. snippets = 기본(서연, A2 통관 보류). bySubtype[분쟁 세부 유형] = 그 유형에서 기본을 덮어쓰는 문장(없는 키는 기본). 각 문장은 detectReplyFeatures에서 자기 특징으로 걸려야 한다(tests/unit/t093-chips.test.ts).",
+  "snippets": {
+    "apology": "Sorry for the wait, ⟦BUYER_NAME_1⟧.",
+    "cause": "Your sweater is at Korean customs, waiting for your personal customs ID.",
+    "ask": "Please reply with your customs ID (PCCC) and I will pass it to the carrier right away.",
+    "date": "I will check with the carrier and contact you again by ⟦DATE_1⟧."
+  },
+  "bySubtype": {
+    "B1": {
+      "apology": "I am sorry the item is not what you expected, ⟦BUYER_NAME_1⟧.",
+      "cause": "The colour in the photos can look different from the yarn in daylight.",
+      "ask": "Please send me a photo of the item in daylight so I can check the colour.",
+      "date": "I will look at your photo and contact you again by ⟦DATE_1⟧."
+    }
+  }
+}

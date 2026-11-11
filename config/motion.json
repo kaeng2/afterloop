@@ -2,9 +2,21 @@
   "version": 1,
   "source": "시안 docs/design/mockup-v4/Desk.dc.html의 transition·animation 값 그대로 (SPEC v2.15 8-4장). prefers-reduced-motion이면 모두 끈다.",
   "desk": {
-    "hover": { "duration": "0.15s", "easing": "ease", "from": ".btn·.it transition:background-color .15s" },
-    "choiceCard": { "duration": "0.15s", "easing": "ease", "from": ".npath transition:border-color .15s,background-color .15s" },
-    "curve": { "duration": "0.3s", "easing": "ease", "from": "곡선 점선 polyline style transition:all .3s ease" },
+    "hover": {
+      "duration": "0.15s",
+      "easing": "ease",
+      "from": ".btn·.it transition:background-color .15s"
+    },
+    "choiceCard": {
+      "duration": "0.15s",
+      "easing": "ease",
+      "from": ".npath transition:border-color .15s,background-color .15s"
+    },
+    "curve": {
+      "duration": "0.3s",
+      "easing": "ease",
+      "from": "곡선 점선 polyline style transition:all .3s ease"
+    },
     "ping": {
       "duration": "1.4s",
       "easing": "ease-out",
@@ -13,7 +25,26 @@
       "fromOpacity": 0.6,
       "from": "@keyframes ping{0%{r:7;opacity:.6}100%{r:20;opacity:0}} .ping{animation:ping 1.4s ease-out infinite}"
     },
-    "reactionBar": { "duration": "0.35s", "easing": "ease", "from": "반응 막대 transition:width .35s ease" },
-    "editorBorder": { "duration": "0.3s", "easing": "ease", "from": ".editor transition:border-color .3s ease, 알약 background-color .3s ease" }
+    "reactionBar": {
+      "duration": "0.35s",
+      "easing": "ease",
+      "from": "반응 막대 transition:width .35s ease"
+    },
+    "editorBorder": {
+      "duration": "0.3s",
+      "easing": "ease",
+      "from": ".editor transition:border-color .3s ease, 알약 background-color .3s ease"
+    }
+  },
+  "scene3": {
+    "source": "시안 docs/design/mockup-v4/scene3/Main.dc.html (setInterval 70ms). 기획자가 진행 표시를 2~3초로 줄이려면 intervalMs를 줄이거나 step을 키운다. 계산은 엔진이 실제로 끝낸다.",
+    "check": {
+      "intervalMs": 70,
+      "step": 5
+    },
+    "recalc": {
+      "intervalMs": 70,
+      "step": 25
+    }
   }
 }

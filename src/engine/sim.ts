@@ -500,6 +500,46 @@ export function simInputFor(
   }) as SimInput;
 }
 
+/**
+ * 주문 1건의 기대 손실 (센트, 반올림 전 실수). 난수 없이 `runPass`의 손실 식을 기대값으로 푼 것이다 (T093).
+ *
+ *   E[손실] = Σ_k P(첫 분쟁 = k) × L_k,   P(첫 분쟁 = k) = q_k × Π_{j<k}(1 − q_j)   (k는 `SUBTYPES` 고정 순서)
+ *   q_k = 기본 확률 × 켠 처방 배수 (`lossTableFor`와 같다)
+ *   L_k (지금 습관) = h × 환불 손실 + (1 − h) × (p_win × 이김 손실 + (1 − p_win) × 짐 손실)
+ *   L_k (settle_first를 켰으면) = 합의 우선이 고른 수의 기대 손실 (제안은 p_acc × 수락 손실 + (1 − p_acc) × 다툼)
+ *
+ * `input.stock`·`futures`·`seed`는 보지 않는다 (주문 1건, 난수 없음). 금액은 `input.priceCents`.
+ */
+export function expectedOrderLossCents(
+  input: SimInput,
+  fixes: readonly FixId[],
+  params?: ParamsConfig,
+  rules?: PolicyConfig,
+): number {
+  const checked = SimInputSchema.parse(input) as SimInput;
+  const ctx = resolveContext(checked, params ?? paramsConfigFromFile(), rules);
+  const picked = canonicalFixes(fixes);
+  const settleFirst = picked.includes('settle_first');
+  const table = lossTableFor(checked, ctx, picked);
+
+  const fightExpected = (d: DisputeLosses): number => d.pWin * d.winCents + (1 - d.pWin) * d.loseCents;
+  const lossOf = (d: DisputeLosses): number => {
+    if (!settleFirst) return ctx.habitRefundShare * d.refundCents + (1 - ctx.habitRefundShare) * fightExpected(d);
+    if (d.settleMove === 'refund') return d.refundCents;
+    if (d.settleMove === 'fight') return fightExpected(d);
+    if (d.acceptCents === null) throw new Error('expectedOrderLossCents: 제안 대상이 아닌데 제안을 고를 수 없습니다');
+    return ctx.params.pAccept * d.acceptCents + (1 - ctx.params.pAccept) * fightExpected(d);
+  };
+
+  let noDisputeYet = 1;
+  let expected = 0;
+  for (const d of table) {
+    expected += noDisputeYet * d.probability * lossOf(d);
+    noDisputeYet *= 1 - d.probability;
+  }
+  return expected;
+}
+
 export type FixSaving = { fix: FixId; on: boolean; savingCents: number };
 
 /**
