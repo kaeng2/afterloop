@@ -70,3 +70,9 @@ Read your open cases 200  3 cases · 4 calls
 ## 컨트롤 타워에 요청할 결정
 1. **`src/app/products/transactions-line.ts` 한 줄 연결 허가** (지금은 수정 가능 폴더 밖): `getTransactions(client, …)` → `getTransactionsRecorded(client, …)` (`../_server/activity`에서 import, 인자·결과는 같다). 이것이 있어야 영상의 "Read sales · cached" 줄이 생긴다. 허가해 주면 이 레인에서 바로 고치겠다. 아니면 컨트롤 타워가 직접 바꿔도 된다.
 2. (선택) 녹화 첫 화면을 지시서 4번과 **똑같이** 맞추려면 둘 중 하나를 골라 달라. (a) 페이지 렌더 때 생기는 읽기(Today 요약 등)를 서랍에서 빼기. 단 "Every call AfterLoop makes"라는 문구와 어긋난다. (b) 지금처럼 모두 보이고 영상은 맨 위 2~3줄만 보여 주기. 이 보고서의 구현은 (b)다.
+
+## 후속 (2026-11-11, 결정 요청 1 승인 반영)
+- `src/app/products/transactions-line.ts`: `getTransactions` → `getTransactionsRecorded` (`../_server/activity`에서 import). 인자·결과 같음. 이 한 줄(import 포함) 외에는 고치지 않았다.
+- 단위 테스트 1개 추가 (`tests/unit/app-product.test.ts`): 캐시 적중 → 서랍에 `Read sales 200 cached`(건수=saleCount) 1건, PayPal GET 0회. 클라이언트 없음+캐시 없음 → 줄 null, 기록 0건 (숨김 동작 그대로).
+- 결과: npm test 2080 통과 · tsc 오류 0 · lint 0 · test:acceptance 158 통과(9 건너뜀) · build 통과. 실제 AI·PayPal 호출 없음, 개발 서버 없음.
+- 결정 2(녹화 첫 화면)는 여전히 컨트롤 타워 결정 대기.

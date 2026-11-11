@@ -413,6 +413,26 @@ describe('거래 조회 한 줄', () => {
     expect(card).not.toContain(line!.text);
   });
 
+  it('캐시 적중은 서랍에 Read sales 200 cached로 남고, 실패해서 줄을 숨길 때는 남지 않는다 (T064 후속)', async () => {
+    const activity = await import('@/app/_server/activity');
+    const now = Date.UTC(2026, 10, 11, 3);
+    activity.resetActivityForTest(() => now);
+    const cache = createMemoryTransactionCache();
+    const range = lastDays(now, TRANSACTION_DAYS);
+    cache.set(`${range.startDate}_${range.endDate}`, SUMMARY, now);
+    const client: PayPalClient = { call: vi.fn(), get: vi.fn() };
+    const line = await loadTransactionLine({ client, now: () => now, cache });
+    expect(line?.cached).toBe(true);
+    const rows = activity.listActivity();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ title: 'readSales', status: 200, cached: true, summary: { kind: 'transactions', count: SUMMARY.saleCount } });
+    expect(client.get).not.toHaveBeenCalled();
+
+    activity.resetActivityForTest(() => now);
+    expect(await loadTransactionLine({ client: null, now: () => now, cache: createMemoryTransactionCache() })).toBeNull();
+    expect(activity.listActivity()).toHaveLength(0);
+  });
+
   it('PayPal을 읽을 수 없고 캐시도 없으면 숨김 (가짜 클라이언트, GET만)', async () => {
     const client: PayPalClient = { call: vi.fn(), get: vi.fn(async () => ({ status: 503, body: null })) };
     expect(await loadTransactionLine({ client, now: () => Date.UTC(2026, 10, 11), cache: createMemoryTransactionCache() })).toBeNull();
