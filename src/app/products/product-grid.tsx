@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import { AgGridReact } from 'ag-grid-react';
 import type { CellKeyDownEvent, RowClickedEvent } from 'ag-grid-community';
 
-import { t } from '../_shared/copy';
+import { useT } from '../_shared/locale-context';
 import { isSelectKey, PRODUCT_GRID_MODULES, productGridOptions, productGridTheme } from './grid';
 import type { ProductRow } from './model';
 
@@ -38,6 +38,7 @@ export function ProductRowsFallback({ rows }: { rows: readonly ProductRow[] }) {
 }
 
 export function ProductGrid({ rows }: { rows: readonly ProductRow[] }) {
+  const t = useT();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);

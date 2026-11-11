@@ -13,6 +13,7 @@
  */
 import { loadReplyNames } from '@/ai/names';
 
+import { initLocale } from '@/app/_server/locale';
 import { resolveDemoMode } from '@/app/_server/mode';
 import { loadTodayForRequest } from '@/app/_server/today';
 import { t } from '@/app/_shared/copy';
@@ -22,6 +23,7 @@ import { TopBar } from '@/app/_shared/top-bar';
 export const dynamic = 'force-dynamic';
 
 export default async function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  await initLocale();
   const today = await loadTodayForRequest();
   const seller = sellerChip(loadReplyNames().sellerSignature);
   // 모드 이름만 화면에 (T070). public이면 "Public demo · simulated sends" 한 줄

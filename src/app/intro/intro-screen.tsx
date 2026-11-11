@@ -10,13 +10,17 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
+import type { Locale } from '../_shared/copy';
+import { writeLocaleCookie } from '../_shared/language-switch';
+import { useLocale } from '../_shared/locale-context';
+
 import introEn from '../../../config/intro.en.json';
 import introKo from '../../../config/intro.ko.json';
 import './intro.css';
 
 type IntroCopy = typeof introEn;
 
-const COPY: Record<'en' | 'ko', IntroCopy> = { en: introEn, ko: introKo as IntroCopy };
+const COPY: Record<Locale, IntroCopy> = { en: introEn, ko: introKo as IntroCopy };
 
 /** Today(서연)로 가는 길 — 서연 PayPal 분쟁 번호는 문구 파일의 첫 건. */
 const TODAY_HREF = '/?item=' + introEn.cases[0].id;
@@ -47,8 +51,16 @@ function Mark({ size, mode }: { size: number; mode: 'accent' | 'white' }) {
 }
 
 export function IntroScreen() {
-  const [lang, setLang] = useState<'en' | 'ko'>('en');
+  // 언어는 다른 화면과 같은 쿠키·`?lang=` 값 (T081). 고르면 쿠키를 쓰고 바로 바꾼 뒤 서버도 다시 읽는다.
+  const serverLang = useLocale();
+  const [picked, setPicked] = useState<Locale | null>(null);
+  const lang: Locale = picked ?? serverLang;
   const c = COPY[lang];
+  const choose = (next: Locale) => {
+    setPicked(next);
+    writeLocaleCookie(next);
+    window.location.reload();
+  };
 
   return (
     <div className="intro" lang={lang}>
@@ -72,11 +84,11 @@ export function IntroScreen() {
         </nav>
         <div className="intro-tools">
           <div className="intro-lang" role="group" aria-label={c.langLabel}>
-            <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
+            <button type="button" aria-pressed={lang === 'en'} onClick={() => choose('en')}>
               EN
             </button>
-            <button type="button" aria-pressed={lang === 'ko'} onClick={() => setLang('ko')}>
-              KO
+            <button type="button" aria-pressed={lang === 'ko'} onClick={() => choose('ko')}>
+              한국어
             </button>
           </div>
           <Link className="intro-al-icon" href={TODAY_HREF} aria-label={c.alOpen} title="DisputeLess">

@@ -10,7 +10,7 @@
 import type { RiskPoint } from '@/types';
 
 import { Badge } from '../../_shared/badges';
-import { t } from '../../_shared/copy';
+import { useT } from '../../_shared/locale-context';
 import { CURVE_BOX, curveView, type CurveView } from '../desk-model';
 import { useDraftForecast } from './draft-forecast';
 
@@ -42,6 +42,7 @@ export function RiskCurveGraphic({ curve }: { curve: CurveView }) {
 }
 
 export function RiskCurveCard({ points }: { points: RiskPoint[] | null }) {
+  const t = useT();
   const { forecast } = useDraftForecast();
   const curve = curveView(points, forecast?.pChargeback ?? null);
   if (curve === null) return null;

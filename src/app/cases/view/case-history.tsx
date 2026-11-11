@@ -9,10 +9,11 @@
 import { useId, useState } from 'react';
 
 import { Badge } from '../../_shared/badges';
-import { t } from '../../_shared/copy';
+import { useT } from '../../_shared/locale-context';
 import type { HistoryView } from '../desk-model';
 
 export function CaseHistoryCard({ history }: { history: HistoryView }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const listId = useId();
   const sub =

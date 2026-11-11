@@ -8,10 +8,11 @@
 import { useState, useTransition } from 'react';
 
 import { AiSuggestsBadge } from '../_shared/badges';
-import { t } from '../_shared/copy';
+import { useT } from '../_shared/locale-context';
 import type { ColorNoteView } from './model';
 
 export function ColorNoteResult({ note }: { note: ColorNoteView }) {
+  const t = useT();
   return (
     <div className="color-note" data-color-note="shown">
       <div className="row">
@@ -57,6 +58,7 @@ export function ColorNoteSlot({
   /** 테스트·견본용 처음 결과 */
   initial?: ColorNoteView | null;
 }) {
+  const t = useT();
   const [state, setState] = useState<State>(initial === null ? { kind: 'idle' } : { kind: 'shown', note: initial });
   const [pending, startTransition] = useTransition();
 

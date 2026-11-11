@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { COMMITMENT_CATEGORIES } from '@/ai/commitments';
 
 import { t } from '../_shared/copy';
+import { initLocale } from '../_server/locale';
 import { sendFromScreen, resolveSendMode } from '../_server/send';
 import { applySimulatedFailure, resolveSimulatedFailure } from './practice';
 import type { SendOutcome } from './reply-model';
@@ -29,6 +30,7 @@ const SendFormSchema = z.object({
 });
 
 export async function sendReplyAction(form: unknown): Promise<SendOutcome> {
+  await initLocale();
   const parsed = SendFormSchema.safeParse(form);
   if (!parsed.success) {
     return {

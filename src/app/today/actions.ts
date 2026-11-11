@@ -9,11 +9,13 @@
  */
 import { revalidatePath } from 'next/cache';
 
+import { initLocale } from '../_server/locale';
 import { getPayPalClient } from '../_server/paypal';
 import { registerTrackingFromScreen } from '../_server/tracking-register';
 import { TRACKING_ERROR, type TrackingOutcome } from './tracking-result';
 
 export async function addTrackingAction(): Promise<TrackingOutcome> {
+  await initLocale();
   try {
     const outcome = await registerTrackingFromScreen({ paypal: getPayPalClient(), env: process.env });
     if (outcome.rows.some((row) => row.ok)) revalidatePath('/');

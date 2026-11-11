@@ -7,6 +7,7 @@
  * - 이 화면은 POST를 보내지 않는다 (전송은 답장 칸 버튼 → 서버 액션, 추적 등록은 추적 상세 버튼 → 서버 액션만.
  *   추적 등록은 `liveGateFromEnv` 스위치가 꺼져 있으면 dry run).
  */
+import { applyLangParam } from '@/app/_server/locale';
 import { loadTodayScreen } from '@/app/_server/today';
 import { reasonCopyKey } from '@/app/_shared/availability';
 import { t } from '@/app/_shared/copy';
@@ -20,12 +21,13 @@ import '@/app/today/today.css';
 
 export const dynamic = 'force-dynamic';
 
-type Props = { searchParams: Promise<{ item?: string | string[]; sku?: string | string[] }> };
+type Props = { searchParams: Promise<{ item?: string | string[]; sku?: string | string[]; lang?: string | string[] }> };
 
 const first = (value: string | string[] | undefined): string | undefined => (Array.isArray(value) ? value[0] : value);
 
 export default async function TodayPage({ searchParams }: Props) {
   const params = await searchParams;
+  await applyLangParam('/', params);
   const requested = first(params.item);
   const { view, paypal, weekly } = await loadTodayScreen(first(params.sku));
   const selected = selectItem(view, requested);

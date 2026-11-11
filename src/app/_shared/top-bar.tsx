@@ -13,7 +13,8 @@ import { usePathname } from 'next/navigation';
 
 import { ActivityDrawer } from './activity-drawer';
 import { AutopilotToggle } from './autopilot-toggle';
-import { t } from './copy';
+import { LanguageSwitch } from './language-switch';
+import { useT } from './locale-context';
 import { NAV_ITEMS, isActive } from './nav-items';
 
 import './shell.css';
@@ -29,6 +30,7 @@ const SHOW_AUTOPILOT = false;
  * 시안의 파랑 그라데이션은 쓰지 않는다. 읽히는 이름은 `nav.appName` 하나 (`aria-label`).
  */
 function Wordmark() {
+  const t = useT();
   const name = t('nav.appName');
   const accent = t('nav.appNameAccent');
   const head = name.endsWith(accent) ? name.slice(0, name.length - accent.length) : name;
@@ -60,6 +62,7 @@ export function TopBar({
   /** "Wed, Nov 11 · Black Friday in 16 days" (`buildToday`의 `dateLine`). 없으면 숨김. */
   dateLine?: string;
 }) {
+  const t = useT();
   const pathname = usePathname() ?? '/';
   return (
     <header className="shell-bar">
@@ -95,6 +98,7 @@ export function TopBar({
           {SHOW_AUTOPILOT ? <AutopilotToggle /> : null}
           {/* 기록은 서랍이 서버에서 읽는다 (T064) */}
           <ActivityDrawer />
+          <LanguageSwitch />
           <span className="shell-seller" title={t('shell.seller', { shop: seller.shop })}>
             <span className="shell-avatar" aria-hidden="true">
               {seller.initial}
