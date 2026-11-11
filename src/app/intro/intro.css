@@ -5,7 +5,7 @@
  * 이 화면은 라우트 그룹 `(app)` 밖이라 위쪽 막대가 없다 (T079) — 덮개(position: fixed)를 쓰지 않는다.
  */
 .intro {
-  --color-accent: #5b3cc4;
+  --color-accent: #0066f5; /* 시안 v4 (globals.css 라이트 값과 같다. 이 화면은 밝은 화면 고정) */
   --i-bg: #f1efea;
   --i-surface: #ffffff;
   --i-text: #000000;
@@ -20,7 +20,7 @@
   --i-ink: #0b0f14;
   --i-line-btn: #cfd3d8;
   --i-bar: #c9d3e0;
-  --i-ring: rgba(91, 60, 196, 0.55);
+  --i-ring: rgba(0, 102, 245, 0.55);
 
   color-scheme: light;
   min-height: 100vh;

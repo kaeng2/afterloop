@@ -59,8 +59,8 @@
 }
 
 .product-filter-chip[aria-current='true'] {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent);
+  background: var(--color-accent-pale);
+  border-color: var(--color-accent-deep);
 }
 
 .product-filter-text {
@@ -131,7 +131,7 @@
   gap: var(--space-3);
   padding: 18px;
   color: var(--color-on-accent);
-  background: linear-gradient(150deg, var(--color-accent-deep) 0%, var(--color-accent-strong) 100%);
+  background: var(--gradient-week);
   border-radius: 24px;
 }
 
@@ -258,7 +258,7 @@
 }
 
 .today-group-prevent .today-group-bar {
-  background: var(--color-accent);
+  background: var(--color-accent-deep);
 }
 
 .today-group-title {

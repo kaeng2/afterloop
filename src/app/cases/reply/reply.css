@@ -73,7 +73,7 @@
   font-size: var(--text-xs);
   font-weight: 900;
   color: var(--color-on-accent);
-  background: var(--color-accent-deep);
+  background: var(--color-navy-ink);
   border-radius: var(--radius-pill);
 }
 
@@ -173,15 +173,15 @@
 }
 
 .reaction-seg-wait {
-  background: var(--color-accent);
+  background: var(--color-bar-wait);
 }
 
 .reaction-seg-refund {
-  background: var(--color-accent-tint);
+  background: var(--color-bar-refund);
 }
 
 .reaction-seg-chargeback {
-  background: var(--color-dot-high);
+  background: var(--color-bar-chargeback);
 }
 
 .reaction-legend {
@@ -253,7 +253,7 @@
   left: 0;
   height: 4px;
   content: '';
-  background: linear-gradient(90deg, var(--color-accent-deep), var(--color-accent), var(--color-accent-strong));
+  background: var(--gradient-ai-line);
 }
 
 .offer-card > .reply-foot,

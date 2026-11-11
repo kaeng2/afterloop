@@ -51,10 +51,10 @@ describe('T078 /intro', () => {
     expect(introEn.brand).toBe('Seller dashboard');
   });
 
-  it('화면 코드·css에 PayPal 파랑이 없고 PayPal 글꼴·로고도 없다', () => {
+  it('화면 코드·css에 남보라가 없고 PayPal 글꼴·로고도 없다 (T089: 시안 v4 파랑은 허용)', () => {
     for (const file of ['src/app/intro/intro-screen.tsx', 'src/app/intro/intro.css', 'src/app/intro/page.tsx']) {
       const text = read(file);
-      for (const blue of ['#002991', '#0066F5', '#60CDFF', '#0070E0', '#003087']) expect(text.toLowerCase(), file).not.toContain(blue.toLowerCase());
+      for (const violet of ['#5b3cc4', '#a996f0', 'rgba(91, 60, 196']) expect(text.toLowerCase(), file).not.toContain(violet);
       expect(/font-family\s*:[^;]*paypal/i.test(text), file).toBe(false);
       expect(/PayPal/.test(text.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')), file).toBe(false);
     }

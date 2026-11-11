@@ -110,7 +110,7 @@
   font-size: var(--text-xs);
   font-weight: 700;
   white-space: nowrap;
-  color: var(--color-accent);
+  color: var(--color-accent-deep);
   background: var(--color-accent-soft);
   border-radius: var(--radius-pill);
 }
@@ -153,7 +153,7 @@
 
 .product-icon path {
   fill: none;
-  stroke: var(--color-accent);
+  stroke: var(--color-accent-deep);
   stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -268,7 +268,7 @@
   font-weight: 900;
   color: var(--color-on-accent);
   white-space: nowrap;
-  background: linear-gradient(120deg, var(--color-accent-deep) 0%, var(--color-accent) 60%, var(--color-accent-strong) 100%);
+  background: var(--gradient-ai);
   border-radius: var(--radius-pill);
 }
 

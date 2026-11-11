@@ -52,7 +52,6 @@ const rgb = (hex: string): [number, number, number] => {
   const full = h.length === 3 ? [...h].map((c) => c + c).join('') : h;
   return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)) as [number, number, number];
 };
-const distance = (a: string, b: string) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]));
 const luminance = (hex: string) => {
   const [r, g, b] = rgb(hex).map((v) => {
     const c = v / 255;
@@ -65,7 +64,6 @@ const contrast = (a: string, b: string) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-const PAYPAL_BLUES = ['#003087', '#0070E0', '#0070BA', '#009CDE', '#001C64'];
 const HEX = /(?<![\w&-])#[0-9a-fA-F]{3,8}(?![\w-])/;
 const RGB_FN = /\b(rgba?|hsla?)\s*\(/;
 
@@ -83,14 +81,15 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
     }
   });
 
-  it('강조색이 밝은·어두운 모드 모두 PayPal 공식 파랑과 RGB 거리 90 이상이다', () => {
+  it('T089: 강조색은 밝은·어두운 모드 모두 6자리 색이고, 밝은 모드는 시안 v4 #0066F5이며, 흰 글자 대비가 3:1 이상(큰 글자·굵은 버튼 글자)이다', () => {
     const { light, dark } = themeVars();
     for (const accent of [light['--color-accent'], dark['--color-accent']]) {
       expect(accent).toMatch(/^#[0-9a-fA-F]{6}$/);
-      for (const blue of PAYPAL_BLUES) {
-        expect(distance(accent, blue), `${accent} vs ${blue}`).toBeGreaterThanOrEqual(90);
-      }
     }
+    expect(light['--color-accent'].toLowerCase()).toBe('#0066f5');
+    expect(contrast(light['--color-accent'], '#ffffff')).toBeGreaterThanOrEqual(3);
+    expect(contrast(light['--color-accent-deep'], '#ffffff')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(light['--color-navy-ink'], '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 
   it('위험 3색·성공·실패 색은 강조색과 다른 변수이고 값도 다르다', () => {
