@@ -7,9 +7,14 @@
  *  2. 화면 분쟁마다(연결 표 `showOnScreen` — 서연·지호·Mike) `loadCase(id)` — 구매자 글 영어 + 코칭 + 영어 초안.
  *  3. 같은 분쟁마다 `loadReply(id)` — 전송본 번역 + 역번역.
  *
+ *  4. `/listing` 고칠 문구 — 화면 폼 기본값(en·ko 두 벌: 상품명·설명)으로 서버 액션과 같은 `listingFixesFor`를 한 번씩 (T095).
+ *
  * 같은 키는 한 번만 부른다 (2·3이 다시 읽는 분류·어조는 1의 기록으로 끝난다). PayPal은 **읽기(GET)만** 한다 —
  * 이 함수들에는 쓰기 호출이 없다. 결과에는 키·응답·만든 시각만 담는다 (환경변수·헤더·요청 글 없음).
  */
+import { getLlm } from '@/app/_server/llm';
+import { listingFixesFor } from '@/app/listing/fixes';
+import { initialForm, type ListingLocale } from '@/app/listing/model';
 import { loadReply } from '@/app/cases/reply/load';
 import { loadCase } from '@/app/cases/view/load';
 import { loadDemoDisputes } from '@/app/_server/disputes';
@@ -25,7 +30,11 @@ export type BuiltCase = {
   reply: boolean;
 };
 
+/** 한 언어의 고칠 문구 결과: 칸별 ok 수 (글·키 없음). AI를 못 쓰면 null. */
+export type BuiltListingFixes = { ok: number; total: number } | null;
+
 export type BuildAiCacheResult = {
+  listingFixes: Record<ListingLocale, BuiltListingFixes>;
   cache: LlmCacheFile;
   /** 실제로 AI를 부른 횟수 (같은 키는 한 번). */
   calls: number;
@@ -49,7 +58,21 @@ export async function buildAiCache(deps: { inner: LlmCaller }): Promise<BuildAiC
         });
       }
     }
-    return { cache: session.cache, calls: session.calls(), paypal: all.paypal, cases };
+    const listingFixes = { en: null, ko: null } as Record<ListingLocale, BuiltListingFixes>;
+    const available = getLlm();
+    for (const locale of ['en', 'ko'] as const) {
+      const form = initialForm(locale);
+      // 화면(listing-screen)이 Publish 때 넘기는 입력 그대로 — 같은 캐시 키
+      const drafts = await listingFixesFor(
+        { productTitle: form.title, productDescription: form.desc },
+        available.ok ? available.llm : null,
+      );
+      if (drafts !== null) {
+        const list = Object.values(drafts);
+        listingFixes[locale] = { ok: list.filter((d) => d.ok).length, total: list.length };
+      }
+    }
+    return { listingFixes, cache: session.cache, calls: session.calls(), paypal: all.paypal, cases };
   } finally {
     stopCacheRecording();
   }
