@@ -690,12 +690,17 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
   const view = buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW) });
   const markup = html(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
 
-  it('묶음 (T122b → T122e 시안 v6): Reply needed(서연·지호·Mike 맨 뒤) / Prevent(추적·통관번호(Demo data)·가디건)', () => {
+  it('묶음 (T122b → T122d · T122e 시안 v6): Reply needed(서연·지호·Lena 데모·Mike 맨 뒤) / Prevent(추적·통관번호(Demo data)·가디건) / Questions(Yuki 데모)', () => {
     expect(view.groups.map((g) => [g.title, g.items.map((i) => i.id)])).toEqual([
-      ['Reply needed', [D2, D1, D3]],
+      ['Reply needed', [D2, D1, 'lena', D3]],
       ['Prevent', ['tracking', 'customs-id', 'FK-CD-OAT']],
+      ['Questions', ['yuki']],
     ]);
-    expect(view.groups.map((g) => g.hint)).toEqual([t('today.groupHint.needsYou'), t('today.groupHint.prevent')]);
+    expect(view.groups.map((g) => g.hint)).toEqual([
+      t('today.groupHint.needsYou'),
+      t('today.groupHint.prevent'),
+      t('today.groupHint.routine'),
+    ]);
   });
 
   // T122e (결정 20:35 ③): 머리 = 시드 표시 번호(#1042, Demo data), PP-R-…은 보조 줄(`ref`). 기한·범주는 실제·엔진 값 그대로
@@ -710,7 +715,7 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     expect(seoyeon.row.who).toBe('Seo-yeon Kim · KR');
     expect(seoyeon.row.category).toBe(categoryLabel(AFTER.reason, 'A2'));
     expect(seoyeon.row.categoryTone).toBe('high');
-    const mike = view.groups[0].items[2];
+    const mike = view.groups[0].items[3]; // T122d: Lena(데모)가 Mike 앞
     expect([mike.row.head, mike.row.ref, mike.row.who]).toEqual(['#1047', D3, 'buyer_m · US']);
     // 지호: 시드 paypalRef가 아직 없다(T119 뒤 연결) → 실제 분쟁 번호 그대로, Demo data 아님
     const jiho = view.groups[0].items[1];
@@ -719,10 +724,16 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     expect(markup).toContain(`>${D2}<`); // 보조 줄
   });
 
-  it('HEY·GAH가 없다. 표시 번호는 시드 짝이 있는 것만 (Lena·Yuki는 T122d 범위)', () => {
-    expect(markup).not.toMatch(/Lena|Yuki|Refund promised|Question · Size|HEY-|GAH-/);
-    expect(markup.match(/#10\d\d/g)?.sort()).toEqual(['#1042', '#1047']);
+  // T122d + T122e: #10xx = 시드 표시 번호(서연 #1042·마이크 #1047) + 데모 항목(Lena #1029·Yuki #1051), 모두 Demo data
+  it('HEY·GAH가 없다. #10xx 번호는 시드 표시 번호와 데모 항목뿐 (DECISIONS v2.16 20:35 ③), 통관번호 줄은 Prevent 표시용', () => {
+    expect(markup).not.toMatch(/HEY-|GAH-/);
+    expect(markup.match(/#10\d\d/g)?.sort()).toEqual(['#1029', '#1042', '#1047', '#1051']);
     expect(markup).toContain('Customs ID missing');
+    const demo = view.groups.flatMap((g) => g.items).filter((i) => i.kind === 'demo');
+    expect(demo.map((i) => [i.id, i.row.head, i.status.key])).toEqual([
+      ['lena', '#1029', 'badge.demo'],
+      ['yuki', '#1051', 'badge.demo'],
+    ]);
   });
 
   it('상품 거르개: ?sku=로 목록을 거르고, 숫자는 시드 재고·분쟁 수를 센 것', () => {
@@ -736,7 +747,7 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     expect(sweater?.href).toBe('/?sku=FK-SW-NV');
 
     const filtered = buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW), sku: 'FK-CD-OAT' });
-    expect(filtered.groups.flatMap((g) => g.items.map((i) => i.id))).toEqual([D1, 'tracking', 'FK-CD-OAT']);
+    expect(filtered.groups.flatMap((g) => g.items.map((i) => i.id))).toEqual([D1, 'tracking', 'FK-CD-OAT', 'yuki']);
     expect(filtered.groups[0].items[0].href).toBe(`/?sku=FK-CD-OAT&item=${D1}`);
     expect(filtered.count).toBe(view.count); // 위쪽 막대 Today (N)은 거르개와 상관없이 전체
     expect(buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW), sku: 'NOPE' }).filter.selectedSku).toBeNull();

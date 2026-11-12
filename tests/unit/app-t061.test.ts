@@ -625,12 +625,13 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
   });
 
   // T122e: Prevent에 시드 표시용 "3 orders · Customs ID missing"(Demo data)이 추적 다음에 온다
-  it('6줄 (T076 → T122b → T122e 시안 v6): Reply needed 3 (서연 · 지호 · Mike) + Prevent 3 (추적 · 통관번호 · 가디건). Questions는 질문 항목이 없어 안 보인다', () => {
+  it('8줄 (T076 → T122b → T122d · T122e 시안 v6): Reply needed 4 (서연 · 지호 · Lena 데모 · Mike) + Prevent 3 (추적 · 통관번호 · 가디건) + Questions 1 (Yuki 데모)', () => {
     expect(view.groups.map((g) => [g.key, g.items.length])).toEqual([
-      ['needsYou', 3],
+      ['needsYou', 4],
       ['prevent', 3],
+      ['routine', 1],
     ]);
-    expect(view.count).toBe(6);
+    expect(view.count).toBe(8);
   });
 
   it('연습용(HEY)·옛 서연(GAH) 분쟁은 화면에 내지 않는다 (연결 표)', () => {
@@ -640,7 +641,7 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
 
   it('Routine 항목은 위험 배지 대신 회색 "Skipped" (엔진 판정에서)', () => {
     // T067: 회색 칩 → 회색 상태 알약 + 회색 점 (`status`·`dot`)
-    const mike = view.groups[0].items[2];
+    const mike = view.groups[0].items[3];
     expect(mike.status).toEqual({ key: 'today.skipped', tone: 'neutral' });
     expect(mike.dot).toBe('neutral');
     const markup = html(createElement(TodayList, { view, selectedId: null, paypalNotice: null }));

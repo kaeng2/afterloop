@@ -12,16 +12,26 @@
  * - `DraftForecastProvider`: 답장 칸의 지금 예측(브라우저 어댑터)을 위험 곡선 카드가 함께 읽는다.
  */
 import { recommend } from '@/engine/recommend';
-import type { CaseEvent } from '@/types';
+import type { CaseEvent, Recommendation } from '@/types';
 
+import { seedDemoDisplay } from '../../../seed/index';
 import { reasonCopyKey } from '../_shared/availability';
-import { t } from '../_shared/copy';
+import { currentLocale, t } from '../_shared/copy';
 import { displayLabelFor, seoyeonHistoryRows } from '../_shared/demo-display';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
 import { toDollarsCents } from '../_shared/money';
 import { toPercentRounded } from '../_shared/percent';
 import { decideFor, routineLine, type TodayRowView } from '../today/model';
 import { OfferWork } from '../today/offer-work';
+import {
+  approvalApiKey,
+  buyerMessage,
+  jihoBranch,
+  languageName,
+  langCode,
+  lossOf,
+  tPick,
+} from '../today/one-card-data';
 import { actionSavingsDisplay } from '../today/savings-values';
 import { WorkDetail } from '../today/work-card';
 import { DeskSelectionProvider } from './view/desk-selection';
@@ -73,38 +83,105 @@ function caseHistory(
 }
 
 /**
- * T106 (F1-55 · F1-56): 제안이 먼저인 분쟁(지호) = 시안의 짧은 zone-work 카드. 전체 사건 데스크(곡선·기록·답장 칸)는
- * 그리지 않는다. 관문은 그대로 (`OfferWork` → `canSendOffer` → 서버 액션 `sendReplyAction`). 제목 금액은 엔진 계획의
- * `amountCents`를 한 가지 표기(`toDollarsCents`)로 — 제목·확인 창이 같은 글자다.
+ * T106 → T122c (시안 v6 L443–L478, V6-B45 ~ V6-B51): 지호(#1038) = 한 장 카드. 전체 사건 데스크(곡선·기록·답장 칸)는
+ * 그리지 않는다. **두 갈래를 데이터로 고른다** (엔진 최선 수 + 계획):
+ *
+ * - `repair` (새 품질 사건, B3) → 실행 send-message, 제목·설명은 시안 문장, 반품 기간·구매 주 수는 시드(Demo data)
+ * - `offer` + make-offer 계획 (기존 색상 사례) → 실행 make-offer, 제목 금액은 엔진 계획 `amountCents`
+ *
+ * 관문은 그대로 (`OfferWork` → `canSend`/`canSendOffer` → 서버 액션 `sendReplyAction`). "Keeps ≈$N" = 엔진
+ * `actionSavings`(부르는 쪽 `savings`), 단계 글의 금액 = 엔진 `recommend().all`의 기대 손실. 화면은 계산하지 않는다.
+ * 어느 갈래에도 맞지 않으면 `null` (부르는 쪽이 기존 화면을 그린다).
  */
-function offerWork(
+function jihoWork(
   reply: NonNullable<Awaited<ReturnType<typeof loadReply>>>,
   row: TodayRowView | null,
   savings: string | null,
+  rec: Recommendation,
+  view: CaseViewData,
 ) {
   const plan = reply.base.plan;
-  if (plan === null || plan.apiMove !== 'make_offer' || plan.amountCents === null) return null;
+  const branch = jihoBranch(rec.best?.move ?? null, plan);
+  if (branch === null || plan === null) return null;
+  const board = reply.base.board ?? null;
+  const subtype = board?.cause?.subtype ?? null;
+  const code = langCode(reply.base.buyerLocale);
+  const language =
+    languageName(code) ?? (reply.languageKey === null ? t('case.send.languageUnknown') : t(reply.languageKey));
+  const uiLocale = currentLocale();
+  const message = buyerMessage(view.messages, reply.base.buyerLocale, uiLocale);
+  const keep = savings === null ? null : t('card.keep', { amount: savings });
+  const refund = lossOf(rec, 'refund') ?? t('common.noValue');
+  const label = subtype === null ? null : t(`case.view.subtype.${subtype}`);
+  const hasDraft = reply.replyId !== null;
+  const common = {
+    name: reply.buyerShort ?? language,
+    language,
+    code: subtype ?? '',
+    label: label ?? '',
+    refund,
+  };
+
+  if (branch === 'repair') {
+    // 시드(Demo data): 반품 기간·구매 뒤 주 수 (T121 `jihoPurchase`)
+    const days = seedDemoDisplay.jihoPurchase.returnWindowDays;
+    const weeks = seedDemoDisplay.jihoPurchase.weeksAgo;
+    const params = { ...common, days, weeks, repair: lossOf(rec, 'repair') ?? t('common.noValue') };
+    const steps = [
+      tPick('card.jiho.repair.s1', params),
+      ...(label === null ? [] : [tPick('card.jiho.repair.s2', params)]),
+      tPick('card.jiho.repair.s3', params),
+      hasDraft ? tPick('card.jiho.repair.s4', params) : tPick('card.step.noDraft', params),
+    ];
+    return (
+      <WorkDetail row={row} className="offer-detail">
+        <OfferWork
+          disputeId={reply.disputeId}
+          base={reply.base}
+          replyId={reply.replyId}
+          kind="message"
+          title={t('card.jiho.repair.t')}
+          body={tPick('card.jiho.repair.b', params)}
+          amount={null}
+          languageName={language}
+          keep={keep}
+          steps={steps}
+          message={message}
+          api={t(approvalApiKey(branch))}
+          savings={savings}
+        />
+      </WorkDetail>
+    );
+  }
+
+  // branch === 'offer' (기존 색상 사례)
+  if (plan.apiMove !== 'make_offer' || plan.amountCents === null) return null;
   const amount = toDollarsCents(plan.amountCents);
   const keeps = plan.refundType !== 'REFUND_WITH_RETURN';
-  const title = t(keeps ? 'case.offer.title.keep' : 'case.offer.title.return', {
-    percent: toPercentRounded(reply.offerRate),
-    amount,
-  });
-  const language = reply.languageKey === null ? t('case.send.languageUnknown') : t(reply.languageKey);
-  const readsLabel =
-    reply.buyerShort === null
-      ? t('case.reply.buyerReadsUnknown', { language })
-      : t('case.reply.sheSees', { name: reply.buyerShort, language });
+  const percent = toPercentRounded(reply.offerRate);
+  const title = t(keeps ? 'case.offer.title.keep' : 'case.offer.title.return', { percent, amount });
+  const params = { ...common, percent, offer: lossOf(rec, 'offer') ?? amount };
+  const steps = [
+    tPick('card.jiho.offer.s1', params),
+    ...(label === null ? [] : [tPick('card.jiho.offer.s2', params)]),
+    tPick('card.jiho.offer.s3', params),
+    hasDraft ? tPick('card.jiho.offer.s4', params) : tPick('card.step.noDraft', params),
+  ];
   return (
     <WorkDetail row={row} className="offer-detail">
       <OfferWork
         disputeId={reply.disputeId}
         base={reply.base}
         replyId={reply.replyId}
+        kind="offer"
         title={title}
         body={t('case.offer.line', { language })}
         amount={amount}
-        readsLabel={readsLabel}
+        languageName={language}
+        keep={keep}
+        steps={steps}
+        message={message}
+        api={t(approvalApiKey(branch))}
         savings={savings}
       />
     </WorkDetail>
@@ -139,9 +216,10 @@ export async function CaseDetail({ disputeId, row = null }: { disputeId: string;
   const caseView = buildCaseView(loaded.input);
   const reply = await loadReply(disputeId);
 
-  // T106: 지호(제안이 먼저) → 짧은 zone-work 카드만. 곡선·사건 기록 예측을 만들지 않는다
-  if (caseView.messageSend.blocked && reply !== null) {
-    const work = offerWork(reply, row, actionSavingsDisplay(board, recommend(board).best?.move ?? null));
+  // T106 → T122c: 지호 → 한 장 카드만 (repair = 새 품질 사건, 제안이 먼저 = 기존 색상 사례). 곡선·사건 기록 예측을 만들지 않는다
+  const rec = recommend(board);
+  if (reply !== null && (rec.best?.move === 'repair' || caseView.messageSend.blocked)) {
+    const work = jihoWork(reply, row, actionSavingsDisplay(board, rec.best?.move ?? null), rec, caseView);
     if (work !== null) return work;
   }
 

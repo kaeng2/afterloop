@@ -295,7 +295,7 @@ export type LlmCaller = (req: { system: string; user: string; jsonSchema: Record
  */
 export type FactToken = {
   token: string;
-  kind: 'DATE' | 'AMOUNT' | 'TRACKING' | 'CUSTOMS_STATUS' | 'BUYER_NAME' | 'SELLER_NAME';
+  kind: 'DATE' | 'AMOUNT' | 'TRACKING' | 'CUSTOMS_STATUS' | 'BUYER_NAME' | 'SELLER_NAME' | 'DAYS'; // DAYS: v2.16 수선 기간(영업일, config rules.reply.repairDays)
   value: string;
 };
 

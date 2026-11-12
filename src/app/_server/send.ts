@@ -56,6 +56,7 @@ import type { ActionPlan, Approval, DemoLink, FactToken, LlmCaller, Params, PayP
 
 import { editAdditions, factsInText, nameLeftovers, revertToTokens, withEditChecks } from '../cases/edited-reply';
 import { caseReplyFacts } from '../cases/reply-facts';
+import { withMoveFacts } from '../cases/view/load';
 import {
   EDIT_KEYS,
   fillFactTokens,
@@ -363,9 +364,10 @@ export async function sendReply(input: SendReplyInput, deps: SendReplyDeps): Pro
 
   // 6. 계획 (메시지 = 다투기 + send_message, 제안 = 제안 + make_offer. 금액은 엔진 계획의 것)
   const best = recommendation.best;
-  const wantMove = kind === 'offer' ? 'offer' : 'fight';
+  // 메시지는 다투기(fight) 또는 무료 수선 안내(repair) 추천일 때만 — 둘 다 실행은 send_message
+  const moveOk = (move: string): boolean => (kind === 'offer' ? move === 'offer' : move === 'fight' || move === 'repair');
   let plan: ActionPlan | null = null;
-  if (best !== null && best.move === wantMove && best.apiMove === apiMove) {
+  if (best !== null && moveOk(best.move) && best.apiMove === apiMove) {
     try {
       plan = planMove(board, best, deps.params, deps.rules);
     } catch {
@@ -380,12 +382,16 @@ export async function sendReply(input: SendReplyInput, deps: SendReplyDeps): Pro
   //    이름은 시드 연결의 구매자 ID와 설정(`reply.names`)에서만 — 브라우저에서 받지 않는다
   let facts: FactToken[];
   try {
-    facts = caseReplyFacts({
-      now: deps.now,
-      dueDate: board.dueDate,
-      buyerId: dispute.buyer?.id ?? null,
-      buyerLocale: reply.buyerLocale,
-    }).outgoing;
+    // 화면을 그릴 때와 같은 함수: repair면 수선 기간 `⟦DAYS_1⟧`가 더해진다 (T122g)
+    facts = withMoveFacts(
+      caseReplyFacts({
+        now: deps.now,
+        dueDate: board.dueDate,
+        buyerId: dispute.buyer?.id ?? null,
+        buyerLocale: reply.buyerLocale,
+      }),
+      best?.move ?? null,
+    ).outgoing;
   } catch {
     return fail(mode, 'blocked', 'case.send.error.replyExpired', 'case.send.next.reload');
   }

@@ -425,6 +425,9 @@ describe('모션: 시안 값 그대로 (config/motion.json)', () => {
     expect(nextTyped(4, 5, 1)).toBe(5);
     expect(typeOutFrames('abc', 1, false)).toEqual(['a', 'ab', 'abc']);
     expect(typeOutFrames('abcde', 1, true)).toEqual(['abcde']);
+    // main 쪽 확인 유지: 함수는 step 인자를 그대로 따른다 (v4 시안 2글자 값으로도)
+    expect(nextTyped(0, 5, 2)).toBe(2);
+    expect(typeOutFrames('abcde', 2, false)).toEqual(['ab', 'abcd', 'abcde']);
   });
 
   it('타이핑 중에는 Send를 막는다 (관문 앞에 둔다)', () => {

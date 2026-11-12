@@ -211,17 +211,18 @@ describe('T060 날짜 줄', () => {
 // ───────────────────────────── 목록 ─────────────────────────────
 
 describe('T060 Today 목록 (데이터에서 만든다)', () => {
-  it('T076 → T122b 시안 v6: Reply needed = 서연 · 지호 · Mike(맨 뒤), Prevent = 추적(2) · 가디건 (Questions는 질문 항목이 없어 없음)', () => {
+  it('T076 → T122b → T122d 시안 v6: Reply needed = 서연 · 지호 · Lena(데모) · Mike(맨 뒤), Prevent = 추적(2) · 가디건, Questions = Yuki(데모)', () => {
     const view = today();
-    expect(view.groups.map((group) => group.key)).toEqual(['needsYou', 'prevent']);
-    expect(view.groups.map((group) => group.title)).toEqual(['Reply needed', 'Prevent']);
+    expect(view.groups.map((group) => group.key)).toEqual(['needsYou', 'prevent', 'routine']);
+    expect(view.groups.map((group) => group.title)).toEqual(['Reply needed', 'Prevent', 'Questions']);
 
-    const [needsYou, prevent] = view.groups;
-    expect(needsYou.items.map((item) => item.id)).toEqual([D2, D1, D3]);
-    expect(needsYou.items.map((item) => item.name)).toEqual(['Seo-yeon', 'Ji-ho', 'Mike Morgan']);
+    const [needsYou, prevent, questions] = view.groups;
+    expect(needsYou.items.map((item) => item.id)).toEqual([D2, D1, 'lena', D3]);
+    expect(needsYou.items.map((item) => item.name)).toEqual(['Seo-yeon', 'Ji-ho', 'Lena K. · DE', 'Mike Morgan']);
     // T122e: 추적 다음에 시드 표시용 통관번호 줄 (Demo data). 추적 항목 이름(화면 읽기)은 실제 수 2건 그대로
     expect(prevent.items.map((item) => item.id)).toEqual([TRACKING_ITEM_ID, 'customs-id', 'FK-CD-OAT']);
     expect(prevent.items.map((item) => item.name)).toEqual(['2 orders without tracking', '3 orders · Customs ID missing', 'Knit Cardigan, Oat']);
+    expect(questions.items.map((item) => item.id)).toEqual(['yuki']);
     expect(t('today.group.routine')).toBe('Questions');
   });
 
@@ -236,7 +237,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     expect(jiho.label).toBe('color case');
     expect(jiho.sub).toBe('offer waiting for your approval');
 
-    const mike = today().groups[0].items[2];
+    const mike = today().groups[0].items[3];
     expect(mike.label).toBe('3rd claim');
     expect(mike.sub).toBe('skipped · suspected abuse');
   });
@@ -259,29 +260,35 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     );
     const view = buildToday({ disputes, tracking: TRACKING, products: seedProducts, now: NOW });
     // 지호 3+2+1 = 6 > 서연 3+2 = 5 → 지호가 먼저 (추적 항목은 T076부터 Prevent 묶음)
-    expect(view.groups[0].items.map((item) => item.id)).toEqual([D1, D2, D3]);
+    // 데모 항목 Lena는 순위를 매기지 않는다 — 분쟁 뒤·Mike 앞 고정
+    expect(view.groups[0].items.map((item) => item.id)).toEqual([D1, D2, 'lena', D3]);
   });
 
   it('Today (N)의 N = 목록에 보이는 항목 수', () => {
     const view = today();
     expect(view.count).toBe(items(view).length);
-    expect(view.count).toBe(6);
+    expect(view.count).toBe(8);
     const html = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
     expect(html.match(/class="today-item it( on)?"/g)?.length).toBe(view.count);
-    expect(t('shell.todayTab', { count: view.count })).toBe('Today (6)');
+    expect(t('shell.todayTab', { count: view.count })).toBe('Today (8)');
   });
 
-  it('Lena 환불 · Yuki 사이즈 문의 · 통관부호 문의 항목이 없다', () => {
+  it('T122d: Lena·Yuki는 시드 데모 항목(Demo data)뿐 — 통관부호 문의 항목은 없다. 열린 분쟁 수에 넣지 않는다', () => {
     const view = today();
-    const names = items(view).map((item) => `${item.name} ${item.label ?? ''} ${item.sub ?? ''}`).join('\n');
+    const names = items(view)
+      .filter((item) => item.kind !== 'demo')
+      .map((item) => `${item.name} ${item.label ?? ''} ${item.sub ?? ''}`)
+      .join('\n');
     expect(names).not.toMatch(/Lena|Yuki|Da-eun|customs code|size/i);
+    expect(items(view).filter((item) => item.kind === 'demo').map((item) => item.id)).toEqual(['lena', 'yuki']);
+    expect(view.openDisputes).toBe(3);
   });
 
   it('추적 조회 실패(null) → 추적 항목을 숨긴다', () => {
     const view = today(null);
     expect(items(view).some((item) => item.kind === 'tracking')).toBe(false);
-    expect(view.groups[0].items.map((item) => item.id)).toEqual([D2, D1, D3]);
-    expect(view.count).toBe(5);
+    expect(view.groups[0].items.map((item) => item.id)).toEqual([D2, D1, 'lena', D3]);
+    expect(view.count).toBe(7); // 4 + 통관번호(Demo data) · 가디건 + Yuki
   });
 
   it('미등록 주문이 0건이면 추적 항목이 없다', () => {
@@ -289,10 +296,16 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     expect(items(view).some((item) => item.kind === 'tracking')).toBe(false);
   });
 
-  it('PayPal을 읽지 못하면(분쟁 0건) Prevent만 남는다', () => {
+  it('PayPal을 읽지 못하면(분쟁 0건) 분쟁 항목은 없고 Prevent와 시드 데모 항목(PayPal 사건 아님)만 남는다', () => {
     const view = buildToday({ disputes: [], tracking: null, products: seedProducts, now: NOW });
-    expect(view.groups.map((group) => group.key)).toEqual(['prevent']);
-    expect(view.count).toBe(2); // 통관번호(Demo data) + 엔진이 고른 상품
+    expect(view.groups.map((group) => group.key)).toEqual(['needsYou', 'prevent', 'routine']);
+    expect(items(view).filter((item) => item.kind === 'dispute')).toEqual([]);
+    expect(items(view).map((item) => item.id)).toEqual(['lena', 'customs-id', 'FK-CD-OAT', 'yuki']);
+    expect(view.count).toBe(4);
+    expect(view.openDisputes).toBe(0);
+    const empty = buildToday({ disputes: [], tracking: null, products: seedProducts, now: NOW, demoItems: [] });
+    expect(empty.groups.map((group) => group.key)).toEqual(['prevent']);
+    expect(empty.count).toBe(2); // 통관번호(Demo data) + 엔진이 고른 상품
   });
 
   it('고른 항목: 주소의 item이 있으면 그것, 없거나 모르면 첫 항목(서연). Prevent는 고르지 않는다', () => {
@@ -379,7 +392,7 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
 describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
   it('서연 High · 추적 Watch · 지호 Waiting approval · 가디건 Prevent · Mike Skipped', () => {
     const [needsYou, prevent] = today().groups;
-    const [seoyeon, jiho, mike] = needsYou.items;
+    const [seoyeon, jiho, , mike] = needsYou.items;
     // T122b 시안 v6: Mike는 Reply needed 맨 뒤 (상태 알약·점은 엔진 판정 그대로 Skipped·회색)
     const routine = { items: [mike] };
     const [tracking, cardigan] = prevent.items;
@@ -521,7 +534,8 @@ describe('T060 추적 항목 조회 (GET만)', () => {
     const html = renderToStaticMarkup(createElement(TrackingDetail, { tracking: TRACKING }));
     expect(html).toContain('2 orders shipped 3+ days ago have no tracking in PayPal.');
     expect(html).toContain('In dispute — excluded');
-    expect(html.match(/tracking-row-excluded/g)?.length).toBe(1);
+    // T122c: 표는 한 장 카드 `.ag` 틀 — 분쟁 걸린 주문은 회색 줄(`oc-ag-r-dn`)
+    expect(html.match(/oc-ag-r oc-ag-r-dn/g)?.length).toBe(1);
     expect(html).not.toMatch(/<button/);
   });
 });

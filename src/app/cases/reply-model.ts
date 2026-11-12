@@ -294,6 +294,7 @@ const FACT_LABEL: Record<FactToken['kind'], string> = {
   CUSTOMS_STATUS: 'case.reply.fact.CUSTOMS_STATUS',
   BUYER_NAME: 'case.reply.fact.BUYER_NAME',
   SELLER_NAME: 'case.reply.fact.SELLER_NAME',
+  DAYS: 'case.reply.fact.DAYS',
 };
 
 /** 이름 토큰 둘레 문제 → 검사 줄에 보일 글자 키. */

@@ -9,9 +9,11 @@
  * `routineLine`). 언제 이 화면을 쓰는지는 `case-detail.tsx`가 같은 판정으로 정한다 (목록의 Routine 묶음과 같은 규칙).
  */
 import { Badge } from '../_shared/badges';
-import { t } from '../_shared/copy';
+import { currentLocale, t } from '../_shared/copy';
 import type { TodayRowView } from '../today/model';
-import { WorkCard, WorkDetail } from '../today/work-card';
+import { OneCard } from '../today/one-card';
+import { buyerMessage } from '../today/one-card-data';
+import { WorkDetail } from '../today/work-card';
 import type { CaseDesk } from './desk-model';
 import type { CaseView as CaseViewData } from './model';
 import { CaseHeader } from './view/case-view';
@@ -36,9 +38,24 @@ export function RoutineDetail({
     </>
   );
   if (row !== null) {
+    // T122c (시안 v6 `v.ai.bm` 틀, V6-B45 · V6-B47): 구매자 글(실제 PayPal) + 코드 판정 단계. 실행할 것이 없어
+    // "On approval" 줄·버튼은 없다 (증빙 보내기 provide-evidence는 실행하지 않는다 — `src/exec` ENDPOINTS)
+    const cause = view.cause.after ?? view.cause.before;
+    const steps = [
+      t('card.routine.s1'),
+      ...(cause === null ? [] : [t('card.routine.s2', { code: cause.subtype, label: t(cause.subtypeKey) })]),
+      t('card.routine.s3'),
+    ];
     return (
       <WorkDetail row={row} className="routine-detail">
-        <WorkCard titleId={`routine-title-${view.header.disputeId}`} ai={false} title={t('case.routine.label')} body={claim} />
+        <OneCard
+          titleId={`routine-title-${view.header.disputeId}`}
+          ai={false}
+          title={t('case.routine.label')}
+          body={claim}
+          message={buyerMessage(view.messages, view.header.buyerLocale, currentLocale())}
+          steps={steps}
+        />
       </WorkDetail>
     );
   }
