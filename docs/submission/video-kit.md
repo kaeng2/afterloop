@@ -64,7 +64,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 
 | 장면 | 화면 글자 | 나온 곳 | 바뀌는 조건 |
 |---|---|---|---|
-| 2 /demo/seller-dashboard | "$4,218.40", "$3,940 · 71 orders", "**Black Friday in 17 days**" | `config/intro.en.json` **고정 데모 값** (서버·엔진 값 아님) | 바뀌지 않는다. Desk 날짜 줄과 다를 수 있다 → 날짜를 말로 읽지 않는다 |
+| 2 /demo/seller-dashboard | "$4,218.40", "$3,940 · 71 orders", "**Black Friday in N days** (Desk 위쪽 막대와 같은 날짜 함수 — 11/12 미국 동부 기준 15~16)" | `config/intro.en.json` **고정 데모 값** (서버·엔진 값 아님) | 바뀌지 않는다. Desk 날짜 줄과 다를 수 있다 → 날짜를 말로 읽지 않는다 |
 | 2 /demo/seller-dashboard | 서연 "$72.00 · Respond by Nov 30", 지호 "$48.00 · Respond by Nov 29" | 실제 PayPal 분쟁 번호·응답 기한(UTC 날짜)을 고정 문구로 | — |
 | 3 Desk 위 | "Wed, Nov 11 · Black Friday in 16 days" 같은 날짜 줄 | 판매자 시간대(America/New_York) 오늘 날짜, 대목 2026-11-27 | **14:00 KST 전에는 전날**이 보인다 (아래 날짜 규칙) |
 | 3 이번 주 카드 | Open disputes **3** · real PayPal sandbox cases | 실제 샌드박스 분쟁 수 | — |
@@ -93,7 +93,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 - **Follow-up 날짜(답장 속 "11월 19일")** = 서버 UTC 날짜 + 7일. **09:00 KST 전**에는 하루 이르게 나온다 (공식 규칙 상자).
 - **Desk 위쪽 날짜 줄** = 판매자 시간대(미국 동부) 날짜. **14:00 KST 전**에는 전날이다. 예) 11/12 13:30 KST에 찍으면 "Wed, Nov 11 · Black Friday in 16 days", 14:00 KST 이후면 "Thu, Nov 12 · Black Friday in 15 days".
 - 그래서 **11/12 14:00 KST 이후**에 찍으면 날짜 줄(Nov 12)과 Follow-up(Nov 19 = +7)이 서로 맞는다. 그 전에 찍으면 날짜 줄이 Nov 11이라 "8일 뒤"처럼 보인다.
-- /demo/seller-dashboard의 "Black Friday in 17 days"는 고정 문구다. Desk 숫자와 다르다 → **며칠 남았는지는 말로 읽지 않는다.**
+- ~~/demo/seller-dashboard의 "Black Friday in 17 days" 고정 문구~~ → T115로 Desk와 같은 날짜 함수 (11/12). 사건도 Desk와 같은 3건(서연·지호·마이크).
 - **녹화 중에는 재배포하지 않는다.** (재배포하면 서버 메모리의 서랍 기록과 캐시가 비워진다.)
 
 ## 4. 말로 밝혀야 하는 곳 (데모 데이터 · 가정 · 실제)
