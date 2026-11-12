@@ -25,3 +25,11 @@
 - `tsc`: 오류 4건 모두 `src/app/cases/**` (main의 계약 변경 `repair`). 이 작업 밖이라 보고만.
 - lint: 오류 0, 경고 2 (기존 파일).
 - 비밀값·토큰·구매자 개인정보 출력·기록 없음.
+
+## 재시도(capture)
+- 실행 전 확인: manifest에 O20을 더한 뒤 `captureId`가 없는 주문은 **O20 하나뿐**이었다 (나머지 13건은 호출 없이 건너뜀).
+- `npm run sandbox:capture` 1회 (샌드박스만). 주문 `6R4577433P6975506` (Knit Cardigan, Oat) → HTTP 201 · 캡처 상태 **COMPLETED** · 주문 상태 COMPLETED · capture ID **0GS51093S92438905** · 금액 $48.00 (주문 생성 시 금액, USD).
+- 추적번호 등록·환불·분쟁·다른 주문 호출 없음.
+- **앱의 추적 대상 계산 확인**: `registerTargets`(`src/app/_server/tracking-register.ts`)와 Today 입력(`src/app/today/tracking.ts`)은 manifest의 모든 주문을 GET으로 보고 "분쟁 없는 미등록 주문"을 대상으로 잡는다. O20을 manifest에 `tracked:false`로 두면 **O20도 대상에 들어간다** (O05·O07만이 아니게 된다 — 앞서 `app-t067`·`app-t060` 8건이 깨진 이유). 그래서 manifest 변경은 **커밋하지 않고 되돌렸다.** 캡처 ID는 이 보고서에만 남긴다.
+- **컨트롤 타워에 요청할 결정**: O20을 manifest에 영구 반영하려면 앱 쪽 추적 대상에서 O20을 제외하는 규칙(예: manifest 필드 `trackExcluded`, 계약 변경)이나 테스트 기대값 변경이 필요하다. 지금은 manifest에 O20이 없어 앱 동작·테스트는 그대로다.
+- 비밀값·토큰·구매자 개인정보 출력·기록 없음.
