@@ -44,7 +44,7 @@ describe('T115 (2)-5 숫자를 Desk와 맞춘다', () => {
   const data = loadIntroData(NOW);
 
   it('사건 줄 3개 = 연결 표의 화면 건 (서연 먼저, 지호, 실제 사건 마이크) — 캐시가 비면 연결 표 고정 기한', () => {
-    expect(data.cases.map((k) => k.id)).toEqual(['PP-R-GMS-10197661', 'PP-R-MBJ-10197650', 'PP-R-FYT-10197651']);
+    expect(data.cases.map((k) => k.id)).toEqual(['PP-R-GMS-10197661', 'PP-R-ZOK-10200237', 'PP-R-FYT-10197651']);
     expect(data.cases).toEqual(INTRO_SAMPLE.cases);
     const mike = data.cases[2];
     expect(mike.reason).toBe('MERCHANDISE_OR_SERVICE_NOT_RECEIVED');
