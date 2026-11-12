@@ -36,6 +36,7 @@ import { ALL_PRODUCTS_PARAM, casesOf, filterGroups, firstItemFor } from '@/app/t
 import { BackToAll, DetailEmpty, DetailPane, TodaySelectionProvider } from '@/app/today/selection';
 import { ProductFilterBar, TodayList } from '@/app/today/today-list';
 import { TrackingDetail } from '@/app/today/tracking-detail';
+import { WorkDetail } from '@/app/today/work-card';
 
 import { seedDemoDisplay } from '../../../seed/index';
 
@@ -66,7 +67,15 @@ function Pane({ item, view, selected }: { item: TodayItem; view: TodayView; sele
       />
     );
   }
-  if (item.kind === 'prevent') return item.prevent === undefined ? null : <PreventCard detail={item.prevent} row={item.row} />;
+  if (item.kind === 'prevent') {
+    if (item.prevent !== undefined) return <PreventCard detail={item.prevent} row={item.row} />;
+    // T122e: 표시용 예방 줄(통관번호, Demo data)은 머리만 — 실제 대상·버튼이 없다 (보내는 것 0)
+    return (
+      <WorkDetail row={item.row}>
+        <p className="small muted">{t('today.prevent.noAction')}</p>
+      </WorkDetail>
+    );
+  }
   // T122f: 데모 항목(Lena·Yuki, Demo data — T122d가 목록에 넣는 id = 시드 `demoItems` `key`)은 PayPal 사건이 아니다.
   // 사례 읽기(CaseDetail)를 부르지 않고 한 장 카드(`DemoItemCard`)로 그린다 (버튼은 화면 상태만)
   const demo = demoItemFor(item.id);

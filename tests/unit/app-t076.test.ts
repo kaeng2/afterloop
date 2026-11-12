@@ -24,7 +24,6 @@ import {
   curveView,
   featureChips,
   historyView,
-  latinName,
   NO_REPLY_DAYS,
   reactionView,
   readTags,
@@ -691,10 +690,10 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
   const view = buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW) });
   const markup = html(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
 
-  it('묶음 (T122b → T122d 시안 v6): Reply needed(서연·지호·Lena 데모·Mike 맨 뒤) / Prevent(추적 2건·가디건) / Questions(Yuki 데모)', () => {
+  it('묶음 (T122b → T122d · T122e 시안 v6): Reply needed(서연·지호·Lena 데모·Mike 맨 뒤) / Prevent(추적·통관번호(Demo data)·가디건) / Questions(Yuki 데모)', () => {
     expect(view.groups.map((g) => [g.title, g.items.map((i) => i.id)])).toEqual([
       ['Reply needed', [D2, D1, 'lena', D3]],
-      ['Prevent', ['tracking', 'FK-CD-OAT']],
+      ['Prevent', ['tracking', 'customs-id', 'FK-CD-OAT']],
       ['Questions', ['yuki']],
     ]);
     expect(view.groups.map((g) => g.hint)).toEqual([
@@ -704,22 +703,32 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     ]);
   });
 
-  it('분쟁 줄 머리 = PayPal 분쟁 번호, 서연 "Reply by Nov 30", 구매자 · 나라, 범주 알약', () => {
+  // T122e (결정 20:35 ③): 머리 = 시드 표시 번호(#1042, Demo data), PP-R-…은 보조 줄(`ref`). 기한·범주는 실제·엔진 값 그대로
+  it('분쟁 줄 머리 = 표시 번호 #1042 (PP-R-… 보조 줄), 서연 "Reply by Nov 30", 시드 손님 표기, 범주 알약', () => {
     const seoyeon = view.groups[0].items[0];
-    expect(seoyeon.row.head).toBe(D2);
-    expect(seoyeon.row.head).toMatch(/^PP-R-/);
+    expect(seoyeon.id).toBe(D2);
+    expect(seoyeon.row.head).toBe('#1042');
+    expect(seoyeon.row.ref).toBe(D2);
+    expect(seoyeon.row.demo).toBe(true);
+    expect(seoyeon.row.product).toBe('Wool Sweater');
     expect(seoyeon.row.due).toBe('Reply by Nov 30');
-    expect(seoyeon.row.who).toBe(`${latinName(SEOYEON.name)} · ${SEOYEON.country}`);
+    expect(seoyeon.row.who).toBe('Seo-yeon Kim · KR');
     expect(seoyeon.row.category).toBe(categoryLabel(AFTER.reason, 'A2'));
     expect(seoyeon.row.categoryTone).toBe('high');
-    for (const item of view.groups.flatMap((g) => g.items).filter((i) => i.kind === 'dispute')) {
-      expect(item.row.head).toMatch(/^PP-R-[A-Z]+-\d+$/);
-    }
+    const mike = view.groups[0].items[3]; // T122d: Lena(데모)가 Mike 앞
+    expect([mike.row.head, mike.row.ref, mike.row.who]).toEqual(['#1047', D3, 'buyer_m · US']);
+    // 지호: 시드 paypalRef가 아직 없다(T119 뒤 연결) → 실제 분쟁 번호 그대로, Demo data 아님
+    const jiho = view.groups[0].items[1];
+    expect(jiho.row.head).toBe(D1);
+    expect(jiho.row.demo).toBeUndefined();
+    expect(markup).toContain(`>${D2}<`); // 보조 줄
   });
 
-  it('통관부호 묶음·HEY·GAH가 없다. #10xx 번호는 시드 데모 항목(Lena #1029·Yuki #1051, Demo data — DECISIONS v2.16 20:35 ③)뿐', () => {
-    expect(markup).not.toMatch(/customs ID missing|Customs ID|HEY-|GAH-/);
-    expect([...markup.matchAll(/#10\d\d/g)].map((m) => m[0])).toEqual(['#1029', '#1051']);
+  // T122d + T122e: #10xx = 시드 표시 번호(서연 #1042·마이크 #1047) + 데모 항목(Lena #1029·Yuki #1051), 모두 Demo data
+  it('HEY·GAH가 없다. #10xx 번호는 시드 표시 번호와 데모 항목뿐 (DECISIONS v2.16 20:35 ③), 통관번호 줄은 Prevent 표시용', () => {
+    expect(markup).not.toMatch(/HEY-|GAH-/);
+    expect(markup.match(/#10\d\d/g)?.sort()).toEqual(['#1029', '#1042', '#1047', '#1051']);
+    expect(markup).toContain('Customs ID missing');
     const demo = view.groups.flatMap((g) => g.items).filter((i) => i.kind === 'demo');
     expect(demo.map((i) => [i.id, i.row.head, i.status.key])).toEqual([
       ['lena', '#1029', 'badge.demo'],
@@ -732,8 +741,9 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     const units = seedProducts.reduce((sum, p) => sum + p.stock, 0);
     expect(all.sub).toBe(t('today.filter.allSub', { count: seedProducts.length, units }));
     expect(view.filter.summary).toBe(t('today.filter.summary', { products: seedProducts.length, units, cases: 3 }));
+    // T122e: Mike(#1047)는 시드 표기 상품 Wool Sweater(시안 bm.sku) → 스웨터 칩 2건 (서연·Mike)
     const sweater = view.filter.chips.find((c) => c.sku === 'FK-SW-NV');
-    expect(sweater?.cases).toBe(1);
+    expect(sweater?.cases).toBe(2);
     expect(sweater?.href).toBe('/?sku=FK-SW-NV');
 
     const filtered = buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW), sku: 'FK-CD-OAT' });

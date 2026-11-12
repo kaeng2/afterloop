@@ -12,11 +12,12 @@
  * - `DraftForecastProvider`: 답장 칸의 지금 예측(브라우저 어댑터)을 위험 곡선 카드가 함께 읽는다.
  */
 import { recommend } from '@/engine/recommend';
-import type { Recommendation } from '@/types';
+import type { CaseEvent, Recommendation } from '@/types';
 
 import { seedDemoDisplay } from '../../../seed/index';
 import { reasonCopyKey } from '../_shared/availability';
 import { currentLocale, t } from '../_shared/copy';
+import { displayLabelFor, seoyeonHistoryRows } from '../_shared/demo-display';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
 import { toDollarsCents } from '../_shared/money';
 import { toPercentRounded } from '../_shared/percent';
@@ -34,7 +35,7 @@ import {
 import { actionSavingsDisplay } from '../today/savings-values';
 import { WorkDetail } from '../today/work-card';
 import { DeskSelectionProvider } from './view/desk-selection';
-import { buildCaseDesk, historyView, type CaseDesk } from './desk-model';
+import { buildCaseDesk, demoHistoryView, historyView, type CaseDesk, type HistoryView } from './desk-model';
 import { loadMoveForecasts, loadRiskCurve, replyTranslated, type ForecastAnchor } from './forecast-source';
 import { daysBetween, historySpanDays, unansweredDays } from './history';
 import { buildCaseView, type CaseView as CaseViewData } from './model';
@@ -60,7 +61,25 @@ function headerDesk(view: CaseViewData, loaded: LoadedDispute, now: string): Cas
     history: null,
     curvePoints: null,
     band: view.risk?.band ?? null,
+    display: displayLabelFor(view.header.disputeId),
   });
+}
+
+/**
+ * T122e (결정 20:35 ③): 서연(시드 짝 `seoyeon`)이면 사건 기록 = 시드 8줄 + 실제 PayPal 줄 (`seoyeonHistoryRows`).
+ * 다른 분쟁은 실제 기록 그대로(`fallback`). 날 수는 첫 줄부터 오늘까지 (달력 빼기).
+ */
+function caseHistory(
+  disputeId: string,
+  events: readonly CaseEvent[],
+  now: string,
+  fallback: () => HistoryView | null,
+  summary: string | null,
+): HistoryView | null {
+  if (displayLabelFor(disputeId)?.key !== 'seoyeon') return fallback();
+  const rows = seoyeonHistoryRows(events);
+  const first = rows[0];
+  return demoHistoryView(rows, first === undefined ? null : daysBetween(first.at, now), summary);
 }
 
 /**
@@ -225,7 +244,11 @@ export async function CaseDetail({ disputeId, row = null }: { disputeId: string;
     recommendation: recommend(board),
     moveForecasts,
     // T116 F3-36: 줄 글은 화면용(`eventsShown`, EN이면 번역 글). 개수·날 수는 같은 사건이라 그대로
-    history: historyView(loaded.eventsShown, historySpanDays(loaded.events, now), loaded.historySummary),
+    // T122e: 서연은 시드 8줄 + 실제 PayPal 줄 (`caseHistory`)
+    history: caseHistory(disputeId, loaded.eventsShown, now, () =>
+      historyView(loaded.eventsShown, historySpanDays(loaded.events, now), loaded.historySummary),
+    loaded.historySummary),
+    display: displayLabelFor(disputeId),
     curvePoints,
     band: caseView.risk?.band ?? null,
   });

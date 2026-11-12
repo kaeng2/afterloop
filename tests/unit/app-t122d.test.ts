@@ -117,7 +117,8 @@ describe('T122d-3: 데모 항목 Lena #1029 (Reply needed) · Yuki #1051 (Questi
   it('목록 값 서버(risk-source)는 분쟁만 읽는다 — 데모 항목은 PayPal·AI 읽기 없음', () => {
     expect(read('src/app/today/risk-source.ts')).toMatch(/item\.kind === 'dispute'/);
     const page = read('src/app/(app)/page.tsx');
-    expect(page).toMatch(/item\.kind === 'demo'\) return null/);
+    // T122f: 데모 항목 상세는 CaseDetail(PayPal 읽기)이 아니라 시드 한 장 카드 (`demoItemFor` → `DemoItemCard`)
+    expect(page).toMatch(/const demo = demoItemFor\(item\.id\);\s*if \(demo !== null\) return <DemoItemCard/);
   });
 });
 

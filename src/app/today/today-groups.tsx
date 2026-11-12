@@ -13,6 +13,7 @@
  * 정직 규칙: done 묶음이 모두 가짜 전송이면 제목에 "· Simulated", 섞였으면 가짜 전송 줄에만 작은 "Simulated".
  * 이 파일은 읽기·쓰기를 하지 않는다 (fetch·서버 액션 없음).
  */
+import { Badge } from '../_shared/badges';
 import { useT } from '../_shared/locale-context';
 import { ProductTile } from '../_shared/product-icon';
 import { regroupDone, type DoneMap, type ListGroup, type ListRow } from './done-groups';
@@ -63,7 +64,14 @@ function ItemRow({
             )}
             {row.due === null ? null : <span className="today-item-due num">{row.due}</span>}
             {simulatedLabel ? <span className="today-item-simulated">{t('case.progress.simulated')}</span> : null}
+            {/* T122e: 표시용 번호·건수(시드 demo-display)면 Demo data, 실제 PayPal 분쟁 번호는 보조 글로 */}
+            {row.demo === true ? <Badge kind="demo" /> : null}
           </span>
+          {row.ref === undefined || row.ref === null ? null : (
+            <span className="today-item-ref small muted num" title={t('today.row.refLabel', { ref: row.ref })}>
+              {row.ref}
+            </span>
+          )}
           {/* T122b 시안 v6 L148: 아래 줄 = 구매자 + 오른쪽 위험 % 칩 (엔진 무응답 pChargeback. 값이 없거나 끝낸 항목은 칩 없음) */}
           {row.who === null && chip === null ? null : (
             <span className="today-item-subrow">
