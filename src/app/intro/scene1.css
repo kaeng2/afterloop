@@ -1,0 +1,26 @@
+/*
+ * /intro (Scene 1) 시안 CSS 통째 복사 (T108, DECISIONS 2026-11-12 09:25).
+ * 원본: docs/design/mockup-v4/scene1/Scene1.dc.html <helmet><style> L16–L36. 값·keyframes는 그대로.
+ * 바뀐 것은 선택자 앞 범위뿐: 화면 루트 .intro 아래로 묶었다 (다른 화면 영향 0).
+ * 시안 `.pp *`·`.pp a`는 `.intro *`·`.intro a`로, 나머지는 `:where(.intro)`로 묶어 시안의 우선순위를 그대로 둔다.
+ * L16 `body{margin:0}`는 globals가 이미 0이라 뺐다.
+ */
+/* L17 */ .intro *{box-sizing:border-box}
+/* L18 */ .intro a{color:#0066F5}
+/* L19 */ :where(.intro) .tab{min-height:44px;padding:10px 4px;font-size:15px;font-weight:700;color:#3F4144;text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:6px}
+/* L20 */ :where(.intro) .tab.on{color:#000000;border-bottom-color:#002991}
+/* L21 */ :where(.intro) .card{border-radius:24px;background:#FFFFFF;border:1px solid #E4E6E9;padding:22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+/* L22 */ :where(.intro) .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:15px;font-weight:700;white-space:nowrap;text-decoration:none}
+/* L23 */ :where(.intro) .b-black{background:#000000;color:#FFFFFF !important}:where(.intro) .b-black:hover{background:#333333}
+/* L24 */ :where(.intro) .b-line{background:#FFFFFF;color:#000000 !important;border:2px solid #CFD3D8}
+/* L25 */ :where(.intro) .ico{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF;border:0;color:#3F4144;cursor:pointer}
+/* L26 */ :where(.intro) .al-icon{position:relative;width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:#0B0F14;box-shadow:rgba(0,112,224,0.45) 0 4px 14px;text-decoration:none}
+/* L27 */ :where(.intro) .al-icon:focus-visible,:where(.intro) .btn:focus-visible,:where(.intro) .tab:focus-visible,:where(.intro) .rlink:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+/* L28 */ @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,102,245,.55)}100%{box-shadow:0 0 0 16px rgba(0,102,245,0)}}
+/* L29 */ :where(.intro) .pulse{animation:pulse 1.6s ease-out infinite}
+/* L30 */ @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* L31 */ :where(.intro) .rise{animation:rise .5s ease both .3s}
+/* L32 */ :where(.intro) .row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #F1EFEA}
+/* L33 */ :where(.intro) .chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+/* L34 */ :where(.intro) .rlink{font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+/* L35 */ :where(.intro) .ko{font-family:'Noto Sans KR',Figtree,sans-serif}
