@@ -624,12 +624,13 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     now: new Date('2026-11-10T17:00:00.000Z'),
   });
 
-  it('5줄 (T076 → T122b 시안 v6): Reply needed 3 (서연 · 지호 · Mike) + Prevent 2 (추적 · 가디건). Questions는 질문 항목이 없어 안 보인다', () => {
+  it('7줄 (T076 → T122b → T122d 시안 v6): Reply needed 4 (서연 · 지호 · Lena 데모 · Mike) + Prevent 2 (추적 · 가디건) + Questions 1 (Yuki 데모)', () => {
     expect(view.groups.map((g) => [g.key, g.items.length])).toEqual([
-      ['needsYou', 3],
+      ['needsYou', 4],
       ['prevent', 2],
+      ['routine', 1],
     ]);
-    expect(view.count).toBe(5);
+    expect(view.count).toBe(7);
   });
 
   it('연습용(HEY)·옛 서연(GAH) 분쟁은 화면에 내지 않는다 (연결 표)', () => {
@@ -639,7 +640,7 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
 
   it('Routine 항목은 위험 배지 대신 회색 "Skipped" (엔진 판정에서)', () => {
     // T067: 회색 칩 → 회색 상태 알약 + 회색 점 (`status`·`dot`)
-    const mike = view.groups[0].items[2];
+    const mike = view.groups[0].items[3];
     expect(mike.status).toEqual({ key: 'today.skipped', tone: 'neutral' });
     expect(mike.dot).toBe('neutral');
     const markup = html(createElement(TodayList, { view, selectedId: null, paypalNotice: null }));

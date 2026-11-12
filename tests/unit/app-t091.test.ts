@@ -418,7 +418,8 @@ describe('모션: 시안 값 그대로 (config/motion.json)', () => {
   it('타이핑 34ms마다 2글자 (시안 typeOut), 움직임 줄이기면 바로 전체', () => {
     expect(mock).toMatch(/i = Math\.min\(text\.length, i \+ 2\)/);
     expect(mock).toMatch(/\}, 34\);/);
-    expect(typeOutTiming()).toEqual({ intervalMs: 34, step: 2 });
+    // 설정 값은 시안 v6 (32ms·1글자, DECISIONS 2026-11-12 컨트롤 타워) — 위 두 줄은 v4 시안 원문 확인
+    expect(typeOutTiming()).toEqual({ intervalMs: 32, step: 1 });
     expect(nextTyped(0, 5, 2)).toBe(2);
     expect(nextTyped(4, 5, 2)).toBe(5);
     expect(typeOutFrames('abcde', 2, false)).toEqual(['ab', 'abcd', 'abcde']);

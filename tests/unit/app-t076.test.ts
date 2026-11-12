@@ -691,12 +691,17 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
   const view = buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW) });
   const markup = html(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
 
-  it('묶음 (T122b 시안 v6): Reply needed(서연·지호·Mike 맨 뒤) / Prevent(추적 2건·가디건)', () => {
+  it('묶음 (T122b → T122d 시안 v6): Reply needed(서연·지호·Lena 데모·Mike 맨 뒤) / Prevent(추적 2건·가디건) / Questions(Yuki 데모)', () => {
     expect(view.groups.map((g) => [g.title, g.items.map((i) => i.id)])).toEqual([
-      ['Reply needed', [D2, D1, D3]],
+      ['Reply needed', [D2, D1, 'lena', D3]],
       ['Prevent', ['tracking', 'FK-CD-OAT']],
+      ['Questions', ['yuki']],
     ]);
-    expect(view.groups.map((g) => g.hint)).toEqual([t('today.groupHint.needsYou'), t('today.groupHint.prevent')]);
+    expect(view.groups.map((g) => g.hint)).toEqual([
+      t('today.groupHint.needsYou'),
+      t('today.groupHint.prevent'),
+      t('today.groupHint.routine'),
+    ]);
   });
 
   it('분쟁 줄 머리 = PayPal 분쟁 번호, 서연 "Reply by Nov 30", 구매자 · 나라, 범주 알약', () => {
@@ -712,8 +717,14 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     }
   });
 
-  it('Lena·Yuki·통관부호 묶음·HEY·GAH·#1042 같은 지어낸 주문 번호가 없다', () => {
-    expect(markup).not.toMatch(/Lena|Yuki|customs ID missing|Customs ID|Refund promised|Question · Size|HEY-|GAH-|#10\d\d/);
+  it('통관부호 묶음·HEY·GAH가 없다. #10xx 번호는 시드 데모 항목(Lena #1029·Yuki #1051, Demo data — DECISIONS v2.16 20:35 ③)뿐', () => {
+    expect(markup).not.toMatch(/customs ID missing|Customs ID|HEY-|GAH-/);
+    expect([...markup.matchAll(/#10\d\d/g)].map((m) => m[0])).toEqual(['#1029', '#1051']);
+    const demo = view.groups.flatMap((g) => g.items).filter((i) => i.kind === 'demo');
+    expect(demo.map((i) => [i.id, i.row.head, i.status.key])).toEqual([
+      ['lena', '#1029', 'badge.demo'],
+      ['yuki', '#1051', 'badge.demo'],
+    ]);
   });
 
   it('상품 거르개: ?sku=로 목록을 거르고, 숫자는 시드 재고·분쟁 수를 센 것', () => {
@@ -726,7 +737,7 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     expect(sweater?.href).toBe('/?sku=FK-SW-NV');
 
     const filtered = buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW), sku: 'FK-CD-OAT' });
-    expect(filtered.groups.flatMap((g) => g.items.map((i) => i.id))).toEqual([D1, 'tracking', 'FK-CD-OAT']);
+    expect(filtered.groups.flatMap((g) => g.items.map((i) => i.id))).toEqual([D1, 'tracking', 'FK-CD-OAT', 'yuki']);
     expect(filtered.groups[0].items[0].href).toBe(`/?sku=FK-CD-OAT&item=${D1}`);
     expect(filtered.count).toBe(view.count); // 위쪽 막대 Today (N)은 거르개와 상관없이 전체
     expect(buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW), sku: 'NOPE' }).filter.selectedSku).toBeNull();
