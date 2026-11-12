@@ -99,7 +99,7 @@
 /* AI 알약: 시안은 쓰는 곳마다 box-shadow:none (L125·L216·L249·L264…). 그림자는 zone-work 머리(L240·L315·L352)만.
    line-height는 시안처럼 물려받는다 (앱 .ai-pill 1.2 대신) */
 .dk .ai-pill{box-shadow:none;line-height:inherit}
-.dk .work-head>.ai-pill,.dk .zone-work>.ai-pill,.dk .work-head-ai>.ai-pill{box-shadow:rgba(0,102,245,0.35) 0 2px 8px}
+.dk .work>.work-head>.ai-pill,.dk .zone-work>.ai-pill{box-shadow:rgba(0,102,245,0.35) 0 2px 8px}
 @media (prefers-reduced-motion:reduce){.dk *,.dk *::before{animation:none !important;transition:none !important}}
 body:has(.dk){background:#FFFFFF}
 
@@ -207,6 +207,7 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 /* 범주 칩·AI read 태그 = 시안 `.chip` · `.c-n` · `.c-bad` (L24–L25) */
 .dk .desk-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap;background:#ECEEF0;color:#3F4144}
 .dk .desk-chip-bad{background:#FBE7E4;color:#9E2414}
+.dk .desk-chip-blue{background:#E3F3FF;color:#002991}
 /* L170–L193 위험 곡선 카드 */
 .dk .curve-card{display:grid;grid-template-columns:minmax(0, 1fr) 190px;gap:16px;align-items:stretch;padding:16px 18px;border-radius:24px;border:1px solid #E4E6E9;background:#FFFFFF}
 .dk .curve-main{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -256,9 +257,9 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 /* 카드사 문구 강조(`.case-mark`)는 시안에 없지만 사람 결정 2026-11-10 v2.10 ①이라 남긴다 (보고서 예외 목록) */
 
 /* ── Respond now (L237–L310, 시안 `.zone-work`) ── */
-.dk .work-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dk .work>.work-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 /* L240 부제 13px #6C7378 */
-.dk .work-head .desk-card-sub{font-size:13px;color:#6C7378}
+.dk .work>.work-head .desk-card-sub{font-size:13px;color:#6C7378}
 /* L50–L56 단계 (.stp · .rail · .stpc · .stph) */
 .dk .desk-step{display:flex;gap:14px}
 .dk .desk-step-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:32px}
@@ -309,5 +310,26 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 /* L305 Send = `.btn.b-black` (15px · border 0 · gap 8px · 44px) */
 .dk .reply-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;font-size:15px;font-weight:700}
 
+/* ── 다른 항목 상세 (L345–L356 "Other cases": 지호 · 추적 · 상품 · Mike) ── */
+.dk .work-detail{display:flex;flex-direction:column;gap:16px}
+.dk .work-detail .work-head{display:flex;gap:14px;align-items:center}
+.dk .work-head-text{display:flex;flex-direction:column;gap:4px}
+.dk .work-head-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dk .work-head-title{margin:0;font-size:24px;font-weight:900;letter-spacing:-0.4px;line-height:1.5;color:#000000}
+.dk .work-head-who{font-size:14px;color:#3F4144}
+.dk .work-detail .today-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+/* L351 `.zone-work` (1부 규칙) + L352 AI 알약 align-self flex-start */
+.dk .zone-work>.ai-pill{align-self:flex-start}
+.dk .zone-work-text{display:flex;flex-direction:column;gap:4px}
+/* L353 제목 <b> 20px · 설명 15px #3F4144 */
+.dk .zone-work-title{font-size:20px;font-weight:700;line-height:1.5;color:#000000}
+.dk .zone-work-body{font-size:15px;color:#3F4144}
+/* L354 버튼 = `.btn.b-black` */
+.dk .tracking-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;font-size:15px;font-weight:700;white-space:nowrap}
+.dk .today-detail-title{font-size:24px;font-weight:900;letter-spacing:-0.4px;line-height:1.5;color:#000000}
+
 /* L362 토스트 ✓ 원 */
-.dk .savings-toast-check{width:24px;height:24px;border-radius:50%;background:#60CDFF;color:#002991;display:inline-flex;align-items:center;justify-content:center;font-weight:900}
+/* 토스트는 `.dk` 밖(SavingsProvider 끝)에 그려져서 body:has(.dk)로 — L92 `.toast` 값 + 루트 글자 */
+body:has(.dk) .savings-toast{position:fixed;left:50%;bottom:28px;z-index:20;display:flex;gap:12px;align-items:center;padding:14px 20px;border-radius:16px;background:#000000;color:#FFFFFF;box-shadow:rgba(0,0,0,0.25) 0 8px 24px;font-family:var(--font-figtree),var(--font-noto-kr),Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5}
+.dk .work-head-product{font-weight:inherit}
+body:has(.dk) .savings-toast-check{width:24px;height:24px;border-radius:50%;background:#60CDFF;color:#002991;display:inline-flex;align-items:center;justify-content:center;font-weight:900}
