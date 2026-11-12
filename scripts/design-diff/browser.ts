@@ -13,6 +13,7 @@ interface PwPage {
   goto(url: string, o?: Record<string, unknown>): Promise<unknown>;
   evaluate<T = unknown>(expr: string): Promise<T>;
   waitForTimeout(ms: number): Promise<void>;
+  waitForSelector(sel: string, o?: Record<string, unknown>): Promise<unknown>;
   screenshot(o: Record<string, unknown>): Promise<Buffer>;
   mouse: { click(x: number, y: number): Promise<void> };
   video(): PwVideo | null;
@@ -52,6 +53,27 @@ export interface SideRun {
   selectors: string[];
   outDir: string;
   side: 'mock' | 'app';
+  /** 앱 쪽만: 이 요소가 보일 때까지 기다린 뒤 시작 (Next loading.tsx 뼈대 화면 건너뛰기) */
+  readySelector?: string;
+}
+
+export const APP_READY_TIMEOUT_MS = 20000;
+export const FIND_TIMEOUT_MS = 10000;
+export const FIND_POLL_MS = 250;
+
+/** fn이 ok를 돌려줄 때까지(최대 timeoutMs) pollMs 간격으로 다시 부른다. 마지막 결과를 돌려준다. */
+export async function retryFind<T extends { ok: boolean }>(
+  fn: () => Promise<T>,
+  wait: (ms: number) => Promise<void>,
+  timeoutMs = FIND_TIMEOUT_MS,
+  pollMs = FIND_POLL_MS,
+): Promise<T> {
+  let r = await fn();
+  for (let waited = 0; !r.ok && waited < timeoutMs; waited += pollMs) {
+    await wait(pollMs);
+    r = await fn();
+  }
+  return r;
 }
 
 export async function runSide(browser: PwBrowser, r: SideRun): Promise<SideCapture> {
@@ -64,11 +86,21 @@ export async function runSide(browser: PwBrowser, r: SideRun): Promise<SideCaptu
   const res: SideCapture = { ok: true, elements: [], motion: empty };
   try {
     await page.goto(r.url, { waitUntil: 'load', timeout: 60000 });
+    if (r.readySelector) {
+      try {
+        await page.waitForSelector(r.readySelector, { state: 'visible', timeout: APP_READY_TIMEOUT_MS });
+      } catch {
+        throw new Error(`--app-ready 요소가 ${APP_READY_TIMEOUT_MS / 1000}초 안에 안 보임 (${r.readySelector})`);
+      }
+    }
     await page.evaluate('document.fonts.ready.then(function(){return true})');
     await page.waitForTimeout(500);
     await page.evaluate('window.__dd && window.__dd.start()');
     for (const [i, s] of r.steps.entries()) {
-      const t = await page.evaluate<{ ok: boolean; count: number; x?: number; y?: number; disabled?: boolean }>(`${FIND_TARGET}(${JSON.stringify(s)})`);
+      const t = await retryFind(
+        () => page.evaluate<{ ok: boolean; count: number; x?: number; y?: number; disabled?: boolean }>(`${FIND_TARGET}(${JSON.stringify(s)})`),
+        (ms) => page.waitForTimeout(ms),
+      );
       if (!t.ok || t.x === undefined || t.y === undefined) {
         res.ok = false;
         res.error = `${i + 1}번째 단계를 못 찾음 (${JSON.stringify(s)}, 후보 ${t.count}개)`;

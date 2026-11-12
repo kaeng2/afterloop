@@ -4,6 +4,7 @@ import path from 'node:path';
 import { analyze, extractDc, FakeClock, matchClose, Sim, slug, splitArgs, staticScan } from '../../scripts/design-diff/analyze';
 import { parseArgs } from '../../scripts/design-diff/args';
 import { applyExceptions, compareMotion, compareStyles, judge, parseExceptions, pixelDiff, ruleMatches, sameValue, selectorsOf } from '../../scripts/design-diff/compare';
+import { retryFind } from '../../scripts/design-diff/browser';
 import { padRgba } from '../../scripts/design-diff/pixel';
 import { indexHtml, mdCell, motionMd, statesMd, stylesMd } from '../../scripts/design-diff/report';
 import { joinUrl, stateDir } from '../../scripts/design-diff/run';
@@ -254,6 +255,9 @@ describe('cli·도우미', () => {
     expect(a).toMatchObject({ mock: 'd', app: 'http://x/', out: 'o', states: ['a', 'b'], widths: [1440] });
     expect(parseArgs(['--mock', 'd', '--analyze-only'])).toMatchObject({ widths: [1440, 1920], analyzeOnly: true });
     expect(() => parseArgs(['--mock', 'd'])).toThrow(/--app/);
+    expect(parseArgs(['--mock', 'd', '--app', 'u']).appReady).toBeUndefined();
+    expect(parseArgs(['--mock', 'd', '--app', 'u', '--app-ready', '[role=switch]']).appReady).toBe('[role=switch]');
+    expect(() => parseArgs(['--mock', 'd', '--app', 'u', '--app-ready'])).toThrow(/값이 없다/);
     expect(() => parseArgs(['--bogus'])).toThrow(/모르는 인자/);
   });
   it('joinUrl·stateDir·pickVendor·padRgba', () => {
@@ -272,5 +276,41 @@ describe('cli·도우미', () => {
     expect(lines[go.line - 1]).toContain('onClick="{{go}}"');
     const t = info.timers[0];
     expect(lines[t.line - 1]).toContain('setTimeout');
+  });
+});
+
+describe('retryFind', () => {
+  it('후보가 나올 때까지 다시 찾는다', async () => {
+    let n = 0;
+    const waits: number[] = [];
+    const r = await retryFind(
+      async () => ({ ok: ++n >= 3, count: n }),
+      async (ms) => {
+        waits.push(ms);
+      },
+    );
+    expect(r).toEqual({ ok: true, count: 3 });
+    expect(waits).toHaveLength(2);
+  });
+  it('시간이 지나도 없으면 마지막 결과(ok false)를 돌려준다', async () => {
+    let n = 0;
+    const r = await retryFind(
+      async () => ({ ok: false, count: ++n }),
+      async () => undefined,
+      1000,
+      250,
+    );
+    expect(r.ok).toBe(false);
+    expect(r.count).toBe(5);
+  });
+  it('처음부터 있으면 기다리지 않는다', async () => {
+    const waits: number[] = [];
+    await retryFind(
+      async () => ({ ok: true }),
+      async (ms) => {
+        waits.push(ms);
+      },
+    );
+    expect(waits).toHaveLength(0);
   });
 });
