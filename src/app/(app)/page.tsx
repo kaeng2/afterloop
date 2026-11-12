@@ -24,6 +24,7 @@ import { reasonCopyKey } from '@/app/_shared/availability';
 import { t } from '@/app/_shared/copy';
 import { CaseDetail } from '@/app/cases/case-detail';
 import { addTrackingAction } from '@/app/today/actions';
+import { DemoItemCard, type DemoItemCardItem } from '@/app/today/demo-item-card';
 import { selectItem, type TodayItem, type TodayView } from '@/app/today/model';
 import { OverviewPane } from '@/app/today/overview';
 import { PreventCard } from '@/app/today/prevent-card';
@@ -36,6 +37,8 @@ import { BackToAll, DetailEmpty, DetailPane, TodaySelectionProvider } from '@/ap
 import { ProductFilterBar, TodayList } from '@/app/today/today-list';
 import { TrackingDetail } from '@/app/today/tracking-detail';
 
+import { seedDemoDisplay } from '../../../seed/index';
+
 import '@/app/today/today.css';
 // T107: 시안 Desk.dc.html <style> 통째 복사 (`.dk` 루트 아래로만)
 import '@/app/(app)/desk.css';
@@ -45,6 +48,11 @@ export const dynamic = 'force-dynamic';
 type Props = { searchParams: Promise<{ item?: string | string[]; sku?: string | string[]; lang?: string | string[] }> };
 
 const first = (value: string | string[] | undefined): string | undefined => (Array.isArray(value) ? value[0] : value);
+
+/** 시드 `demoItems`(T121, 전부 Demo data)에서 목록 id(= `key`)로 찾는다. 데모 항목이 아니면 `null`. */
+function demoItemFor(id: string): DemoItemCardItem | null {
+  return seedDemoDisplay.demoItems.find((demo) => demo.key === id) ?? null;
+}
 
 /** 항목 하나의 상세. 고르지 않은 분쟁은 나중에 흘려 보낸다 (첫 화면을 기다리게 하지 않는다). */
 function Pane({ item, view, selected }: { item: TodayItem; view: TodayView; selected: boolean }) {
@@ -59,6 +67,10 @@ function Pane({ item, view, selected }: { item: TodayItem; view: TodayView; sele
     );
   }
   if (item.kind === 'prevent') return item.prevent === undefined ? null : <PreventCard detail={item.prevent} row={item.row} />;
+  // T122f: 데모 항목(Lena·Yuki, Demo data — T122d가 목록에 넣는 id = 시드 `demoItems` `key`)은 PayPal 사건이 아니다.
+  // 사례 읽기(CaseDetail)를 부르지 않고 한 장 카드(`DemoItemCard`)로 그린다 (버튼은 화면 상태만)
+  const demo = demoItemFor(item.id);
+  if (demo !== null) return <DemoItemCard item={demo} row={item.row} doneId={item.id} />;
   const detail = <CaseDetail key={item.id} disputeId={item.id} row={item.row} />;
   return selected ? (
     detail
