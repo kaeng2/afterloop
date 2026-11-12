@@ -14,13 +14,14 @@ import { useSent } from './sent-state';
 export function WorkZone({ titleId, head, children }: { titleId: string; head?: ReactNode; children?: ReactNode }) {
   const t = useT();
   const { sent } = useSent();
-  return sent ? (
-    <section className="work zone-work" aria-label={t('case.progress.zone')}>
-      {children}
-    </section>
-  ) : (
-    <section className="work zone-work" aria-labelledby={titleId}>
-      {head}
+  // 두 갈래 JSX 금지: children은 항상 같은 section 안 같은 자리에 있어야 Send 때 다시 마운트되지 않는다.
+  return (
+    <section
+      className="work zone-work"
+      aria-label={sent ? t('case.progress.zone') : undefined}
+      aria-labelledby={sent ? undefined : titleId}
+    >
+      {sent ? null : head}
       {children}
     </section>
   );

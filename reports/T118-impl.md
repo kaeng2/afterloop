@@ -39,3 +39,9 @@
 
 ## 컨트롤 타워에 요청할 결정
 - 없음
+
+## 재시도(회귀 수정)
+- 원인: `WorkZone`이 Send 전 `<section>{head}{children}</section>`, Send 뒤 `<section>{children}</section>`로 두 갈래를 그려 children의 트리 위치가 바뀌었다. Send 순간 답장 칸(ReplyPanel)이 새로 마운트되어 보낸 결과·진행 칸 상태가 사라지고 AI 초안으로 돌아갔다.
+- 고침 (`src/app/cases/view/work-zone.tsx`): `<section>` 하나 안에 항상 `{sent ? null : head}` 다음 `{children}`을 같은 자리에 둔다. section의 `aria-label`/`aria-labelledby`만 `sent`에 따라 바꾼다. 렌더 결과 HTML은 이전과 같다.
+- 시험 (`tests/unit/app-t118.test.ts`): "두 상태 모두 children이 같은 자리" 정적 시험 추가 (section 1개, `{sent ? null : head}{children}` 순서, 두 갈래 JSX 없음).
+- 실제 AI·PayPal 호출, 개발 서버, `.env` 읽기 없음. 브라우저 재확인(Send 뒤 "What happens next")은 컨트롤 타워가 한다.

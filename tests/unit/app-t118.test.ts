@@ -93,6 +93,13 @@ describe('3. Send 뒤 빈 "Respond now" 머리 숨김', () => {
     sentFlag.value = false;
   });
 
+  it('두 상태 모두 children이 같은 자리 (section 하나, head 자리는 null로 유지) → Send 때 다시 마운트되지 않음', () => {
+    const code = strip(read('src/app/cases/view/work-zone.tsx'));
+    expect(code.match(/<section\b/g)).toHaveLength(1);
+    expect(code).toMatch(/\{sent \? null : head\}\s*\{children\}/);
+    expect(code).not.toMatch(/return sent \?/);
+  });
+
   it('Desk 화면이 머리를 head로 넘긴다 (children 안에 두지 않음)', () => {
     const view = strip(read('src/app/cases/view/case-view.tsx'));
     expect(view).toMatch(/<WorkZone\s+titleId="work-title"\s+head=\{\s*<div className="work-head">/);
