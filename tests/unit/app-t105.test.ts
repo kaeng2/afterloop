@@ -265,7 +265,7 @@ describe('F3-22 · F4-32: 빈 답장 = 무응답 예측 (엔진 빈 글 + 늦은
   it('곡선 카드 그림: 무응답 문구가 보이고 fromTo 줄이 없다', () => {
     // 정적 렌더에서는 효과가 돌지 않으므로 카드 아래 글 규칙은 curveView로, 그림은 카드가 vars를 넘기는지 소스로 본다
     expect(strip(read('src/app/cases/view/risk-curve.tsx'))).toMatch(/t\(curve\.headlineKey, curve\.headlineVars\)/);
-    expect(strip(read('src/app/cases/view/risk-curve.tsx'))).toMatch(/curveView\(points, forecast\?\.pChargeback \?\? null, trail, \{ tones, noReplyBy \}\)/);
+    expect(strip(read('src/app/cases/view/risk-curve.tsx'))).toMatch(/curveView\(points, forecast\?\.pChargeback \?\? null, trail, \{ tones, noReplyBy(, width)? \}\)/); // T112: 잰 폭도 넘긴다
     expect(html(createElement(RiskCurveCard, { points: POINTS }))).not.toContain('if no reply');
   });
 
