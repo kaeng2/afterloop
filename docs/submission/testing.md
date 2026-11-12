@@ -2,18 +2,18 @@
 
 Live demo: https://disputeless.onrender.com (public mode — real PayPal sandbox reads, cached AI, simulated sends; nothing is written to PayPal).
 
-Open these three addresses. They are separate screens; none links to the others except where noted.
+No login is needed. Open the [seller dashboard](https://disputeless.onrender.com/demo/seller-dashboard) and follow three steps. The first load can take a few seconds while the free server wakes up.
 
-| Order | Address | What you see |
-|---|---|---|
-| 1 | [`/demo/seller-dashboard`](https://disputeless.onrender.com/demo/seller-dashboard) | First scene: a demo seller dashboard (marked "Demo mock — not a real PayPal page"). Click **Handle all 3 with DisputeLess** (or **Respond** on Seo-yeon's row) to go to the desk. The other rows' Respond links also open Seo-yeon's case; pick Ji-ho or Mike from the desk's list instead. |
-| 2 | [`/`](https://disputeless.onrender.com/) | The DisputeLess desk: three real PayPal sandbox disputes. Pick Seo-yeon's case (Wool Sweater) to see the risk curve, the options the engine compared, and the reply editor with a live forecast. **Send** is simulated in public mode. |
-| 3 | [`/demo/store/new-product`](https://disputeless.onrender.com/demo/store/new-product) | New-listing check: a demo store admin "Add a product" form. **Publish product** runs the pre-publish check (500 simulated sale periods, assumed rates); **See details and fix** shows what to add. Standalone screen. |
+1. **Reply to Seo-yeon.** On [`/demo/seller-dashboard`](https://disputeless.onrender.com/demo/seller-dashboard) (marked "Demo mock — not a real PayPal page"), click **Handle all 3 with DisputeLess**. On the desk, turn on **✦ AI Respond now**, click **Try a rushed reply** (95%), then **Use AI draft** (40%), open **Details**, and click **Send**. Watch "What happens next · Simulated" and click **Forward to carrier**.
+2. **See the other cases.** Click the **Knit Cardigan** product chip (opening an item selects its product chip) to open Ji-ho's card: new quality case #1038 (`PP-R-ZOK-10200237`, under PayPal review), "Keeps ≈$34", "How AI handled this". Click **All products** for the overview with two AG Grid tables, then **PayPal activity** (top right) for the call log.
+3. **Check a new listing.** Type [`/demo/store/new-product`](https://disputeless.onrender.com/demo/store/new-product) in the address bar. Click **Publish product** (4.5%), **See details and fix**, insert the AI text, then **Recalculate** (2.1%). This is a standalone screen.
+
+Public mode makes real sandbox reads. Send, Send offer, Add all, Refund, Looks good and Forward are **Simulated** (zero PayPal writes).
 
 Notes
 - The first request after the server wakes up can take a few seconds (Render free tier + PayPal sandbox reads). After that, clicks are fast.
 - Numbers marked **Assumption** come from stated assumptions; items marked **Demo data** come from seed data. See the [honesty table](honesty-table.md).
-- Language: **EN | 한국어** at the top right of the seller dashboard and the desk switches screen text only (numbers, buyer messages and AI text stay the same). `/demo/store/new-product` has no switch: it keeps the language you last chose on the other screens, or add `?lang=ko` (or `?lang=en`) to its address.
+- Language: **EN | 한국어** at the top right of the seller dashboard and the desk switches screen text only (numbers, buyer messages and AI text stay the same). `/demo/store/new-product` has no switch: it uses the language remembered from the other screens (cookie), or add `?lang=ko` (or `?lang=en`) to its address.
 - AI: answers for the demo cases are cached. Uncached AI calls on the public link have an hourly cap; when it is reached, the screen says so instead of calling the model.
 
 ## Test credentials
