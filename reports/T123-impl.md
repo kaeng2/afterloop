@@ -94,3 +94,8 @@
 - 문제: 후속 4의 감싸개 조건이 `display: inline`만 허용해서, 부모가 `display:flex`/`grid`이면 자식 span이 flex item으로 blockify(계산값 `block`)되어 합쳐지지 않았다. 앱 예: `<span class="today-pill chip" style="display:flex;padding:2px 9px;background:#ECEEF0;border-radius:1000px"><span>Not received · Customs hold</span></span>`.
 - 고침 (`page-scripts.ts` `__ddBare`): display는 `inline`이거나, 계산값이 `block`이면서 **부모 display가 flex·inline-flex·grid·inline-grid**일 때(blockify된 flex item) 허용. 나머지 조건은 그대로: 자기 상자 스타일 없음(배경 투명·background-image none·테두리 0·padding 0·margin 0), 부모의 유일한 요소 자식, 부모 보이는 글자 전부, sr-only 아님. 부모가 flex/grid가 아닌데 `block`이거나 `inline-block`이면 예전처럼 감싸개가 아니다.
 - 시험: `tests/unit/design-diff-capture.test.ts`에 1건 추가 (flex 부모+block 맨 span → key `span|Not received · Customs hold`, 겉 배경 rgb(236,238,240) 유지 · inline-grid 부모 · 일반 block 부모는 감싸개 아님). `npx vitest run tests/unit/design-diff` 50/50, tsc(.next 생성물 제외) 오류 0, eslint 오류 0. 개발 서버·브라우저·`.env` 미사용.
+
+## 후속 6 (안 보이는 테두리·outline 소음 제거)
+- 고침 (`scripts/design-diff/compare.ts`): `border-top/right/bottom/left`와 `outline` 값은 비교 전에 `normalizeEdge`로 정리한다. 두께가 0이거나 style이 none/hidden이면 색·스타일과 상관없이 `none`으로 본다. 그래서 `0px none rgb(0,0,0)` ↔ `0px solid rgb(9,9,9)`는 차이가 아니다. 보이는 테두리의 두께·색·스타일 차이는 그대로 잡는다.
+- 참고: `outline`은 현재 `STYLE_PROPS`(수집 목록)에 없어서 지금은 수집되지 않는다. 수집 목록에 추가하면 이 정리가 바로 적용된다. 목록은 이번에 건드리지 않았다.
+- 시험: `tests/unit/design-diff-edge.test.ts` 신규 3건. `npx vitest run tests/unit/design-diff` 53/53 통과, tsc(.next 생성물 제외) 오류 0, eslint 오류 0. 개발 서버·브라우저·`.env` 미사용.

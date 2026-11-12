@@ -20,7 +20,16 @@ export function sameValue(a: string, b: string, tol: number): boolean {
 /** font-family 첫 글꼴만 비교 (대체 글꼴 목록 차이는 무시) */
 function normalize(prop: string, v: string): string {
   if (prop === 'font-family') return (v.split(',')[0] ?? '').replace(/["']/g, '').trim().toLowerCase();
+  if (/^(border-(top|right|bottom|left)|outline)$/.test(prop)) return normalizeEdge(v);
   return v.trim();
+}
+
+/** 두께 0이거나 style none/hidden이면 안 보이는 테두리다. 색·스타일 차이는 소음이라 모두 'none'으로 본다 */
+export function normalizeEdge(v: string): string {
+  const t = v.trim();
+  const w = t.match(/^-?\d*\.?\d+/);
+  if (/(^|\s)(none|hidden)(\s|$)/.test(t) || (w && Number(w[0]) === 0) || t === '' || t === '0') return 'none';
+  return t;
 }
 
 /** --loose-tags에서 서로 짝지어도 되는 글자 태그 (h1~h6 ↔ b/strong/span) */
