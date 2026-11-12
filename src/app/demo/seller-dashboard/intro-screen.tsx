@@ -4,22 +4,26 @@
  *
  * - 클래스(tab, card, btn, b-black, b-line, ico, al-icon, pulse, rise, row, chip, rlink)는 시안 이름 그대로이고
  *   규칙은 `scene1.css`(시안 <style> 복사)에 있다. 시안 인라인 style은 같은 값을 `style`로 둔다 (`// L숫자` = 시안 줄).
- * - 동작하는 것: DisputeLess 아이콘, "Handle all N with DisputeLess", "Respond →" (모두 Today 서연으로 이동),
- *   그리고 언어 선택(EN/KO, 브라우저 상태). 나머지 버튼은 핸들러 없이 `aria-disabled`만 가진다.
- * - 서버·fetch·엔진·AI를 부르지 않는다. 숫자는 `config/intro.*.json`의 고정 데모 값이다.
- * - 시안과 다른 곳 (예외): 맨 위 Demo mock 띠, 로고 자리 "Seller dashboard", 언어 선택, 탭·"See all"은 button(aria-disabled),
- *   좁은 폭 규칙(intro.css), 시안 `a` 파랑 상속을 button에도 같게 준 것.
+ * - 동작하는 것: DisputeLess 아이콘, 말풍선 버튼, "Handle all N with DisputeLess", "Respond →" (모두 Today 서연으로 이동),
+ *   그리고 언어 선택(EN/KO, 브라우저 상태).
+ * - 껍데기 (T115, 사람 결정 11/12 11:20 — 시안 그대로): 탭·"See all"은 `<a href="#">`(누르면 preventDefault라 주소에 `#`가 안 붙는다),
+ *   벨·도움말·Transfer money·Request payment는 일반 `<button type="button">`. 누르면 아무 일 없음. aria-disabled 없음, cursor는 시안 값.
+ * - 서버·fetch·엔진·AI를 부르지 않는다. 사건 줄·건수·대목까지 남은 날은 page가 넘긴 `data`(Desk와 같은 출처)를 옮기기만 한다.
+ * - 열리면 서연 화면을 미리 불러 둔다 (`router.prefetch`, T115).
+ * - 시안과 다른 곳 (예외): 맨 위 Demo mock 띠, 로고 자리 "Seller dashboard", 언어 선택, 좁은 폭 규칙(intro.css).
  */
 import Link from 'next/link';
-import { useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
 
-import type { Locale } from '../_shared/copy';
-import { writeLocaleCookie } from '../_shared/language-switch';
-import { useLocale } from '../_shared/locale-context';
+import type { IntroCase, IntroData } from '../../_server/intro-data';
+import type { Locale } from '../../_shared/copy';
+import { writeLocaleCookie } from '../../_shared/language-switch';
+import { useLocale } from '../../_shared/locale-context';
 
-import introEn from '../../../config/intro.en.json';
-import introKo from '../../../config/intro.ko.json';
+import introEn from '../../../../config/intro.en.json';
+import introKo from '../../../../config/intro.ko.json';
 import './scene1.css';
 import './intro.css';
 
@@ -27,8 +31,33 @@ type IntroCopy = typeof introEn;
 
 const COPY: Record<Locale, IntroCopy> = { en: introEn, ko: introKo as IntroCopy };
 
-/** Today(서연)로 가는 길 — 서연 PayPal 분쟁 번호는 문구 파일의 첫 건. */
-const TODAY_HREF = '/?item=' + introEn.cases[0].id;
+/** Today(서연)로 가는 길. */
+const TODAY_HREF = '/?item=' + introEn.targetDisputeId;
+
+/** `{{n}}` 같은 자리를 채운다 (표기만). */
+const fill = (text: string, values: Record<string, string | number>) =>
+  text.replace(/\{\{(\w+)\}\}/g, (all, key: string) => (key in values ? String(values[key]) : all));
+
+/** 껍데기 링크: 시안처럼 `href="#"`이지만 주소를 바꾸지 않는다. */
+const stay = (event: MouseEvent<HTMLAnchorElement>) => event.preventDefault();
+
+function caseLines(k: IntroCase, c: IntroCopy, lang: Locale) {
+  const reasons = c.reasons as Record<string, string>;
+  const reason = reasons[k.reason] ?? reasons.other;
+  const type = k.repeat ? `${reason} · ${c.caseRepeat}` : reason;
+  const due = k.due === null ? c.caseNoDue : fill(c.caseDue, { date: k.due[lang] }) + (k.mentionsChargeback ? c.caseChargeback : '');
+  return {
+    title: fill(c.caseTitle, { type, amount: k.amount }),
+    sub: fill(c.caseSub, { buyer: k.buyer[lang], product: k.product, id: k.id }),
+    due,
+    urgent: k.mentionsChargeback,
+  };
+}
+
+function salesLine(c: IntroCopy, days: number): string {
+  if (days < 0) return c.salesSubPast;
+  return days === 1 ? c.salesSubOne : fill(c.salesSub, { days });
+}
 
 const S = {
   muted: { color: '#3F4144' } as CSSProperties,
@@ -41,15 +70,6 @@ const S = {
   } as CSSProperties, // L97
 };
 
-/** 눌러도 아무 일 없는 버튼 (핸들러 없음). */
-function Inert({ className, label, children, style }: { className: string; label?: string; children: React.ReactNode; style?: CSSProperties }) {
-  return (
-    <button type="button" className={className} aria-disabled="true" aria-label={label} style={style}>
-      {children}
-    </button>
-  );
-}
-
 /** 시안 L51·L104 DisputeLess 표시 (path·circle 값 그대로). */
 function Mark({ size, stroke }: { size: number; stroke: string }) {
   return (
@@ -60,12 +80,17 @@ function Mark({ size, stroke }: { size: number; stroke: string }) {
   );
 }
 
-export function IntroScreen() {
+export function IntroScreen({ data }: { data: IntroData }) {
   // 언어는 다른 화면과 같은 쿠키·`?lang=` 값 (T081). 고르면 쿠키를 쓰고 바로 바꾼 뒤 서버도 다시 읽는다.
   const serverLang = useLocale();
   const [picked, setPicked] = useState<Locale | null>(null);
   const lang: Locale = picked ?? serverLang;
   const c = COPY[lang];
+  const n = data.cases.length;
+  const router = useRouter();
+  useEffect(() => {
+    router.prefetch(TODAY_HREF); // T115: 클릭 전에 서연 화면을 미리 불러 둔다
+  }, [router]);
   const choose = (next: Locale) => {
     setPicked(next);
     writeLocaleCookie(next);
@@ -86,13 +111,13 @@ export function IntroScreen() {
           <span className="chip" style={{ background: '#ECEEF0', color: '#3F4144' }}>{c.mock}</span>
         </div>
         <nav aria-label={c.nav.label} className="intro-nav" style={{ display: 'flex', gap: 22, alignSelf: 'stretch', alignItems: 'flex-end' }}>
-          <Inert className="tab on">{c.nav.home}</Inert>
-          <Inert className="tab">{c.nav.activity}</Inert>
-          <Inert className="tab">{c.nav.reports}</Inert>
-          <Inert className="tab">{c.nav.money}</Inert>
-          <Inert className="tab">
-            {c.nav.rc} <span className="chip" style={{ background: '#C4321F', color: '#FFFFFF' }}>{c.openCount}</span>
-          </Inert>
+          <a className="tab on" href="#" onClick={stay}>{c.nav.home}</a>
+          <a className="tab" href="#" onClick={stay}>{c.nav.activity}</a>
+          <a className="tab" href="#" onClick={stay}>{c.nav.reports}</a>
+          <a className="tab" href="#" onClick={stay}>{c.nav.money}</a>
+          <a className="tab" href="#" onClick={stay}>
+            {c.nav.rc} <span className="chip" style={{ background: '#C4321F', color: '#FFFFFF' }}>{n}</span>
+          </a>
         </nav>
         <div className="intro-tools" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
           <div className="intro-lang" role="group" aria-label={c.langLabel}>
@@ -105,19 +130,19 @@ export function IntroScreen() {
           </div>
           <Link className="al-icon pulse" href={TODAY_HREF} aria-label={c.alOpen} title="DisputeLess">
             <Mark size={28} stroke="#00A8EA" />
-            <span style={{ position: 'absolute', right: -5, top: -5, minWidth: 20, height: 20, padding: '0 5px', borderRadius: 1000, background: '#C4321F', color: '#FFFFFF', fontSize: 11, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FFFFFF' }}>{c.openCount}</span>
+            <span style={{ position: 'absolute', right: -5, top: -5, minWidth: 20, height: 20, padding: '0 5px', borderRadius: 1000, background: '#C4321F', color: '#FFFFFF', fontSize: 11, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FFFFFF' }}>{n}</span>
           </Link>
-          <Inert className="ico" label={c.bell}>
+          <button type="button" className="ico" aria-label={c.bell}>
             <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
             </svg>
-          </Inert>
-          <Inert className="ico" label={c.help}>
+          </button>
+          <button type="button" className="ico" aria-label={c.help}>
             <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
               <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17h.01" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
-          </Inert>
+          </button>
           <span className="intro-seller" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700 }}>
             <span style={{ width: 36, height: 36, borderRadius: '50%', background: '#F1EFEA', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>{c.sellerInitial}</span>
             {c.seller}
@@ -130,9 +155,9 @@ export function IntroScreen() {
               <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 1000, background: 'linear-gradient(120deg,#0066F5,#60CDFF)' }}>{c.newTag}</span>
               <b>DisputeLess</b>
             </div>
-            <span style={{ fontSize: 14, lineHeight: 1.45 }}>{c.coach}</span>
+            <span style={{ fontSize: 14, lineHeight: 1.45 }}>{fill(c.coach, { n })}</span>
             <Link className="btn" href={TODAY_HREF} style={{ background: '#FFFFFF', color: '#000000', minHeight: 38, padding: '6px 16px', fontSize: 14, alignSelf: 'flex-start' }}>
-              {c.alOpen} →
+              <span>{c.alOpen}</span> →
             </Link>
           </div>
         </div>
@@ -151,15 +176,15 @@ export function IntroScreen() {
               </div>
               <span style={S.small}>{c.balanceSub}</span>
               <div style={{ display: 'flex', gap: 10 }}>
-                <Inert className="btn b-black">{c.transfer}</Inert>
-                <Inert className="btn b-line">{c.request}</Inert>
+                <button type="button" className="btn b-black">{c.transfer}</button>
+                <button type="button" className="btn b-line">{c.request}</button>
               </div>
             </section>
 
             <section className="card" style={{ gap: 4 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingBottom: 8 }}>
                 <b style={{ fontSize: 18 }}>{c.activityTitle}</b>
-                <Inert className="rlink">{c.seeAll}</Inert>
+                <a className="rlink" href="#" onClick={stay}>{c.seeAll}</a>
               </div>
               {c.activities.map((a) => (
                 <div className="row" key={a.who}>
@@ -178,24 +203,27 @@ export function IntroScreen() {
             <section className="card" style={{ border: '2px solid #F2B8AF' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <b style={{ fontSize: 18 }}>{c.nav.rc}</b>
-                <span className="chip" style={{ background: '#FBE7E4', color: '#9E2414' }}>{c.rcOpen}</span>
+                <span className="chip" style={{ background: '#FBE7E4', color: '#9E2414' }}>{fill(c.rcOpen, { n })}</span>
               </div>
               <span style={S.small}>{c.rcSub}</span>
-              {c.cases.map((k) => (
-                <div className="row" key={k.id} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}>
-                  <div style={S.rowText}>
-                    <b style={{ fontSize: 14 }}>{k.title}</b>
-                    <span style={S.small}>{k.sub}</span>
-                    <span style={k.urgent ? { fontSize: 12, fontWeight: 700, color: '#9E2414' } : { fontSize: 12, color: '#3F4144' }}>{k.due}</span>
+              {data.cases.map((k) => {
+                const line = caseLines(k, c, lang);
+                return (
+                  <div className="row" key={k.id} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}>
+                    <div style={S.rowText}>
+                      <b style={{ fontSize: 14 }}>{line.title}</b>
+                      <span style={S.small}>{line.sub}</span>
+                      <span style={line.urgent ? { fontSize: 12, fontWeight: 700, color: '#9E2414' } : { fontSize: 12, color: '#3F4144' }}>{line.due}</span>
+                    </div>
+                    <Link className="rlink" href={TODAY_HREF}>
+                      {c.respond} →
+                    </Link>
                   </div>
-                  <Link className="rlink" href={TODAY_HREF}>
-                    {c.respond} →
-                  </Link>
-                </div>
-              ))}
+                );
+              })}
               <Link className="btn" href={TODAY_HREF} style={{ background: 'linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF)', color: '#FFFFFF', gap: 10 }}>
                 <Mark size={22} stroke="#FFFFFF" />
-                {c.rcCta}
+                {fill(c.rcCta, { n })}
               </Link>
             </section>
 
@@ -206,7 +234,7 @@ export function IntroScreen() {
                   <span key={i} style={{ flex: 1, borderRadius: '6px 6px 2px 2px', height: h + 'px', background: i === c.bars.length - 1 ? '#0066F5' : '#C9D3E0' }} />
                 ))}
               </div>
-              <span style={S.small}>{c.salesSub}</span>
+              <span style={S.small}>{salesLine(c, data.peakDays)}</span>
             </section>
           </div>
         </div>

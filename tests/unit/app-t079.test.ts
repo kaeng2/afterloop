@@ -46,7 +46,7 @@ import { carrierEventsFor, seedBuyers, seedInquiries, seedOrders, seedProducts }
 const calls = vi.hoisted(() => ({ disputes: 0, paypal: 0 }));
 
 vi.mock('server-only', () => ({}));
-vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ prefetch: () => {} }) }));
 vi.mock('next/font/google', () => ({
   Figtree: () => ({ variable: 'font-figtree' }),
   Noto_Sans_KR: () => ({ variable: 'font-noto-kr' }),
@@ -71,6 +71,8 @@ vi.mock('@/app/_server/paypal', () => ({
     calls.paypal += 1;
     return { ok: false, reason: 'not_configured' };
   },
+  // T115: /demo/seller-dashboard 사건 줄은 담긴 캐시만 본다 (PayPal 호출이 아니라 세지 않는다)
+  peekCachedRead: () => undefined,
 }));
 (globalThis as { React?: typeof React }).React = React;
 
@@ -531,17 +533,17 @@ describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 
     // T096: 위쪽 막대에 탭이 없어 (app)/layout도 Today를 읽지 않는다
     expect(app).not.toMatch(/loadTodayForRequest/);
     expect(app).toMatch(/<TopBar/);
-    expect(read('src/app/intro/page.tsx')).toBeTruthy();
+    expect(read('src/app/demo/seller-dashboard/page.tsx')).toBeTruthy();
     for (const page of ['src/app/(app)/page.tsx', 'src/app/(app)/cases/[disputeId]/page.tsx']) {
       expect(read(page), page).toBeTruthy();
     }
     // T078 덮개(position: fixed)를 걷었다
-    expect(read('src/app/intro/intro.css').match(/\.intro\s*\{([^}]*)\}/)?.[1] ?? '').not.toMatch(/position:\s*fixed/);
+    expect(read('src/app/demo/seller-dashboard/intro.css').match(/\.intro\s*\{([^}]*)\}/)?.[1] ?? '').not.toMatch(/position:\s*fixed/);
   });
 
   it('실행: /intro 그림 = 루트 layout + intro 페이지 → Today 읽기·PayPal 조회 0회 (가짜 클라이언트)', async () => {
     const { default: RootLayout } = await import('@/app/layout');
-    const { default: IntroPage } = await import('@/app/intro/page');
+    const { default: IntroPage } = await import('@/app/demo/seller-dashboard/page');
     calls.disputes = 0;
     calls.paypal = 0;
     const page = await IntroPage({ searchParams: Promise.resolve({}) });

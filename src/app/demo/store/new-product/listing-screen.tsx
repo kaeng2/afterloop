@@ -8,7 +8,7 @@
  */
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
-import { useLocale } from '../_shared/locale-context';
+import { useLocale } from '../../../_shared/locale-context';
 import type { ListingFixDrafts, ListingFixKey } from '@/types';
 
 import { draftListingFixesAction } from './actions';

@@ -31,7 +31,7 @@ vi.mock('@/app/_server/disputes', () => ({
 }));
 
 const { buildAiCache } = await import('../../scripts/ai-cache/build-lib');
-const { draftListingFixesAction } = await import('@/app/listing/actions');
+const { draftListingFixesAction } = await import('@/app/demo/store/new-product/actions');
 
 describe('T095 listing fixes in AI cache build', () => {
   it('en·ko 두 번, 화면 서버 액션과 같은 user 문자열로 부른다', async () => {

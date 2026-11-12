@@ -71,11 +71,16 @@ export function daysUntil(now: Date, peakDate: string, timeZone: string): number
   return Math.round((utcDay(peakDate) - utcDay(calendarDate(now, timeZone))) / MS_PER_DAY);
 }
 
+/** 대목(Black Friday)까지 남은 날 — Desk 위쪽 막대 `dateLine`과 /demo/seller-dashboard가 함께 쓴다 (T115). PayPal을 부르지 않는다. */
+export function peakDaysLeft(now: Date): number {
+  return daysUntil(now, t('today.peakDate'), t('today.sellerTimeZone'));
+}
+
 /** "Tue, Nov 10 · 17 days to Black Friday". 대목이 지났으면 날짜만. */
 export function dateLine(now: Date): string {
   const timeZone = t('today.sellerTimeZone');
   const date = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short', month: 'short', day: 'numeric' }).format(now);
-  const days = daysUntil(now, t('today.peakDate'), timeZone);
+  const days = peakDaysLeft(now);
   if (days < 0) return t('today.dateOnly', { date });
   const peak = t('today.peakName');
   return days === 1 ? t('today.dateLineOne', { date, peak }) : t('today.dateLine', { date, days, peak });

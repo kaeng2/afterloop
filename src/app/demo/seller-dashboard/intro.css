@@ -19,19 +19,13 @@
   -webkit-font-smoothing: auto;
   -moz-osx-font-smoothing: auto;
 }
-/* 시안 .ko = 'Noto Sans KR',Figtree,sans-serif */
-.intro:lang(ko) {
-  font-family: 'Noto Sans KR', Figtree, sans-serif;
-}
+/* T115: KO 아트보드도 루트가 Figtree, 'Noto Sans KR' 순서다 (`.ko` 클래스를 쓰지 않는다) — :lang(ko)에서 Noto를 앞에 두지 않는다. */
 /* globals h1·a 규칙이 시안(상속 색)과 달라지지 않게 */
 .intro h1 {
   color: inherit;
 }
 :where(.intro) button {
   font: inherit;
-}
-.intro [aria-disabled='true'] {
-  cursor: default;
 }
 
 /* 맨 위 띠 — 실제 PayPal 페이지가 아니라는 표시 (늘 보임. 시안에 없는 예외) */
@@ -44,29 +38,7 @@
   padding: 6px 16px;
 }
 
-/* 시안은 탭·"See all"이 <a>라 `.pp a{color:#0066F5}`를 받는다. 앱은 button이므로 같은 색·모양을 준다. */
-.intro button.tab,
-.intro button.rlink {
-  background: none;
-  border-top: 0;
-  border-left: 0;
-  border-right: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-  cursor: default;
-}
-.intro button.rlink {
-  border-bottom: 0;
-  padding: 0;
-  min-height: 24px;
-}
-.intro button.tab:not(.on),
-.intro button.rlink {
-  color: #0066f5;
-}
-.intro button.tab {
-  font-family: inherit;
-}
+/* T115: 탭·"See all"은 시안처럼 <a href="#">라 `scene1.css`의 `.intro a`·`.tab`·`.rlink` 규칙을 그대로 받는다 (따로 덮지 않는다). */
 
 /* 언어 선택 (시안에 없는 예외) */
 .intro-lang {
