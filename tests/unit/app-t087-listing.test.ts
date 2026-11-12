@@ -386,15 +386,15 @@ describe('T087 진행 표시: setInterval·가짜 카운터 없음 (정적 검�
 
   it('시안 모션 값: 진행 막대 width .07s linear, pulse = opacity .5↔1 + scale .92↔1.06 (1.2s), reduced-motion이면 끔', () => {
     const css = read('src/app/listing/listing.css');
-    const fill = css.match(/\.ls-prog-fill\s*\{[^}]*\}/)?.[0] ?? '';
+    // T109: 시안 값 그대로 (L522 시트 진행 막대 progSt에만 transition, L547 패널 막대는 없음)
+    const fill = css.match(/\.ls-run \.ls-prog-fill\s*\{[^}]*\}/)?.[0] ?? '';
     expect(fill).toMatch(/transition:\s*width\s+0?\.07s\s+linear/);
-    const kf = css.match(/@keyframes ls-pulse\s*\{[\s\S]*?\n\}/)?.[0].replace(/\s+/g, ' ') ?? '';
-    expect(kf).toMatch(/0%, 100% \{ opacity: 0?\.5; transform: scale\(0?\.92\); \}/);
-    expect(kf).toMatch(/50% \{ opacity: 1; transform: scale\(1\.06\); \}/);
+    expect(css).toContain('@keyframes pl{0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:1;transform:scale(1.06)}}');
     // T098a: 시안 .pulse는 점검 모달 회전 고리 가운데 아이콘(L184)에 붙는다. .livedot(L37)은 움직이지 않는다
-    expect(css).toMatch(/\.ls-pulse-ic\s*\{[^}]*animation:\s*ls-pulse 1\.2s ease-in-out infinite/);
-    expect(css.match(/\.ls-livedot\s*\{[^}]*\}/)?.[0]).not.toMatch(/animation/);
-    expect(css).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*animation: none !important[\s\S]*transition: none !important/);
+    expect(css).toContain('.ls .pulse{animation:pl 1.2s ease-in-out infinite}');
+    expect(harness().html()).not.toMatch(/class="[^"]*\bpulse\b[^"]*"[^>]*>\s*<\/span>/);
+    expect(css.match(/\.ls \.livedot\s*\{[^}]*\}/)?.[0]).not.toMatch(/animation/);
+    expect(css).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*animation:none !important;transition:none !important/);
   });
 
   it('진행 숫자는 progress 액션(= step 반환값)으로만 바뀐다', () => {
@@ -516,7 +516,7 @@ describe('T087 색·문구 정직성', () => {
 
   it('왼쪽 메뉴 "PayPal payments"는 아이콘 없이 글자만, 가게는 Fernwood Knits', () => {
     const html = harness().html();
-    expect(html).toMatch(/<button type="button" class="ls-snav" aria-disabled="true">PayPal payments<\/button>/);
+    expect(html).toMatch(/<button type="button" class="snav" aria-disabled="true">PayPal payments<\/button>/);
     expect(listingEn.store).toBe('Fernwood Knits');
     expect(listingKo.store).toBe('Fernwood Knits');
   });
