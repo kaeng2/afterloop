@@ -1,123 +1,257 @@
-# DisputeLess
+# DisputeLess ㅣ fewer disputes for PayPal sellers.
 
-**A post-purchase copilot for small sellers on PayPal who sell abroad.** When a buyer opens a dispute in a language the seller can't read, DisputeLess reads the case through the PayPal APIs, finds the cause, compares the expected loss of each move (refund, offer, repair, reply), and drafts a reply in the buyer's language. Code, not AI, decides the numbers, the dates and what may be sent. Before a dispute happens, it checks a new product listing and shows which fixes cut likely losses.
+**Stop disputes before they start.**
 
-- **Live demo:** https://disputeless.onrender.com/demo/seller-dashboard (public mode: real PayPal sandbox reads, cached AI, simulated sends; no login)
-- **What is real, what is assumed:** [honesty table](docs/submission/honesty-table.md): real PayPal sandbox vs demo data vs assumptions vs Simulated, what AI does, what code decides, and known limits
-- **Devpost text:** [docs/submission/devpost.md](docs/submission/devpost.md)
-- PayPal AI Hackathon submission. Built with Next.js, React, TypeScript, zod, the Anthropic SDK and AG Grid Community, deployed on Render.
+> **Predict risk. Resolve with confidence. Prevent the next dispute.**  
+> DisputeLess brings AI-powered buyer communication and explainable risk modeling into the PayPal merchant workflow—helping sellers understand what went wrong, choose a financially sensible response, and improve their next sale before it goes live.
 
-## How to test
+>
+[🚀 Live Demo](https://disputeless.onrender.com/demo/seller-dashboard) ·
+[🎬 Demo Video](https://youtu.be/cGdfF0rBP98?si=MAMs87csK5_Xo9w2) 
 
-No login is needed. On the [live demo](https://disputeless.onrender.com/demo/seller-dashboard):
-
-1. **Reply to Seo-yeon.** On `/demo/seller-dashboard` (a mock, not a real PayPal page), click **Handle all 3 with DisputeLess**. Turn on **✦ AI Respond now**, try **Try a rushed reply** (wait for the typing to stop: 95%) and **Use AI draft** (wait about 16 seconds for the typing to stop: 40%), open **Details**, then **Send** and watch "What happens next · Simulated".
-2. **See the other cases.** Click the **Knit Cardigan** product chip for Ji-ho's card (#1038), **All products** for the two AG Grid tables, and **PayPal activity** for the call log.
-3. **Check a new listing.** Type `/demo/store/new-product` in the address bar, click **Publish product**, then **See details and fix**, all six **Insert** buttons and **Recalculate** (4.5% → 2.1%).
-
-Public mode never writes to PayPal; sends are simulated. Details: [docs/submission/testing.md](docs/submission/testing.md).
-
-To run it against your own PayPal sandbox: create a free app at developer.paypal.com, copy `.env.example` to `.env`, fill in `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (and `LLM_API_KEY` for uncached AI), then `npm install && npm run build && npm start`. See [Test credentials](docs/submission/testing.md#test-credentials).
-
-## How it uses PayPal and AI
-
-DisputeLess calls the PayPal sandbox REST APIs from its server: Orders v2 (create, capture, read, and `/track` for tracking), Disputes (list, detail, `send-message`, `make-offer`), with every call listed in an in-app "PayPal activity" drawer. Claude (`claude-opus-5-5`) translates buyer messages, drafts and back-translates replies, and writes listing text; its output is checked with zod schemas and treated as untrusted. Facts such as dates, amounts and names reach the model only as tokens that code fills in. The engine in `src/engine/` decides every number (expected loss, risk %, follow-up date) and whether a message may be sent.
-
-## Built with AG Grid and Render
-
-The **All products** overview uses AG Grid Community for its two tables, "Products" and "Cases by risk": sortable columns, risk bar cells, and a click on a row opens the case. The public demo runs on Render as one Node web service defined in `render.yaml`, in public mode, where reads are real sandbox calls and writes are simulated.
-
-License: [MIT](LICENSE).
+<img width="931" height="563" alt="스크린샷 2026-11-13 오전 12 37 39" src="https://github.com/user-attachments/assets/5bfbec7d-07df-4f57-bffb-d54522771254" />
 
 ---
 
-## 개발 안내 (한국어)
+## 1. Why we built it
 
-판매자에게 들어온 PayPal 분쟁 1건을 바둑판처럼 놓고, 허용된 대응마다 기대 손실을 계산해 가장 손실이 적은 수를 추천한다. 판매자가 승인하면 그 수를 PayPal API(샌드박스)로 실행한다. PayPal AI Hackathon 제출작 (마감 KST 2026-11-13 05:00).
+Selling globally has become easier. Resolving a cross-border payment dispute has not. Mastercard and Datos Insights forecast worldwide chargebacks to grow from **261 million in 2025 to 324 million in 2028**, a **24% increase**. This is an industry-wide chargeback forecast, not a PayPal-specific statistic. (Source: Mastercard)
 
-- 기준 문서: [SPEC.md](SPEC.md) · 계약: [src/types.ts](src/types.ts) · 결정 기록: [DECISIONS.md](DECISIONS.md) · 작업 보드: [TASKS.md](TASKS.md) · 세션 규칙: [CLAUDE.md](CLAUDE.md)
+For independent merchants and small businesses, a single *Item Not Received* complaint can mean a package was never shipped, is stuck in customs, was lost in transit, or was marked delivered without reaching the buyer. Each calls for a different response. Yet merchants often have to decide quickly, across languages, without a dedicated support team—or a clear view of the financial consequences.
 
-## 빠른 시작
+**The question we set out to answer: How can sellers reduce disputes proactively, while making the risk and cost of each decision measurable?**
 
-```bash
-npm ci
-npm run test:acceptance   # 인수 테스트 (잠금)
-npm test                  # 단위 + 통합
-RUN_SANDBOX=1 npm run test:sandbox   # 실제 샌드박스 호출 (수동)
-npm run dev
+---
+
+## 2. The product and who it's for
+
+**DisputeLess** is an AI-powered dispute prevention and decision platform for **independent sellers, first-time merchants, small businesses, and growing online merchants** using PayPal. It is designed for sellers across product categories, particularly those handling international orders without specialist dispute operations.
+
+Unlike a dispute dashboard that stops at tracking cases, DisputeLess connects **diagnosis → resolution → learning → prevention**. It gives merchants actionable numbers—not just another alert—and keeps sellers in control of consequential actions.
+
+<img width="1536" height="867" alt="스크린샷 2026-11-13 오전 1 24 29" src="https://github.com/user-attachments/assets/74d3b1f8-7652-4cd7-a693-769f3bff18a7" />
+
+
+---
+
+## 3. Our solution
+
+### ✅ Solution 1 — Make disputes measurable
+
+**From broad dispute codes to clear operational causes and quantified choices.**
+
+### 💡 1.1 Go beyond reason codes: 16 operational causes
+
+A PayPal dispute reason describes **what the buyer is claiming**. That alone does not establish **why the problem happened**. DisputeLess uses the reason, buyer messages, order history, and shipping signals to classify a case into **6 groups and 16 more specific causes**:
+
+| Group | Operational causes | Related PayPal dispute reason |
+| --- | --- | --- |
+| **A · Fulfillment (4)** | A1 Not shipped / late dispatch; A2 Carrier or customs delay; A3 Lost in transit; A4 Delivered-status mismatch | Item Not Received (INR) |
+| **B · Product mismatch (5)** | B1 Color; B2 Size/fit; B3 Material/quality; B4 Damage/stains; B5 Wrong item | Significantly Not as Described (SNAD) |
+| **C · Billing/refund (3)** | C1 Promised refund not processed; C2 Duplicate charge; C3 Incorrect amount | Corresponding billing/refund reasons |
+| **D · Subscription (1)** | D1 Charged after cancellation | Canceled recurring payment |
+| **E · Authorization (1)** | E1 Unauthorized-payment claim | Unauthorized transaction |
+| **F · Repeated claims (2)** | F1 Repeated non-receipt claims; F2 Repeated partial-refund requests | INR / SNAD patterns |
+
+AI proposes a subtype **with supporting evidence and a confidence level**. Low-confidence or sensitive cases go to seller review. Patterns of repeated claims are not treated as proof of wrongdoing.
+
+**Why this matters:** A customs hold calls for a customs-information request, not the same reply as a lost parcel. More precise causes lead to better choices today—and better preventive changes tomorrow.
+
+### 💡 1.2 For an open dispute, how do we separate high-risk cases from low-risk ones?
+
+**Merchant question:** *Which cases need attention first—and what could each response cost?*
+
+Once a dispute or buyer complaint arrives, DisputeLess groups it by operational cause and surfaces a **high-, medium-, or low-risk priority**. The priority is backed by a numerical escalation estimate, so a seller can see not only *which case is urgent* but *why*. The experience also provides a timeline of past exchanges rather than treating the latest buyer message as an isolated event.
+
+DisputeLess uses an **interpretable logistic risk model** to convert case and reply features—such as delivery delays, whether the seller explains the cause, offers a concrete next step, or commits to a date—into a **0–100% modeled escalation score**.
+
+```text
+P(escalation) = 1 / (1 + exp(-z))
+z = baseline + Σ(case signal × weight) + Σ(response feature × weight)
 ```
 
-## 폴더
+The risk estimate takes the case context and response features into account. For example, a delayed shipment becomes more sensitive when the seller has already missed a promised delivery date, responded late, or failed to provide usable tracking information. This is where DisputeLess goes beyond an inbox triage tool: **AI reviews the accumulated buyer–seller interaction history and available dispute signals, then proposes steps intended to de-escalate the specific relationship**—such as replying in the buyer’s language, using a carrier-verified date instead of making a new unsupported promise, and offering a clear fallback. Historical patterns inform the advice; they are not treated as proof of buyer misconduct.
 
-| 경로 | 내용 | 수정 |
-|---|---|---|
-| `SPEC.md`, `DECISIONS.md`, `TASKS.md`, `tasks/`, `HANDOFF.md` | 사양, 결정, 작업 보드, 작업 지시서, 이동 안내 | 컨트롤 타워 |
-| `src/types.ts`, `tests/acceptance/` | 계약과 인수 테스트 (잠금) | 컨트롤 타워 + 사람 승인 |
-| `config/` | 가정값, 정책 기준값, 화면 문구 | engine / ui 레인 |
-| `src/engine/`, `src/paypal/`, `src/exec/`, `src/ai/`, `src/app/`, `seed/` | 레인별 구현 | 해당 레인 (SPEC 8장) |
-| `inbox/` | 기획 변경 붙여넣기 | 사람 |
-| `reports/` | 작업 보고 | 작업 세션 |
-| `docs/VERIFY.md` | 검증 세션 프롬프트 | 컨트롤 타워 |
+A separate **expected-cost calculation** combines the modeled likelihood of different outcomes with their financial consequences:
 
-## 레인별 브랜치와 worktree
-
-브랜치는 레인마다 하나: `lane/engine`, `lane/paypal`, `lane/ai`, `lane/ui`, `lane/data` (이미 만들어 둠). worktree는 작업을 배정할 때 만든다.
-
-```bash
-# 1) worktree 만들기 (afterloop/ 에서)
-git worktree add ../afterloop-wt/engine lane/engine
-cd ../afterloop-wt/engine && npm ci
-
-# 2) (선택) 다른 레인 폴더도 막기: 이 worktree에만 적용되는 로컬 설정
-cat > .claude/settings.local.json <<'EOF'
-{ "permissions": { "deny": [
-  "Edit(/src/paypal/**)", "Edit(/src/exec/**)", "Edit(/src/ai/**)", "Edit(/src/app/**)", "Edit(/seed/**)", "Edit(/config/copy.*.json)"
-] } }
-EOF
-
-# 3) 작업 세션 시작: 반드시 worktree 안에서 시작해야 잠금 설정이 적용된다
-claude   # 첫 메시지: "tasks/T004.md 를 읽고 작업해줘"
+```text
+Expected cost = Σ[P(outcome) × cost(outcome)]
 ```
 
-- 레인 작업이 끝나면 컨트롤 타워가 `main`에 합친다 ("T0xx 병합해줘").
-  ```bash
-  git switch main && git merge --no-ff lane/engine && npm run test:acceptance
-  ```
-- 다른 레인은 합쳐진 `main`을 받아서 이어 간다: `git -C ../afterloop-wt/paypal merge main`
-- 다 쓴 worktree 정리: `git worktree remove ../afterloop-wt/engine`
-- 브랜치만 쓰고 싶으면 worktree 대신 `git switch lane/<레인>`도 된다. 단, 한 폴더에서는 한 번에 한 세션만 작업한다.
+**Why this approach?** Prioritizing cases by an explainable score helps time-constrained sellers focus first on likely escalation, while retaining enough context to choose a proportionate response. Logistic modeling makes the influence of each response feature inspectable and allows immediate before/after comparisons. Expected cost adds the economic dimension: **the response with the lowest escalation score is not necessarily the least expensive**. The interface therefore places **risk (%) and estimated cost ($)** side by side, giving sellers a basis for a defensible decision rather than a black-box AI verdict.
 
-## 운영 (컨트롤 타워)
+*Demo reference:* In the customs-delay case (**order #1042, $72, subtype A2**), the illustrative model scores no response at **89%**, a targeted customs-information reply at **8%** with approximately **$15** in expected cost, and an immediate refund at **2%** with approximately **$72** in cost. These are demo-model outputs, not measured real-world success rates.
 
-컨트롤 타워는 상위 폴더 `paypal-hackathon/`에서 시작한 세션이다 ([CLAUDE.md](CLAUDE.md)). 기능 코드는 쓰지 않는다. 아래 요청을 받으면 이렇게 한다.
 
-### "inbox 반영해줘"
-1. `inbox/`의 새 파일을 읽는다.
-2. SPEC에 미치는 변경을 정리하고 `SPEC.md` 버전을 올린다 (v1 → v2, 날짜·시각).
-3. `DECISIONS.md`에 결정·이유·영향받은 작업을 기록한다.
-4. 영향받는 작업을 표로 보고한다 (작업 ID, 지금 상태, 바뀌는 점, 진행 중이면 멈춰야 하는지).
-5. 필요한 작업 지시서를 수정·추가하고 `TASKS.md`의 기준 SPEC 열을 갱신한다.
-6. 인수 테스트 기대값이나 계약(`src/types.ts`)이 바뀌어야 하면 **바꾸기 전에** 사람에게 승인을 요청한다.
-7. 반영한 inbox 파일을 `inbox/done/`으로 옮긴다.
+### ✅  Solution 2 — Turn insights into a better resolution
 
-### "작업 쪼개줘 (기능명)"
-1. 기능을 2시간 이내 단위로 나눈다. 레인 하나, 수정 가능 폴더가 겹치지 않게.
-2. 작업마다 `tasks/T0xx.md`를 `tasks/_TEMPLATE.md` 형식으로 만든다 (기준 SPEC, 완료 기준 AC ID 포함).
-3. `TASKS.md`에 추가하고 의존 관계를 적는다. 완료 기준 AC가 없으면 새 AC를 작성해 승인 요청한다.
+**Use the entire case history—not just the last message—to choose a credible next step.**
 
-### "T0xx 병합해줘"
-1. `reports/T0xx-*.md`를 읽는다. 기준 SPEC이 현재와 같은지, 바뀐 파일이 지시서의 수정 가능 폴더 안인지 확인한다.
-2. `git diff main..lane/<레인> -- src/types.ts tests/acceptance/ SPEC.md`가 비어 있는지 확인한다.
-3. `main`에 병합한다 (`--no-ff`).
-4. `npm run test:acceptance`, `npm test`, `npx tsc --noEmit`을 실행한다.
-5. 결과에 따라 `TASKS.md` 상태를 완료/검토로 바꾸고, 실패하면 되돌리거나 후속 작업을 만든다.
+### 💡 2.1 Negotiate in the buyer's language, with full transaction context
 
-### "상태 보고"
-- `TASKS.md` 상태별 개수와 진행 중 작업
-- 막힌 작업과 이유 (의존, 승인 대기, SPEC 불일치)
-- 새로 들어온 `reports/`와 `inbox/`
-- 오늘 남은 순서 (의존 관계 기준으로 다음에 시작할 작업)
+PayPal connects buyers and sellers across countries, languages, shipping networks, and customs requirements. Simply translating a sentence is not enough when the solution depends on the buyer's location, the parcel's status, or missing import information.
 
-## 정직성 표
+DisputeLess uses AI to **interpret the buyer's concern, match it to transaction and shipping evidence, and propose a practical response in the buyer's language**. Sellers can review alternative actions alongside their estimated risk and cost. This shortens the path from *“What does the buyer mean?”* to *“What can we do about it?”*
 
-정직성 표(실제 PayPal 샌드박스 · 데모 데이터 · 가정값 · 시뮬레이션 · AI가 하는 일 · 코드가 정하는 일 · 알려진 한계)는 [docs/submission/honesty-table.md](docs/submission/honesty-table.md) 한 곳에 둔다. 가정값의 정본은 [config/params.json](config/params.json), [config/reply-model.json](config/reply-model.json), [config/listing-model.json](config/listing-model.json)이다.
+<img width="589" height="576" alt="스크린샷 2026-11-13 오전 1 40 31" src="https://github.com/user-attachments/assets/67c4d93d-1cf7-47a6-81e2-e30db1082dfa" />
+
+> Repeated buyer–seller exchanges have created frustration on both sides, with an **89% dispute risk**. DisputeLess provides an at-a-glance view of the case history, status, and risk level.
+
+<img width="589" height="500" alt="스크린샷 2026-11-13 오전 1 34 07" src="https://github.com/user-attachments/assets/53fa5e96-3e1c-4c41-b191-9f50af753639" />
+
+> AI Respond now: the reply is drafted in the buyer’s language and checked line by line. Dispute risk drops from 89% to 8%
+
+
+
+### 💡 2.2 Keep the merchant in control
+
+Before a response or eligible PayPal action is submitted, guardrails check dates, amounts, and promises against available case evidence. **Money-moving actions require explicit seller approval**. The AI helps the merchant decide; it does not make unapproved financial commitments.
+
+### ✅ Solution 3 — Prevent the next dispute before publishing
+
+**Test the financial exposure of planned sales before committing to a listing.**
+
+### 💡 3.1 Before listing: how can a seller know what future disputes might cost?
+
+New sellers and small businesses want to give shoppers the clearest, most accurate product information they can: sizing, materials, delivery windows, customs requirements, and return terms. But they rarely know **which missing detail is most likely to trigger a complaint—or how much that omission could cost across an entire batch of orders**.
+
+A listing that looks good for one buyer can create repeated issues when **200 units** are sold. Before publishing, the seller needs a way to convert gaps in size guidance, product photos, shipping estimates, and customs instructions into **a forward-looking estimate of dispute exposure**. By entering a **planned sales quantity**, the merchant can see how seemingly minor gaps scale into potential dispute counts and financial exposure. That makes prevention tangible **before inventory, marketing spend, and customer expectations are committed**.
+
+####💡 3.2 Make risk visible: frequency × severity, 500 simulations, and one dot per sale
+
+DisputeLess separates **how often** a dispute cause may occur from **how much** a resulting case may cost:
+
+```text
+Expected loss by cause ≈ planned units × incident probability × average loss per incident
+```
+
+<img width="765" height="678" alt="스크린샷 2026-11-13 오전 1 44 16" src="https://github.com/user-attachments/assets/24e2b46c-83af-403a-ac18-e0febf93697a" />
+
+
+> Visualization. A risk curve across the case history shows how trust broke down. In the rehearsal, one dot = one planned sale, with disputes colored in, so a first-time seller sees the scale at a glance. Risk (%) and cost ($) always appear together, and red is used only for high risk.
+
+The listing rehearsal runs a **500-iteration seeded Monte Carlo simulation**, estimating dispute counts and loss distributions for a planned sales volume. It then reruns the scenario with proposed listing improvements under comparable random conditions.
+
+<img width="1474" height="528" alt="스크린샷 2026-11-13 오전 1 49 46" src="https://github.com/user-attachments/assets/1deeb176-95fc-42b7-96ff-fdbe1be08704" />
+
+**A visual explanation, not just a number:** The demo presents planned sales as a **dot matrix—one dot for one sale**. Dots representing modeled dispute counts are colored by cause, making the scale and mix of potential complaints immediately understandable. Applying suggested listing fixes updates the dot pattern and expected-loss figure side by side. The **500 simulation runs are the calculation engine**; the **dots visualize the planned units and modeled results**, not 500 individual simulation runs.
+
+** 🔎 Why this approach?** A single “high/medium/low” label cannot distinguish common, low-cost issues from rare, expensive ones. **Frequency × severity** prioritizes improvements by economic exposure; simulation shows the range of possible outcomes rather than suggesting there is one certain future. A fixed seed makes before/after comparisons reproducible.
+
+The classification framework covers **16 causes**, while the supplied listing rehearsal models **five** of them quantitatively: **A1, A2, B1, B2, and E1**. The demo uses `mulberry32`, seeded with `4242 + planned units`.
+
+*Demo reference:* A **$89 product with a planned sale of 200 units** moves from **8.99 to 4.14 modeled disputes** and **$747 to $318 in modeled expected loss** after six listing improvements—approximately **57% lower expected loss** under the demo assumptions. These are simulated results, not observed merchant savings.
+
+---
+
+## 4. End-to-end product flow
+
+<img width="1606" height="262" alt="스크린샷 2026-11-13 오전 1 50 38" src="https://github.com/user-attachments/assets/bb97dd78-caf2-4f77-a44d-6176563fa96a" />
+
+
+**AI understands the context and helps communicate. Transparent calculation engines provide the risk and cost estimates. Merchant approval governs financial execution.**
+
+---
+
+## 5. Demo: three connected scenes
+
+| Scene | What judges see | What it demonstrates |
+| --- | --- | --- |
+| **1 · One-click access** | Launch **DisputeLess from the top of a PayPal-style seller dashboard** and enter the dispute workspace | Fits naturally into the merchant's existing workflow; the dashboard shown is a **demo mockup** |
+| **2 · Negotiate & resolve** | Open **#1042 / $72**, review the Korean customs-delay evidence (**A2**), inspect the eight-event buyer–seller history and risk trajectory, compare no response vs. a targeted request vs. refund, edit the AI-supported reply, approve an action, and inspect the result | A concrete link between root cause, **escalation risk (%)**, **expected cost ($)**, multilingual communication, and safe execution |
+| **3 · Prevent & rehearse** | Prepare a new **$89 listing / 200 units**, review the **one-dot-per-sale** dispute map and cause-level exposure, apply **six improvements**, rerun the 500-iteration model, and publish | Potential disputes become intuitive on a **200-dot sales map**, and prevention is financially visible **before selling**: **$747 → $318** expected loss in the demo |
+
+**Core test scenarios:** a shipment delayed by missing Korean customs information; product-description mismatches involving color and size; and avoidable confusion around delivery timing, customs guidance, and returns. The product-listing scene represents an **external online-store admin experience using DisputeLess**, not a native PayPal product-listing screen.
+
+---
+
+## 6. The feedback loop: a smarter next sale
+
+**DisputeLess turns each resolved case into a chance to prevent the next one.**
+
+1. **Learn from the dispute:** Connect the buyer’s complaint with the operational cause, conversation timeline, available shipment evidence, and past patterns.
+2. **Make a measurable decision:** Flag urgent cases and compare response options by modeled escalation risk and financial exposure.
+3. **Resolve across borders:** Give the seller a context-aware reply in the buyer’s language and route consequential actions through explicit approval.
+4. **Improve before the next sale:** Translate recurring causes into clearer product and delivery information; simulate the planned volume, compare the before/after dot maps, and publish with a more informed view of exposure.
+
+The result is a **continuous improvement loop**, not another dashboard: **every response informs a better listing, and every better listing has the potential to reduce future disputes**. For small merchants, that means making proactive quality improvements tangible in both **expected case counts and dollars at risk**—before the next batch of orders goes live.
+
+---
+
+## 7. Technical architecture
+
+```text
+PayPal-style entry point       DisputeLess dispute desk      Store listing rehearsal
+              \                      |                       /
+                    Application backend / evidence layer
+                      /             |              \
+             PayPal REST APIs    AI services    Quantitative engines
+              transactions      case summary   logistic response model
+              disputes          cause labels   expected-cost comparison
+              tracking          translation    500-run Monte Carlo
+              approved actions  reply drafting
+                      \             |              /
+                     Validation, seller approval & activity log
+                                     |
+                          Root-cause prevention loop
+```
+
+**Separation of responsibilities:** PayPal is the source of payment/dispute/shipping context and approved eligible actions; the AI layer interprets unstructured buyer communication; the deterministic layer calculates risk and modeled loss. This prevents a language model from fabricating percentages or silently moving money.
+
+---
+
+## 👩🏻‍💻 8. PayPal integration and sponsor technology
+
+## 8.1 PayPal Developer Platform — where the APIs fit
+
+| PayPal integration | API route / capability | Purpose in DisputeLess |
+| --- | --- | --- |
+| **Disputes API** | `GET /v1/customer/disputes`; `GET /v1/customer/disputes/{id}` | Load case state and reason codes as the starting point for diagnosis |
+| **Dispute actions** | Applicable dispute message, offer and evidence operations | Support the seller-approved negotiation and resolution workflow, when available for that case |
+| **Tracking API** | Shipping tracker creation / lookup | Connect delivery events to a case and support evidence-based replies and date checks |
+| **Transaction Search API** | `GET /v1/reporting/transactions` | Put complaints in order and transaction context; support volume-based analysis |
+| **Payments / Refunds API** | `POST /v2/payments/captures/{id}/refund` | Execute an eligible refund **only after seller approval** |
+
+**Integration approach:** server-side OAuth 2.0 credentials, PayPal Sandbox transactions and dispute scenarios for testing, and activity logging of actions and responses. The exact endpoints invoked by the final integrated application should match its network logs; the table above defines their roles in the product, not independently verified calls from the uploaded design exports.
+
+### 8.2 AI and other sponsor tools
+
+- **AI model/API:** Classifies buyer messages into operational causes with confidence and evidence; summarizes the case; prepares contextual multilingual replies; and suggests clearer product-listing language. Numeric risk and cost calculations remain outside the LLM.
+- **Additional sponsor tools:** `[SPONSOR_TOOL_NAME]` — `[SPECIFIC_FEATURE_OR_ENDPOINT]` — `[WHY_IT_MATTERS]`. Fill in only technologies actually used by the integrated team; do not claim unverified sponsor usage.
+- **Safety:** Explicit merchant approval for monetary actions; validation of promises, dates and amounts; server-side secret handling.
+
+---
+
+## ⭐ 9. What makes DisputeLess different
+
+### Context-aware cross-border resolution
+
+The value is not translation alone: DisputeLess considers the buyer’s language, the transaction, prior replies and missed commitments, and the available dispute history to recommend a response that addresses **why trust broke down**—rather than sending a generic translated template.
+
+### Decision-ready risk visualization
+
+High/medium/low case priorities, explainable risk percentages, estimated resolution costs, and **one-dot-per-sale simulations** turn uncertainty into something sellers can grasp at a glance, review, and challenge—not an opaque AI recommendation.
+
+### Prevention before the next sale
+
+DisputeLess doesn't end when the case is closed. It translates what the merchant learned into better listing information **before the next batch of orders**, helping small businesses sell with greater predictability and confidence.
+
+---
+
+## 10. Quick start for judges
+
+1. Open `LIVE_DEMO_URL` and use `[JUDGE_LOGIN_OR_ACCESS_METHOD]` (replace these placeholders before publishing).
+2. From the PayPal-style dashboard, launch **DisputeLess** and open **order #1042**.
+3. Inspect the A2 customs-delay case, compare response risk and costs, then review the proposed reply and seller-approval flow. Check the **PayPal Sandbox activity** in the integrated demo.
+4. Open the new-listing rehearsal for **$89 / 200 units**, inspect the **200-dot dispute map**, apply the six improvements, and compare **$747 → $318**.
+
+### Submission details to complete
+
+- [ ] Repository URL and verified local setup instructions
+- [ ] Working live demo, video, and Devpost URLs
+- [ ] PayPal Sandbox judge account and test access
+- [ ] AI model name/version and actual sponsor technologies
+- [ ] Team credits and license
+
+> **Data integrity note:** All percentages, case costs, and projected reductions above are **outputs from the supplied demo models and assumptions**, not validated predictions or real-world performance claims. The integrated PayPal/AI service is described as the team's completed product; exact production API calls, stack, and sponsor tools must be verified against the integrated repository before submission.
+
