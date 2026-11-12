@@ -149,15 +149,19 @@ export function CaseView({
             />
           </div>
 
-          {/* T116 F5-3: Send 뒤 랜드마크 이름 "Case progress" (시안 L312). 보이는 제목은 그대로 */}
-          <WorkZone titleId="work-title">
-            <div className="work-head">
-              <AiPill />
-              <h2 className="desk-card-title" id="work-title">
-                {t('case.work.title')}
-              </h2>
-              <span className="desk-card-sub">{t('case.work.sub')}</span>
-            </div>
+          {/* T116 F5-3: Send 뒤 랜드마크 이름 "Case progress" (시안 L312). T118 ③: 머리는 Send 전에만 */}
+          <WorkZone
+            titleId="work-title"
+            head={
+              <div className="work-head">
+                <AiPill />
+                <h2 className="desk-card-title" id="work-title">
+                  {t('case.work.title')}
+                </h2>
+                <span className="desk-card-sub">{t('case.work.sub')}</span>
+              </div>
+            }
+          >
             <ChoiceCards choices={desk.choices} />
             {/* 선택지 카드가 없으면(엔진 추천 없이 그릴 때) 요약 한 줄만 */}
             {desk.choices.length === 0 ? summaryNode : null}
