@@ -6,7 +6,8 @@
  */
 import { redirect } from 'next/navigation';
 
-import { applyLangParam } from '@/app/_server/locale';
+import { langRedirectTarget } from '@/app/_shared/lang-param';
+import { LangRedirect } from '@/app/_shared/lang-redirect';
 
 type Props = {
   params: Promise<{ disputeId: string }>;
@@ -23,6 +24,8 @@ function decode(raw: string): string {
 
 export default async function CaseRedirect({ params, searchParams }: Props) {
   const { disputeId } = await params;
-  await applyLangParam(`/cases/${encodeURIComponent(decode(disputeId))}`, await searchParams);
+  // T113: `?lang=`은 전체 페이지 이동으로 (loading.tsx Suspense 안의 redirect()는 router 이동)
+  const langTarget = langRedirectTarget(`/cases/${encodeURIComponent(decode(disputeId))}`, await searchParams);
+  if (langTarget !== null) return <LangRedirect href={langTarget} />;
   redirect(`/?item=${encodeURIComponent(decode(disputeId))}`);
 }

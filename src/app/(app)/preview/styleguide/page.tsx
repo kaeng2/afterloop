@@ -7,7 +7,9 @@
  */
 import type { Metadata } from 'next';
 
-import { applyLangParam } from '@/app/_server/locale';
+import { initLocale } from '@/app/_server/locale';
+import { langRedirectTarget } from '@/app/_shared/lang-param';
+import { LangRedirect } from '@/app/_shared/lang-redirect';
 import { BADGES, BADGE_ORDER, RISK_ORDER } from '@/app/_shared/badge-keys';
 import { AssumptionBadge, Badge, DemoBadge, RiskLevel } from '@/app/_shared/badges';
 import { CompareCard } from '@/app/_shared/compare-card';
@@ -42,7 +44,10 @@ export default async function StyleguidePage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await applyLangParam('/preview/styleguide', await searchParams);
+  // T113: `?lang=`은 전체 페이지 이동으로 (loading.tsx Suspense 안)
+  const langTarget = langRedirectTarget('/preview/styleguide', await searchParams);
+  if (langTarget !== null) return <LangRedirect href={langTarget} />;
+  await initLocale();
   const sample = compareSample();
   const noValue = t('common.noValue');
 
