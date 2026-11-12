@@ -19,7 +19,7 @@
   - 이번 주 카드 Demo data·Assumption 배지와 4칸 내용 (근거 없는 성과 숫자 금지)
   - 곡선·반응 칸·선택지 Assumption 배지, "Simulated send — nothing goes to PayPal"
   - 분쟁 번호·이름·날짜·금액 (실제·엔진 값. 번호가 길어 한 줄 처리)
-  - 머리글 "· Waiting for your reply" (화면 읽기 전용), 카드사 문구 밑줄 (v2.10 ①, 사람 확인 대기)
+  - 머리글 "· Waiting for your reply" (화면 읽기 전용), 카드사 문구 밑줄 (v2.10 ①, 11/12 "Keep it")
 - 시안 사본 데이터 사정 (`mock-data-NOTES.md`):
   - 이번 주 4번째 칸의 빈 라벨·값 줄 → 왼쪽 칸 아래가 약 20px 아래로
   - 한국어 미리보기 줄바꿈 (사본은 한 문단)
