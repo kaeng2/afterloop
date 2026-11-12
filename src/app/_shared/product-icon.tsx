@@ -30,7 +30,11 @@ export function ProductTile({
         <path d={PATHS[kind]} />
       </svg>
       {dot === undefined ? null : <span className={`product-tile-dot sev ${dot}`} />}
-      {badge === undefined || badge === 0 ? null : <span className="product-tile-badge num">{badge}</span>}
+      {badge === undefined || badge === 0 ? null : (
+        <span className="product-tile-badge num">
+          <span>{badge}</span>
+        </span>
+      )}
     </span>
   );
 }

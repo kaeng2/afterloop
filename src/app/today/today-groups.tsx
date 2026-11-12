@@ -55,14 +55,27 @@ function ItemRow({
         <ProductTile kind={row.icon} size="sm" dot={`today-dot today-dot-${done ? 'done' : item.dot}`} />
         <span className="today-item-body">
           <span className="today-item-top">
-            <span className="today-item-name num">{row.head}</span>
-            {row.product === null ? null : <span className="today-item-product"> · {row.product}</span>}
+            {/* T124a: 시안 L166-168처럼 글자는 안쪽 span (`{{it.order}}`·`· {{it.prod}}`·`{{it.cat}}`·…) */}
+            <span className="today-item-name num">
+              <span>{row.head}</span>
+            </span>
+            {row.product === null ? null : (
+              <span className="today-item-product">
+                · <span>{row.product}</span>
+              </span>
+            )}
           </span>
           <span className="today-item-tags">
             {row.category === null ? null : (
-              <span className={`today-pill chip today-pill-${row.categoryTone}`}>{row.category}</span>
+              <span className={`today-pill chip today-pill-${row.categoryTone}`}>
+                <span>{row.category}</span>
+              </span>
             )}
-            {row.due === null ? null : <span className="today-item-due num">{row.due}</span>}
+            {row.due === null ? null : (
+              <span className="today-item-due num">
+                <span>{row.due}</span>
+              </span>
+            )}
             {simulatedLabel ? <span className="today-item-simulated">{t('case.progress.simulated')}</span> : null}
             {/* T122e: 표시용 번호·건수(시드 demo-display)면 Demo data, 실제 PayPal 분쟁 번호는 보조 글로 */}
             {row.demo === true ? <Badge kind="demo" /> : null}
@@ -75,10 +88,12 @@ function ItemRow({
           {/* T122b 시안 v6 L148: 아래 줄 = 구매자 + 오른쪽 위험 % 칩 (엔진 무응답 pChargeback. 값이 없거나 끝낸 항목은 칩 없음) */}
           {row.who === null && chip === null ? null : (
             <span className="today-item-subrow">
-              <span className="today-item-sub">{row.who ?? ''}</span>
+              <span className="today-item-sub">
+                <span>{row.who ?? ''}</span>
+              </span>
               {chip === null ? null : (
                 <span className={`today-risk today-risk-${chip.level}`} title={t('today.risk.tip')}>
-                  {t('today.risk.chip', { percent: chip.percent, level: t(chip.levelKey) })}
+                  <span>{t('today.risk.chip', { percent: chip.percent, level: t(chip.levelKey) })}</span>
                 </span>
               )}
             </span>
@@ -111,9 +126,17 @@ function GroupCard({
       <div className="today-group-head sech">
         <span className="today-group-bar" aria-hidden="true" />
         <h2 className="today-group-title" id={`today-group-${group.key}`}>
-          {title} <span className="today-group-count num">({group.rows.length})</span>
+          {/* T124a: 시안 L161 `<b>{{g.title}} <span>({{g.count}})</span></b>` — 글자는 안쪽 span */}
+          <span>{title}</span>{' '}
+          <span className="today-group-count num">
+            (<span>{group.rows.length}</span>)
+          </span>
         </h2>
-        {group.hint === null ? null : <span className="today-group-hint">{group.hint}</span>}
+        {group.hint === null ? null : (
+          <span className="today-group-hint">
+            <span>{group.hint}</span>
+          </span>
+        )}
       </div>
       <ul className="today-items">
         {group.rows.map((row) => (

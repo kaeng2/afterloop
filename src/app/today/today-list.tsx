@@ -28,12 +28,15 @@ export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
       <div className="weekly-head">
         <div className="weekly-titles">
           <h2 className="weekly-title" id="weekly-title">
-            {t('today.weekly.title')}
+            {/* T124a: 시안 L147처럼 글자는 안쪽 span (`<b>{{v.dashT}}</b>` 등) */}
+            <span>{t('today.weekly.title')}</span>
           </h2>
           {/* T110: Demo data(예외)는 부제 줄 끝에. 오른쪽에 두면 1440 폭에서 제목이 두 줄로 꺾이거나 배지·알약이 쌓여
               카드가 시안(L125 제목 한 줄 + 오른쪽 AI 알약 하나)보다 길어진다 */}
           <span className="weekly-sub-row">
-            <span className="weekly-sub">{t('today.weekly.sub')}</span>
+            <span className="weekly-sub">
+              <span>{t('today.weekly.sub')}</span>
+            </span>
             {weekly.usesDemoData ? <Badge kind="demo" /> : null}
           </span>
         </div>
@@ -45,34 +48,54 @@ export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
       <div className="weekly-grid">
         {/* T116 F1-35: 시안 L695-700 앞 3칸(Open·Money·Replies) 모두 끝에 한 번 깜빡인다. "+$N"은 Money 칸만 */}
         <WeeklyBumpCell className="weekly-cell" showAmount={false}>
-          <span className="weekly-label">{t('today.weekly.open')}</span>
-          <span className="weekly-value num">{weekly.openDisputes}</span>
-          <span className="weekly-note">{t('today.weekly.openNote')}</span>
+          <span className="weekly-label">
+            <span>{t('today.weekly.open')}</span>
+          </span>
+          <span className="weekly-value num">
+            <span>{weekly.openDisputes}</span>
+          </span>
+          <span className="weekly-note">
+            <span>{t('today.weekly.openNote')}</span>
+          </span>
         </WeeklyBumpCell>
         {weekly.keepable === null ? null : (
           // T091: 액션이 끝나면 "+$N just now" (엔진 actionSavings·trackingSavings 값, 화면 상태만)
           <WeeklyBumpCell className="weekly-cell">
-            <span className="weekly-label">{t('today.weekly.keepable')}</span>
-            <span className="weekly-value num">{weekly.keepable}</span>
+            <span className="weekly-label">
+              <span>{t('today.weekly.keepable')}</span>
+            </span>
+            <span className="weekly-value num">
+              <span>{weekly.keepable}</span>
+            </span>
             <span className="weekly-note">
-              {t('today.weekly.keepableNote')} <Badge kind="assumption" />
+              <span>{t('today.weekly.keepableNote')}</span> <Badge kind="assumption" />
             </span>
           </WeeklyBumpCell>
         )}
         {weekly.aiDrafts === null ? null : (
           <WeeklyBumpCell className="weekly-cell" showAmount={false}>
-            <span className="weekly-label">{t('today.weekly.drafts')}</span>
-            <span className="weekly-value num">{weekly.aiDrafts}</span>
-            <span className="weekly-note">{t('today.weekly.draftsNote')}</span>
+            <span className="weekly-label">
+              <span>{t('today.weekly.drafts')}</span>
+            </span>
+            <span className="weekly-value num">
+              <span>{weekly.aiDrafts}</span>
+            </span>
+            <span className="weekly-note">
+              <span>{t('today.weekly.draftsNote')}</span>
+            </span>
           </WeeklyBumpCell>
         )}
         {weekly.keepable === null ? (
           <WeeklyBumpCell className="weekly-cell weekly-fact">
-            <span className="weekly-note">{t('today.weekly.fact')}</span>
+            <span className="weekly-note">
+              <span>{t('today.weekly.fact')}</span>
+            </span>
           </WeeklyBumpCell>
         ) : (
           <div className="weekly-cell weekly-fact">
-            <span className="weekly-note">{t('today.weekly.fact')}</span>
+            <span className="weekly-note">
+              <span>{t('today.weekly.fact')}</span>
+            </span>
           </div>
         )}
       </div>

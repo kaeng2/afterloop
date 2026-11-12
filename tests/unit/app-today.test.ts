@@ -436,11 +436,11 @@ describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
     const markup = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
     // 점은 상품 아이콘(장식, aria-hidden) 안 오른쪽 위
     expect(markup).toMatch(/<span class="product-tile ptile product-tile-sm" aria-hidden="true">.*?<span class="product-tile-dot sev today-dot today-dot-high"><\/span><\/span>/);
-    // 알약 = 범주 (서연은 위험 High라 빨강)
-    expect(markup).toContain('<span class="today-pill chip today-pill-high">Not received · Customs hold</span>');
-    expect(markup).toContain('<span class="today-pill chip today-pill-neutral">Not as described · Color</span>');
-    expect(markup).toContain('<span class="today-pill chip today-pill-neutral">Missing tracking</span>');
-    expect(markup).toContain('<span class="today-pill chip today-pill-neutral">Not received · Repeat claim</span>');
+    // 알약 = 범주 (class는 위험 단계. Desk 색은 T124a부터 시안 v6 catSt대로 모두 회색 — desk.css)
+    expect(markup).toContain('<span class="today-pill chip today-pill-high"><span>Not received · Customs hold</span></span>');
+    expect(markup).toContain('<span class="today-pill chip today-pill-neutral"><span>Not as described · Color</span></span>');
+    expect(markup).toContain('<span class="today-pill chip today-pill-neutral"><span>Missing tracking</span></span>');
+    expect(markup).toContain('<span class="today-pill chip today-pill-neutral"><span>Not received · Repeat claim</span></span>');
     // 상태(High · Watch · Waiting approval · Prevent · Skipped)는 화면 읽기 글자로 남는다
     for (const status of ['High', 'Watch', 'Waiting approval', 'Prevent', 'Skipped']) {
       expect(markup).toMatch(new RegExp(`<span class="today-sr-only">[^<]*· ${status}</span>`));

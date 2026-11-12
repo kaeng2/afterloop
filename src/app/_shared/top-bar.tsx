@@ -74,9 +74,16 @@ export function TopBar({
             <Wordmark />
           </Link>
           <span className="shell-divider" aria-hidden="true" />
-          <span className="shell-for">{t('nav.forSellers')}</span>
+          {/* T124a: 시안처럼 글자는 안쪽 span (시안 `{{v.badge}}` = 알약 span 안의 글자 span) */}
+          <span className="shell-for">
+            <span>{t('nav.forSellers')}</span>
+          </span>
         </div>
-        {dateLine === undefined ? null : <span className="shell-date">{dateLine}</span>}
+        {dateLine === undefined ? null : (
+          <span className="shell-date">
+            <span>{dateLine}</span>
+          </span>
+        )}
 
         {/* T090 시안 v4: 로고·꼬리표·날짜는 왼쪽, 탭·서랍·언어·판매자는 오른쪽에 작게 */}
         <div className="shell-actions">

@@ -319,10 +319,10 @@ describe('T106-5 (F1-22): 처리 뒤 칩 배지·"N open cases"는 done이 아�
 
     const before = html(createElement(ProductFilterBarView, { filter: FILTER, cases, done: {}, selectedSku: null }));
     expect(before).toContain(t('today.filter.summary', { products: 4, units: 630, cases: 3 }));
-    expect(before).toContain('product-tile-badge num">2<');
+    expect(before).toContain('product-tile-badge num"><span>2<');
     const after = html(createElement(ProductFilterBarView, { filter: FILTER, cases, done: { [JIHO]: { simulated: true } }, selectedSku: null }));
     expect(after).toContain(t('today.filter.summary', { products: 4, units: 630, cases: 2 }));
-    expect(after).not.toContain('product-tile-badge num">2<');
+    expect(after).not.toContain('product-tile-badge num"><span>2<');
     expect(after).toContain(t('today.filter.subOne', { units: 240, cases: 1 }));
   });
 });
