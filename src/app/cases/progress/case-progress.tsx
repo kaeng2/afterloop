@@ -369,7 +369,7 @@ export function CaseProgress({
         </p>
       ) : null}
       <div className="cprog-foot">
-        <button type="button" className="desk-button-tint" onClick={replay}>
+        <button type="button" className="desk-button-tint btn b-tint b-sm" onClick={replay}>
           {t('case.progress.replay')}
         </button>
       </div>

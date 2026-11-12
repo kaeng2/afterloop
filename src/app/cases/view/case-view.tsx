@@ -148,7 +148,7 @@ export function CaseView({
             />
           </div>
 
-          <section className="work" aria-labelledby="work-title">
+          <section className="work zone-work" aria-labelledby="work-title">
             <div className="work-head">
               <AiPill />
               <h2 className="desk-card-title" id="work-title">

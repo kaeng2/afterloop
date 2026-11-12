@@ -20,11 +20,11 @@ export function ChoiceCards({ choices }: { choices: ChoiceView[] }) {
   if (choices.length === 0) return null;
   return (
     <div className="desk-step">
-      <div className="desk-rail" aria-hidden="true">
-        <span className="desk-step-num">1</span>
-        <span className="desk-rail-line" />
+      <div className="desk-rail rail" aria-hidden="true">
+        <span className="desk-step-num nstep">1</span>
+        <span className="desk-rail-line rline" />
       </div>
-      <div className="desk-step-body">
+      <div className="desk-step-body stpc">
         <div className="desk-step-head">
           <h3 className="desk-step-title">{t('case.choice.title')}</h3>
           <span className="desk-step-sub">{t('case.choice.sub', { count: choices.length })}</span>

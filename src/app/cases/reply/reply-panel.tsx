@@ -959,10 +959,10 @@ export function ReplyPanel({
   // ── 답장 ────────────────────────────────────────────────────────────────
   return (
     <section className="reply desk-step" aria-labelledby="reply-title">
-      <div className="desk-rail" aria-hidden="true">
-        <span className="desk-step-num">2</span>
+      <div className="desk-rail rail" aria-hidden="true">
+        <span className="desk-step-num nstep">2</span>
       </div>
-      <div className="desk-step-body">
+      <div className="desk-step-body stpc">
         <div className="desk-step-head">
           {anchor === null ? (
             <h3 className="desk-step-title" id="reply-title">
@@ -983,7 +983,7 @@ export function ReplyPanel({
               {/* 시안: rushed·Use AI draft = typeOut, Clear = 바로 비움. 타이핑 중에는 모두 꺼진다 */}
               <button
                 type="button"
-                className="desk-button-tint"
+                className="desk-button-tint btn b-tint b-sm"
                 disabled={busy || typing}
                 onClick={() => typeOut(t('case.reply.rushedExample'), 'custom')}
               >
@@ -991,7 +991,7 @@ export function ReplyPanel({
               </button>
               <button
                 type="button"
-                className="desk-button-tint"
+                className="desk-button-tint btn b-tint b-sm"
                 disabled={busy || typing}
                 onClick={() => typeOut(anchor, bestMove)}
               >
@@ -1000,7 +1000,7 @@ export function ReplyPanel({
               </button>
               <button
                 type="button"
-                className="desk-button-tint"
+                className="desk-button-tint btn b-tint b-sm"
                 disabled={busy || typing}
                 onClick={() => {
                   setText('');

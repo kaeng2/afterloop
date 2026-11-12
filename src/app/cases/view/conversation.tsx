@@ -143,7 +143,7 @@ export function Conversation({
   const lastReal = [...messages].reverse().find((message) => message.source === 'paypal') ?? null;
 
   return (
-    <section className="case-conversation" aria-labelledby="case-conversation">
+    <section className="case-conversation zone-buyer" aria-labelledby="case-conversation">
       <div className="desk-card-head">
         <h2 className="desk-card-title" id="case-conversation">
           {t('case.view.conversation')}
