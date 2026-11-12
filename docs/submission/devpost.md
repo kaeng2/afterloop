@@ -60,7 +60,7 @@ DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo run
 
 ## Testing instructions
 
-- **Live demo, no login needed:** https://disputeless.onrender.com — open `/intro` → click **Respond →** to reach the desk `/`, then `/listing` by address. Full steps: `docs/submission/testing.md` in the repo. [확인 필요: 저장소 공개 뒤 GitHub 링크로]
+- **Live demo, no login needed:** https://disputeless.onrender.com — open `/demo/seller-dashboard` → click **Respond →** to reach the desk `/`, then `/demo/store/new-product` by address. Full steps: `docs/submission/testing.md` in the repo. [확인 필요: 저장소 공개 뒤 GitHub 링크로]
 - Public mode: reads are real PayPal sandbox calls; send, offer and add-tracking are **Simulated** (zero PayPal writes). AI answers for the demo cases are cached; uncached AI calls have an hourly cap.
 - We don't share the sandbox login (a shared login could change the demo disputes). To use your own sandbox, create a free app at developer.paypal.com and set `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` in `.env`.
 

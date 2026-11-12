@@ -10,8 +10,8 @@
 
 Standalone addresses on the [live demo](https://disputeless.onrender.com):
 
-1. **`/intro`** — first scene (demo seller dashboard) → click **Respond →** to reach **`/`**, the DisputeLess desk with three real PayPal sandbox disputes.
-2. **`/listing`** — new-listing check before you publish (Scene 3).
+1. **`/demo/seller-dashboard`** — first scene (demo seller dashboard) → click **Respond →** to reach **`/`**, the DisputeLess desk with three real PayPal sandbox disputes.
+2. **`/demo/store/new-product`** — new-listing check before you publish (Scene 3).
 
 Public mode never writes to PayPal; sends are simulated. Details: [docs/submission/testing.md](docs/submission/testing.md).
 
