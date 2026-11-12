@@ -415,14 +415,16 @@ describe('만들 것 7: 상품 칩 필터 · 머리글 sticky', () => {
 describe('모션: 시안 값 그대로 (config/motion.json)', () => {
   const mock = read('docs/design/mockup-v4/Desk.dc.html');
 
-  it('타이핑 34ms마다 2글자 (시안 typeOut), 움직임 줄이기면 바로 전체', () => {
-    expect(mock).toMatch(/i = Math\.min\(text\.length, i \+ 2\)/);
-    expect(mock).toMatch(/\}, 34\);/);
-    expect(typeOutTiming()).toEqual({ intervalMs: 34, step: 2 });
-    expect(nextTyped(0, 5, 2)).toBe(2);
-    expect(nextTyped(4, 5, 2)).toBe(5);
-    expect(typeOutFrames('abcde', 2, false)).toEqual(['ab', 'abcd', 'abcde']);
-    expect(typeOutFrames('abcde', 2, true)).toEqual(['abcde']);
+  // T122e: 시안 v6 typeOut = 32ms·1글자 (config/motion.json `desk.typeOut`, DECISIONS 2026-11-12 컨트롤 타워 줄)
+  it('타이핑 32ms마다 1글자 (시안 v6 typeOut), 움직임 줄이기면 바로 전체', () => {
+    const mockV6 = read('docs/design/mockup-v6/Desk.dc.html');
+    expect(mockV6).toMatch(/i = Math\.min\(text\.length, i \+ 1\)/);
+    expect(mockV6).toMatch(/\}, 32\);/);
+    expect(typeOutTiming()).toEqual({ intervalMs: 32, step: 1 });
+    expect(nextTyped(0, 5, 1)).toBe(1);
+    expect(nextTyped(4, 5, 1)).toBe(5);
+    expect(typeOutFrames('abc', 1, false)).toEqual(['a', 'ab', 'abc']);
+    expect(typeOutFrames('abcde', 1, true)).toEqual(['abcde']);
   });
 
   it('타이핑 중에는 Send를 막는다 (관문 앞에 둔다)', () => {
