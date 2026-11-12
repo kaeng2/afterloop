@@ -12,7 +12,7 @@ Seo-yeon, a buyer in Korea, writes in Korean that her \$72 sweater never came an
 
 ## Inspiration
 
-A dispute costs a small seller more than the order: Chargebacks911 estimates that merchants lose more than four dollars for every dollar disputed (a merchant survey estimate), and a US PayPal seller pays a \$15 Standard Dispute Fee on a lost case. The buyer loses too: 57.4% of shoppers in Sendcloud's survey of eight European countries say they won't buy again from a retailer after a parcel never arrives. Sellers who ship abroad are hit hardest, because they often can't read the buyer's language or know the customs rules, so many just refund. We wanted a tool for the window before a dispute becomes a chargeback: one that tells the seller *why* it is happening and gives the buyer a real answer in their own language.
+A dispute costs a small seller more than the order: a US PayPal seller pays a \$15 Standard Dispute Fee on a lost case, and Chargebacks911 estimates that merchants lose more than four dollars for every dollar disputed (a merchant survey estimate). The buyer loses too: Seo-yeon has waited three weeks for her parcel and still has no answer she can read. The seller can lose the customer as well: 57.4% of shoppers in Sendcloud's survey of eight European countries say they won't buy again from a retailer after a parcel never arrives. We wanted a tool for the window before a dispute becomes a chargeback: one that tells the seller *why* it is happening and gives the buyer a real answer in their own language.
 
 Sources: [Chargebacks911](https://chargebacks911.com/consumer-pricing/), [PayPal US merchant fees](https://www.paypal.com/us/business/paypal-business-fees), [Sendcloud, 2025](https://www.sendcloud.com/how-delivery-frustrations-impact-repeat-purchases/).
 
@@ -81,7 +81,7 @@ Without the carrier record, a refund wins by \$1.95. With it, a reply wins whene
 
 **Stack.** Next.js 15, React 19, TypeScript, zod, the Anthropic SDK, AG Grid Community for the two All products tables, and Render for the public demo (one web service from `render.yaml`).
 
-**What is real and what is not.** Sandbox orders, the 3 demo disputes (including the buyers' Korean text), reads, sends and tracking are real PayPal sandbox. Carrier events, earlier inquiries, Lena and Yuki, order numbers like #1042, and due dates are demo data. Rates, win chances, the reply forecast and the listing-check weights are our assumptions (full table: [honesty-table.md](https://github.com/kaeng2/afterloop/blob/main/docs/submission/honesty-table.md)).
+**What is real and what is not.** Sandbox orders, the 3 demo disputes (including the buyers' Korean text), reads, sends and tracking are real PayPal sandbox (on the public link, sends and tracking are Simulated; real sends happen only in the recording setup). Carrier events, earlier inquiries, Lena and Yuki, order numbers like #1042, and due dates are demo data. Rates, win chances, the reply forecast and the listing-check weights are our assumptions (full table: [honesty-table.md](https://github.com/kaeng2/afterloop/blob/main/docs/submission/honesty-table.md)).
 
 ## Challenges we ran into
 
@@ -109,9 +109,9 @@ Without the carrier record, a refund wins by \$1.95. With it, a reply wins whene
 
 **No login is needed. Open https://disputeless.onrender.com/demo/seller-dashboard and follow three steps** (the first load can take a few seconds while the free server wakes up).
 
-1. **Reply to Seo-yeon.** Click **Handle all 3 with DisputeLess**. Turn on **✦ AI Respond now**, click **Try a rushed reply** (95%), then **Use AI draft** (40%), open **Details**, and click **Send**. Watch "What happens next · Simulated" and click **Forward to carrier**.
+1. **Reply to Seo-yeon.** Click **Handle all 3 with DisputeLess**. Turn on **✦ AI Respond now**. Click **Try a rushed reply** and wait until the typing stops (95%). Click **Use AI draft** and wait about 16 seconds until the typing stops (40%). Open **Details**, and click **Send**. Watch "What happens next · Simulated" and click **Forward to carrier**.
 2. **See the other cases.** Click the **Knit Cardigan** product chip to open Ji-ho's card (#1038, "Keeps ≈\$34", "How AI handled this"). Click **All products** for the two AG Grid tables, then **PayPal activity** (top right) for the call log.
-3. **Check a new listing.** Type `/demo/store/new-product` in the address bar. Click **Publish product** (4.5%), **See details and fix**, insert the AI text, then **Recalculate** (2.1%).
+3. **Check a new listing.** Type `/demo/store/new-product` in the address bar. Click **Publish product** (4.5%), then **See details and fix**. Click all six **Insert** buttons, then **Recalculate** (2.1%).
 
 Public mode makes real sandbox reads; Send, Send offer, Add all, Refund, Looks good and Forward are **Simulated** (zero PayPal writes). AI answers for the demo cases are cached, and uncached AI calls have an hourly cap. We don't share the sandbox login, because a shared login could change the demo disputes; to use your own sandbox, see [testing.md](https://github.com/kaeng2/afterloop/blob/main/docs/submission/testing.md).
 

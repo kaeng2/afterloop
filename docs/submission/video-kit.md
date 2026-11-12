@@ -14,6 +14,8 @@
 
 2026-11-12 · 컨트롤 타워가 다시 씀 (3차 리뷰 고칠 것 ①). **13:00 고정 화면 기준**이다. 배포본과 같은 로컬 빌드(공개 모드, http://localhost:3111)를 1920×1080에서 Playwright로 직접 눌러 보고 화면 글자를 그대로 옮겼다 (11/12 오전 KST). 영상은 기획자가 만들고, **실제 전송 장면만 경희가 녹화 모드로 따로 찍는다.**
 
+2026-11-13 · 장면 3·4·5, 2-1, 3절 표를 **고정 화면**(배포 화면 코드 = 커밋 94f496f와 같음) 글자에 맞춤 (3차 글 검토 고칠 것 ②). 근거는 11/13 00:40~00:55 KST 배포 화면 캡처(`reports/review-20261113-3a.md`).
+
 - 숫자는 모두 엔진이 지금 계산한 값이다. 바탕은 가정값이다: `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 두 파일은 "가정(기획 시안)"). **가정값이 바뀌면 숫자도 바뀐다.**
 - **날짜가 들어간 글자는 녹화하는 날·시각에 따라 바뀐다** (3절 아래 "날짜 규칙"). 녹화 직전에 화면과 3절 표를 한 번 더 대조한다.
 - 확인하지 못한 것은 **[확인 필요]**라고 적었다.
@@ -35,9 +37,9 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 |---|---|---|---|---|
 | 1 | ~8초 | 타이틀 | 로고 + 한 줄 | "Fernwood Knits is a **fictional seller** on the **PayPal sandbox**." |
 | 2 | ~10초 | **/demo/seller-dashboard** | 맨 위 검은 띠 "**Demo mock — not a real PayPal page**". 오른쪽 "Resolution Center · 3 open", 서연 줄 "Respond by Nov 30 · mentions chargeback". 오른쪽 위 검은 말풍선 "3 cases need a reply. One buyer mentioned a chargeback — DisputeLess has a plan ready." → 파란 버튼 **[Handle all 3 with DisputeLess]** 클릭 → 서연 화면으로 간다 | "This seller dashboard is **a mock, not PayPal's page**." (화면 띠에도 적혀 있다) |
-| 3 | ~18초 | **Desk** 서연 위쪽 (`/?item=PP-R-GMS-10197661`) | 오른쪽 위 큰 숫자 "**Dispute risk 40%** · with your draft · **80% → 40%**" (Assumption 배지). 한국어 원문의 "**카드사에 이의제기**" 빨간 밑줄 → [Show history ▾] → "**Oct 30 · Carrier: Customs hold – recipient customs ID missing**" 줄 (Demo data 배지) | **필수**: "The carrier record — **demo data here** — shows a customs hold." |
-| 4 | ~25초 | Desk 아래 "Respond now" (천천히 아래로 스크롤) | ① 선택지 카드 3개: "**Reply with the facts · Best · Chargeback 40% · cost ~$37**", "Offer a partial refund · Not offered for this case type (your policy)", "**Refund in full · Chargeback 3% · cost ~$74**" ② **[Try a rushed reply]** → 빨간 알약 "**Chargeback 95%**", 칩 "Blames buyer or customs +8 pts", "Vague timing +4 pts", "Missing: A date −7 pts" 등, 예상 비용 "**Expected cost $85**" ③ **[AI Use AI draft]** → 글자가 타이핑되며(약 9초, 편집에서 빨리 감기) "**Chargeback 40%**", "**5 good**" ✓ 칩 5개 ④ **[Details ⌄]** → 첫 줄 "**PayPal data only: Full refund $74**", ✓ Facts match · ✓ No new promises · Follow-up date "11월 19일", 오른쪽 "**Seo-yeon will see (Korean)**" 한국어 글 | **가정**: "These percentages come from **our assumed model**, not statistics." 날짜: "Code fills in the date — **a date to write back, not a delivery promise**." 헤드라인 대비: "PayPal data alone says refund $74; with the carrier record, a reply is expected to cost about $37 — under our assumptions." |
-| 5 | **≤10초** | **실제 전송** (경희 녹화분, 5절) | [Send in Korean] → 브라우저 확인 창 OK → 진행 첫 줄 "Reply sent in Korean · PayPal sandbox · PP-R-GMS-10197661" | — (화면이 말한다) |
+| 3 | ~18초 | **Desk** 서연 위쪽 (`/?item=PP-R-GMS-10197661`) | 답장 칸은 비어 있고 스위치 "**✦ AI Respond now**"는 꺼져 있다. 오른쪽 위 큰 숫자 "**Dispute risk 91%** · **if no reply by Nov 14**" (무응답 예측, Assumption 배지, 날짜는 녹화일에 따라 바뀜 — 3절). 한국어 원문의 "**카드사에 이의제기**" 빨간 밑줄 → [Show history ▾] → "**Oct 30 · Carrier: Customs hold – recipient customs ID missing**" 줄 (Demo data 배지) | **필수**: "The carrier record — **demo data here** — shows a customs hold." |
+| 4 | ~25초 | Desk 아래 "Your reply" (천천히 아래로 스크롤) | ① 스위치 **[✦ AI Respond now]** 켜기 → 선택지 카드 3개: "**Reply with the facts · Best · Chargeback 40% · cost ~$37**", "Offer a partial refund · Not offered for this case type (your policy)", "**Refund in full · Chargeback 3% · cost ~$74**". AI 초안이 바로 타이핑된다(약 16초, 편집에서 빨리 감기. 도중에는 62% · "1 missing" 같은 중간 숫자) ② **[Try a rushed reply]** → 타이핑이 끝날 때까지 기다림 → 빨간 알약 "**Chargeback 95%**", 칩 "Blames buyer or customs +8 pts", "Vague timing +4 pts", "Missing: A date −7 pts" 등, 예상 비용 "**Expected cost $85**", "Dispute risk 91% → 95%" ③ **[AI Use AI draft]** → 타이핑 약 16초가 끝난 뒤 "**Chargeback 40%**", "**5 good**" ✓ 칩 5개, "Dispute risk 91% → 40%", 위 "Translation (Korean)" 칸에 한국어 글. 위쪽 큰 숫자는 "Dispute risk 40% · with your draft · 80% → 40%" ④ **[Details]** → "**PayPal data only: Full refund $74**", "Back-translation to English", ✓ Facts match · ✓ No new promises · Follow-up date "11월 19일" | **가정**: "These percentages come from **our assumed model**, not statistics." 날짜: "Code fills in the date — **a date to write back, not a delivery promise**." 헤드라인 대비: "PayPal data alone says refund $74; with the carrier record, a reply is expected to cost about $37 — under our assumptions." |
+| 5 | **≤10초** | **실제 전송** (경희 녹화분, 5절) | **[Send]** → 브라우저 확인 창 OK → 진행 첫 줄 "Reply sent in Korean · PayPal sandbox · PP-R-GMS-10197661" | — (화면이 말한다) |
 | 6 | ~5초 | PayPal 샌드박스 분쟁 화면 (경희 녹화분) | 같은 한국어 문장 2~3초. **메시지 부분만** (주문일 안 보이게) | — |
 | 7 | ~15초 | Send 뒤 "**What happens next · Simulated**" (경희 녹화분에서 이어서) | "Expected steps after your reply — not real events" → "Seo-yeon replied with the customs ID · Simulated · Risk 0%" (통관번호는 P•••••••9012로 가려짐) → **[Forward to carrier]** 클릭 → "Customs ID forwarded to the carrier", "Customs released the parcel" → 토스트 "**Dashboard updated · +$37 kept**", 왼쪽 "**Done today · Simulated (1)**"(녹화 모드 글자는 [확인 필요]), 이번 주 카드 "+$37 just now" | "What happens next is **a simulated scenario** — expected steps, not real events." |
 | 8 | ~8초 | Desk 왼쪽 Prevent "2 orders · Missing tracking" (경희 녹화분) | 상세 "Add tracking to 2 orders in PayPal" → **[Add all 2]** → 녹화 모드 "**✓ 2 trackers added · Orders tracking API · 201**", 버튼 "Added ✓" | — |
@@ -56,9 +58,9 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 
 | 장면 | 하는 일 | 화면 글자 | 비고 |
 |---|---|---|---|
-| A. 급한 답장을 칩으로 고치기 | [Try a rushed reply] → "+ Add" 3번 → "Remove" 2번 → 95% → **40%**, "5 good" → [Translate & check] → "Checked — this is what will be sent" → [Send in Korean] | 진행은 7번과 같은 "Seo-yeon replied with the customs ID" 흐름 | Translate & check는 실시간 AI 번역 1회 (약 7초, 공개 링크 시간당 한도를 쓴다). 3차 리뷰 버그 ①(⟦SELLER_NAME_1⟧로 막힘)은 11/12 로컬 빌드에서 **재현되지 않았다** (통과, Send 켜짐) |
-| B. 급한 답장을 그대로 보내면 (차지백 갈래) | [Try a rushed reply] → [Translate & check] (실시간 AI 번역 1회, 약 7~20초) → [Send in Korean] | "What happens next · Simulated" → "Reply sent in Korean · Simulated · **Risk 95%**" → "**Seo-yeon replied angrily**" “답이 이게 다예요? 카드사에 이의제기할게요.” → "Consider a full refund before it becomes a chargeback" **[Approve refund]** (Simulated, 쓰기 0) | **배포 1429b98(11/12)에서 확인함** — T117로 ⟦BUYER_NAME_1⟧ 막힘을 고쳤다. 공개 링크에서만 찍는다 (녹화 모드의 서연 건에서는 하지 않는다). 공개 링크 AI 시간당 한도를 쓴다 |
-| C. 지호 카드 | 왼쪽 Reply needed의 "PP-R-MBJ-10197650 · Knit Cardigan" → "**Offer 15% back ($7.20), the buyer keeps it**" → [Send offer] → "Offer sent ✓ · Simulated · nothing was sent", 이번 주 카드 "+$30 just now" | 버튼 글자는 "Send offer" (금액 없음) | 녹화 모드에서 실제 제안(make-offer)은 **한 번만** 보낼 수 있다 (사람 규칙: 서연·지호 실제 전송은 녹화 때 한 번만, 제안은 보내기만 하고 수락하지 않는다). 연습은 공개 링크에서만 |
+| A. 급한 답장을 칩으로 고치기 | [Try a rushed reply] → "+ Add" 3번 → "Remove" 2번 → 95% → **40%**, "5 good" → [Translate & check] → "Checked — this is what will be sent" → [Send] | 진행은 7번과 같은 "Seo-yeon replied with the customs ID" 흐름 | Translate & check는 실시간 AI 번역 1회 (약 7초, 공개 링크 시간당 한도를 쓴다). 3차 리뷰 버그 ①(⟦SELLER_NAME_1⟧로 막힘)은 11/12 로컬 빌드에서 **재현되지 않았다** (통과, Send 켜짐) |
+| B. 급한 답장을 그대로 보내면 (차지백 갈래) | [Try a rushed reply] → [Translate & check] (실시간 AI 번역 1회, 약 7~20초) → [Send] | "What happens next · Simulated" → "Reply sent in Korean · Simulated · **Risk 95%**" → "**Seo-yeon replied angrily**" “답이 이게 다예요? 카드사에 이의제기할게요.” → "Consider a full refund before it becomes a chargeback" **[Approve refund]** (Simulated, 쓰기 0) | **배포 1429b98(11/12)에서 확인함** — T117로 ⟦BUYER_NAME_1⟧ 막힘을 고쳤다. 공개 링크에서만 찍는다 (녹화 모드의 서연 건에서는 하지 않는다). 공개 링크 AI 시간당 한도를 쓴다 |
+| C. 지호 카드 (품질 분쟁 #1038) | 상품 칩 [Knit Cardigan] → 지호 카드 (#1038 · Not as described · Quality, PP-R-ZOK-10200237) → "**Offer a free repair, she covers shipping**", "**Keeps ≈$34**" → "How AI handled this" 4단계(수선 ≈$16 for you vs 전액 환불 $50) → "On approval · POST /v1/customer/disputes/{id}/send-message" → [Send] | "Simulated send — nothing goes to PayPal". Send 뒤 화면 글자는 [확인 필요] | 이 건은 지금 **PayPal 심사 중(under review)**이라 send-message 단계는 데모에서 **Simulated**다 (DECISIONS 11/13 00:50 ②). 실제 전송 장면으로 쓰지 않는다. 공개 링크에서만 찍는다 |
 
 ## 3. 숫자 대조표 (화면 글자 ↔ 나온 곳)
 
@@ -68,16 +70,17 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 | 2 /demo/seller-dashboard | 서연 "$72.00 · Respond by Nov 30", 지호 "$48.00 · Respond by Nov 29" | 실제 PayPal 분쟁 번호·응답 기한(UTC 날짜)을 고정 문구로 | — |
 | 3 Desk 위 | "Wed, Nov 11 · Black Friday in 16 days" 같은 날짜 줄 | 판매자 시간대(America/New_York) 오늘 날짜, 대목 2026-11-27 | **14:00 KST 전에는 전날**이 보인다 (아래 날짜 규칙) |
 | 3 이번 주 카드 | Open disputes **3** · real PayPal sandbox cases | 실제 샌드박스 분쟁 수 | — |
-| 3 이번 주 카드 | Money you can keep **$68** · vs refunding every case | 엔진: 열린 분쟁마다 (전액 환불 기대 손실 − 최선의 수 기대 손실)의 합. Assumption | 가정값. 보낸 뒤에도 $68은 그대로이고 옆에 "+$37 just now"가 붙는다 (그 건의 몫) |
+| 3 이번 주 카드 | Money you can keep **$71** · vs refunding every case | 엔진: 열린 분쟁마다 (전액 환불 기대 손실 − 최선의 수 기대 손실)의 합. Assumption | 가정값. 보낸 뒤에도 $71은 그대로이고 옆에 "+$37 just now"가 붙는다 (그 건의 몫) |
 | 3 이번 주 카드 | Replies drafted by AI **3** | 캐시된 AI 초안 수 | — |
-| 3 머리 | "$72 · Seo-yeon Kim · Korea · Open 2 days", "8 events · 26 days" | 분쟁 금액(PayPal), 기록(시드 + 실제) | "Open N days", "N days"는 녹화일에 따라 바뀔 수 있다 |
-| 3 곡선 | Dispute risk **40%** · **80% → 40%** | 엔진 위험 곡선 + `config/reply-model.json` 가중치 (가정(기획 시안)). Assumption | 가정값 |
+| 3 머리 | "$72 · Seo-yeon Kim · Korea · reads Korean · Open 2 days", "9 events · 24 days" | 분쟁 금액(PayPal), 기록(시드 + 실제) | "Open N days", "N days"는 녹화일에 따라 바뀔 수 있다 |
+| 3 곡선 (첫 화면) | Dispute risk **91%** · **if no reply by Nov 14**, 답장 칸 비어 있음 | 엔진 무응답 예측 + `config/reply-model.json` 가중치 (가정(기획 시안)). Assumption | 가정값. 날짜 = 브라우저 오늘 날짜 + 무응답 일수(11/12에 Nov 14로 확인). **녹화일에 따라 바뀐다** |
+| 3·4 곡선 (AI 초안 뒤) | 위쪽 Dispute risk **40%** · with your draft · **80% → 40%**, 답장 칸 "Dispute risk 91% → 40%" | 같은 모델. 80%는 곡선의 마지막 점, 91%는 무응답 예측 | 가정값. 타이핑(약 16초)이 끝나기 전에는 중간 값(예: 62%)이 보인다 |
 | 4 선택지 | Reply with the facts **Chargeback 40% · cost ~$37** | 엔진 답장 기대 손실 3680¢ = 0.40 × (7200 + 1500) + 200 (승률 0.60, 수수료 $15, 시간 $2) | 가정값 |
 | 4 선택지 | Refund in full **Chargeback 3% · cost ~$74** | 7200 환불 + 200 시간 | 시간 비용 $2는 가정 |
 | 4 선택지 | Offer a partial refund — Not offered for this case type (your policy) | 정책(미수령 건에는 제안 안 함) | — |
 | 4 급한 답장 | **Chargeback 95%**, **Expected cost $85**, Waits calmly 5% · Ends in refund 0% · Chargeback 95%, mood Angry | 코드 규칙으로 답장 특징 판정 + reply-model.json 가중치 | 가정값 |
 | 4 급한 답장 칩 | Blames buyer or customs +8 pts · Vague timing +4 pts · Missing: A date −7 pts · Missing: Apology −2 pts · Missing: Next step for the buyer −2 pts · "2 to fix · 3 missing · 2 good" | 같은 모델 | 가정값 |
-| 4 AI 초안 | **Chargeback 40%**, **Expected cost $37**, Waits calmly 60% · Ends in refund 0% · Chargeback 40%, Seo-yeon's mood next Annoyed (now: Angry), "5 good" | 같은 모델. 기본 초안의 비용 = 선택지 카드 $37 (일부러 맞춤, DECISIONS 11/11 T075) | 가정값 |
+| 4 AI 초안 (타이핑 약 16초 뒤) | **Chargeback 40%**, **Expected cost $37**, Waits calmly 60% · Ends in refund 0% · Chargeback 40%, Seo-yeon's mood next Annoyed (now: Angry), "5 good" | 같은 모델. 기본 초안의 비용 = 선택지 카드 $37 (일부러 맞춤, DECISIONS 11/11 T075) | 가정값 |
 | 4 Details | "PayPal data only: Full refund $74" | 배송사 기록 없이 계산하면 전액 환불이 최선 ($74 vs 다툼 $75.95) | 가정값 |
 | 4 Details 칩 | Apology −10 pts · Why it's held 0 pts · Next step for the buyer −10 pts · A date −22 pts · Buyer's language −12 pts | reply-model.json | 가정값 |
 | 4 Details / 한국어 글 | Follow-up date **11월 19일** ("November 19") | 코드: 녹화일(UTC) + 7일. 서연 응답 기한(11/30)보다 늦으면 당긴다 | **녹화일 + 7**. 11/12 09:00 KST 이후면 11월 19일, 11/13이면 11월 20일 |
@@ -102,7 +105,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
   - 배송사 추적·통관 기록 ("Oct 30 · Carrier: Customs hold – recipient customs ID missing") → 장면 3에서 **"demo data here"를 말로** (필수)
   - 서연의 11/2 문의 말풍선, 이번 주 카드, Mike의 이전 주장, 종결 분쟁 이력
   - /demo/seller-dashboard 판매자 대시보드와 /demo/store/new-product 쇼핑몰은 **데모용 껍데기 화면** (화면 띠에 "Demo mock")
-- **가정** (화면에 Assumption 배지): 위험 %(곡선 80% → 40%, 차지백 95%·40%·3%), 손님 반응 막대, 비용 $37·$74·$85, Send 뒤 단계의 Risk %, /demo/store/new-product의 4.5% → 2.1%·$770 → $327. 출처는 `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 둘은 기획 시안의 가중치이고 통계가 아니다) → **장면 4에서 "our assumed model" 한 번, 장면 10에서 "assumed rates" 한 번**
+- **가정** (화면에 Assumption 배지): 위험 %(무응답 91%, 곡선 80% → 40%, 차지백 95%·40%·3%), 손님 반응 막대, 비용 $37·$74·$85, Send 뒤 단계의 Risk %, /demo/store/new-product의 4.5% → 2.1%·$770 → $327. 출처는 `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 둘은 기획 시안의 가중치이고 통계가 아니다) → **장면 4에서 "our assumed model" 한 번, 장면 10에서 "assumed rates" 한 번**
 - **시뮬레이션** (Simulated 배지): Send 뒤 "What happens next" 단계 전부(손님 답장·Forward to carrier·세관 통과), 공개 링크의 모든 쓰기 버튼, /demo/store/new-product 게시
 - **실제 PayPal 샌드박스**: 분쟁 목록·상세 조회, 주문 조회, 녹화 모드의 한국어 send-message(200)와 추적 등록(201). 가상 판매자·샌드박스라는 것은 타이틀에서
 - **AI가 하는 일**: 한국어 번역, 답장 초안과 역번역, 화난 어조 판단, 사건 기록 요약, /demo/store/new-product 고칠 문구. **코드가 하는 일**: 원인 판정(통관 보류), 기대 손실과 추천, 날짜, 위험 %, 검사 3개, 보내도 되는지
@@ -113,7 +116,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 - **녹화용 모드** `DEMO_MODE=recording` + 전송·추적 스위치 켬. 공개 링크(`public`)로는 실제 전송이 되지 않는다. 녹화 모드에서는 위쪽 막대의 "Public demo · simulated sends" 글자가 사라진다.
 - **서연 전송은 딱 한 번.** 녹화가 켜진 것을 확인한 뒤 누르고, 누른 순간부터 첫 진행 줄까지 컷 없이. **장면 5는 10초 이내.**
 - **서연 실제 분쟁에서 하지 않는 것**: 수락(accept), 환불(Refund in full 카드, Approve refund), 급한 답장 보내기, Translate & check로 고친 글 보내기. 녹화 모드에서는 **AI 초안 그대로**만 보낸다.
-- **한 번에 이어 찍기를 권한다** (기획자가 잘라 쓴다): [Send in Korean] → 브라우저 확인 창 "This sends a real message to PayPal sandbox dispute PP-R-GMS-10197661." **OK** → "What happens next" → [Forward to carrier] → 토스트 → 왼쪽 "2 orders · Missing tracking" → [Add all 2] → 201 → [PayPal activity] 서랍. 이렇게 하면 장면 5·7·8·9가 같은 녹화 모드 화면에서 나온다. 공개 링크에서 찍은 Send 뒤 화면을 이어 붙이면 첫 줄이 "Simulated send — nothing went to PayPal"이라 실제 전송 장면과 어긋난다.
+- **한 번에 이어 찍기를 권한다** (기획자가 잘라 쓴다): [Send] → 브라우저 확인 창 "This sends a real message to PayPal sandbox dispute PP-R-GMS-10197661." **OK** → "What happens next" → [Forward to carrier] → 토스트 → 왼쪽 "2 orders · Missing tracking" → [Add all 2] → 201 → [PayPal activity] 서랍. 이렇게 하면 장면 5·7·8·9가 같은 녹화 모드 화면에서 나온다. 공개 링크에서 찍은 Send 뒤 화면을 이어 붙이면 첫 줄이 "Simulated send — nothing went to PayPal"이라 실제 전송 장면과 어긋난다.
 - 녹화 모드에서 바뀌는 글자 (코드 문구로 확인, **화면으로는 [확인 필요]**):
   - 보내기 줄: "Simulated send — nothing goes to PayPal" → "**Live · PayPal sandbox**"
   - 진행 첫 줄 아래: "**PayPal sandbox · PP-R-GMS-10197661**"
@@ -135,7 +138,7 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - [ ] 녹화 시각: 09:00 KST 이후 (가능하면 **14:00 KST 이후** — 날짜 줄과 Follow-up이 맞는다). 녹화 중 재배포 없음
 - [ ] 녹화 전에 공개 링크의 세 화면을 한 번씩 열어 둔다 (첫 로드 3~7초). 서랍도 한 번 연다
 - [ ] 1920×1080, 확대 100%, 밝은 화면. 언어는 **EN** 그대로
-- [ ] 화면 숫자 = 3절 표 (특히 80% → 40%, 95%, $37 / $74 / $85, 4.5% → 2.1%, $770 → $327, $216 → $44)
+- [ ] 화면 숫자 = 3절 표 (특히 첫 화면 91% · if no reply by 날짜, 80% → 40%, 95%, $37 / $74 / $85, 이번 주 $71, 4.5% → 2.1%, $770 → $327)
 - [ ] Follow-up 날짜 = 녹화일 + 7 (11/12면 "11월 19일")
 - [ ] "demo data here"가 내레이션에 있다 (장면 3)
 - [ ] "assumed" 한 번씩 (장면 4, 10), "simulated" 한 번 (장면 7)
@@ -154,7 +157,7 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - refund 갈래 진행 화면 [확인 필요]
 - ~~2-1 장면 B ⟦BUYER_NAME_1⟧ 막힘~~ → T117로 고침, 배포 1429b98에서 확인 (11/12). 장면 B를 찍을 수 있다.
 - 추적 두 번째 등록 시 화면 글자 [확인 필요]
-- 이번 주 카드 $68은 보낸 뒤에도 그대로이고 "+$N just now"만 붙는다 (3차 리뷰 ⑤). 영상에서 $68을 말로 읽지 않는다.
+- 이번 주 카드 $71은 보낸 뒤에도 그대로이고 "+$N just now"만 붙는다 (3차 리뷰 ⑤). 영상에서 $71을 말로 읽지 않는다.
 
 ## 8. 시안 v6 값 → 실제 화면 값 (못 맞춘 값만, 사람 결정 2026-11-12 20:35 ⑤)
 

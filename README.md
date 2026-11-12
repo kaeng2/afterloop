@@ -11,9 +11,9 @@
 
 No login is needed. On the [live demo](https://disputeless.onrender.com/demo/seller-dashboard):
 
-1. **Reply to Seo-yeon.** On `/demo/seller-dashboard` (a mock, not a real PayPal page), click **Handle all 3 with DisputeLess**. Turn on **✦ AI Respond now**, try **Try a rushed reply** (95%) and **Use AI draft** (40%), open **Details**, then **Send** and watch "What happens next · Simulated".
+1. **Reply to Seo-yeon.** On `/demo/seller-dashboard` (a mock, not a real PayPal page), click **Handle all 3 with DisputeLess**. Turn on **✦ AI Respond now**, try **Try a rushed reply** (wait for the typing to stop: 95%) and **Use AI draft** (wait about 16 seconds for the typing to stop: 40%), open **Details**, then **Send** and watch "What happens next · Simulated".
 2. **See the other cases.** Click the **Knit Cardigan** product chip for Ji-ho's card (#1038), **All products** for the two AG Grid tables, and **PayPal activity** for the call log.
-3. **Check a new listing.** Type `/demo/store/new-product` in the address bar, click **Publish product**, then **See details and fix** and **Recalculate** (4.5% → 2.1%).
+3. **Check a new listing.** Type `/demo/store/new-product` in the address bar, click **Publish product**, then **See details and fix**, all six **Insert** buttons and **Recalculate** (4.5% → 2.1%).
 
 Public mode never writes to PayPal; sends are simulated. Details: [docs/submission/testing.md](docs/submission/testing.md).
 

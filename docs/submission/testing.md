@@ -4,9 +4,9 @@ Live demo: https://disputeless.onrender.com (public mode — real PayPal sandbox
 
 No login is needed. Open the [seller dashboard](https://disputeless.onrender.com/demo/seller-dashboard) and follow three steps. The first load can take a few seconds while the free server wakes up.
 
-1. **Reply to Seo-yeon.** On [`/demo/seller-dashboard`](https://disputeless.onrender.com/demo/seller-dashboard) (marked "Demo mock — not a real PayPal page"), click **Handle all 3 with DisputeLess**. On the desk, turn on **✦ AI Respond now**, click **Try a rushed reply** (95%), then **Use AI draft** (40%), open **Details**, and click **Send**. Watch "What happens next · Simulated" and click **Forward to carrier**.
+1. **Reply to Seo-yeon.** On [`/demo/seller-dashboard`](https://disputeless.onrender.com/demo/seller-dashboard) (marked "Demo mock — not a real PayPal page"), click **Handle all 3 with DisputeLess**. On the desk, turn on **✦ AI Respond now**. Click **Try a rushed reply** and wait until the typing stops (95%). Click **Use AI draft** and wait about 16 seconds until the typing stops (40%); before that, the forecast shows in-between numbers. Open **Details**, and click **Send**. Watch "What happens next · Simulated" and click **Forward to carrier**.
 2. **See the other cases.** Click the **Knit Cardigan** product chip (opening an item selects its product chip) to open Ji-ho's card: new quality case #1038 (`PP-R-ZOK-10200237`, under PayPal review), "Keeps ≈$34", "How AI handled this". Click **All products** for the overview with two AG Grid tables, then **PayPal activity** (top right) for the call log.
-3. **Check a new listing.** Type [`/demo/store/new-product`](https://disputeless.onrender.com/demo/store/new-product) in the address bar. Click **Publish product** (4.5%), **See details and fix**, insert the AI text, then **Recalculate** (2.1%). This is a standalone screen.
+3. **Check a new listing.** Type [`/demo/store/new-product`](https://disputeless.onrender.com/demo/store/new-product) in the address bar. Click **Publish product** (4.5%), then **See details and fix**. Click all six **Insert** buttons, then **Recalculate** (2.1%). This is a standalone screen.
 
 Public mode makes real sandbox reads. Send, Send offer, Add all, Refund, Looks good and Forward are **Simulated** (zero PayPal writes).
 
