@@ -151,14 +151,15 @@ export async function CaseDetail({ disputeId, row = null }: { disputeId: string;
     band: caseView.risk?.band ?? null,
   });
 
-  // T091: 처음 고른 수 = 엔진 최선 수. "+$N just now" = 그 수의 actionSavings (엔진, 표기만)
+  // T091: "+$N just now" = 엔진 최선 수의 actionSavings (엔진, 표기만).
+  // T122a 시안 v6 L773: 처음 고른 수는 `custom` (빈 답장 + 무응답 예측). 스위치를 켜면 최선 수 초안이 타이핑된다
   const bestMove = recommend(board).best?.move ?? null;
   const savings = actionSavingsDisplay(board, bestMove);
 
   return (
     <SentProvider>
       <DraftForecastProvider>
-        <DeskSelectionProvider initialPath={bestMove}>
+        <DeskSelectionProvider initialPath="custom">
         <CaseView
           view={caseView}
           desk={desk}

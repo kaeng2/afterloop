@@ -104,7 +104,8 @@ function Bubble({
           </p>
         ) : (
           <p className="case-bubble-sub">
-            <span>{t('case.view.translated')}</span>
+            {/* T122a 시안 v6 L314: "Translated"는 굵은 파랑 (#0070E0) 따로 */}
+            <b className="case-bubble-tr">{t('case.view.translated')}</b>
             {' · '}
             <span lang="en">
               <Segments segments={message.english} markTitle={markTitle} />

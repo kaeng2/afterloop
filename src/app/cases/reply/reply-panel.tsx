@@ -419,7 +419,16 @@ function DetailsPanel({
 }
 
 /** "Her likely reaction" 막대 + Expected cost + Her mood next. 값은 `reactionView`(엔진 예측) 그대로. */
-export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: string | null }) {
+export function ReactionBox({
+  reaction,
+  name,
+  riskFrom = null,
+}: {
+  reaction: ReactionView;
+  name: string | null;
+  /** T122a 시안 v6 L393 `rFrom`: 무응답 예측의 차지백 % (엔진). 없으면 "전" 값 없이 지금 값만. */
+  riskFrom?: string | null;
+}) {
   const t = useT();
   return (
     <div className="reaction" role="group" aria-labelledby="reaction-title">
@@ -452,17 +461,29 @@ export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: 
           ))}
         </ul>
       </div>
+      {/* T122a 시안 v6 L393: "Dispute risk" / 무응답 % (취소선) → 지금 % (30px, 높으면 빨강) / "{mood next} · {mood}" */}
       <div className="reaction-mood">
-        <span className="reaction-mood-label">
-          {name === null ? t('case.reaction.moodNextUnknown') : t('case.reaction.moodNext', { name })}
+        <span className="reaction-mood-label">{t('case.reaction.riskTitle')}</span>
+        <span className="reaction-risk num">
+          {riskFrom === null ? null : (
+            <>
+              <span className="reaction-risk-from">{riskFrom}</span>
+              <span className="reaction-risk-arrow" aria-hidden="true">
+                →
+              </span>
+            </>
+          )}
+          <b className={reaction.chargebackHigh ? 'reaction-risk-to reaction-risk-high' : 'reaction-risk-to'}>
+            {reaction.chargeback}
+          </b>
         </span>
-        {/* 시안 moodSt: 기분이 나쁘면(엔진 기분 단계 angry = mood < -0.5) 빨강, transition color .3s */}
-        <strong className={reaction.moodBad ? 'reaction-mood-value reaction-mood-bad' : 'reaction-mood-value'}>
-          {t(reaction.moodKey)}
-        </strong>
-        {reaction.nowMoodKey === null ? null : (
-          <span className="reaction-mood-now">{t('case.reaction.moodNow', { mood: t(reaction.nowMoodKey) })}</span>
-        )}
+        <span className="reaction-mood-next">
+          {name === null ? t('case.reaction.moodNextUnknown') : t('case.reaction.moodNext', { name })} ·{' '}
+          {/* 시안 moodSt: 12px, 기분이 나쁘면(엔진 기분 단계 angry = mood < -0.5) 빨강, transition color .3s */}
+          <b className={reaction.moodBad ? 'reaction-mood-value reaction-mood-bad' : 'reaction-mood-value'}>
+            {t(reaction.moodKey)}
+          </b>
+        </span>
       </div>
     </div>
   );
@@ -500,9 +521,11 @@ export function ReplyPanel({
   const desk = useDeskSelection();
 
   const view = buildReplyView({ ...base, confirmed, sendState, outcome });
-  // 입력칸: 처음 글 = 화면의 영어 초안 (실제 값 채운 미리보기). 초안이 없으면 입력칸 없음
+  // 기준 글 = 화면의 영어 초안 (실제 값 채운 미리보기). 초안이 없으면 AI 입력칸 없음.
+  // T122a 시안 v6 L773 (`draft: ''`): 처음 입력칸은 **비어 있다** → 무응답 예측 (T105). 스위치를 켜면 초안이 타이핑된다.
+  // 스위치가 이미 켜진 채로 그려지면(공급자 없음·시험) 시안 `toggleAi`가 타이핑을 끝낸 상태 = AI 초안
   const anchor = view.draftEn?.text ?? null;
-  const [text, setText] = useState<string>(initialText ?? anchor ?? '');
+  const [text, setText] = useState<string>(() => initialText ?? (desk.aiOn ? (anchor ?? '') : ''));
   const edited = anchor !== null && text !== anchor;
 
   // ── T091 타이핑 효과 (시안 typeOut: 34ms마다 2글자, config/motion.json). 타이핑 중에는 Send·카드·도구가 꺼진다 ──
@@ -562,6 +585,29 @@ export function ReplyPanel({
     pickerRef.current = pickMove;
     return () => {
       pickerRef.current = null;
+    };
+  });
+
+  // T122a "✦ AI Respond now" 스위치 (시안 v6 L1046 `toggleAi`): 켜면서 빈 글이면 AI 초안 타이핑 (32ms 간격 값은 config).
+  // 끄면 빈 답장 상태로 (사람 결정 2026-11-12 20:40 2번 "끄면 빈 답장 상태로"): 타이핑을 멈추고 글·검사 결과를 비운다
+  function onAi(on: boolean) {
+    if (sendState !== 'idle') return;
+    if (on) {
+      if (text.trim() === '' && anchor !== null) typeOut(anchor, bestMove);
+      return;
+    }
+    if (typer.current !== null) clearInterval(typer.current);
+    typer.current = null;
+    setBusyBoth(false);
+    setText('');
+    setEditRun(null);
+    desk.setPath('custom');
+  }
+  const aiRef = desk.aiRef;
+  useEffect(() => {
+    aiRef.current = onAi;
+    return () => {
+      aiRef.current = null;
     };
   });
 
@@ -668,6 +714,20 @@ export function ReplyPanel({
       translated,
     });
   }, [forecaster, forecastBase, anchor, board, forecastText, view.offer, translated, emptyDraft]);
+  // T122a 시안 v6 L1059 `rFrom`: 위험 상자의 "전" 값 = 무응답 예측 (빈 글 + 늦은 날 수 noReplyDays, 위와 같은 엔진 호출).
+  // 시안의 고정 '89%' 대신 엔진 값. 빈 글이면 위 `forecast`와 같은 입력이라 그 값을 그대로 쓴다
+  const noReplyForecast: ReplyForecast | null = useMemo(() => {
+    if (emptyDraft) return forecast;
+    if (forecastBase === null || anchor === null || board === null || view.offer !== null || NO_REPLY_DAYS === null) return null;
+    return forecaster({
+      text: '',
+      anchorText: anchor,
+      board,
+      signals: forecastBase.signals,
+      delayDays: forecastBase.delayDays + NO_REPLY_DAYS,
+      translated,
+    });
+  }, [emptyDraft, forecast, forecaster, forecastBase, anchor, board, view.offer, translated]);
   useEffect(() => {
     setForecast(forecast);
     // 곡선 아래 글 "if no reply by {date}"의 날짜 (오늘 + noReplyDays). 글이 있으면 null → 지금처럼
@@ -966,6 +1026,106 @@ export function ReplyPanel({
   }
 
   // ── 답장 ────────────────────────────────────────────────────────────────
+  // T122a 시안 v6 L1055: 번역 칸 제목 "Translation (Korean)" — 언어 이름은 구매자 언어 (데이터)
+  const translationLabel = t('case.reply.translationTitle', { language });
+  const sendLabel = sendState === 'sending' ? t('case.send.sending') : t('case.send.button');
+  const sendWhy = (
+    <span id="reply-send-why" className="small muted reply-why">
+      {gate.ok || gate.reasonKey === null || result !== null ? null : t(gate.reasonKey)}
+    </span>
+  );
+  const translateButton = gate.translate ? (
+    // T100: 고친 글은 먼저 서버에서 번역·검사 (보내지 않는다). 검사 전일 때만 보인다
+    <button
+      type="button"
+      className="reply-button-quiet reply-translate"
+      disabled={busy || typing || replyId === null}
+      onClick={() => void translateEdited()}
+    >
+      {t('case.reply.translateCheck')}
+    </button>
+  ) : null;
+  // 전송본 (번역 칸 안): 고친 글이면 서버가 번역·검사한 글, 검사 전이면 "Translated to … when you send." 회색
+  const outgoingBody =
+    edited && editedView !== null && editedView.outgoing !== null ? (
+      // T100: 고친 글을 서버가 번역·검사했다 → 그 전송본 (실제로 나갈 글자와 같은 채움 `screenText`)
+      <>
+        <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined} data-edited-outgoing="true">
+          {editedView.outgoing.text}
+        </p>
+        {gate.ok ? <p className="small muted reply-edited-checked">{t('case.reply.editedChecked')}</p> : null}
+      </>
+    ) : edited ? (
+      // 시안 koTxt: 글을 바꾸면(카드·Add·Remove·직접 입력) "Translated to Korean when you send." (회색).
+      // 번역 중이면 "Translating…". 검사 전·중에는 관문(editGate)이 Send를 끄고 이유를 보인다
+      <p className="reply-text reply-outgoing reply-auto-tr" aria-busy={editStatus.state === 'translating' ? 'true' : undefined}>
+        {editStatus.state === 'translating' ? t('case.reply.translating') : t('case.reply.autoTr', { language })}
+      </p>
+    ) : view.outgoing === null ? (
+      <p className="small muted">{t('case.reply.outgoingUnavailable')}</p>
+    ) : (
+      <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined}>
+        {view.outgoing.text}
+      </p>
+    );
+
+  // ── T122a 스위치 꺼짐 (처음 상태, 시안 v6 L323–L329): 빈 입력칸 하나 + 힌트 + [Send] ──────────
+  // 안전장치는 그대로: 쓴 글은 [Translate & check](서버 번역·검사)를 지나야 Send가 켜지고(`editGate`), 전송 모드 글자
+  // (Simulated)를 보인다. 기준 초안이 없으면(번호를 쓸 글이 없으면) 보내지 않는다.
+  if (!desk.aiOn) {
+    const simpleOff = busy || typing || empty || anchor === null || !gate.ok;
+    const showTranslation = view.available && !empty && edited && editStatus.state !== 'idle';
+    return (
+      <section className="reply reply-simple" aria-label={t('case.reply.title')}>
+        {view.unavailableKey === null ? null : <p className="notice">{t(view.unavailableKey)}</p>}
+        <textarea
+          id={`reply-input-${disputeId}`}
+          className="reply-simple-input"
+          rows={4}
+          value={text}
+          readOnly={busy || typing}
+          aria-label={t('case.reply.title')}
+          placeholder={t('case.reply.phSimple')}
+          onChange={(event) => {
+            setText(event.target.value);
+            desk.setPath('custom');
+          }}
+        />
+        {showTranslation ? (
+          <div className="reply-box reply-box-simple">
+            <h3 className="reply-box-title">{translationLabel}</h3>
+            {outgoingBody}
+          </div>
+        ) : null}
+        {view.available ? commitmentsBlock : null}
+        <div className="reply-simple-foot">
+          <span className="reply-simple-hint">{t('case.reply.simpleHint')}</span>
+          <div className="reply-send">
+            {newPromise ? (
+              <p className="reply-warn" role="status">
+                {t('case.reply.warnPromise')}
+              </p>
+            ) : null}
+            {modeLine}
+            {translateButton}
+            <button
+              type="button"
+              className="reply-button"
+              disabled={simpleOff}
+              aria-describedby="reply-send-why"
+              onClick={() => send('message')}
+            >
+              {sendLabel}
+            </button>
+            {sendWhy}
+          </div>
+        </div>
+        {resultBlock}
+      </section>
+    );
+  }
+
+  // ── 스위치 켜짐: 2 Write and check (시안 v6 L350–L399) ─────────────────────────
   return (
     <section className="reply desk-step" aria-labelledby="reply-title">
       <div className="desk-rail rail" aria-hidden="true">
@@ -975,11 +1135,11 @@ export function ReplyPanel({
         <div className="desk-step-head">
           {anchor === null ? (
             <h3 className="desk-step-title" id="reply-title">
-              {t('case.reply.title')}
+              {t('case.reply.writeTitle')}
             </h3>
           ) : (
             <label className="desk-step-title" id="reply-title" htmlFor={`reply-input-${disputeId}`}>
-              {t('case.reply.title')}
+              {t('case.reply.writeTitle')}
             </label>
           )}
           {anchor === null ? null : (
@@ -1028,9 +1188,16 @@ export function ReplyPanel({
           <>
             {view.fixedDraftKey === null ? null : <p className="notice reply-fixed">{t(view.fixedDraftKey)}</p>}
 
+            {/* T122a 시안 v6 L364–L368 (draftGrid 늘 2열): 왼쪽 editor(입력칸 + 아래 번역 칸) · 오른쪽 점검 tray(테두리) */}
             <div className="reply-pair">
-              {anchor === null ? null : (
-                // 시안 editorSt: 빈 글 = 회색, 위험 50% 이상 = 빨강, 아니면 남색 (transition border-color .3s)
+              {anchor === null ? (
+                <div className="reply-block reply-box">
+                  <h3 className="reply-box-title">{translationLabel}</h3>
+                  {outgoingBody}
+                </div>
+              ) : (
+                <>
+                {/* 시안 editorSt: 빈 글 = 회색, 위험 50% 이상 = 빨강, 아니면 남색 (transition border-color .3s) */}
                 <div
                   className={`reply-editor ${
                     empty ? 'reply-editor-empty' : reaction?.chargebackHigh === true ? 'reply-editor-high' : 'reply-editor-ok'
@@ -1061,6 +1228,11 @@ export function ReplyPanel({
                       </span>
                     )}
                   </div>
+                  <div className="reply-block reply-box reply-box-in">
+                    <h3 className="reply-box-title">{translationLabel}</h3>
+                    {outgoingBody}
+                  </div>
+                </div>
                   <div className="reply-tray">
                     {rows !== null ? (
                       <LintTray
@@ -1092,33 +1264,8 @@ export function ReplyPanel({
                     )}
                     {detailsPanel(rows === null || empty ? [] : rows.good)}
                   </div>
-                </div>
+                </>
               )}
-
-              <div className="reply-block reply-box">
-                <h3 className="reply-box-title">{readsLabel}</h3>
-                {edited && editedView !== null && editedView.outgoing !== null ? (
-                  // T100: 고친 글을 서버가 번역·검사했다 → 그 전송본 (실제로 나갈 글자와 같은 채움 `screenText`)
-                  <>
-                    <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined} data-edited-outgoing="true">
-                      {editedView.outgoing.text}
-                    </p>
-                    {gate.ok ? <p className="small muted reply-edited-checked">{t('case.reply.editedChecked')}</p> : null}
-                  </>
-                ) : edited ? (
-                  // 시안 koTxt: 글을 바꾸면(카드·Add·Remove·직접 입력) "Translated to Korean when you send." (회색).
-                  // 번역 중이면 "Translating…". 검사 전·중에는 관문(editGate)이 Send를 끄고 이유를 보인다
-                  <p className="reply-text reply-outgoing reply-auto-tr" aria-busy={editStatus.state === 'translating' ? 'true' : undefined}>
-                    {editStatus.state === 'translating' ? t('case.reply.translating') : t('case.reply.autoTr', { language })}
-                  </p>
-                ) : view.outgoing === null ? (
-                  <p className="small muted">{t('case.reply.outgoingUnavailable')}</p>
-                ) : (
-                  <p className="reply-text reply-outgoing" lang={base.buyerLocale ?? undefined}>
-                    {view.outgoing.text}
-                  </p>
-                )}
-              </div>
             </div>
 
             {/* 입력칸이 없으면(초안 글 없음) Details를 여기 둔다 */}
@@ -1131,7 +1278,9 @@ export function ReplyPanel({
 
             {commitmentsBlock}
 
-            {reaction === null ? null : <ReactionBox reaction={reaction} name={buyerShort} />}
+            {reaction === null ? null : (
+              <ReactionBox reaction={reaction} name={buyerShort} riskFrom={reactionView(noReplyForecast, null)?.chargeback ?? null} />
+            )}
           </>
         ) : null}
 
@@ -1146,17 +1295,7 @@ export function ReplyPanel({
             ) : null}
             {modeLine}
             <div className="reply-send">
-              {/* T100: 고친 글은 먼저 서버에서 번역·검사 (보내지 않는다). 검사 전일 때만 보인다 */}
-              {gate.translate ? (
-                <button
-                  type="button"
-                  className="reply-button-quiet reply-translate"
-                  disabled={busy || typing || replyId === null}
-                  onClick={() => void translateEdited()}
-                >
-                  {t('case.reply.translateCheck')}
-                </button>
-              ) : null}
+              {translateButton}
               <button
                 type="button"
                 className="reply-button"
@@ -1164,11 +1303,9 @@ export function ReplyPanel({
                 aria-describedby="reply-send-why"
                 onClick={() => send('message')}
               >
-                {sendState === 'sending' ? t('case.send.sending') : t('case.send.button', { language })}
+                {sendLabel}
               </button>
-              <span id="reply-send-why" className="small muted reply-why">
-                {gate.ok || gate.reasonKey === null || result !== null ? null : t(gate.reasonKey)}
-              </span>
+              {sendWhy}
             </div>
           </div>
         </div>
