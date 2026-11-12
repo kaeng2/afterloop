@@ -452,7 +452,9 @@ export function ReactionBox({ reaction, name }: { reaction: ReactionView; name: 
         </ul>
       </div>
       <div className="reaction-mood">
-        <span className="reaction-mood-label">{t('case.reaction.moodNext')}</span>
+        <span className="reaction-mood-label">
+          {name === null ? t('case.reaction.moodNextUnknown') : t('case.reaction.moodNext', { name })}
+        </span>
         {/* 시안 moodSt: 기분이 나쁘면(엔진 기분 단계 angry = mood < -0.5) 빨강, transition color .3s */}
         <strong className={reaction.moodBad ? 'reaction-mood-value reaction-mood-bad' : 'reaction-mood-value'}>
           {t(reaction.moodKey)}
@@ -971,7 +973,11 @@ export function ReplyPanel({
               {t('case.reply.title')}
             </label>
           )}
-          {anchor === null ? null : <span className="desk-step-sub">{t('case.reply.editSub')}</span>}
+          {anchor === null ? null : (
+            <span className="desk-step-sub">
+              {buyerShort === null ? t('case.reply.editSubUnknown') : t('case.reply.editSub', { name: buyerShort })}
+            </span>
+          )}
           {anchor === null ? null : (
             <span className="reply-tools">
               {/* 시안: rushed·Use AI draft = typeOut, Clear = 바로 비움. 타이핑 중에는 모두 꺼진다 */}
