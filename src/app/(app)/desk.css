@@ -498,6 +498,7 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 .dk .ov-k-dot-open{background:#0B0F14}.dk .ov-k-dot-reply{background:#C4321F}.dk .ov-k-dot-prevent{background:#002991}.dk .ov-k-dot-questions{background:#9AA0A6}.dk .ov-k-dot-avg{background:#0070E0}
 .dk .ov-k-val{font-size:26px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;font-variant-numeric:tabular-nums;color:#0B0F14}
 .dk .ov-k-val-big{color:#002991}
+.dk .ov-k-val-hi{color:#C4321F}
 .dk .ov-k-sub{font-size:13px;color:#6C7378;line-height:1.35}
 .dk .ov-block{display:flex;flex-direction:column;gap:8px}
 .dk .ov-block-head{display:flex;align-items:baseline;gap:8px}
@@ -506,12 +507,18 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 
 /* AG Grid 안쪽을 시안 .ag-h · .ag-hc · .ag-r · .ag-c 값으로 (색은 grid.ts deskGridTheme이 이 변수를 읽는다) */
 .dk .ov-grid{--dk-ag-accent:#002991;--dk-ag-bg:#FFFFFF;--dk-ag-fg:#000000;--dk-ag-muted:#6C7378;--dk-ag-border:#DDE2EB;--dk-ag-head-bg:#F8F9FB;--dk-ag-head-fg:#3F4144;--dk-ag-head-hover:#EEF2F7;--dk-ag-row-border:#EEF0F3;--dk-ag-hover:#F3F7FF}
-.dk .ov-grid .ag-header-cell{padding:0}
+/* T124b: 시안 role=grid(.ag)·role=row(.ag-h)·role=columnheader(.ag-hc 단추)·role=row(.ag-r) 값을 AG Grid의 같은 역할 요소에 */
+.dk .ov-grid [role="grid"]{background:#FFFFFF;line-height:1.5;cursor:auto}
+.dk .ov-grid .ag-header-row{background:#F8F9FB;font-size:14px;font-weight:400;color:#000000;line-height:1.5}
+.dk .ov-grid .ag-header-cell{box-sizing:border-box;display:flex;align-items:center;gap:6px;padding:10px 14px;font-size:12px;font-weight:700;color:#3F4144;border-right:1px solid #EBEEF2;cursor:pointer;white-space:nowrap;text-align:left;min-width:0;line-height:18px}
+.dk .ov-grid .ag-header-cell:last-child,.dk .ov-grid .ag-header-cell.ag-column-last{border-right:0}
+.dk .ov-grid .ag-header-cell:hover{background:#EEF2F7}
+.dk .ov-grid .ag-header-cell.ag-header-cell-sorted-asc,.dk .ov-grid .ag-header-cell.ag-header-cell-sorted-desc{color:#002991}
 .dk .ov-grid .ag-header-cell-comp-wrapper{width:100%;height:100%}
-.dk .ov-grid .ag-hc{width:100%;height:100%}
-.dk .ov-grid .ag-header-cell:last-child .ag-hc{border-right:0}
-.dk .ov-grid .ag-row{cursor:pointer}
-.dk .ov-grid .ag-row-last{border-bottom:0}
+.dk .ov-grid .ov-hc{display:flex;align-items:center;gap:6px;width:100%;min-width:0}
+.dk .ov-grid .ov-hc.num{justify-content:flex-end}
+.dk .ov-grid .ag-row{box-sizing:border-box;border-bottom:1px solid #EEF0F3;line-height:1.5;cursor:pointer}
+.dk .ov-grid .ag-cell{line-height:1.5}
 .dk .ov-grid .ov-row-hi{background:#FFF7F6;--ag-row-hover-color:#FDEFED}
 .dk .ov-grid .ov-row-dn{color:#9AA0A6}
 .dk .ov-grid .ov-row-on{background:#F3F7FF;box-shadow:inset 3px 0 0 #0070E0}
