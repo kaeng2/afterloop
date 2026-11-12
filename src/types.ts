@@ -65,13 +65,15 @@ export type Params = {
   feeCents: number; // f
   timeCostCents: number; // t (한 분쟁에 한 번)
   offerRate: number; // x. 정책값, 최적화하지 않음
+  repairCostCents?: number; // v2.16 수선 판매자 비용 (가정). 없으면 repair 평가 안 함
+  pAcceptRepair?: number; // v2.16 수선 제안 수락률 (가정)
   pAccept: number; // p_acc
   pWin: Record<Subtype, number>; // 추적 기록이 없을 때 다퉈서 이길 확률
   pWinWithTracking: Partial<Record<Subtype, number>>; // 추적(배송) 기록이 있을 때. 없는 유형은 pWin 사용
 };
 
 export type Evaluation = {
-  move: 'fight' | 'offer' | 'refund';
+  move: 'fight' | 'offer' | 'refund' | 'repair'; // repair: v2.16 B3 품질 — 무료 수선 제안 (왕복 배송비 손님 부담), 실행은 send_message
   apiMove: MoveType | null;
   expectedLossCents: number | null; // 차단되면 null
   blockedBy?: string; // 예: 'OFFER_SCOPE'
@@ -163,6 +165,7 @@ export type ParamsConfig = {
 export type PolicyConfig = {
   version: string;
   offer: { eligibleSubtypes: Subtype[]; maxRate: number };
+  repair?: { eligibleSubtypes: Subtype[] }; // v2.16 수선 제안 대상 (B3 품질)
   autopilot: {
     skipCategories: Category[]; // F
     skipChannels: BoardState['channel'][]; // EXTERNAL

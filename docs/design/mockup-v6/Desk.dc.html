@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EN · DisputeLess v6</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;900&amp;family=Noto+Sans+KR:wght@400;700;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.dk *{box-sizing:border-box}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:15px;font-weight:700;white-space:nowrap;transition:background-color .15s ease}
+.btn:disabled{opacity:.45;cursor:default}
+.b-black{background:#000000;color:#FFFFFF}.b-black:hover{background:#333333}
+.b-tint{background:#05378214;color:#000000}.b-tint:hover{background:#05378227}
+.b-sm{min-height:34px;padding:6px 14px;font-size:13px}
+.btn:focus-visible,.it:focus-visible,.pf:focus-visible,.npath:focus-visible,.nmini:focus-visible,.ndraft:focus-visible,.hbtn:focus-visible,.nav:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+.c-n{background:#ECEEF0;color:#3F4144}.c-bad{background:#FBE7E4;color:#9E2414}.c-blue{background:#E3F3FF;color:#002991}
+.ai{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 8px;border-radius:1000px;font-size:12px;font-weight:900;color:#FFFFFF;background:linear-gradient(120deg,#002991 0%,#0066F5 55%,#60CDFF 100%);box-shadow:rgba(0,102,245,0.35) 0 2px 8px;white-space:nowrap}
+.nav{min-height:38px;padding:8px 16px;border-radius:1000px;font-size:14px;font-weight:700;color:#000000A1;text-decoration:none;display:inline-flex;align-items:center}
+.nav.on{background:#FFFFFF;color:#000000}
+.nav:hover{color:#000000}
+/* product filter */
+.pf{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:16px;border:2px solid #E4E6E9;background:#FFFFFF;font:inherit;text-align:left;cursor:pointer;color:#000000;min-width:0}
+.pf:hover{border-color:#9AA0A6}.pf.on{border-color:#002991;background:#F5F9FF}
+.ptile{width:38px;height:38px;border-radius:12px;background:#F1EFEA;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+/* inbox */
+.sec{border-radius:20px;background:#FFFFFF;border:1px solid #E4E6E9;overflow:hidden}
+.sech{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#F6F7F9;border-bottom:1px solid #E4E6E9}
+.it{display:flex;gap:12px;width:100%;padding:12px 16px;border:0;border-top:1px solid #F1EFEA;background:#FFFFFF;font:inherit;text-align:left;cursor:pointer;color:#000000;transition:background-color .15s}
+.it:first-child{border-top:0}
+.it:hover{background:#F5F7FB}.it.on{background:#E3F3FF;box-shadow:inset 4px 0 0 #0066F5}
+.it.done{opacity:.55}
+.sev{position:absolute;right:-3px;top:-3px;width:12px;height:12px;border-radius:50%;border:2px solid #FFFFFF}
+/* case */
+.zone-buyer{border-radius:24px;background:#EEF1F5;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.bub-in{max-width:78%;background:#FFFFFF;border-radius:6px 18px 18px 18px;padding:12px 16px;box-shadow:rgba(0,0,0,0.05) 0 1px 3px}
+.bub-out{max-width:78%;background:#002991;color:#FFFFFF;border-radius:18px 6px 18px 18px;padding:12px 16px}
+.bub-sim{max-width:78%;background:#FFFFFF;border:2px dashed #9AA0A6;border-radius:6px 18px 18px 18px;padding:12px 16px}
+.zone-work{position:relative;border-radius:24px;background:#FFFFFF;padding:22px 22px 20px;display:flex;flex-direction:column;gap:18px;box-shadow:rgba(0,41,145,0.10) 0 10px 32px,rgba(0,0,0,0.05) 0 2px 6px;border:1px solid #E4E6E9;overflow:hidden}
+.zone-work::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#002991,#0066F5,#60CDFF)}
+.tg{display:inline-flex;align-items:center;gap:10px;padding:6px 6px 6px 14px;border-radius:1000px;border:0;background:#0A1B3D;font:inherit;font-size:14px;font-weight:700;color:#FFFFFF;cursor:pointer;box-shadow:rgba(10,27,61,.25) 0 4px 12px}.tg:hover{background:#13284F}.tg-tr{position:relative;width:44px;height:26px;border-radius:1000px;background:#4A5878;transition:background .2s ease;flex-shrink:0}.tg-kn{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:rgba(0,0,0,.25) 0 1px 3px;transition:left .2s ease}.tg.on .tg-tr{background:#0070E0}.tg.on .tg-kn{left:21px}
+.zone-buyer .chip{box-shadow:inset 0 0 0 1px #CFD3D8}.zone-buyer .c-n{background:#FFFFFF;color:#3F4144}.zone-buyer .c-bad{background:#FFFFFF;color:#9E2414;box-shadow:inset 0 0 0 1px #F2B8AF}.zone-buyer .c-blue{background:#FFFFFF;color:#002991;box-shadow:inset 0 0 0 1px #B9D9F7}
+.ov-k{flex:1 1 0;min-width:150px;border-radius:16px;border:1px solid #E4E6E9;background:#FFFFFF;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.ag{border:1px solid #DDE2EB;border-radius:12px;overflow:hidden;background:#FFFFFF;font-size:14px}
+.ag-h{display:grid;background:#F8F9FB;border-bottom:1px solid #DDE2EB}
+.ag-hc{display:flex;align-items:center;gap:6px;padding:10px 14px;font:inherit;font-size:12px;font-weight:700;color:#3F4144;background:transparent;border:0;border-right:1px solid #EBEEF2;cursor:pointer;white-space:nowrap;text-align:left;min-width:0}
+.ag-hc:last-child{border-right:0}
+.ag-hc:hover{background:#EEF2F7}
+.ag-hc.on{color:#002991}
+.ag-hc.num{justify-content:flex-end}
+.ag-ind{font-size:11px;color:#002991;width:10px}
+.ag-r{display:grid;align-items:center;width:100%;min-height:52px;padding:0;margin:0;font:inherit;color:inherit;text-align:left;background:#FFFFFF;border:0;border-bottom:1px solid #EEF0F3;cursor:pointer}
+.ag-r:last-child{border-bottom:0}
+.ag-r:hover{background:#F3F7FF}
+.ag-r.hi{background:#FFF7F6}
+.ag-r.hi:hover{background:#FDEFED}
+.ag-r.dn{color:#9AA0A6}
+.ag-c{padding:8px 14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.ag-c.num{justify-content:flex-end;font-variant-numeric:tabular-nums}
+.ag-f{display:flex;justify-content:space-between;gap:12px;padding:8px 14px;font-size:12px;color:#6C7378;background:#F8F9FB;border-top:1px solid #DDE2EB}
+.ag-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:1000px;background:#F1F3F6;color:#3F4144;font-size:12px;font-weight:700;white-space:nowrap}
+
+.nstep{width:32px;height:32px;border-radius:50%;background:#0A1B3D;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0}
+.stp{display:flex;gap:14px}
+.rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px}
+.rline{flex:1;width:2px;background:#CFD3D8;margin:6px 0 -12px}
+.stpc{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+.stph{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:32px}
+.stph b,.stph label{font-size:17px;font-weight:900;letter-spacing:-0.2px}
+.stph .sub{font-size:13px;color:#6C7378}
+.editor{border-radius:18px;border:2px solid #CFD3D8;background:#FFFFFF;overflow:hidden;transition:border-color .3s ease;min-width:0}
+.editor textarea{width:100%;border:0;outline:0;resize:vertical;min-height:120px;padding:14px 16px 46px;font:inherit;font-size:15px;line-height:1.55;color:#000000;background:#FFFFFF;display:block}
+.editor:focus-within{box-shadow:#FFFFFF 0 0 0 2px,#097FF5 0 0 0 4px}
+.tray{background:#F6F7F9;border-top:1px solid #E4E6E9;padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.trayh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 2px 2px}
+.gchip{background:#FFFFFF;color:#0A1B3D;box-shadow:inset 0 0 0 1px #E4E6E9;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none}}
+.gmore{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:2px 10px;border-radius:1000px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:700;color:#0A1B3D;cursor:pointer;margin-left:auto}
+.gmore:hover{background:#E4E6E9}
+.gmore:focus-visible{outline:2px solid #097FF5;outline-offset:2px}
+.tsum{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:1000px;font-size:11px;font-weight:700;background:#FFFFFF;color:#3F4144;box-shadow:inset 0 0 0 1px #E4E6E9}
+.npath{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:16px;border:2px solid #E4E6E9;background:#FFFFFF;font:inherit;text-align:left;cursor:pointer;color:#000000;min-width:0;transition:border-color .15s,background-color .15s}
+.npath:hover{border-color:#6C7378}.npath.on{border-color:#0A1B3D;background:#F3F5F9}.npath:disabled{cursor:default;opacity:.6}
+.nradio{width:18px;height:18px;border-radius:50%;border:2px solid #9AA0A6;flex-shrink:0;background:#FFFFFF}
+.nradio.on{border:6px solid #0A1B3D}
+.ndraft{width:100%;resize:vertical;min-height:124px;padding:12px 14px 44px;border-radius:16px;border:2px solid #CFD3D8;font:inherit;font-size:15px;line-height:1.55;color:#000000;background:#FFFFFF}
+.nlint{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;animation:rise .3s ease both}
+.nl-miss,.nl-bad{background:#FFFFFF}.nlint{padding:7px 10px;border-radius:10px}
+.nic{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;flex-shrink:0}
+.nic-good{background:#0A1B3D;color:#FFFFFF}.nic-miss{background:#ECEEF0;color:#3F4144}.nic-bad{background:#C4321F;color:#FFFFFF}
+.nmini{min-height:28px;padding:2px 12px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:900;background:#000000;color:#FFFFFF;flex-shrink:0}
+.nmini.ghost{background:#FFFFFF;color:#9E2414;box-shadow:inset 0 0 0 2px #E8796B}
+.nmini:disabled{opacity:.5;cursor:default}
+.hbtn{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:6px 14px;border-radius:1000px;border:2px solid #CFD3D8;background:#FFFFFF;font:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#000000}
+.hbtn:hover{border-color:#000000}
+.step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;animation:rise .45s cubic-bezier(.2,1.2,.4,1) both}
+.sic{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+.ndots{display:inline-flex;gap:3px}.ndots span{width:6px;height:6px;border-radius:50%;background:#9AA0A6;animation:ndot 1s infinite ease-in-out}.ndots span:nth-child(2){animation-delay:.15s}.ndots span:nth-child(3){animation-delay:.3s}
+@keyframes ndot{0%,80%,100%{opacity:.3;transform:none}40%{opacity:1;transform:translateY(-3px)}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rise{animation:rise .35s ease both}
+@keyframes ping{0%{r:7;opacity:.6}100%{r:20;opacity:0}}
+.ping{animation:ping 1.4s ease-out infinite}
+@keyframes flash{0%{background:#60CDFF}100%{background:transparent}}
+.flash{animation:flash 1.6s ease}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:20;display:flex;gap:12px;align-items:center;padding:14px 20px;border-radius:16px;background:#000000;color:#FFFFFF;box-shadow:rgba(0,0,0,0.25) 0 8px 24px;animation:rise .35s ease}
+.ko{font-family:'Noto Sans KR',Figtree,sans-serif}
+</style>
+</helmet>
+<div class="dk" style="min-height: 100vh; background: #FFFFFF; color: #000000; font-family: Figtree, 'Noto Sans KR', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5">
+
+<!-- Top bar -->
+<header style="position: sticky; top: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; padding: 12px 28px; background: #FFFFFF; border-bottom: 1px solid #E4E6E9">
+<div style="display: flex; align-items: center; gap: 10px">
+<span role="img" aria-label="DisputeLess" style="display: inline-flex; align-items: baseline; font-size: 22px; font-weight: 900; letter-spacing: -0.7px; line-height: 1; color: #0B0F14; padding-bottom: 6px">Dispute<span style="position: relative; color: #0070E0">Less<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 0; top: 100%; margin-top: 1px; width: calc(100% + 8px); height: 9px; overflow: visible"><defs><linearGradient id="dlg-_tplhtml" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#003087"></stop><stop offset=".55" stop-color="#0070E0"></stop><stop offset="1" stop-color="#00A8EA"></stop></linearGradient></defs><path d="M2 3H80C89 3 94 5 98 9" fill="none" stroke="url(#dlg-_tplhtml)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path></svg></span></span>
+<span aria-hidden="true" style="width: 1px; height: 22px; background: #CFD3D8; margin: 0 4px"></span>
+<span style="font-size: 13px; font-weight: 700; color: #002991; padding: 4px 12px; border-radius: 1000px; background: #05378214">{{v.badge}}</span>
+</div>
+<span style="font-size: 13px; color: #3F4144">{{v.dateLine}}</span>
+</header>
+
+<!-- Product filter -->
+<section aria-label="{{v.prodAll}}" style="display: flex; align-items: center; gap: 10px; padding: 14px 28px; background: #F6F7F9; border-bottom: 1px solid #E4E6E9; overflow-x: auto">
+<sc-for list="{{prods}}" as="p" hint-placeholder-count="5">
+<button type="button" class="{{p.cls}}" aria-pressed="{{p.on}}" onClick="{{p.pick}}">
+<span class="ptile"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{p.icon}}" fill="none" stroke="#002991" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg><sc-if value="{{p.hasCase}}" hint-placeholder-val="{{ false }}"><span style="{{p.badgeSt}}">{{p.nCase}}</span></sc-if></span>
+<span style="display: flex; flex-direction: column; line-height: 1.25; min-width: 0"><b style="font-size: 14px; white-space: nowrap">{{p.name}}</b><span style="font-size: 12px; color: #3F4144; white-space: nowrap">{{p.sub}}</span></span>
+</button>
+</sc-for>
+<span style="margin-left: auto; font-size: 13px; color: #3F4144; white-space: nowrap">{{prodSum}}</span>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start">
+
+<!-- Left -->
+<aside style="flex: 1 1 360px; max-width: 400px; min-width: 300px; padding: 20px 20px 40px 28px; display: flex; flex-direction: column; gap: 14px">
+
+<section style="border-radius: 24px; padding: 18px; background: linear-gradient(150deg, #001C64 0%, #002991 55%, #0B48C4 100%); color: #FFFFFF; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><div style="display: flex; flex-direction: column"><b style="font-size: 16px">{{v.dashT}}</b><span style="font-size: 12px; color: #C9E3FF">{{v.dashS}}</span></div><span class="ai" style="box-shadow: none"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10.5 14.2 12.7 12 19l-2.2-6.3L3.5 10.5l6.3-2.2z" fill="#FFFFFF"></path></svg>AI</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{dash}}" as="d" hint-placeholder-count="4">
+<div class="{{d.cls}}" style="border-radius: 16px; padding: 10px 12px; background: rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 11px; color: #C9E3FF; line-height: 1.3">{{d.label}}</span>
+<span style="font-size: 24px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.15; font-variant-numeric: tabular-nums">{{d.val}}</span>
+<span style="{{d.subSt}}">{{d.sub}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<sc-for list="{{secs}}" as="g" hint-placeholder-count="4">
+<section class="sec">
+<div class="sech"><span style="{{g.barSt}}"></span><b style="font-size: 15px">{{g.title}} <span style="font-weight: 700; color: #6C7378">({{g.count}})</span></b><span style="margin-left: auto; font-size: 12px; color: #6C7378">{{g.hint}}</span></div>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+<button type="button" class="{{it.cls}}" onClick="{{it.pick}}">
+<span class="ptile" style="width: 36px; height: 36px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{it.icon}}" fill="none" stroke="#002991" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg><span class="sev" style="{{it.sevSt}}"></span></span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="display: flex; gap: 6px; align-items: baseline; min-width: 0"><b style="font-size: 14px; font-variant-numeric: tabular-nums">{{it.order}}</b><span style="font-size: 14px; color: #3F4144; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">· {{it.prod}}</span></span>
+<span style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap"><span class="chip" style="{{it.catSt}}">{{it.cat}}</span><span style="font-size: 12px; color: #3F4144">{{it.due}}</span></span>
+<span style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="font-size: 12px; color: #6C7378; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{it.who}}</span><span style="{{it.riskSt}}" title="{{v.riskTip}}">{{it.riskTxt}}</span></span>
+</span>
+</button>
+</sc-for>
+</section>
+</sc-for>
+</aside>
+
+<!-- Right -->
+<main style="flex: 999 1 640px; min-width: 0; padding: 20px 28px 48px 8px; display: flex; flex-direction: column; gap: 18px">
+
+<!-- All products overview (AG Grid) -->
+<sc-if value="{{isAll}}" hint-placeholder-val="{{ false }}">
+<section style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.4px">{{v.ovT}}</h2><span style="font-size: 14px; color: #3F4144">{{v.ovS}}</span></div>
+<span class="ag-tag"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v16H3zM3 10h18M3 15h18M9 4v16M15 4v16" fill="none" stroke="#3F4144" stroke-width="1.8"></path></svg>{{v.agTag}}</span>
+</div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<sc-for list="{{kpis}}" as="k" hint-placeholder-count="5">
+<div class="ov-k"><span style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: #0B0F14; line-height: 1.3"><span style="{{k.dot}}"></span>{{k.label}}</span><b style="{{k.valSt}}">{{k.val}}</b><span style="font-size: 13px; color: #6C7378; line-height: 1.35">{{k.sub}}</span></div>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: baseline; gap: 8px"><b style="font-size: 16px">{{v.gP}}</b><span style="font-size: 12px; color: #6C7378">{{v.gPHint}} · {{v.gHint}}</span></div>
+<div class="ag" role="grid" aria-label="{{v.gP}}">
+<div class="ag-h" role="row" style="{{pCols}}"><sc-for list="{{pHead}}" as="h" hint-placeholder-count="7"><button type="button" class="{{h.cls}}" role="columnheader" aria-sort="{{h.aria}}" onClick="{{h.pick}}">{{h.label}}<span class="ag-ind">{{h.ind}}</span></button></sc-for></div>
+<sc-for list="{{pRows}}" as="r" hint-placeholder-count="5">
+<button type="button" class="{{r.cls}}" role="row" style="{{pCols}}" onClick="{{r.pick}}">
+<span class="ag-c"><span class="ptile" style="width: 32px; height: 32px; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{r.icon}}" fill="none" stroke="#002991" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span style="display: flex; flex-direction: column; min-width: 0; line-height: 1.3"><b style="font-size: 14px; overflow: hidden; text-overflow: ellipsis">{{r.name}}</b><span style="font-size: 12px; color: #6C7378">{{r.units}}</span></span></span>
+<span class="ag-c num"><b>{{r.open}}</b></span>
+<span class="ag-c num"><span style="{{r.replySt}}">{{r.reply}}</span></span>
+<span class="ag-c num">{{r.prevent}}</span>
+<span class="ag-c num">{{r.routine}}</span>
+<span class="ag-c"><span style="{{r.bar}}"><span style="{{r.fill}}"></span></span><b style="{{r.riskSt}}">{{r.riskTxt}}</b></span>
+<span class="ag-c" style="flex-direction: column; align-items: flex-start; gap: 0; line-height: 1.3"><b style="font-size: 13px">{{r.top}}</b><span style="font-size: 12px; color: #6C7378; overflow: hidden; text-overflow: ellipsis; max-width: 100%">{{r.topCat}}</span></span>
+</button>
+</sc-for>
+<div class="ag-f"><span>{{pFoot}}</span><span>{{pSortTxt}}</span></div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: baseline; gap: 8px"><b style="font-size: 16px">{{v.gC}}</b><span style="font-size: 12px; color: #6C7378">{{v.gHint}}</span></div>
+<div class="ag" role="grid" aria-label="{{v.gC}}">
+<div class="ag-h" role="row" style="{{cCols}}"><sc-for list="{{cHead}}" as="h" hint-placeholder-count="6"><button type="button" class="{{h.cls}}" role="columnheader" aria-sort="{{h.aria}}" onClick="{{h.pick}}">{{h.label}}<span class="ag-ind">{{h.ind}}</span></button></sc-for></div>
+<sc-for list="{{cRows}}" as="r" hint-placeholder-count="7">
+<button type="button" class="{{r.cls}}" role="row" style="{{cCols}}" onClick="{{r.pick}}">
+<span class="ag-c"><span style="{{r.bar}}"><span style="{{r.fill}}"></span></span><b style="{{r.riskSt}}">{{r.riskTxt}}</b></span>
+<span class="ag-c" style="flex-direction: column; align-items: flex-start; gap: 0; line-height: 1.3"><b style="font-size: 14px; font-variant-numeric: tabular-nums">{{r.order}}</b><span style="font-size: 12px; color: #6C7378; overflow: hidden; text-overflow: ellipsis; max-width: 100%">{{r.prod}}</span></span>
+<span class="ag-c"><span class="chip" style="{{r.catSt}}">{{r.cat}}</span></span>
+<span class="ag-c"><span style="{{r.stSt}}">{{r.st}}</span></span>
+<span class="ag-c" style="font-size: 13px; color: #3F4144">{{r.who}}</span>
+<span class="ag-c" style="font-size: 13px; color: #3F4144">{{r.due}}</span>
+</button>
+</sc-for>
+<div class="ag-f"><span>{{cFoot}}</span><span>{{cSortTxt}}</span></div>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{showBack}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn b-tint b-sm" style="align-self: flex-start" onClick="{{backAll}}">← {{v.backAll}}</button></sc-if>
+
+<!-- Empty product -->
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+<section style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 460px; padding: 48px 24px; border: 1px dashed #CFD3D8; border-radius: 24px; background: #F6F7F9; text-align: center">
+<span style="width: 72px; height: 72px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E4E6E9; display: inline-flex; align-items: center; justify-content: center"><svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2.6-7.2A1.2 1.2 0 0 1 6.7 5h10.6a1.2 1.2 0 0 1 1.1.8L21 13v5.8a1.2 1.2 0 0 1-1.2 1.2H4.2A1.2 1.2 0 0 1 3 18.8z M3 13h5l1.2 2.6h5.6L16 13h5" fill="none" stroke="#6C7378" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+<h2 style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.3px; color: #0B0F14">{{emptyT}}</h2>
+<p style="margin: 0; max-width: 420px; font-size: 15px; color: #3F4144">{{emptyS}}</p>
+</section>
+</sc-if>
+
+<sc-if value="{{isSeo}}" hint-placeholder-val="{{ true }}">
+<!-- Case header + risk curve -->
+<section style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; gap: 14px; align-items: center">
+<span class="ptile" style="width: 52px; height: 52px; border-radius: 16px"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="{{caseIcon}}" fill="none" stroke="#002991" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.4px">#1042 · {{caseProd}}</h1><span class="chip c-n">{{v.cats.customs}}</span></div>
+<span style="font-size: 14px; color: #3F4144">{{v.price}} · {{v.buyer}} · {{v.opened}}</span>
+</div>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 16px; align-items: stretch; padding: 16px 18px; border-radius: 24px; border: 1px solid #E4E6E9; background: #FFFFFF">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<b style="font-size: 18px; font-weight: 700; color: #000000">{{v.curveT}}</b>
+<svg viewBox="0 0 640 150" width="100%" height="150" preserveAspectRatio="none" aria-hidden="true" style="overflow: visible">
+<line x1="0" y1="20" x2="640" y2="20" stroke="#F1EFEA" stroke-width="1"></line>
+<line x1="0" y1="70" x2="640" y2="70" stroke="#F1EFEA" stroke-width="1"></line>
+<line x1="0" y1="120" x2="640" y2="120" stroke="#E4E6E9" stroke-width="1"></line>
+<text x="640" y="17" text-anchor="end" font-size="10" fill="#9AA0A6">100%</text>
+<text x="640" y="67" text-anchor="end" font-size="10" fill="#9AA0A6">50%</text>
+<polygon points="{{curve.area}}" fill="rgba(196,50,31,0.08)"></polygon>
+<polyline points="{{curve.hist}}" fill="none" stroke="#C4321F" stroke-width="2.5" stroke-linejoin="round"></polyline>
+<polyline points="{{curve.live}}" fill="none" stroke="#0066F5" stroke-width="2.5" stroke-dasharray="{{curve.dash}}" stroke-linejoin="round" style="transition: all .3s ease"></polyline>
+<sc-for list="{{curve.dots}}" as="c" hint-placeholder-count="9"><circle cx="{{c.x}}" cy="{{c.y}}" r="{{c.r}}" fill="{{c.fill}}" stroke="#FFFFFF" stroke-width="2"></circle></sc-for>
+<circle class="ping" cx="{{curve.px}}" cy="{{curve.py}}" r="7" fill="none" stroke="#0066F5" stroke-width="2"></circle>
+<sc-for list="{{curve.labels}}" as="l" hint-placeholder-count="6"><text x="{{l.x}}" y="142" text-anchor="middle" font-size="10" fill="{{l.fill}}" font-weight="{{l.w}}">{{l.t}}</text></sc-for>
+</svg>
+</div>
+<div style="display: flex; flex-direction: column; justify-content: center; gap: 2px; border-left: 1px solid #E4E6E9; padding-left: 16px">
+<span style="font-size: 13px; font-weight: 700; color: #3F4144">{{v.riskT}}</span>
+<span style="{{risk.st}}">{{risk.val}}</span>
+<span style="font-size: 12px; color: #6C7378">{{risk.sub}}</span>
+<sc-if value="{{risk.hasFrom}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #002991">89% → {{risk.val}}</span></sc-if>
+</div>
+</div>
+</section>
+
+<!-- History -->
+<section style="border-radius: 20px; border: 1px solid #E4E6E9; background: #FFFFFF; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; flex-wrap: wrap">
+<b style="font-size: 18px; font-weight: 700; color: #000000">{{v.histT}}</b>
+<span style="font-size: 12px; color: #6C7378">{{histSub}}</span>
+<span aria-hidden="true" style="display: flex; align-items: center; gap: 0; flex: 1; min-width: 140px"><sc-for list="{{histDots}}" as="h" hint-placeholder-count="8"><span style="{{h.line}}"></span><span style="{{h.dot}}" title="{{h.t}}"></span></sc-for></span>
+<button type="button" class="hbtn" aria-expanded="{{histOpen}}" onClick="{{toggleHist}}">{{histLabel}} <span style="{{histChevSt}}">▾</span></button>
+</div>
+<sc-if value="{{histOpen}}" hint-placeholder-val="{{ false }}">
+<div class="rise" style="display: flex; flex-direction: column; gap: 0; padding: 4px 16px 12px; border-top: 1px solid #F1EFEA">
+<sc-for list="{{histRows}}" as="h" hint-placeholder-count="8">
+<div style="display: grid; grid-template-columns: 64px 16px minmax(0, 1fr); gap: 10px; align-items: start; padding: 7px 0">
+<span style="font-size: 12px; color: #6C7378; font-variant-numeric: tabular-nums; padding-top: 1px">{{h.d}}</span>
+<span style="{{h.dot}}"></span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center"><span style="font-size: 14px">{{h.t}}</span><sc-if value="{{h.hasFlag}}" hint-placeholder-val="{{ false }}"><span class="chip c-bad">{{v.beforeTag}} · {{h.flag}}</span></sc-if></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; background: #F5F9FF; border-top: 1px solid #E4E6E9">
+<span class="ai" style="box-shadow: none; flex-shrink: 0; margin-top: 1px"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10.5 14.2 12.7 12 19l-2.2-6.3L3.5 10.5l6.3-2.2z" fill="#FFFFFF"></path></svg>AI</span>
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #0A1B3D"><b>{{v.histSumT}}</b> {{v.histSum}}</p>
+</div>
+</section>
+
+<!-- Zone A: original buyer messages -->
+<section class="zone-buyer" aria-label="{{v.convT}}">
+<div style="display: flex; align-items: baseline; gap: 10px"><b style="font-size: 18px; font-weight: 700; color: #000000">{{v.convT}}</b><span style="font-size: 12px; color: #6C7378">{{v.convS}}</span></div>
+<sc-for list="{{thread}}" as="m" hint-placeholder-count="2">
+<div style="{{m.wrapSt}}">
+<div class="{{m.cls}}">
+<sc-if value="{{m.isSim}}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; font-weight: 900; color: #6C7378; margin-bottom: 4px">{{v.simTag}}</div></sc-if>
+<div class="ko" lang="ko">{{m.txt}}</div>
+<div style="{{m.subSt}}"><sc-if value="{{m.hasTr}}" hint-placeholder-val="{{ true }}"><b style="color: #0070E0">{{v.tr}}</b> · </sc-if>{{m.sub}}</div>
+</div>
+<sc-if value="{{m.hasTags}}" hint-placeholder-val="{{ true }}"><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding-left: 4px"><span style="font-size: 11px; font-weight: 900; color: #002991">{{v.aiRead}}</span><sc-for list="{{m.tags}}" as="g" hint-placeholder-count="2"><span class="{{g.cls}}">{{g.txt}}</span></sc-for></div></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{isTyping}}" hint-placeholder-val="{{ false }}"><div class="bub-in rise" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #3F4144; align-self: flex-start">{{v.typing}}<span class="ndots"><span></span><span></span><span></span></span></div></sc-if>
+</section>
+
+<!-- Zone B: live response -->
+<sc-if value="{{showSimple}}" hint-placeholder-val="{{ true }}">
+<section aria-label="{{v.replyT}}" style="border-radius: 24px; border: 1px solid #E4E6E9; background: #FFFFFF; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: rgba(0,0,0,0.04) 0 2px 8px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap"><b style="font-size: 18px">{{v.replyT}}</b><button type="button" class="{{tgCls}}" role="switch" aria-checked="{{aiOn}}" onClick="{{toggleAi}}"><span class="ai" style="box-shadow: none"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10.5 14.2 12.7 12 19l-2.2-6.3L3.5 10.5l6.3-2.2z" fill="#FFFFFF"></path></svg>AI</span>{{v.workT}}<span class="tg-tr"><span class="tg-kn"></span></span></button></div>
+<textarea rows="4" value="{{draft}}" onChange="{{onType}}" placeholder="{{v.phSimple}}" style="width: 100%; resize: vertical; border: 1px solid #CFD3D8; border-radius: 16px; padding: 14px 16px; font: inherit; font-size: 15px; line-height: 1.5; color: #0B0F14; background: #FFFFFF; outline: none"></textarea>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap"><span style="font-size: 12px; color: #6C7378">{{v.simpleHint}}</span><button type="button" class="btn b-black" disabled="{{simpleOff}}" onClick="{{send}}">{{sendLabel}}</button></div>
+</section>
+</sc-if>
+<sc-if value="{{showAi}}" hint-placeholder-val="{{ true }}">
+<section class="zone-work" aria-label="{{v.workT}}">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap"><div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><b style="font-size: 18px; font-weight: 700; color: #000000">{{v.replyT}}</b><span style="font-size: 13px; color: #6C7378">{{v.workS}}</span></div><button type="button" class="{{tgCls}}" role="switch" aria-checked="{{aiOn}}" onClick="{{toggleAi}}"><span class="ai" style="box-shadow: none"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10.5 14.2 12.7 12 19l-2.2-6.3L3.5 10.5l6.3-2.2z" fill="#FFFFFF"></path></svg>AI</span>{{v.workT}}<span class="tg-tr"><span class="tg-kn"></span></span></button></div>
+
+<div class="stp">
+<div class="rail"><span class="nstep">1</span><span class="rline"></span></div>
+<div class="stpc">
+<div class="stph"><b>{{v.waysT}}</b><span class="sub">{{v.waysS2}}</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{paths}}" as="p" hint-placeholder-count="3">
+<button type="button" class="{{p.cls}}" aria-pressed="{{p.on}}" disabled="{{p.off}}" onClick="{{p.pick}}">
+<span style="display: flex; align-items: center; gap: 8px"><span class="{{p.radio}}"></span><b style="font-size: 14px; line-height: 1.3; flex: 1">{{p.t}}</b><sc-if value="{{p.rec}}" hint-placeholder-val="{{ false }}"><span class="ai" style="padding: 2px 8px; box-shadow: none">{{v.rec}}</span></sc-if></span>
+<span style="font-size: 12px; color: #3F4144; line-height: 1.35; padding-left: 26px">{{p.how}}</span>
+<span style="font-size: 12px; padding-left: 26px; color: #3F4144"><span style="{{p.cbSt}}">{{p.cb}}</span> · {{p.cost}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div class="stp">
+<div class="rail"><span class="nstep">2</span></div>
+<div class="stpc">
+<div class="stph"><label for="dk-draft">{{v.writeT}}</label><span class="sub">{{v.replyS}}</span>
+<div style="margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap">
+<button type="button" class="btn b-tint b-sm" disabled="{{busy}}" onClick="{{rushed}}">{{v.rushed}}</button>
+<button type="button" class="btn b-tint b-sm" disabled="{{busy}}" onClick="{{useAi}}"><span class="ai" style="padding: 1px 7px; box-shadow: none">AI</span>{{v.useAi}}</button>
+<button type="button" class="btn b-tint b-sm" disabled="{{busy}}" onClick="{{clear}}">{{v.clear}}</button>
+</div>
+</div>
+<div style="{{draftGrid}}">
+<div class="editor" style="{{editorSt}}">
+<div style="position: relative">
+<textarea id="dk-draft" rows="5" value="{{draft}}" onChange="{{onType}}" readOnly="{{busy}}" placeholder="{{v.ph}}"></textarea>
+<span style="{{pillSt}}">{{pill}}</span>
+</div>
+<sc-if value="{{showKo}}" hint-placeholder-val="{{ true }}"><div style="background: #F6F7F9; border-top: 1px solid #E4E6E9; padding: 10px 14px 12px; min-width: 0"><div style="font-size: 12px; font-weight: 700; color: #3F4144">{{v.sheSees}}</div><div class="ko" lang="ko" style="{{koSt}}">{{koTxt}}</div></div></sc-if>
+</div>
+<div class="tray" aria-label="{{v.lintT}}" style="border: 1px solid #E4E6E9; border-radius: 18px; align-self: stretch; min-width: 0">
+<div class="trayh"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7" fill="none" stroke="#6C7378" stroke-width="2" stroke-linecap="round"></path></svg><b style="font-size: 12px; color: #3F4144">{{v.lintT}}</b><sc-for list="{{lintSum}}" as="u" hint-placeholder-count="3"><span class="tsum">{{u}}</span></sc-for></div>
+<sc-if value="{{lintEmpty}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #6C7378; padding: 0 2px">{{v.lintEmpty}}</span></sc-if>
+<sc-for list="{{lints}}" as="l" hint-placeholder-count="3">
+<div class="{{l.cls}}"><span class="{{l.iconCls}}">{{l.icon}}</span><b style="white-space: nowrap; font-size: 13px">{{l.label}}</b><span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #3F4144; font-size: 13px">{{l.detail}}</span><span style="{{l.effSt}}">{{l.eff}}</span><sc-if value="{{l.hasAct}}" hint-placeholder-val="{{ false }}"><button type="button" class="{{l.actCls}}" disabled="{{busy}}" onClick="{{l.act}}">{{l.actLabel}}</button></sc-if></div>
+</sc-for>
+<sc-if value="{{hasGoods}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 2px 2px 0">
+<sc-for list="{{goods}}" as="g" hint-placeholder-count="4"><span class="chip gchip" style="{{g.st}}">✓ {{g.label}}</span></sc-for>
+<button type="button" class="gmore" aria-expanded="{{goodsOpen}}" onClick="{{toggleGoods}}">{{goodsLabel}}<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="{{goodsChev}}"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+</div>
+<sc-if value="{{goodsOpen}}" hint-placeholder-val="{{ false }}">
+<div class="rise" style="display: flex; flex-direction: column; gap: 4px; padding-top: 2px">
+<sc-for list="{{goods}}" as="g" hint-placeholder-count="4"><div class="nlint nl-miss"><span class="nic nic-good">✓</span><b style="white-space: nowrap; font-size: 13px">{{g.label}}</b><span style="flex: 1; min-width: 0; color: #3F4144; font-size: 13px">{{g.detail}}</span><span style="font-size: 13px; font-weight: 900; white-space: nowrap; color: #0A1B3D">{{g.eff}}</span></div></sc-for>
+</div>
+</sc-if>
+</sc-if>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 16px; align-items: center; padding: 12px 16px; border-radius: 16px; background: #F6F7F9">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px"><b>{{v.likely}}</b><span style="color: #3F4144">{{costLine}}</span></div>
+<div style="display: flex; height: 10px; border-radius: 1000px; overflow: hidden; background: #E4E6E9"><sc-for list="{{bars}}" as="b" hint-placeholder-count="3"><span style="{{b.st}}"></span></sc-for></div>
+<div style="display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px"><sc-for list="{{legend}}" as="l" hint-placeholder-count="3"><span style="display: inline-flex; align-items: center; gap: 5px"><span style="{{l.dot}}"></span>{{l.txt}} <b style="{{l.pSt}}">{{l.p}}</b></span></sc-for></div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; border-left: 1px solid #E4E6E9; padding-left: 16px; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: #3F4144">{{v.riskT}}</span><span style="display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap"><span style="font-size: 16px; font-weight: 700; color: #9AA0A6; text-decoration: line-through">{{rFrom}}</span><span style="font-size: 16px; color: #6C7378">→</span><b style="{{rToSt}}">{{rTo}}</b></span><span style="font-size: 12px; color: #3F4144; white-space: nowrap">{{v.moodNext}} · <b style="{{moodSt}}">{{mood}}</b></span></div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-top: 1px solid #E4E6E9; padding-top: 14px">
+<span style="font-size: 13px; font-weight: 700; color: #9E2414">{{warnTxt}}</span>
+<button type="button" class="btn b-black" disabled="{{sendOff}}" onClick="{{send}}">{{sendLabel}}</button>
+</div>
+</div>
+</div>
+</section>
+</sc-if>
+
+<!-- Zone B after send: live progress -->
+<sc-if value="{{sent}}" hint-placeholder-val="{{ false }}">
+<section class="zone-work" aria-label="{{v.progT}}">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span class="ai"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10.5 14.2 12.7 12 19l-2.2-6.3L3.5 10.5l6.3-2.2z" fill="#FFFFFF"></path></svg>AI</span><b style="font-size: 18px; font-weight: 700; color: #000000">{{v.progT}}</b><span style="font-size: 13px; color: #6C7378">{{v.progS}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px; position: relative">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+<div class="step">
+<div style="display: flex; flex-direction: column; align-items: center"><span class="sic" style="{{s.icSt}}">{{s.ic}}</span><span style="{{s.lineSt}}"></span></div>
+<div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 12px; min-width: 0">
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><b style="font-size: 15px">{{s.t}}</b><sc-if value="{{s.auto}}" hint-placeholder-val="{{ false }}"><span class="ai" style="padding: 1px 8px; box-shadow: none">{{v.auto}}</span></sc-if><sc-if value="{{s.hasP}}" hint-placeholder-val="{{ false }}"><span class="chip" style="{{s.pSt}}">{{s.pTxt}}</span></sc-if></div>
+<span style="font-size: 13px; color: #3F4144">{{s.s}}</span>
+<span style="font-size: 12px; color: #6C7378">{{s.d}}</span>
+<sc-if value="{{s.act}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 6px"><button type="button" class="btn b-black b-sm" disabled="{{cbDone}}" onClick="{{refundNow}}">{{refundLabel}}</button></div></sc-if>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{stepsRunning}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px; padding-left: 46px; font-size: 13px; color: #6C7378"><span class="ndots"><span></span><span></span><span></span></span></div></sc-if>
+</div>
+<sc-if value="{{resOn}}" hint-placeholder-val="{{ false }}">
+<div class="rise" style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 20px; background: {{resBg}}">
+<b style="{{resTSt}}">{{resT}}</b>
+<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 6px 14px; font-size: 14px">
+<span style="color: #6C7378">{{v.resRows.before}}</span><span style="color: #6C7378; text-decoration: line-through">{{v.resBefore}}</span>
+<b>{{v.resRows.after}}</b><b style="color: #002991">{{resAfter}}</b>
+</div>
+</div>
+</sc-if>
+<div style="display: flex; justify-content: flex-end"><button type="button" class="btn b-tint b-sm" onClick="{{replay}}">{{v.replay}}</button></div>
+</section>
+</sc-if>
+</sc-if>
+
+<!-- Other cases -->
+<sc-if value="{{isOther}}" hint-placeholder-val="{{ false }}">
+<section style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; gap: 14px; align-items: center">
+<span class="ptile" style="width: 52px; height: 52px; border-radius: 16px"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="{{oc.icon}}" fill="none" stroke="#002991" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.4px">{{oc.head}}</h1><span class="chip" style="{{oc.catSt}}">{{oc.cat}}</span></div><span style="font-size: 14px; color: #3F4144">{{oc.who}}</span></div>
+</div>
+<sc-if value="{{oc.hasMsg}}" hint-placeholder-val="{{ true }}">
+<section class="zone-buyer" aria-label="{{v.convT}}">
+<div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap"><b style="font-size: 16px">{{v.convT}}</b><span style="font-size: 12px; color: #6C7378">{{oc.msgLang}}</span></div>
+<div class="bub-in" style="align-self: flex-start"><div lang="{{oc.msgCode}}" style="font-size: 15px">{{oc.msgOrig}}</div><sc-if value="{{oc.msgHasTr}}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; color: #3F4144; margin-top: 4px"><b style="color: #0070E0">{{v.tr}}</b> · {{oc.msgTr}}</div></sc-if></div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding-left: 4px"><span style="font-size: 11px; font-weight: 900; color: #002991">{{v.aiRead}}</span><sc-for list="{{oc.tags}}" as="g" hint-placeholder-count="2"><span class="{{g.cls}}">{{g.txt}}</span></sc-for></div>
+</section>
+</sc-if>
+<div class="zone-work">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0"><span class="ai" style="align-self: flex-start"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10.5 14.2 12.7 12 19l-2.2-6.3L3.5 10.5l6.3-2.2z" fill="#FFFFFF"></path></svg>AI</span><b style="font-size: 20px">{{oc.t}}</b><span style="font-size: 15px; color: #3F4144">{{oc.b}}</span></div>
+<sc-if value="{{oc.hasKeep}}" hint-placeholder-val="{{ true }}"><span style="flex-shrink: 0; padding: 6px 12px; border-radius: 1000px; background: #E3F3FF; color: #002991; font-size: 13px; font-weight: 900">{{oc.keep}}</span></sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap"><b style="font-size: 16px">{{v.aiT}}</b><span style="font-size: 12px; color: #6C7378">{{v.aiS}}</span></div>
+<sc-for list="{{oc.steps}}" as="st" hint-placeholder-count="4">
+<div style="display: flex; gap: 12px; align-items: flex-start"><span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: #0A1B3D; color: #FFFFFF; font-size: 12px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center">{{st.n}}</span><span style="font-size: 14px; line-height: 1.5; padding-top: 2px">{{st.t}}</span></div>
+</sc-for>
+</div>
+<sc-if value="{{oc.hasRows}}" hint-placeholder-val="{{ false }}">
+<div class="ag" role="grid">
+<div class="ag-h" role="row" style="{{oc.rowCols}}"><sc-for list="{{oc.rowHead}}" as="h" hint-placeholder-count="4"><span class="ag-hc" style="cursor: default">{{h}}</span></sc-for></div>
+<sc-for list="{{oc.rows}}" as="r" hint-placeholder-count="5"><div class="ag-r" role="row" style="{{oc.rowCols}}; cursor: default; min-height: 44px"><sc-for list="{{r}}" as="c" hint-placeholder-count="4"><span class="ag-c" style="font-size: 13px">{{c}}</span></sc-for></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{oc.hasDraft}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<b style="font-size: 14px; color: #3F4144">{{oc.draftT}}</b>
+<div style="{{oc.draftSt}}"><div lang="{{oc.draftCode}}" style="font-size: 15px; line-height: 1.6">{{oc.draftOrig}}</div><sc-if value="{{oc.draftHasTr}}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; line-height: 1.5; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(127,140,170,0.35); opacity: 0.86"><b style="{{oc.trLabSt}}">{{v.tr}}</b> · {{oc.draftTr}}</div></sc-if></div>
+</div>
+</sc-if>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid #E4E6E9">
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #3F4144; padding-top: 12px"><b>{{oc.apiLab}}</b><code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; padding: 3px 8px; border-radius: 8px; background: #F1F3F6; color: #0B0F14">{{oc.api}}</code></span>
+<span style="padding-top: 12px"><button type="button" class="btn b-black" disabled="{{oc.done}}" onClick="{{oc.run}}">{{oc.a}}</button></span>
+</div>
+</div>
+</section>
+</sc-if>
+</main>
+</div>
+
+<sc-if value="{{toastOn}}" hint-placeholder-val="{{ false }}">
+<div class="toast" role="status"><span style="width: 24px; height: 24px; border-radius: 50%; background: #60CDFF; color: #002991; display: inline-flex; align-items: center; justify-content: center; font-weight: 900">✓</span><span>{{toastTxt}}</span></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2000}}'>
+var LANG = 'en';
+var DI = {
+en: {
+  ai: {"jiho": {"steps": ["Read her Korean message: a sleeve started unraveling 5 weeks after purchase, so she can't wear it.", "Classified it as B3 · Material or quality. The order is past the 30-day return window.", "Compared fixes: a repair with her covering shipping (≈$7 for you) vs. a full refund with return ($48). The repair keeps the sale and solves her problem.", "Wrote a reply in Korean: empathy, why a return isn't possible (past 30 days), then the free repair offer."], "msg": {"l": "ko", "o": "산 지 5주 정도 됐는데 소매 쪽 올이 풀려서 입을 수가 없어요. 반품 기간이 지난 건 알지만 너무 속상해요. 방법이 없을까요?", "tr": "I bought it about 5 weeks ago and the sleeve is unraveling, so I can't wear it. I know the return window has passed, but I'm really upset. Is there anything you can do?", "tags": ["Quality issue", "Upset"]}, "draft": {"l": "ko", "o": "지호 님, 산 지 얼마 안 됐는데 올이 풀려서 정말 속상하셨겠어요. 다만 주문하신 지 30일이 지나 반품 기간이 끝나서 반품은 어려운 점 양해 부탁드려요. 대신 왕복 배송비만 부담해 주시면 소매 부분을 무료로 수선해 드릴게요. 수선은 받은 날부터 5영업일 정도 걸려요.", "tr": "Ji-ho, I'm so sorry it started unraveling so soon. Since it's been more than 30 days since your order, the return window has closed, so I'm afraid a return isn't possible. Instead, if you cover the round-trip shipping, I'll repair the sleeve for free. Repairs take about 5 business days after it arrives."}, "api": "POST /v1/customer/disputes/{id}/send-message"}, "lena": {"steps": ["Found your promise in the history: refund $24 by Nov 6. It was never sent.", "Classified it as C1 · Promised refund not made. Late refunds often turn into disputes.", "Prepared the $24 refund. Money only moves when you click.", "Wrote a short note in German with the amount and timing."], "msg": {"l": "de", "o": "Hallo, Sie hatten mir am 6. November eine Rückerstattung versprochen. Bisher ist nichts angekommen.", "tr": "Hi, you promised me a refund on Nov 6. Nothing has arrived so far.", "tags": ["Asks for refund", "Waiting"]}, "draft": {"l": "de", "o": "Hallo Lena, entschuldigen Sie bitte die Verzögerung. Ich habe Ihnen soeben 24 $ über PayPal erstattet. Der Betrag erscheint in 3–5 Werktagen auf Ihrem Konto.", "tr": "Hi Lena, sorry for the delay. I've just refunded $24 through PayPal. It will show in your account within 3–5 business days."}, "api": "POST /v2/payments/captures/{id}/refund · $24"}, "yuki": {"steps": ["Read her Japanese question about the length of size M.", "Classified it as B2 · Size question. Low risk, before any dispute.", "Looked up your size chart: M is 64 cm long. Added a fit tip for her height (160 cm).", "Answered in Japanese automatically, because low-risk questions are auto-answered. Please check it."], "msg": {"l": "ja", "o": "Mサイズの着丈は何センチですか？身長は160cmです。", "tr": "What's the length of size M? I'm 160 cm tall.", "tags": ["Size question", "Calm"]}, "draft": {"l": "ja", "o": "お問い合わせありがとうございます。Mサイズの着丈は64cmです。身長160cmの方ですと、お尻が半分ほど隠れる長さになります。ゆったり着たい方はM、すっきり着たい方はSがおすすめです。", "tr": "Thanks for asking. Size M is 64 cm long. At 160 cm, it falls to about mid-hip. Choose M for a relaxed fit, or S for a neater fit."}, "api": "Auto-sent · Nov 10, 09:12", "auto": true}, "bm": {"steps": ["Read the claim: “My package never arrived.”", "Flagged it as F1 · Repeat claim: the 3rd “not received” in 90 days, and the carrier shows delivered.", "Did not refund automatically. Suspected abuse always goes to you.", "Prepared the delivery proof (tracking, delivery scan on Nov 4 at 2:14 PM, doorstep photo) and a calm reply."], "msg": {"l": "en", "o": "My package never arrived. I need a refund.", "tr": "", "tags": ["Asks for refund", "3rd claim in 90 days"], "tone": "bad"}, "draft": {"l": "en", "o": "Hi, our carrier shows your parcel was delivered on Nov 4 at 2:14 PM, with a photo at your front door. I've attached the tracking record and the photo. If you can't find it, please check with neighbors or your building's mailroom and let me know.", "tr": ""}, "api": "POST /v1/customer/disputes/{id}/provide-evidence · 3 files"}, "trk": {"steps": ["Found 5 orders shipped 3+ days ago with no tracking in PayPal.", "Buyers who can't see tracking often open “not received” cases (A1).", "Matched each order to its carrier label.", "Ready to add all 5 to PayPal in one call."], "rows": {"h": ["Order", "Country", "Carrier", "Tracking number"], "c": "90px 90px 130px 1fr", "r": [["#1044", "US", "USPS", "9400 1118 9922 3401 5571"], ["#1045", "DE", "DHL", "JJD0001 4590 2271"], ["#1048", "JP", "Japan Post", "EJ 482 119 640 JP"], ["#1049", "KR", "EMS", "EE 220 418 937 US"], ["#1050", "GB", "Royal Mail", "RR 551 207 336 GB"]]}, "api": "POST /v1/shipping/trackers-batch · 5 trackers"}, "kc": {"steps": ["Found 3 Korean orders shipping this week without a customs ID (PCCC).", "Without it, Korean customs holds the parcel: the same cause as Seo-yeon's case (A2).", "Wrote one request in Korean and personalized it for each buyer."], "rows": {"h": ["Order", "Buyer", "Product"], "c": "90px 1fr 1fr", "r": [["#1052", "Min-ji Lee", "Wool Sweater"], ["#1053", "Hyun-woo Choi", "Knit Cardigan"], ["#1055", "Su-bin Jang", "Beanie + Scarf"]]}, "draft": {"l": "ko", "o": "안녕하세요, 주문해 주셔서 감사해요. 이번 주에 발송할 예정인데, 한국 통관을 위해 개인통관고유부호가 필요해요. 이 메시지에 답장으로 번호(P로 시작하는 13자리)를 알려주시면 세관에서 지연 없이 받아보실 수 있어요.", "tr": "Hi, thanks for your order. It ships this week, and Korean customs needs your personal customs ID (PCCC). Reply with the 13-character number starting with P, and your parcel won't be held at customs."}, "api": "PayPal messages · 3 buyers"}},
+  aiT: 'How AI handled this', aiS: 'DisputeLess did each step. You only approve.', apiT: 'On approval', apiAuto: 'Already sent', lvl: { high: 'High', med: 'Medium', low: 'Low' }, riskTip: 'Dispute risk: chance this becomes a chargeback or dispute. High 45%+, Medium 20–44%, Low under 20%', langOf: { ko: 'Korean', de: 'German', ja: 'Japanese', en: 'English' },
+  draftT: (l, sent) => (sent ? 'Sent to the buyer' : 'What the buyer will receive') + ' (' + l + ')', keepT: (x) => 'Keeps ≈$' + x,
+  ovT: 'All products', ovS: 'Disputes across everything you sell, sorted by risk', agTag: 'AG Grid', gP: 'Products', gC: 'Cases by risk', gHint: 'Click a column to sort · click a row to open',
+  kOpen: 'Open cases', kReply: 'Reply needed', kPrevent: 'Prevent', kRoutine: 'Questions', kTop: 'Avg. dispute risk', kTopSub: (n) => 'Riskiest case · ' + n + ' products', writeT: 'Write and check', ordNo: (o) => 'Order ' + o, gPHint: 'Open cases = disputes, buyer questions and prevention tasks still open',
+  colProd: 'Product', colOpen: 'Open cases', colRisk: 'Dispute risk', colTop: 'Riskiest case', cRisk: 'Dispute risk', cCase: 'Case', cType: 'Dispute type', cStatus: 'Status', cBuyer: 'Buyer', cDue: 'Due',
+  rows: (n) => n + ' rows', sorted: (c, d) => 'Sorted by ' + c + (d < 0 ? ' ↓' : ' ↑'), ovNone: '—', ovNoneS: 'No open cases', ovPrevOnly: 'Prevention tasks', backAll: 'All products overview',
+  badge: 'for PayPal sellers', navToday: 'Today', navRehearsal: 'Black Friday rehearsal', account: 'Fernwood Knits',
+  dateLine: 'Tue, Nov 10 · Black Friday in 17 days',
+  emptyT: 'No disputes yet', emptyS: (p) => p + ' has no open disputes or questions. DisputeLess will keep watching new orders.',
+  prodAll: 'All products', prodSum: (p, u, c) => p + ' products · ' + u + ' units · ' + c + ' open cases', units: (n) => n + ' units', cases: (n) => n === 0 ? 'No cases' : n + (n === 1 ? ' case' : ' cases'),
+  pname: { cardigan: 'Knit Cardigan', sweater: 'Wool Sweater', coat: 'Cashmere Coat', beanie: 'Beanie + Scarf' },
+  dashT: 'DisputeLess this week', dashS: 'What AI handled for you',
+  dPrevent: 'Disputes prevented', dSaved: 'Money kept', dDrafted: 'Replies drafted by AI', dReply: 'First reply time', dReplyV: (m) => m + ' min', dReplyWas: 'was 2 days',
+  dBump: 'just now',
+  secs: { reply: 'Reply needed', prevent: 'Prevent', routine: 'Questions', done: 'Done today' },
+  secHint: { reply: 'A buyer is waiting', prevent: 'Stop disputes before they start', routine: 'AI answered · just check', done: '' },
+  due: (d) => 'Reply by ' + d, multi: (n) => n + ' orders',
+  cats: { customs: 'Not received · Customs hold', color: 'Not as described · Color', quality: 'Not as described · Quality', refund: 'Refund promised', tracking: 'Missing tracking', kcid: 'Customs ID missing', size: 'Question · Size', repeat: 'Not received · Repeat claim' },
+  // case
+  caseOf: 'Case', buyer: 'Seo-yeon Kim · Korea · reads Korean', price: '$72', opened: 'Open 23 days',
+  riskT: 'Dispute risk', riskNow: 'if no reply by Nov 12', riskDraft: 'with your draft', riskAfter: 'now',
+  curveT: 'Dispute risk across this case', curveLive: 'Your draft',
+  hist: [
+    { d: 'Oct 19', t: 'Order paid · $72', who: 'sys', p: 0.05 },
+    { d: 'Oct 21', t: 'Shipped. Tracking not added to PayPal.', who: 'bad', p: 0.12, flag: 'No tracking in PayPal' },
+    { d: 'Oct 28', t: 'She asked: “Where is my order?”', who: 'buyer', p: 0.22 },
+    { d: 'Oct 31', t: 'You replied 3 days later, in English: “Please wait, it’s coming.”', who: 'bad', p: 0.38, flag: 'Late · English · no date' },
+    { d: 'Nov 2', t: 'She asked again: tracking hasn’t moved in a week.', who: 'buyer', p: 0.52 },
+    { d: 'Nov 3', t: 'You promised: “It will arrive by Nov 5.”', who: 'bad', p: 0.6, flag: 'Promise without carrier data' },
+    { d: 'Nov 5', t: 'Nov 5 passed. Parcel still held at customs.', who: 'sys', p: 0.71, flag: 'Promise missed' },
+    { d: 'Nov 9', t: 'She threatened a chargeback. No reply since.', who: 'buyer', p: 0.89 }
+  ],
+  histT: 'Case history', histS: (n, d) => n + ' events · ' + d + ' days', histOpen: 'Show history', histClose: 'Hide history',
+  beforeTag: 'Before DisputeLess',
+  learnT: 'AI used this history', histSumT: 'History summary:', histSum: 'Your Nov 5 promise was missed, you replied late in English, and she has waited 23 days. So this reply gives only the carrier’s date (Nov 17), is written in Korean, and includes a refund backup.',
+  learn: ['Your Nov 5 promise was missed → only the carrier’s date (Nov 17)', 'You replied in English before → reply in Korean', 'She’s waited 23 days → add a refund backup'],
+  convT: 'Buyer messages', convS: 'Original, in Korean · AI translation below', aiRead: 'AI read',
+  msgs: [
+    { ko: '배송 조회가 일주일째 그대로예요. 확인 부탁드려요.', en: 'Tracking hasn’t changed in a week. Could you check?', d: 'Nov 2', tags: [['Asks for update', 'n'], ['Worried', 'n']] },
+    { ko: '벌써 3주째인데 아직도 안 왔어요. 연락 없으면 카드사에 이의제기할게요.', en: 'It’s been 3 weeks and it still hasn’t arrived. If I don’t hear back, I’ll file a chargeback with my card company.', d: 'Nov 9', tags: [['Threatens chargeback', 'bad'], ['Angry', 'n']] }
+  ],
+  tr: 'Translated', you: 'You', sentKo: 'Sent · translated', sentAuto: 'Sent · auto-translated', simTag: 'Simulated reply', typing: 'Seo-yeon is typing',
+  workT: 'Respond now', workS: 'DisputeLess drafts, checks and predicts. You decide.',
+  waysT: 'Pick a way to resolve', waysS2: 'DisputeLess compared 3 options for this case', replyT2: '', replyS: 'Edit freely — her reaction updates as you type', sumFix: (n) => n + ' to fix', sumMiss: (n) => n + ' missing', sumOk: (n) => n + ' good', more: 'Details', less: 'Hide', rec: 'Best',
+  paths: {
+    ai: { t: 'Ask for her customs ID', how: 'Customs releases it 1–2 days after she replies.',
+      draft: 'Sorry for the wait, Seo-yeon. Your sweater is at Korean customs, waiting for your customs ID. Reply with your customs ID (PCCC) and customs will release it. Expected delivery: Nov 17. If it hasn’t arrived by then, I’ll refund you in full.',
+      ko: '서연 님, 기다리게 해서 죄송해요. 스웨터는 지금 한국 세관에서 개인통관고유부호를 기다리고 있어요. 번호를 답장으로 알려주시면 바로 통관돼요. 11월 17일 도착 예정이에요. 그때까지 안 오면 전액 환불해 드릴게요.' },
+    carrier: { t: 'Ask the carrier to check', how: 'The carrier can’t release it. Customs needs her ID.',
+      draft: 'Sorry for the wait, Seo-yeon. I’ve asked the carrier to check on your parcel and will update you within 2 days.',
+      ko: '서연 님, 기다리게 해서 죄송해요. 택배사에 확인을 요청했고 2일 안에 다시 알려드릴게요.' },
+    refund: { t: 'Refund now', how: 'Ends it today. You lose $72.',
+      draft: 'Sorry for the trouble, Seo-yeon. I’ve refunded the full $72 to your PayPal account. If the sweater arrives later, please keep it.',
+      ko: '서연 님, 불편을 드려 죄송해요. PayPal로 $72 전액 환불해 드렸어요. 나중에 스웨터가 도착하면 그냥 가지세요.' }
+  },
+  replyT: 'Your reply', rushed: 'Try a rushed reply', useAi: 'Use AI draft', clear: 'Clear', ph: 'Type a reply in any language…',
+  rushedDraft: 'Hi, the package is held at customs. That’s not our responsibility, please contact customs yourself. It should arrive soon.',
+  sheSees: 'Translation (Korean)', autoTr: 'Translated to Korean when you send.',
+  likely: 'Her likely reaction', outs: { ok: 'Waits calmly', refund: 'Ends in refund', cb: 'Chargeback' }, costLine: (c) => 'Expected cost ' + c,
+  moodNext: 'Her mood next', moodNow: 'now: angry', moodWord: (m) => m >= 0.25 ? 'Calm' : m >= 0 ? 'Okay' : m >= -0.5 ? 'Annoyed' : 'Angry',
+  lintT: 'As you type', lintEmpty: 'Start typing — each sentence is checked.', missing: 'Missing', add: 'Add', remove: 'Remove', pts: ' pts',
+  fx: { apology: 'Apology', cause: 'Why it’s held', ask: 'Her next step', date: 'A date', backup: 'Refund backup', blame: 'Blames her/customs', vague: 'Vague timing', noRefund: 'Refuses refund', refundNow: 'Refund done' },
+  fxS: { apology: 'Sorry for the wait, Seo-yeon.', cause: 'Your sweater is at Korean customs, waiting for your customs ID.', ask: 'Reply with your customs ID (PCCC) and customs will release it.', date: 'Expected delivery: Nov 17.', backup: 'If it hasn’t arrived by then, I’ll refund you in full.' },
+  gDateEarly: (d) => 'Nov ' + d + ' is before the carrier’s date (Nov 17)', gRefBad: (x) => '$' + x + ' is more than the order ($72)', gPromBad: 'New promise — needs your approval',
+  cbShort: (p) => 'Chargeback ' + p, costShort: (c) => 'cost ~' + c,
+  send: 'Send', sending: 'Sending…', phSimple: 'Write a reply…', simpleHint: 'Write in any language. It is translated for the buyer when you send.',
+  progT: 'Case progress', progS: 'Live · updates as things happen', auto: 'Auto', replay: 'Replay this case',
+  steps: {
+    ok: [
+      { d: 'Nov 10 · 14:02', t: 'Reply sent in Korean', s: 'Customs ID request + Nov 17 date + refund backup', p: null },
+      { d: 'Nov 10 · 16:40', t: 'Seo-yeon sent her customs ID', s: '“아 세관 때문이었군요. P123456789012 보내드려요.”', p: 0.04, buyer: true },
+      { d: 'Nov 10 · 16:41', t: 'DisputeLess forwarded the ID to the carrier', s: 'POST carrier/customs-clearance · 200', p: 0.03, auto: true },
+      { d: 'Nov 12', t: 'Customs released the parcel', s: 'Carrier scan: cleared, Incheon', p: 0.02 },
+      { d: 'Nov 14', t: 'Out for delivery · tracking synced to PayPal', s: 'POST /v1/shipping/trackers · 200', p: 0.01, auto: true },
+      { d: 'Nov 15', t: 'Delivered · case closed', s: 'She marked it received', p: 0.0 }
+    ],
+    refund: [
+      { d: 'Nov 10 · 14:02', t: 'Refund note sent in Korean', s: '$72 refunded to PayPal', p: null },
+      { d: 'Nov 10 · 14:02', t: 'Refund processed · $72', s: 'POST /v2/payments/captures/…/refund · 201', p: 0.02, auto: true },
+      { d: 'Nov 10 · 15:10', t: 'Seo-yeon confirmed the refund', s: '“환불 확인했어요. 감사해요.”', p: 0.0, buyer: true }
+    ],
+    cb: [
+      { d: 'Nov 10 · 14:02', t: 'Reply sent', s: 'No date, no next step', p: null },
+      { d: 'Nov 10 · 15:30', t: 'Seo-yeon replied angrily', s: '“답이 이게 다예요? 카드사에 이의제기할게요.”', p: 0.93, buyer: true },
+      { d: 'Next', t: 'AI: refund now ($72) costs less than losing the chargeback ($82)', s: 'Or replay and try a better reply', p: null, act: true }
+    ]
+  },
+  refundNow: 'Refund $72 now', refunded: 'Refunded ✓',
+  resT: { ok: 'Resolved in 5 days · $0 lost', refund: 'Closed today · $72 refunded', cb: 'Chargeback likely' },
+  resRows: { before: 'Before DisputeLess', after: 'With DisputeLess' },
+  resBefore: '23 days · 4 messages · risk rose to 89%',
+  resAfter: { ok: '1 reply · 2 auto steps · chargeback avoided (−$82)', refund: '1 reply · chargeback avoided · $72 refunded', cb: 'Risk 93% — try a better reply' },
+  // other cases
+  open: 'Open', other: {
+    jiho: { t: 'Offer a free repair, she covers shipping', b: 'Past the 30-day return window, so no return. A free repair keeps the sale and fixes her problem.', a: 'Send', done: 'Sent ✓', save: 41 },
+    lena: { t: 'Refund the $24 you promised', b: 'Promised Nov 6. Late refunds often become disputes.', a: 'Refund $24', done: 'Refunded ✓', save: 8 },
+    trk: { t: 'Add tracking to 5 orders in PayPal', b: 'Buyers who can’t see tracking open “not received” cases.', a: 'Add all 5', done: 'Added ✓', save: 120 },
+    kc: { t: 'Ask 3 Korean buyers for customs IDs', b: 'Without it, customs holds the parcel — like Seo-yeon’s.', a: 'Send', done: 'Sent ✓', save: 72 },
+    yuki: { t: 'AI answered: size M is 64 cm long', b: 'Answered in Japanese from your size chart.', a: 'Looks good', done: 'Checked ✓', save: 0 },
+    bm: { t: 'Send delivery proof for a repeat claim', b: '3rd “not received” claim in 90 days. AI won’t auto-refund this.', a: 'Send proof', done: 'Proof sent ✓', save: 35 }
+  },
+  toastDash: (x) => 'Dashboard updated · +' + x + ' kept',
+  several: 'Several products',
+  who: { seo: 'Seo-yeon Kim · KR', jiho: 'Ji-ho Park · KR', lena: 'Lena K. · DE', trk: 'Shipped 3+ days ago · 4 countries', kc: 'Korean buyers · ship this week', yuki: 'Yuki T. · JP', bm: 'buyer_m · US' }
+},
+ko: {
+  ai: {"jiho": {"steps": ["지호 님의 메시지를 읽었어요. 산 지 5주 만에 소매 올이 풀려서 입을 수 없다는 내용이에요.", "B3 · 소재·품질로 분류했어요. 주문일 기준 반품 기간(30일)이 지났어요.", "해결 방법을 비교했어요. 구매자가 배송비를 내고 수선(판매자 비용 ≈$7) vs 반품 후 전액 환불($48). 수선은 판매를 지키면서 문제도 해결해요.", "공감 → 반품이 어려운 이유(30일 경과) → 무료 수선 제안 순서로 한국어 답장을 썼어요."], "msg": {"l": "ko", "o": "산 지 5주 정도 됐는데 소매 쪽 올이 풀려서 입을 수가 없어요. 반품 기간이 지난 건 알지만 너무 속상해요. 방법이 없을까요?", "tr": "", "tags": ["품질 문제", "속상함"]}, "draft": {"l": "ko", "o": "지호 님, 산 지 얼마 안 됐는데 올이 풀려서 정말 속상하셨겠어요. 다만 주문하신 지 30일이 지나 반품 기간이 끝나서 반품은 어려운 점 양해 부탁드려요. 대신 왕복 배송비만 부담해 주시면 소매 부분을 무료로 수선해 드릴게요. 수선은 받은 날부터 5영업일 정도 걸려요.", "tr": ""}, "api": "POST /v1/customer/disputes/{id}/send-message"}, "lena": {"steps": ["히스토리에서 약속을 찾았어요. 11월 6일까지 $24 환불을 약속했지만 처리되지 않았어요.", "C1 · 약속한 환불 미처리로 분류했어요. 늦은 환불은 분쟁이 되기 쉬워요.", "$24 환불을 준비했어요. 돈은 버튼을 눌러야만 나가요.", "금액과 입금 시점을 담아 독일어로 짧게 썼어요."], "msg": {"l": "de", "o": "Hallo, Sie hatten mir am 6. November eine Rückerstattung versprochen. Bisher ist nichts angekommen.", "tr": "11월 6일에 환불해 주신다고 하셨는데 아직 아무것도 안 들어왔어요.", "tags": ["환불 요청", "기다리는 중"]}, "draft": {"l": "de", "o": "Hallo Lena, entschuldigen Sie bitte die Verzögerung. Ich habe Ihnen soeben 24 $ über PayPal erstattet. Der Betrag erscheint in 3–5 Werktagen auf Ihrem Konto.", "tr": "Lena 님, 늦어져서 죄송해요. 방금 PayPal로 $24를 환불해 드렸어요. 영업일 기준 3~5일 안에 계좌에 표시돼요."}, "api": "POST /v2/payments/captures/{id}/refund · $24"}, "yuki": {"steps": ["Yuki 님의 일본어 질문을 읽었어요. M 사이즈 총장을 묻는 내용이에요.", "B2 · 사이즈 문의로 분류했어요. 분쟁 전 단계의 낮은 위험 건이에요.", "사이즈표에서 M 총장 64cm를 찾고, 키 160cm 기준 핏 안내를 더했어요.", "위험이 낮은 문의라 일본어로 자동 답변했어요. 내용을 확인해 주세요."], "msg": {"l": "ja", "o": "Mサイズの着丈は何センチですか？身長は160cmです。", "tr": "M 사이즈 총장이 몇 cm인가요? 키는 160cm예요.", "tags": ["사이즈 문의", "차분함"]}, "draft": {"l": "ja", "o": "お問い合わせありがとうございます。Mサイズの着丈は64cmです。身長160cmの方ですと、お尻が半分ほど隠れる長さになります。ゆったり着たい方はM、すっきり着たい方はSがおすすめです。", "tr": "문의 감사해요. M 사이즈 총장은 64cm예요. 키 160cm라면 엉덩이 중간쯤 오는 길이예요. 여유 있게 입으려면 M, 깔끔하게 입으려면 S를 추천해요."}, "api": "자동 발송 · 11/10 09:12", "auto": true}, "bm": {"steps": ["“택배가 안 왔으니 환불해 달라”는 신고를 읽었어요.", "F1 · 반복 신고로 표시했어요. 90일 안에 세 번째 미수령 신고이고, 택배사 기록은 배송 완료예요.", "자동 환불하지 않았어요. 악용이 의심되는 건은 항상 판매자가 직접 판단해요.", "배송 증빙(추적 기록, 11/4 오후 2:14 배송 스캔, 현관 사진)과 차분한 답장을 준비했어요."], "msg": {"l": "en", "o": "My package never arrived. I need a refund.", "tr": "택배가 안 왔어요. 환불해 주세요.", "tags": ["환불 요청", "90일 내 3번째 신고"], "tone": "bad"}, "draft": {"l": "en", "o": "Hi, our carrier shows your parcel was delivered on Nov 4 at 2:14 PM, with a photo at your front door. I've attached the tracking record and the photo. If you can't find it, please check with neighbors or your building's mailroom and let me know.", "tr": "택배사 기록상 11월 4일 오후 2시 14분에 현관 앞으로 배송됐고 사진도 있어요. 추적 기록과 사진을 첨부했어요. 찾기 어려우시면 이웃이나 건물 우편실에 확인해 보시고 알려주세요."}, "api": "POST /v1/customer/disputes/{id}/provide-evidence · 파일 3개"}, "trk": {"steps": ["발송 3일이 지났는데 PayPal에 추적번호가 없는 주문 5건을 찾았어요.", "추적번호가 안 보이면 구매자가 미수령 분쟁(A1)을 열기 쉬워요.", "주문마다 택배사 송장과 연결했어요.", "5건을 PayPal에 한 번에 등록할 준비가 됐어요."], "rows": {"h": ["주문", "국가", "택배사", "추적번호"], "c": "90px 90px 130px 1fr", "r": [["#1044", "미국", "USPS", "9400 1118 9922 3401 5571"], ["#1045", "독일", "DHL", "JJD0001 4590 2271"], ["#1048", "일본", "Japan Post", "EJ 482 119 640 JP"], ["#1049", "한국", "EMS", "EE 220 418 937 US"], ["#1050", "영국", "Royal Mail", "RR 551 207 336 GB"]]}, "api": "POST /v1/shipping/trackers-batch · 5건"}, "kc": {"steps": ["이번 주 발송할 한국 주문 3건에 개인통관고유부호가 없어요.", "번호가 없으면 한국 세관에서 택배가 묶여요. 서연 님 건과 같은 원인(A2)이에요.", "요청 메시지를 한국어로 쓰고 구매자마다 이름을 넣었어요."], "rows": {"h": ["주문", "구매자", "상품"], "c": "90px 1fr 1fr", "r": [["#1052", "이민지", "울 스웨터"], ["#1053", "최현우", "니트 가디건"], ["#1055", "장수빈", "비니+머플러"]]}, "draft": {"l": "ko", "o": "안녕하세요, 주문해 주셔서 감사해요. 이번 주에 발송할 예정인데, 한국 통관을 위해 개인통관고유부호가 필요해요. 이 메시지에 답장으로 번호(P로 시작하는 13자리)를 알려주시면 세관에서 지연 없이 받아보실 수 있어요.", "tr": ""}, "api": "PayPal 메시지 · 구매자 3명"}},
+  aiT: 'AI가 처리한 방법', aiS: '모든 단계를 DisputeLess가 했어요. 판매자는 승인만 하면 돼요.', apiT: '승인 시 실행', apiAuto: '이미 보냄', lvl: { high: '높음', med: '중간', low: '낮음' }, riskTip: '분쟁 위험: 분쟁·차지백으로 이어질 확률. 높음 45% 이상, 중간 20~44%, 낮음 20% 미만', langOf: { ko: '한국어', de: '독일어', ja: '일본어', en: '영어' },
+  draftT: (l, sent) => (sent ? '구매자에게 보낸 메시지' : '구매자가 받을 메시지') + ' (' + l + ')', keepT: (x) => '≈$' + x + ' 지킴',
+  ovT: '전체 상품', ovS: '판매 중인 모든 상품의 분쟁 현황 · 위험도순', agTag: 'AG Grid', gP: '상품별', gC: '위험도순 케이스', gHint: '열을 누르면 정렬 · 행을 누르면 열기',
+  kOpen: '진행 중 케이스', kReply: '답장 필요', kPrevent: '예방', kRoutine: '단순 문의', kTop: '평균 분쟁 위험', kTopSub: (n) => '상품 ' + n + '개의 최고 위험 평균', writeT: '쓰고 점검하기', ordNo: (o) => '주문 ' + o, gPHint: '진행 중 케이스 = 아직 끝나지 않은 분쟁·구매자 문의·예방 작업',
+  colProd: '상품', colOpen: '진행 중 케이스', colRisk: '분쟁 위험', colTop: '위험이 가장 큰 건', cRisk: '분쟁 위험', cCase: '케이스', cType: '분쟁 유형', cStatus: '상태', cBuyer: '구매자', cDue: '기한',
+  rows: (n) => n + '행', sorted: (c, d) => c + ' ' + (d < 0 ? '높은 순 ↓' : '낮은 순 ↑'), ovNone: '—', ovNoneS: '진행 중 케이스 없음', ovPrevOnly: '예방 작업', backAll: '전체 상품 현황으로',
+  badge: 'PayPal 판매자용', navToday: '오늘', navRehearsal: '블랙프라이데이 리허설', account: 'Fernwood Knits',
+  dateLine: '11월 10일 (화) · 블랙프라이데이까지 17일',
+  emptyT: '등록된 분쟁이 없어요', emptyS: (p) => p + '에는 열린 분쟁이나 문의가 없어요. 새 주문은 DisputeLess가 계속 살펴볼게요.',
+  prodAll: '전체 상품', prodSum: (p, u, c) => '상품 ' + p + '개 · ' + u + '장 · 진행 중 ' + c + '건', units: (n) => n + '장', cases: (n) => n === 0 ? '건 없음' : n + '건',
+  pname: { cardigan: '니트 가디건', sweater: '울 스웨터', coat: '캐시미어 코트', beanie: '비니+머플러' },
+  dashT: '이번 주 DisputeLess', dashS: 'AI가 대신 처리한 일',
+  dPrevent: '막은 분쟁', dSaved: '지킨 금액', dDrafted: 'AI가 쓴 답장', dReply: '첫 답장 시간', dReplyV: (m) => m + '분', dReplyWas: '이전 2일',
+  dBump: '방금',
+  secs: { reply: '답장 필요', prevent: '예방', routine: '단순 문의', done: '오늘 완료' },
+  secHint: { reply: '구매자가 기다리고 있어요', prevent: '분쟁이 생기기 전에 막아요', routine: 'AI가 답했어요 · 확인만', done: '' },
+  due: (d) => d + '까지 답장', multi: (n) => '주문 ' + n + '건',
+  cats: { customs: '미수령 · 통관 보류', color: '설명과 다름 · 색상', quality: '설명과 다름 · 품질', refund: '환불 약속', tracking: '추적번호 누락', kcid: '통관번호 없음', size: '문의 · 사이즈', repeat: '미수령 · 반복 신고' },
+  caseOf: '건', buyer: '김서연 · 한국 · 한국어 사용', price: '$72', opened: '23일째 진행',
+  riskT: '분쟁 위험', riskNow: '11/12까지 무응답 시', riskDraft: '이 답장으로', riskAfter: '현재',
+  curveT: '이 건의 분쟁 위험 변화', curveLive: '내 답장',
+  hist: [
+    { d: '10/19', t: '결제 완료 · $72', who: 'sys', p: 0.05 },
+    { d: '10/21', t: '발송. PayPal에 추적번호 미등록.', who: 'bad', p: 0.12, flag: 'PayPal 추적번호 없음' },
+    { d: '10/28', t: '구매자 문의: “주문한 거 어디 있어요?”', who: 'buyer', p: 0.22 },
+    { d: '10/31', t: '3일 뒤 영어로 답장: “Please wait, it’s coming.”', who: 'bad', p: 0.38, flag: '늦음 · 영어 · 날짜 없음' },
+    { d: '11/2', t: '재문의: 배송 조회가 일주일째 그대로.', who: 'buyer', p: 0.52 },
+    { d: '11/3', t: '약속: “11월 5일까지 도착해요.”', who: 'bad', p: 0.6, flag: '택배사 확인 없는 약속' },
+    { d: '11/5', t: '11/5 지남. 여전히 세관 보류.', who: 'sys', p: 0.71, flag: '약속 어김' },
+    { d: '11/9', t: '차지백 예고. 이후 무응답.', who: 'buyer', p: 0.89 }
+  ],
+  histT: '이 건의 히스토리', histS: (n, d) => n + '개 이벤트 · ' + d + '일', histOpen: '히스토리 보기', histClose: '히스토리 접기',
+  beforeTag: 'DisputeLess 이전',
+  learnT: 'AI가 히스토리에서 반영한 점', histSumT: '히스토리 요약:', histSum: '11/5 약속을 어겼고, 이전 답장은 늦게 영어로 보냈고, 구매자는 23일째 기다리고 있어요. 그래서 이번 답장은 택배사 날짜(11/17)만 안내하고, 한국어로 쓰고, 환불 약속을 넣었어요.',
+  learn: ['11/5 약속을 어겼음 → 택배사 날짜(11/17)만 안내', '이전엔 영어로 답함 → 한국어로 답장', '23일째 기다림 → 환불 약속 추가'],
+  convT: '구매자 메시지', convS: '원문(한국어)', aiRead: 'AI 해석',
+  msgs: [
+    { ko: '배송 조회가 일주일째 그대로예요. 확인 부탁드려요.', en: '', d: '11/2', tags: [['상황 확인 요청', 'n'], ['걱정', 'n']] },
+    { ko: '벌써 3주째인데 아직도 안 왔어요. 연락 없으면 카드사에 이의제기할게요.', en: '', d: '11/9', tags: [['차지백 예고', 'bad'], ['화남', 'n']] }
+  ],
+  tr: '번역', you: '나', sentKo: '보냄', sentAuto: '보냄', simTag: '시뮬레이션 답장', typing: '서연 님이 입력 중',
+  workT: '지금 대응하기', workS: 'DisputeLess가 쓰고, 점검하고, 예측해요. 결정은 판매자가.',
+  waysT: '해결 방법 고르기', waysS2: '이 건에 맞는 방법 3개를 비교했어요', replyT2: '', replyS: '자유롭게 고치세요 — 입력하는 대로 반응이 바뀌어요', sumFix: (n) => '고칠 점 ' + n, sumMiss: (n) => '빠짐 ' + n, sumOk: (n) => '좋음 ' + n, more: '자세히 보기', less: '접기', rec: '추천',
+  paths: {
+    ai: { t: '통관번호 요청', how: '구매자가 답하면 1~2일 안에 통관돼요.',
+      draft: '서연 님, 기다리게 해서 죄송해요. 스웨터는 지금 한국 세관에서 개인통관고유부호를 기다리고 있어요. 번호를 답장으로 알려주시면 바로 통관돼요. 11월 17일 도착 예정이에요. 그때까지 안 오면 전액 환불해 드릴게요.', ko: '' },
+    carrier: { t: '택배사에 확인 요청', how: '택배사는 못 풀어요. 세관은 통관번호가 필요해요.',
+      draft: '서연 님, 기다리게 해서 죄송해요. 택배사에 확인을 요청했고 2일 안에 다시 알려드릴게요.', ko: '' },
+    refund: { t: '지금 환불', how: '오늘 끝나요. $72 손실.',
+      draft: '서연 님, 불편을 드려 죄송해요. PayPal로 $72 전액 환불해 드렸어요. 나중에 스웨터가 도착하면 그냥 가지세요.', ko: '' }
+  },
+  replyT: '내 답장', rushed: '급하게 쓴 답장 보기', useAi: 'AI 초안 쓰기', clear: '지우기', ph: '답장을 입력하세요…',
+  rushedDraft: '안녕하세요, 물건은 세관에 보류돼 있어요. 저희 책임이 아니니 세관에 직접 문의하세요. 곧 도착할 거예요.',
+  sheSees: '번역 (한국어)', autoTr: '',
+  likely: '예상 반응', outs: { ok: '차분히 기다림', refund: '환불로 종료', cb: '차지백' }, costLine: (c) => '예상 비용 ' + c,
+  moodNext: '다음 감정', moodNow: '지금: 화남', moodWord: (m) => m >= 0.25 ? '차분' : m >= 0 ? '괜찮음' : m >= -0.5 ? '짜증' : '화남',
+  lintT: '입력하는 대로 점검', lintEmpty: '입력을 시작하면 문장마다 점검해요.', missing: '빠짐', add: '추가', remove: '빼기', pts: '%p',
+  fx: { apology: '사과', cause: '보류 이유', ask: '구매자가 할 일', date: '날짜', backup: '환불 약속', blame: '구매자·세관 탓', vague: '모호한 일정', noRefund: '환불 거절', refundNow: '환불 완료' },
+  fxS: { apology: '서연 님, 기다리게 해서 죄송해요.', cause: '스웨터는 지금 한국 세관에서 개인통관고유부호를 기다리고 있어요.', ask: '번호를 답장으로 알려주시면 바로 통관돼요.', date: '11월 17일 도착 예정이에요.', backup: '그때까지 안 오면 전액 환불해 드릴게요.' },
+  gDateEarly: (d) => '11/' + d + '은 택배사 예정일(11/17)보다 빨라요', gRefBad: (x) => '$' + x + '는 주문액($72)보다 많아요', gPromBad: '새 약속 — 승인 필요',
+  cbShort: (p) => '차지백 ' + p, costShort: (c) => '비용 ~' + c,
+  send: '보내기', sending: '보내는 중…', phSimple: '답변하기…', simpleHint: '어떤 언어로 써도 돼요. 보낼 때 구매자 언어로 번역돼요.',
+  progT: '처리 현황', progS: '실시간 · 진행되는 대로 갱신', auto: '자동', replay: '이 건 다시 해보기',
+  steps: {
+    ok: [
+      { d: '11/10 · 14:02', t: '한국어 답장 보냄', s: '통관번호 요청 + 11/17 날짜 + 환불 약속', p: null },
+      { d: '11/10 · 16:40', t: '서연 님이 통관번호를 보냄', s: '“아 세관 때문이었군요. P123456789012 보내드려요.”', p: 0.04, buyer: true },
+      { d: '11/10 · 16:41', t: 'DisputeLess가 택배사에 통관번호 전달', s: 'POST carrier/customs-clearance · 200', p: 0.03, auto: true },
+      { d: '11/12', t: '세관 통관 완료', s: '택배사 스캔: 인천 통관', p: 0.02 },
+      { d: '11/14', t: '배송 출발 · PayPal에 추적 동기화', s: 'POST /v1/shipping/trackers · 200', p: 0.01, auto: true },
+      { d: '11/15', t: '배송 완료 · 건 종료', s: '구매자가 수령 확인', p: 0.0 }
+    ],
+    refund: [
+      { d: '11/10 · 14:02', t: '한국어로 환불 안내 보냄', s: 'PayPal로 $72 환불', p: null },
+      { d: '11/10 · 14:02', t: '환불 처리 · $72', s: 'POST /v2/payments/captures/…/refund · 201', p: 0.02, auto: true },
+      { d: '11/10 · 15:10', t: '서연 님이 환불 확인', s: '“환불 확인했어요. 감사해요.”', p: 0.0, buyer: true }
+    ],
+    cb: [
+      { d: '11/10 · 14:02', t: '답장 보냄', s: '날짜 없음, 구매자가 할 일 없음', p: null },
+      { d: '11/10 · 15:30', t: '서연 님이 화난 답장', s: '“답이 이게 다예요? 카드사에 이의제기할게요.”', p: 0.93, buyer: true },
+      { d: '다음', t: 'AI: 지금 환불($72)이 차지백 패소($82)보다 싸요', s: '또는 다시 해보기로 더 나은 답장을 시도', p: null, act: true }
+    ]
+  },
+  refundNow: '지금 $72 환불', refunded: '환불 완료 ✓',
+  resT: { ok: '5일 만에 해결 · 손실 $0', refund: '오늘 종료 · $72 환불', cb: '차지백 가능성 높음' },
+  resRows: { before: 'DisputeLess 이전', after: 'DisputeLess 사용' },
+  resBefore: '23일 · 메시지 4번 · 위험 89%까지 상승',
+  resAfter: { ok: '답장 1번 · 자동 처리 2번 · 차지백 막음 (−$82)', refund: '답장 1번 · 차지백 막음 · $72 환불', cb: '위험 93% — 더 나은 답장을 시도해 보세요' },
+  open: '열기', other: {
+    jiho: { t: '배송비는 구매자 부담, 수선은 무료로 제안', b: '반품 기간(30일)이 지나 반품은 안 돼요. 무료 수선으로 판매를 지키고 문제도 해결해요.', a: '보내기', done: '보냄 ✓', save: 41 },
+    lena: { t: '약속한 $24 환불', b: '11/6 약속. 늦은 환불은 분쟁이 되기 쉬워요.', a: '$24 환불', done: '환불 완료 ✓', save: 8 },
+    trk: { t: '주문 5건 PayPal에 추적번호 등록', b: '배송 위치를 못 보는 구매자가 미수령 분쟁을 열어요.', a: '5건 등록', done: '등록 완료 ✓', save: 120 },
+    kc: { t: '한국 구매자 3명에게 통관번호 요청', b: '번호가 없으면 서연 님 건처럼 세관에 묶여요.', a: '보내기', done: '보냄 ✓', save: 72 },
+    yuki: { t: 'AI 답변: M 사이즈 총장 64cm', b: '사이즈표를 보고 일본어로 답했어요.', a: '확인', done: '확인 ✓', save: 0 },
+    bm: { t: '반복 신고 건에 배송 증빙 보내기', b: '90일 내 3번째 미수령 신고. AI가 자동 환불하지 않아요.', a: '증빙 보내기', done: '보냄 ✓', save: 35 }
+  },
+  toastDash: (x) => '대시보드 갱신 · +' + x + ' 지킴',
+  several: '여러 상품',
+  who: { seo: '김서연 · 한국', jiho: '박지호 · 한국', lena: 'Lena K. · 독일', trk: '발송 3일 지남 · 4개국', kc: '한국 구매자 · 이번 주 발송', yuki: 'Yuki T. · 일본', bm: 'buyer_m · 미국' }
+}
+};
+
+// ---- Reply forecast model: phrase lint (rules) -> logistic score -> outcome x cost ----
+var NW = { apology: -0.4, cause: -0.5, ask: -0.4, date: -0.9, backup: -1.0, lang: -0.5, blame: 1.0, vague: 0.6, noRefund: 1.3, refundNow: -3.0 };
+var NBASE = [['intercept', -0.5], ['threat', 0.9], ['unanswered', 0.4], ['tone', 0.4]];
+var N_DELAY = 0.45, N_PRICE = 72, N_FEE = 8, N_T = 2, N_ETA = 17;
+var NCOST = { ok: N_T, refund: N_PRICE + N_T, cb: N_PRICE + N_FEE + N_T };
+var GOOD = ['apology', 'cause', 'ask', 'date', 'backup', 'lang'], BAD = ['blame', 'vague', 'noRefund'];
+var RX = {
+  apology: /sorry|apolog|죄송|미안/i,
+  cause: /customs|세관|통관/i,
+  ask: /customs id|pccc|send (me|us) (your|the)|reply with|통관번호|고유부호|알려주/i,
+  date: /\b(nov(ember)?\.?\s*\d{1,2}|11\/\d{1,2})\b|11월\s*\d{1,2}일|11\/\d{1,2}/i,
+  backup: /refund|환불/i,
+  noRefund: /(no|not|can['’]?t|cannot|won['’]?t|unable to)\s+(\w+\s+){0,2}refund|refunds? (are|is) not|환불(은|이)?\s*(불가|안\s*돼|어렵|못)/i,
+  blame: /not (our|my) (fault|responsibility|problem)|your (fault|problem)|contact customs yourself|(저희|제) (책임|잘못)이 아니|직접 (세관|문의)|세관에 직접/i,
+  vague: /\bsoon\b|should arrive|eventually|any day|곧|조만간|언젠가/i,
+  promise: /free|discount|coupon|bonus|할인|쿠폰|무료|사은품/i,
+  refundNow: /(have|i['’]ve|already) refunded|refunded (the|your)|환불(해)? ?드렸|환불했어요|환불 완료/i
+};
+function nSig(z) { return 1 / (1 + Math.exp(-z)); }
+function nSentences(t) { return (t.match(/[^.!?。]+[.!?。]?/g) || []).map(function (s) { return s.trim(); }).filter(Boolean); }
+function nDetect(text, tr) {
+  var f = {}, hit = {}, ss = nSentences(text);
+  Object.keys(RX).forEach(function (k) {
+    f[k] = 0; for (var i = 0; i < ss.length; i++) if (RX[k].test(ss[i])) { f[k] = 1; hit[k] = ss[i]; break; }
+  });
+  if (f.noRefund) f.backup = 0;
+  f.lang = (tr || /[가-힣]/.test(text)) && text.trim() ? 1 : 0;
+  var dm = text.match(/nov(?:ember)?\.?\s*(\d{1,2})/i) || text.match(/11월\s*(\d{1,2})일/) || text.match(/11\/(\d{1,2})/);
+  var am = text.match(/\$\s?(\d+(?:\.\d+)?)/);
+  return { f: f, hit: hit, day: dm ? +dm[1] : null, amt: am ? +am[1] : null };
+}
+function nForecast(f, delay, empty) {
+  var z = 0, parts = [];
+  NBASE.forEach(function (b) { z += b[1]; parts.push({ k: b[0], w: b[1], kind: 'base' }); });
+  if (delay) { z += N_DELAY * delay; parts.push({ k: 'delay', w: N_DELAY * delay, kind: 'delay', d: delay }); }
+  if (!empty) GOOD.concat(BAD, ['refundNow']).forEach(function (k) { if (f[k]) { z += NW[k]; parts.push({ k: k, w: NW[k], kind: 'draft' }); } });
+  var pcb = nSig(z);
+  var qz = empty ? -0.4 : -0.4 + 0.7 * f.vague - 0.8 * f.date - 0.5 * f.ask - 0.4 * f.cause + 0.5 * f.blame + 0.6 * f.noRefund;
+  var pref = (1 - pcb) * (!empty && f.refundNow ? 0.97 : nSig(qz)), pok = 1 - pcb - pref;
+  var cost = pok * NCOST.ok + pref * NCOST.refund + pcb * NCOST.cb;
+  return { z: z, parts: parts, p: { ok: pok, refund: pref, cb: pcb }, cost: cost,
+    mood: 0.4 * pok + (!empty && f.refundNow ? 0.3 : -0.3) * pref - 0.9 * pcb, days: 7 * pok + 2 * pref + 40 * pcb };
+}
+var NNONE = nForecast({}, 2, true);
+
+var ICON = {
+  cardigan: 'M8 4L4 7l2 4 2-1v10h8V10l2 1 2-4-4-3-4 6zM12 10v10M10.5 13h.01M10.5 16h.01',
+  sweater: 'M8 4L4 7l2 4 2-1v10h8V10l2 1 2-4-4-3c-1 1.4-2.3 2-4 2S9 5.4 8 4zM8 18h8',
+  coat: 'M8 3L4 6l2 5 2-1v12h8V10l2 1 2-5-4-3-4 6zM12 9v13M9 15h2',
+  beanie: 'M5 15a7 7 0 0 1 14 0zM4 15h16v3H4zM12 8V6M12 6a1.2 1.2 0 1 0 0-.01',
+  multi: 'M4 8h16v12H4zM4 8l2-4h12l2 4M10 12h4'
+};
+var PRODS = [{ sku: 'cardigan', units: 120 }, { sku: 'sweater', units: 80 }, { sku: 'coat', units: 25 }, { sku: 'beanie', units: 150 }];
+var ITEMS = [
+  { id: 'seo', sec: 'reply', order: '#1042', sku: 'sweater', cat: 'customs', who: 'Seo-yeon Kim · KR', due: [0, 12], risk: 'high' },
+  { id: 'jiho', sec: 'reply', order: '#1038', sku: 'cardigan', cat: 'quality', who: 'Ji-ho Park · KR', due: [0, 19], risk: 'med' },
+  { id: 'lena', sec: 'reply', order: '#1029', sku: 'beanie', cat: 'refund', who: 'Lena K. · DE', due: [0, 10], risk: 'med' },
+  { id: 'trk', sec: 'prevent', n: 5, sku: null, cat: 'tracking', who: '', risk: 'med' },
+  { id: 'kc', sec: 'prevent', n: 3, sku: null, cat: 'kcid', who: '', risk: 'med' },
+  { id: 'yuki', sec: 'routine', order: '#1051', sku: 'cardigan', cat: 'size', who: 'Yuki T. · JP', risk: 'low' },
+  { id: 'bm', sec: 'reply', order: '#1047', sku: 'sweater', cat: 'repeat', who: 'buyer_m · US', due: [0, 15], risk: 'low' }
+];
+var RISKP = { seo: 89, jiho: 38, lena: 31, trk: 27, kc: 22, bm: 12, yuki: 6 };
+function riskLvl(p) { return p >= 45 ? 'high' : p >= 20 ? 'med' : 'low'; }
+var DASH0 = { prevented: 4, saved: 312, drafted: 18, reply: 14 };
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const v = DI[LANG];
+    this.state = { sel: 'seo', sku: 'sweater', done: {}, histOpen: false,
+      draft: '', path: 'custom', aiOn: false, goodsOpen: true, busy: false, phase: 'edit', out: 'ok', sentTxt: '', sentKo: '', sentP: null, refundNowF: false,
+      shown: 0, typing: false, cbDone: false, dash: Object.assign({}, DASH0), flash: null, toast: null, pSort: { k: 'risk', d: -1 }, cSort: { k: 'risk', d: -1 } };
+  }
+  componentWillUnmount() { (this.tm || []).forEach(clearTimeout); if (this.iv) clearInterval(this.iv); }
+  pickProduct(sku) {
+    if (sku === 'all') { this.setState({ sku: 'all', sel: null }); return; }
+    const its = ITEMS.filter((i) => sku === 'all' || i.sku === sku);
+    let first = null;
+    ['reply', 'prevent', 'routine'].forEach((k) => { if (!first) first = its.filter((i) => i.sec === k && !this.state.done[i.id])[0] || null; });
+    if (!first) first = its[0] || null;
+    this.setState({ sku: sku, sel: first ? first.id : null });
+  }
+  later(fn, ms) { this.tm = (this.tm || []).concat([setTimeout(fn, ms)]); }
+  toast(txt) { this.setState({ toast: txt }); const id = txt; this.later(() => { if (this.state.toast === id) this.setState({ toast: null }); }, 3000); }
+  bump(save, prevent, drafted) {
+    const d = Object.assign({}, this.state.dash);
+    d.saved += save; d.prevented += prevent; d.drafted += drafted;
+    this.setState({ dash: d, flash: (this.state.flash ? this.state.flash.n + 1 : 1) });
+    this.flashKey = { n: this.state.flash, save: save, prevent: prevent, drafted: drafted };
+    if (save) this.toast(DI[LANG].toastDash('$' + save));
+  }
+  fc(draft) { const d = nDetect(draft, true), empty = !draft.trim(); return { d: d, empty: empty, fc: empty ? NNONE : nForecast(d.f, 0, false) }; }
+  blocked(c) { return c.empty || (c.d.day !== null && c.d.day < N_ETA) || (c.d.amt !== null && c.d.amt > N_PRICE) || !!c.d.f.promise; }
+  typeOut(text, path) {
+    if (this.iv) clearInterval(this.iv);
+    this.setState({ draft: '', path: path, busy: true });
+    let i = 0;
+    this.iv = setInterval(() => {
+      i = Math.min(text.length, i + 1);
+      this.setState({ draft: text.slice(0, i) });
+      if (i >= text.length) { clearInterval(this.iv); this.iv = null; this.setState({ busy: false }); }
+    }, 32);
+  }
+  send() {
+    const s = this.state, v = DI[LANG], c = this.fc(s.draft);
+    if (s.phase !== 'edit' || s.busy || this.blocked(c)) return;
+    const p = c.fc.p; let out = 'ok'; if (p.refund > p.ok) out = 'refund'; if (p.cb > p[out]) out = 'cb';
+    const same = s.path !== 'custom' && v.paths[s.path] && s.draft === v.paths[s.path].draft;
+    this.setState({ phase: 'sent', out: out, sentTxt: s.draft, sentKo: LANG === 'ko' ? s.draft : (same ? v.paths[s.path].ko : ''), sentP: p, refundNowF: !!c.d.f.refundNow, shown: 1, typing: out !== 'refund', cbDone: false });
+    const steps = v.steps[out];
+    for (let k = 2; k <= steps.length; k++) {
+      this.later(() => {
+        this.setState({ shown: k, typing: false });
+        if (k === steps.length) {
+          if (out === 'ok') { this.bump(82, 1, 1); this.setState({ done: Object.assign({}, this.state.done, { seo: true }) }); }
+          if (out === 'refund') { this.bump(10, 1, 1); this.setState({ done: Object.assign({}, this.state.done, { seo: true }) }); }
+        }
+      }, 1300 * (k - 1) + 400);
+    }
+  }
+  renderVals() {
+    const v = DI[LANG], s = this.state;
+    const pc = (x) => Math.round(x * 100) + '%', $ = (x) => '$' + Math.round(x);
+    const fmtD = (md) => LANG === 'ko' ? '11/' + md[1] : 'Nov ' + md[1];
+    const sigZ = (z) => 1 / (1 + Math.exp(-z));
+
+    // Products
+    const open = ITEMS.filter((i) => !s.done[i.id]);
+    const nCase = (sku) => open.filter((i) => i.sku === sku && i.sec === 'reply' || i.sku === sku && i.sec === 'routine').length;
+    const prods = [{ sku: 'all', name: v.prodAll, sub: LANG === 'ko' ? '4종 · 375장' : '4 items · 375 units', icon: ICON.multi, n: open.length }]
+      .concat(PRODS.map((p) => ({ sku: p.sku, name: v.pname[p.sku], sub: v.units(p.units) + ' · ' + v.cases(nCase(p.sku)), icon: ICON[p.sku], n: nCase(p.sku) })))
+      .map((p) => ({ name: p.name, sub: p.sub, icon: p.icon, on: s.sku === p.sku, cls: 'pf' + (s.sku === p.sku ? ' on' : ''), hasCase: p.sku !== 'all' && p.n > 0, nCase: String(p.n),
+        badgeSt: 'position:absolute;right:-6px;top:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:1000px;background:#C4321F;color:#FFFFFF;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;border:2px solid #FFFFFF',
+        pick: () => this.pickProduct(p.sku) }));
+
+    // Dashboard
+    const fk = s.flash ? 'flash' : '';
+    const D = s.dash;
+    const dash = [
+      { label: v.dPrevent, val: String(D.prevented), sub: D.prevented > DASH0.prevented ? '+' + (D.prevented - DASH0.prevented) + ' ' + v.dBump : (LANG === 'ko' ? '이번 주' : 'this week') },
+      { label: v.dSaved, val: '$' + D.saved, sub: D.saved > DASH0.saved ? '+$' + (D.saved - DASH0.saved) + ' ' + v.dBump : (LANG === 'ko' ? '환불·차지백 방지' : 'refunds & chargebacks avoided') },
+      { label: v.dDrafted, val: String(D.drafted), sub: D.drafted > DASH0.drafted ? '+' + (D.drafted - DASH0.drafted) + ' ' + v.dBump : (LANG === 'ko' ? '4개 언어' : 'in 4 languages') },
+      { label: v.dReply, val: v.dReplyV(D.reply), sub: v.dReplyWas }
+    ].map((d, i) => ({ label: d.label, val: d.val, sub: d.sub, cls: (i < 3 && s.flash) ? 'flash' : '', subSt: 'font-size:11px;font-weight:700;color:' + (/\+/.test(d.sub) ? '#60CDFF' : '#C9E3FF') }));
+    // re-key flash animation by toggling cls name per flash count
+    if (s.flash) dash.forEach((d, i) => { if (i < 3) d.cls = s.flash % 2 ? 'flash' : 'rise'; });
+
+    // Inbox sections
+    const vis = ITEMS.filter((i) => s.sku === 'all' || i.sku === s.sku);
+    const catSt = (i) => 'background:#ECEEF0;color:#3F4144';
+    const sevCol = { high: '#C4321F', med: '#002991', low: '#9AA0A6' };
+    const mkItem = (i) => ({ order: i.order || v.multi(i.n), prod: i.sku ? v.pname[i.sku] : v.several, cat: v.cats[i.cat], catSt: catSt(i),
+      due: i.due ? v.due(fmtD(i.due)) : '', who: v.who[i.id], icon: ICON[i.sku || 'multi'],
+      sevSt: 'background:' + (s.done[i.id] ? '#CFD3D8' : sevCol[i.risk]),
+      riskTxt: s.done[i.id] ? '' : RISKP[i.id] + '% · ' + v.lvl[riskLvl(RISKP[i.id])],
+      riskSt: s.done[i.id] ? 'display:none' : 'flex-shrink:0;align-self:center;padding:2px 8px;border-radius:1000px;font-size:12px;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums;' + ({ high: 'background:#FBE7E4;color:#9E2414', med: '#'.length ? 'background:#E3F3FF;color:#002991' : '', low: 'background:#ECEEF0;color:#3F4144' })[riskLvl(RISKP[i.id])],
+      cls: 'it' + (s.sel === i.id ? ' on' : '') + (s.done[i.id] ? ' done' : ''), pick: () => this.setState({ sel: i.id }) });
+    const secBar = { reply: '#C4321F', prevent: '#002991', routine: '#9AA0A6', done: '#CFD3D8' };
+    const secs = ['reply', 'prevent', 'routine'].map((k) => { const its = vis.filter((i) => i.sec === k && !s.done[i.id]); return { k: k, its: its }; })
+      .concat([{ k: 'done', its: vis.filter((i) => s.done[i.id]) }])
+      .filter((g) => g.its.length)
+      .map((g) => ({ title: v.secs[g.k], hint: v.secHint[g.k], count: String(g.its.length), items: g.its.map(mkItem),
+        barSt: 'width:4px;height:18px;border-radius:2px;flex-shrink:0;background:' + secBar[g.k] }));
+
+    // All products overview (AG Grid)
+    const rp = (i) => s.done[i.id] ? 0 : RISKP[i.id];
+    const rCol = (p) => p >= 45 ? '#C4321F' : p >= 20 ? '#0070E0' : '#9AA0A6';
+    const riskCells = (p) => ({ bar: 'display:inline-block;position:relative;width:56px;height:6px;border-radius:3px;background:#E9ECF0;flex-shrink:0;overflow:hidden',
+      fill: 'position:absolute;left:0;top:0;bottom:0;width:' + Math.max(p, 2) + '%;background:' + rCol(p) + ';border-radius:3px',
+      riskSt: 'font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;color:' + (p >= 45 ? '#C4321F' : p === 0 ? '#9AA0A6' : '#0B0F14'), riskTxt: p + '%' });
+    const sortHead = (cols, st, key) => cols.map((c) => ({ label: c.l, cls: 'ag-hc' + (c.num ? ' num' : '') + (st.k === c.k ? ' on' : ''), ind: st.k === c.k ? (st.d < 0 ? '↓' : '↑') : '',
+      aria: st.k === c.k ? (st.d < 0 ? 'descending' : 'ascending') : 'none',
+      pick: () => this.setState({ [key]: { k: c.k, d: st.k === c.k ? -st.d : (c.num || c.k === 'risk' ? -1 : 1) } }) }));
+    const cmp = (st) => (a, b) => { const x = a[st.k], y = b[st.k]; return (x < y ? -1 : x > y ? 1 : 0) * st.d; };
+    const groups = PRODS.map((p) => ({ key: p.sku, name: v.pname[p.sku], units: v.units(p.units), icon: ICON[p.sku] })).concat([{ key: 'multi', name: v.several, units: v.ovPrevOnly, icon: ICON.multi }]);
+    const pData = groups.map((g) => {
+      const its = ITEMS.filter((i) => (i.sku || 'multi') === g.key && !s.done[i.id]);
+      const cnt = (k) => its.filter((i) => i.sec === k).length;
+      const top = its.slice().sort((a, b) => rp(b) - rp(a))[0];
+      return { g: g, its: its, name: g.name, topk: top ? (top.order || '#' + top.n) : '~', open: its.length, reply: cnt('reply'), prevent: cnt('prevent'), routine: cnt('routine'), risk: top ? rp(top) : 0, top: top };
+    }).sort(cmp(s.pSort));
+    const pRows = pData.map((d) => Object.assign({ name: d.name, units: d.g.units, icon: d.g.icon, open: String(d.open), reply: String(d.reply), prevent: String(d.prevent), routine: String(d.routine),
+      replySt: d.reply ? 'display:inline-flex;min-width:24px;justify-content:center;padding:1px 8px;border-radius:1000px;background:#FBE7E4;color:#9E2414;font-weight:900' : 'color:#9AA0A6',
+      top: d.top ? (d.top.order ? v.ordNo(d.top.order) : v.multi(d.top.n)) : v.ovNone, topCat: d.top ? v.cats[d.top.cat] : v.ovNoneS,
+      cls: 'ag-r' + (d.risk >= 45 ? ' hi' : ''),
+      pick: () => { if (d.g.key === 'multi') this.setState({ sel: d.top ? d.top.id : null }); else this.pickProduct(d.g.key); } }, riskCells(d.risk)));
+    const pCols = 'grid-template-columns:minmax(170px,2fr) 104px 112px 84px 92px minmax(132px,1.2fr) minmax(160px,1.5fr)';
+    const pHead = sortHead([{ k: 'name', l: v.colProd }, { k: 'open', l: v.colOpen, num: 1 }, { k: 'reply', l: v.kReply, num: 1 }, { k: 'prevent', l: v.kPrevent, num: 1 }, { k: 'routine', l: v.kRoutine, num: 1 }, { k: 'risk', l: v.colRisk }, { k: 'name', l: v.colTop }].map((c, i) => i === 6 ? Object.assign({}, c, { k: 'topk' }) : c), s.pSort, 'pSort');
+    const secOrd = { reply: 0, prevent: 1, routine: 2 };
+    const cData = ITEMS.map((i) => ({ i: i, risk: rp(i), case: i.order || v.multi(i.n), type: v.cats[i.cat], status: s.done[i.id] ? 3 : secOrd[i.sec], buyer: v.who[i.id] || '', due: i.due ? i.due[1] : 99 })).sort(cmp(s.cSort));
+    const stSt = { reply: 'background:#FBE7E4;color:#9E2414', prevent: 'background:#E3F3FF;color:#002991', routine: 'background:#ECEEF0;color:#3F4144', done: 'background:#F1F3F6;color:#9AA0A6' };
+    const cRows = cData.map((d) => { const i = d.i, dn = !!s.done[i.id], sk = dn ? 'done' : i.sec;
+      return Object.assign({ order: d.case, prod: i.sku ? v.pname[i.sku] : v.several, cat: v.cats[i.cat], catSt: catSt(i), st: v.secs[sk],
+        stSt: 'display:inline-flex;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap;' + stSt[sk],
+        who: v.who[i.id] || '', due: i.due ? v.due(fmtD(i.due)) : '—', cls: 'ag-r' + (dn ? ' dn' : d.risk >= 45 ? ' hi' : ''),
+        pick: () => this.setState({ sel: i.id }) }, riskCells(d.risk)); });
+    const cCols = 'grid-template-columns:132px minmax(150px,1.5fr) minmax(170px,1.5fr) 128px minmax(120px,1.1fr) 120px';
+    const cHead = sortHead([{ k: 'risk', l: v.cRisk }, { k: 'case', l: v.cCase }, { k: 'type', l: v.cType }, { k: 'status', l: v.cStatus }, { k: 'buyer', l: v.cBuyer }, { k: 'due', l: v.cDue }], s.cSort, 'cSort');
+    const colName = (st, heads, cols) => { const h = cols.filter((c) => c.k === st.k)[0]; return h ? h.l : ''; };
+    const openAll = ITEMS.filter((i) => !s.done[i.id]);
+    const tops = pData.filter((d) => d.top).map((d) => d.risk);
+    const avgR = tops.length ? Math.round(tops.reduce((n, x) => n + x, 0) / tops.length) : 0;
+    const kpis = [
+      { label: v.kOpen, val: String(openAll.length), sub: v.prodSum(4, 375, openAll.length).split(' · ').slice(0, 2).join(' · '), c: '#0B0F14' },
+      { label: v.kReply, val: String(openAll.filter((i) => i.sec === 'reply').length), sub: v.secHint.reply, c: '#C4321F' },
+      { label: v.kPrevent, val: String(openAll.filter((i) => i.sec === 'prevent').length), sub: v.secHint.prevent, c: '#002991' },
+      { label: v.kRoutine, val: String(openAll.filter((i) => i.sec === 'routine').length), sub: v.secHint.routine, c: '#9AA0A6' },
+      { label: v.kTop, val: avgR + '%', sub: v.kTopSub(tops.length), c: avgR >= 45 ? '#C4321F' : '#0070E0', big: true, hi: avgR >= 45 }
+    ].map((k) => ({ hi: k.hi, label: k.label, val: k.val, sub: k.sub, dot: 'width:8px;height:8px;border-radius:50%;background:' + k.c,
+      valSt: 'font-size:26px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;font-variant-numeric:tabular-nums;color:' + (k.hi ? '#C4321F' : k.big ? '#002991' : '#0B0F14') }));
+    const sortTxt = (st, cols) => v.sorted(colName(st, null, cols), st.d);
+    const pColsL = [{ k: 'name', l: v.colProd }, { k: 'open', l: v.colOpen }, { k: 'reply', l: v.kReply }, { k: 'prevent', l: v.kPrevent }, { k: 'routine', l: v.kRoutine }, { k: 'risk', l: v.colRisk }];
+    const cColsL = [{ k: 'risk', l: v.cRisk }, { k: 'case', l: v.cCase }, { k: 'type', l: v.cType }, { k: 'status', l: v.cStatus }, { k: 'buyer', l: v.cBuyer }, { k: 'due', l: v.cDue }];
+    const ov = { isAll: s.sku === 'all' && !s.sel, showBack: s.sku === 'all' && !!s.sel, backAll: () => this.setState({ sel: null }),
+      kpis: kpis, pRows: pRows, pHead: pHead, pCols: pCols, cRows: cRows, cHead: cHead, cCols: cCols,
+      pFoot: v.rows(pRows.length), cFoot: v.rows(cRows.length), pSortTxt: sortTxt(s.pSort, pColsL), cSortTxt: sortTxt(s.cSort, cColsL) };
+
+    // Seo-yeon case
+    const c = this.fc(s.draft), fc = c.fc, f = c.d.f;
+    const sent = s.phase === 'sent';
+    const steps = v.steps[s.out] || [];
+    const shown = sent ? steps.slice(0, s.shown) : [];
+    let curP = sent ? s.sentP.cb : fc.p.cb;
+    shown.forEach((st) => { if (st.p !== null) curP = st.p; });
+    if (sent && s.out === 'cb' && s.cbDone) curP = 0.02;
+
+    // Risk curve
+    const H = v.hist, W = 640, xStep = W / 12;
+    const Y = (p) => 120 - p * 100;
+    const hp = H.map((h, i) => [i * xStep + 8, Y(h.p)]);
+    const pts = (a) => a.map((q) => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ');
+    const liveP = [hp[hp.length - 1]];
+    let lx = hp[hp.length - 1][0] + xStep;
+    if (!sent) liveP.push([lx, Y(fc.p.cb)]);
+    else {
+      liveP.push([lx, Y(s.sentP.cb)]);
+      shown.slice(1).forEach((st) => { if (st.p !== null) { lx += xStep * 0.8; liveP.push([lx, Y(st.p)]); } });
+      if (s.out === 'cb' && s.cbDone) { lx += xStep * 0.8; liveP.push([lx, Y(0.02)]); }
+    }
+    const last = liveP[liveP.length - 1];
+    const whoCol = { buyer: '#3F4144', bad: '#C4321F', sys: '#9AA0A6' };
+    const dots = hp.map((q, i) => ({ x: q[0].toFixed(1), y: q[1].toFixed(1), r: '4.5', fill: whoCol[H[i].who] }))
+      .concat(liveP.slice(1).map((q) => ({ x: q[0].toFixed(1), y: q[1].toFixed(1), r: '5', fill: '#0066F5' })));
+    const labels = [0, 3, 5, 7].map((i) => ({ x: hp[i][0].toFixed(1), t: H[i].d, fill: '#6C7378', w: '400' }))
+      .concat([{ x: (hp[7][0] + xStep).toFixed(1), t: sent ? (LANG === 'ko' ? '답장' : 'Reply') : v.curveLive, fill: '#0066F5', w: '700' }]);
+    const curve = { hist: pts(hp), area: pts(hp.concat([[hp[7][0], 120], [hp[0][0], 120]])), live: pts(liveP), dash: sent ? '0' : '6 5',
+      dots: dots, labels: labels, px: last[0].toFixed(1), py: last[1].toFixed(1) };
+    const riskCol = (p) => p >= 0.5 ? '#C4321F' : p >= 0.2 ? '#000000' : '#0066F5';
+    const risk = { val: pc(c.empty && !sent ? NNONE.p.cb : curP), st: 'font-size:44px;font-weight:900;letter-spacing:-1.2px;line-height:1.05;font-variant-numeric:tabular-nums;transition:color .3s ease;color:' + riskCol(c.empty && !sent ? NNONE.p.cb : curP),
+      sub: sent ? v.riskAfter : (c.empty ? v.riskNow : v.riskDraft), hasFrom: sent || !c.empty };
+
+    // History
+    const histDots = H.map((h, i) => ({ t: h.d + ' · ' + h.t, line: i === 0 ? 'display:none' : 'flex:1;height:2px;background:#E4E6E9;min-width:6px',
+      dot: 'width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' + whoCol[h.who] }));
+    const histRows = H.map((h) => ({ d: h.d, t: h.t, hasFlag: !!h.flag, flag: h.flag || '',
+      dot: 'width:10px;height:10px;border-radius:50%;margin-top:6px;background:' + whoCol[h.who] }));
+
+    // Thread
+    const TAGC = { bad: 'chip c-bad', n: 'chip c-n', good: 'chip c-blue' };
+    const thread = v.msgs.map((m) => ({ cls: 'bub-in', isSim: false, txt: m.ko, hasTr: !!m.en, sub: (m.en ? m.en + ' · ' : '') + m.d, subSt: 'font-size:12px;color:#3F4144;margin-top:4px',
+      hasTags: true, tags: m.tags.map((g) => ({ txt: g[0], cls: TAGC[g[1]] })), wrapSt: 'display:flex;flex-direction:column;align-items:flex-start;gap:6px' }));
+    if (sent) {
+      thread.push({ cls: 'bub-out rise', isSim: false, hasTr: false, txt: s.sentKo || s.sentTxt, sub: (s.sentKo ? v.sentKo : v.sentAuto) + ' · ' + (LANG === 'ko' ? '11/10 14:02' : 'Nov 10 14:02'), subSt: 'font-size:12px;color:#C9E3FF;margin-top:4px',
+        hasTags: false, tags: [], wrapSt: 'display:flex;flex-direction:column;align-items:flex-end' });
+      const bstep = shown.filter((st) => st.buyer)[0];
+      if (bstep) {
+        const ok = s.out !== 'cb';
+        thread.push({ cls: 'bub-sim rise', isSim: true, hasTr: false, txt: bstep.s.replace(/[“”]/g, ''), sub: bstep.d, subSt: 'font-size:12px;color:#6C7378;margin-top:4px',
+          hasTags: true, tags: ok ? [{ txt: LANG === 'ko' ? (s.out === 'ok' ? '통관번호 보냄' : '환불 확인') : (s.out === 'ok' ? 'Sent customs ID' : 'Confirmed refund'), cls: 'chip c-blue' }, { txt: LANG === 'ko' ? '차분' : 'Calm', cls: 'chip c-n' }]
+            : [{ txt: LANG === 'ko' ? '차지백 예고' : 'Will file chargeback', cls: 'chip c-bad' }, { txt: LANG === 'ko' ? '화남' : 'Angry', cls: 'chip c-n' }],
+          wrapSt: 'display:flex;flex-direction:column;align-items:flex-start;gap:6px' });
+      }
+    }
+
+    // Composer
+    const COL = { ok: '#0066F5', refund: '#99C2FF', cb: '#C4321F' };
+    const stack = (p) => ['ok', 'refund', 'cb'].map((k) => ({ st: 'display:block;height:100%;transition:width .35s ease;background:' + COL[k] + ';width:' + (p[k] * 100).toFixed(1) + '%' }));
+    const pf = {}; ['ai', 'carrier', 'refund'].forEach((k) => { pf[k] = this.fc(v.paths[k].draft).fc; });
+    const best = ['ai', 'carrier', 'refund'].slice().sort((a, b) => pf[a].cost - pf[b].cost)[0];
+    const paths = ['ai', 'carrier', 'refund'].map((k) => ({ t: v.paths[k].t, how: v.paths[k].how, rec: k === best, on: s.path === k, off: s.busy,
+      cls: 'npath' + (s.path === k ? ' on' : ''), radio: 'nradio' + (s.path === k ? ' on' : ''),
+      cb: v.cbShort(pc(pf[k].p.cb)), cbSt: 'font-weight:900;color:' + (pf[k].p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'), cost: v.costShort($(pf[k].cost)),
+      pick: () => this.typeOut(v.paths[k].draft, k) }));
+    const eff = (k, present) => { const w = NW[k], z = fc.z; return Math.round((present ? sigZ(z) - sigZ(z - w) : sigZ(z + w) - sigZ(z)) * 100); };
+    const effTxt = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + v.pts;
+    const cut = (x) => { x = x || ''; return '“' + (x.length > 40 ? x.slice(0, 39) + '…' : x) + '”'; };
+    const row = (kind, label, detail, e, act, actLabel) => ({ cls: 'nlint nl-' + kind, iconCls: 'nic nic-' + kind, icon: kind === 'good' ? '✓' : kind === 'bad' ? '!' : '+',
+      label: label, detail: detail, eff: effTxt(e), effSt: 'font-size:13px;font-weight:900;white-space:nowrap;color:' + (kind === 'bad' ? '#C4321F' : '#0A1B3D'),
+      hasAct: !!act, act: act || (() => {}), actLabel: actLabel || '', actCls: 'nmini' + (kind === 'bad' ? ' ghost' : '') });
+    const lints = [];
+    if (!c.empty) {
+      ['blame', 'noRefund', 'vague'].forEach((k) => { if (f[k]) lints.push(row('bad', v.fx[k], cut(c.d.hit[k]), eff(k, true), () => this.setState({ draft: nSentences(s.draft).filter((x) => !RX[k].test(x)).join(' '), path: 'custom' }), v.remove)); });
+      if (!f.refundNow) ['backup', 'date', 'cause', 'ask', 'apology'].filter((k) => !f[k]).map((k) => ({ k: k, e: eff(k, false) })).sort((a, b) => a.e - b.e).forEach((q) => {
+        lints.push(row('miss', v.missing + ': ' + v.fx[q.k], v.fxS[q.k], q.e, () => this.setState({ draft: (s.draft.trim() + ' ' + v.fxS[q.k]).trim(), path: 'custom' }), '+ ' + v.add)); });
+    }
+    const warns = [];
+    if (c.d.day !== null && c.d.day < N_ETA) warns.push(v.gDateEarly(c.d.day));
+    if (c.d.amt !== null && c.d.amt > N_PRICE) warns.push(v.gRefBad(c.d.amt));
+    if (f.promise) warns.push(v.gPromBad);
+    const same = s.path !== 'custom' && v.paths[s.path] && s.draft === v.paths[s.path].draft;
+
+    // Progress steps
+    const stepRows = shown.map((st, i) => {
+      const isLast = i === shown.length - 1;
+      const ic = st.buyer ? 'S' : st.auto ? 'A' : st.act ? '!' : '✓';
+      const bg = st.buyer ? '#F1EFEA;color:#000000' : st.auto ? 'linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF);color:#FFFFFF' : st.act ? '#FBE7E4;color:#9E2414' : '#002991;color:#FFFFFF';
+      return { t: st.t, s: st.s, d: st.d, auto: !!st.auto, act: !!st.act, ic: ic, icSt: 'background:' + bg,
+        lineSt: isLast ? 'display:none' : 'flex:1;width:2px;min-height:14px;background:#CFD3D8;margin:4px 0',
+        hasP: st.p !== null, pTxt: (LANG === 'ko' ? '위험 ' : 'Risk ') + (st.p !== null ? pc(st.p) : ''), pSt: st.p !== null && st.p >= 0.5 ? 'background:#FBE7E4;color:#9E2414' : 'background:#E3F3FF;color:#002991' };
+    });
+    if (sent && s.out === 'cb' && s.cbDone) stepRows.push({ t: LANG === 'ko' ? '$72 환불 · 차지백 막음' : 'Refunded $72 · chargeback avoided', s: 'POST /v2/payments/captures/…/refund · 201', d: LANG === 'ko' ? '11/10 · 15:32' : 'Nov 10 · 15:32', auto: true, act: false, ic: 'A', icSt: 'background:linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF);color:#FFFFFF', lineSt: 'display:none', hasP: true, pTxt: (LANG === 'ko' ? '위험 ' : 'Risk ') + '2%', pSt: 'background:#E3F3FF;color:#002991' });
+    const finished = sent && s.shown >= steps.length;
+    const resOn = finished;
+    const resKey = s.out === 'cb' && s.cbDone ? 'refund' : s.out;
+
+    // Other case
+    const oi = ITEMS.filter((i) => i.id === s.sel)[0];
+    const od = v.other[s.sel];
+    const ax = v.ai[s.sel];
+    const oc = oi && od ? { icon: ICON[oi.sku || 'multi'], head: (oi.order || v.multi(oi.n)) + ' · ' + (oi.sku ? v.pname[oi.sku] : v.several), cat: v.cats[oi.cat], catSt: catSt(oi), who: v.who[oi.id],
+      t: od.t, b: od.b, a: s.done[oi.id] ? od.done : od.a, done: !!s.done[oi.id],
+      hasMsg: !!(ax && ax.msg), msgLang: ax && ax.msg ? v.langOf[ax.msg.l] : '', msgCode: ax && ax.msg ? ax.msg.l : '', msgOrig: ax && ax.msg ? ax.msg.o : '', msgTr: ax && ax.msg ? ax.msg.tr : '', msgHasTr: !!(ax && ax.msg && ax.msg.tr),
+      tags: ax && ax.msg ? ax.msg.tags.map((g, n) => ({ txt: g, cls: 'chip ' + (n === 0 && /bad/.test(ax.msg.tone || '') ? 'c-bad' : 'c-n') })) : [],
+      steps: ax ? ax.steps.map((x, n) => ({ n: String(n + 1), t: x })) : [],
+      hasRows: !!(ax && ax.rows), rowHead: ax && ax.rows ? ax.rows.h : [], rows: ax && ax.rows ? ax.rows.r : [], rowCols: ax && ax.rows ? 'grid-template-columns:' + ax.rows.c : '',
+      hasDraft: !!(ax && ax.draft), draftT: ax && ax.draft ? v.draftT(v.langOf[ax.draft.l], s.done[oi.id] || ax.auto) : '', draftCode: ax && ax.draft ? ax.draft.l : '', draftOrig: ax && ax.draft ? ax.draft.o : '', draftTr: ax && ax.draft ? ax.draft.tr : '', draftHasTr: !!(ax && ax.draft && ax.draft.tr),
+      draftSt: 'border-radius:18px;padding:14px 16px;' + (s.done[oi.id] || (ax && ax.auto) ? 'background:#002991;color:#FFFFFF' : 'background:#F3F7FF;border:1px solid #CFE0FA'),
+      api: ax ? ax.api : '', trLabSt: s.done[oi.id] || (ax && ax.auto) ? 'color:#9FD8FF' : 'color:#0070E0', apiLab: ax && ax.auto ? v.apiAuto : v.apiT, hasKeep: !!od.save, keep: v.keepT(od.save),
+      run: () => { if (this.state.done[oi.id]) return; this.setState({ done: Object.assign({}, this.state.done, { [oi.id]: true }) }); this.bump(od.save, od.save ? 1 : 0, ['jiho', 'kc', 'yuki'].indexOf(oi.id) >= 0 ? 1 : 0); if (!od.save) this.toast(od.done); } } : null;
+
+    return {
+      v: v, rehearsalHref: LANG === 'ko' ? 'Rehearsal-ko.dc.html' : 'Rehearsal.dc.html',
+      prods: prods, prodSum: v.prodSum(4, 375, open.length), dash: dash, secs: secs,
+      isAll: ov.isAll, showBack: ov.showBack, backAll: ov.backAll, kpis: ov.kpis, pRows: ov.pRows, pHead: ov.pHead, pCols: ov.pCols, cRows: ov.cRows, cHead: ov.cHead, cCols: ov.cCols, pFoot: ov.pFoot, cFoot: ov.cFoot, pSortTxt: ov.pSortTxt, cSortTxt: ov.cSortTxt,
+      isSeo: s.sel === 'seo', isOther: s.sel !== 'seo' && !!oc, isEmpty: s.sel !== 'seo' && !oc && !ov.isAll, emptyT: v.emptyT, emptyS: v.emptyS(s.sku === 'all' ? v.prodAll : v.pname[s.sku]), oc: oc || { icon: '', head: '', cat: '', catSt: '', who: '', t: '', b: '', a: '', done: true, run: () => {} },
+      caseIcon: ICON.sweater, caseProd: v.pname.sweater,
+      curve: curve, risk: risk,
+      histSub: v.histS(H.length, 23), histDots: histDots, histRows: histRows, histOpen: s.histOpen,
+      histLabel: s.histOpen ? v.histClose : v.histOpen, histChevSt: 'display:inline-block;transition:transform .2s ease;' + (s.histOpen ? 'transform:rotate(180deg)' : ''),
+      toggleHist: () => this.setState({ histOpen: !s.histOpen }),
+      thread: thread, isTyping: sent && s.typing,
+      notSent: !sent, sent: sent, showSimple: !sent && !s.aiOn, showAi: !sent && !!s.aiOn, aiOn: !!s.aiOn, tgCls: 'tg' + (s.aiOn ? ' on' : ''),
+      simpleOff: s.busy || !s.draft.trim(),
+      toggleAi: () => { const on = !this.state.aiOn; this.setState({ aiOn: on }); if (on && !this.state.draft.trim()) this.typeOut(v.paths.ai.draft, 'ai'); },
+      paths: paths, busy: s.busy, draft: s.draft,
+      onType: (e) => this.setState({ draft: e && e.target ? e.target.value : '', path: 'custom' }),
+      rushed: () => this.typeOut(v.rushedDraft, 'custom'), useAi: () => this.typeOut(v.paths.ai.draft, 'ai'), clear: () => this.setState({ draft: '', path: 'custom' }),
+      draftGrid: 'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start',
+      editorSt: 'border-color:' + (c.empty ? '#CFD3D8' : fc.p.cb >= 0.5 ? '#E8796B' : '#0A1B3D'),
+      goods: ['apology', 'cause', 'ask', 'date', 'backup', 'refundNow'].filter((k) => f[k]).map((k, n) => ({ label: v.fx[k], detail: '“' + (c.d.hit[k] || '') + '”', eff: effTxt(eff(k, true)), st: 'animation-delay:' + (n * 0.12) + 's' })), goodsOpen: !!s.goodsOpen, toggleGoods: () => this.setState({ goodsOpen: !s.goodsOpen }), goodsLabel: s.goodsOpen ? v.less : v.more, goodsChev: 'transition:transform .2s ease;' + (s.goodsOpen ? 'transform:rotate(180deg)' : ''), hasGoods: !c.empty && ['apology', 'cause', 'ask', 'date', 'backup', 'refundNow'].some((k) => f[k]),
+      lintSum: c.empty ? [] : [v.sumFix(lints.filter((l) => l.icon === '!').length), v.sumMiss(lints.filter((l) => l.icon === '+').length), v.sumOk(['apology', 'cause', 'ask', 'date', 'backup', 'refundNow'].filter((k) => f[k]).length)].filter((u) => !/(^0\s)|(\s0$)/.test(u)),
+      pill: v.cbShort(pc(fc.p.cb)), pillSt: 'position:absolute;right:12px;bottom:12px;padding:4px 12px;border-radius:1000px;font-size:13px;font-weight:900;color:#FFFFFF;pointer-events:none;transition:background-color .3s ease;background:' + (fc.p.cb >= 0.5 ? '#C4321F' : '#0A1B3D'),
+      showKo: LANG === 'en', koTxt: same ? v.paths[s.path].ko : v.autoTr, koSt: 'font-size:14px;' + (same ? '' : 'color:#6C7378'),
+      costLine: v.costLine($(fc.cost)), bars: stack(fc.p),
+      legend: ['ok', 'refund', 'cb'].map((k) => ({ txt: v.outs[k], p: pc(fc.p[k]), dot: 'width:10px;height:10px;border-radius:3px;background:' + COL[k], pSt: 'color:' + (k === 'cb' && fc.p.cb >= 0.5 ? '#C4321F' : '#000000') })),
+      mood: v.moodWord(fc.mood), moodSt: 'font-size:12px;transition:color .3s ease;color:' + (fc.mood >= -0.5 ? '#000000' : '#C4321F'),
+      rFrom: '89%', rTo: (c.empty ? 89 : Math.round(fc.p.cb * 100)) + '%', rToSt: 'font-size:30px;line-height:1.1;font-weight:900;letter-spacing:-0.5px;font-variant-numeric:tabular-nums;transition:color .3s ease;color:' + ((c.empty ? 0.89 : fc.p.cb) >= 0.45 ? '#C4321F' : '#002991'),
+      lints: lints, lintEmpty: c.empty, warnTxt: warns.length ? '! ' + warns.join(' · ') : '',
+      sendOff: s.busy || this.blocked(c), sendLabel: v.send, send: () => this.send(),
+      steps: stepRows, stepsRunning: sent && !finished,
+      cbDone: s.cbDone, refundLabel: s.cbDone ? v.refunded : v.refundNow,
+      refundNow: () => { if (this.state.cbDone) return; this.setState({ cbDone: true, done: Object.assign({}, this.state.done, { seo: true }) }); this.bump(10, 1, 1); },
+      resOn: resOn, resT: v.resT[resKey], resAfter: v.resAfter[resKey],
+      resBg: resKey === 'cb' ? '#FBE7E4' : 'linear-gradient(120deg,#E3F3FF,#F5F9FF)', resTSt: 'font-size:20px;font-weight:900;color:' + (resKey === 'cb' ? '#9E2414' : '#002991'),
+      replay: () => { (this.tm || []).forEach(clearTimeout); this.tm = []; const d = Object.assign({}, this.state.done); delete d.seo; this.setState({ phase: 'edit', shown: 0, typing: false, cbDone: false, done: d, draft: v.paths.ai.draft, path: 'ai' }); },
+      toastOn: !!s.toast, toastTxt: s.toast || ''
+    };
+  }
+}
+</script>
+</body>
+</html>

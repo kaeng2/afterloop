@@ -1,4 +1,4 @@
-# SPEC v2.15 (2026-11-12 00:05 KST)
+# SPEC v2.16 (2026-11-12 20:40 KST)
 
 > **계약 변경 규칙.** 이 문서, `src/types.ts`, `tests/acceptance/`는 계약이다. 바꿔야 하면 컨트롤 타워가 변경 내용·이유·영향받는 작업을 `DECISIONS.md`에 먼저 적고, 사람이 승인한 뒤에만 바꾼다. 바꿀 때마다 위 버전을 올린다. 작업 세션은 이 세 곳과 `DECISIONS.md`, `TASKS.md`, `tasks/`를 고치지 않는다 (`.claude/settings.json`에서 편집이 막혀 있다).
 
@@ -252,3 +252,10 @@
 | Q15 | 합의 단계 분쟁에 `provide_evidence` 링크가 함께 와서 답장(fight)이 증빙 제출로 잡힘 | **결정 (v2.4)**: 합의 단계이고 `send_message`가 허용되면 fight = `send_message` (5장 표) |
 
 변경 이력은 `DECISIONS.md`.
+
+## v2.16 추가 (사람 결정 2026-11-12 20:35·20:40)
+- **화면 = 시안 v6 Desk** (`docs/design/mockup-v6/Desk.dc.html`이 기준, 예외는 DECISIONS 20:40). 처음 상태 = 빈 답장·무응답 예측, "✦ AI Respond now" 스위치, 답장 칸 "Write and check"/"Send", 목록 줄마다 위험 % 칩, 묶음 Reply needed/Prevent/Questions/Done today, "All products" = 전체 현황(요약 카드 5개 + AG Grid 표 2개), 상품 칩 = 그 상품만, 지호·Lena·Yuki = 한 장 카드.
+- **엔진 새 선택지 `repair`** (B3 품질만, rules `repair.eligibleSubtypes`): 무료 수선, 왕복 배송비 손님 부담. `repair = pAcceptRepair × repairCostCents + (1 − pAcceptRepair) × (1 − pWin) × (a + f) + t` (가정값 config). 실행 = `send_message` (돈이 움직이지 않음, 공개 모드 Simulated). "Keeps ≈$N" = refund − repair (엔진). AC35.
+- **데이터**: 지호 새 품질 사건(샌드박스 새 주문·분쟁, 23:00까지 API에 없으면 기존 색상 사례), 서연 기록 시안 8줄(Demo data), 표시용 주문 번호 #1042·#1038·#1047, 데모 항목 Lena #1029·Yuki #1051(Demo data, 동작 Simulated).
+- 화면 고정 01:00. 스폰서상 = AG Grid.
+

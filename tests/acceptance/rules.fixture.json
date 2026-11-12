@@ -60,5 +60,11 @@
       }
     ],
     "note": "SPEC v2.5 3장. 답장 후 확인 기한(일). 날짜는 코드가 만든다 (src/engine/followup.ts). 분쟁 응답 기한보다 늦으면 기한 하루 전 / SPEC v2.7 3장: 날짜의 뜻과 허용한 약속. 여기 없는 돈이 드는 약속은 AI 초안에 쓸 수 없다 (src/ai/reply.ts가 읽는다)"
+  },
+  "repair": {
+    "eligibleSubtypes": [
+      "B3"
+    ],
+    "note": "v2.16 무료 수선(왕복 배송비 손님 부담)은 B3 품질에서만. 실행은 send_message — 돈이 움직이지 않는다"
   }
 }
