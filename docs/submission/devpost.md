@@ -20,7 +20,6 @@ Small sellers who ship abroad often lose disputes they could have settled, becau
 
 DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo runs one morning for a fictional seller, Hannah Cole of Fernwood Knits.
 
-- **Products.** For the 120 cardigans she has left, DisputeLess replays the next 120 sales 500 times. Selling as-is, the average dispute loss is about $216. With four fixes switched on, the same 500 futures cost about $44. The range and the assumptions are shown. The product table is built on AG Grid.
 - **Today.** One list of what needs her. Two orders shipped without tracking in PayPal; one click adds tracking through PayPal's API.
 - **Case detail (Seo-yeon).** A before/after comparison ("PayPal data only" vs "with carrier data"), the Korean original with an English translation, a reply for Hannah to review in English and Korean, checks on facts and promises, and a **Send in Korean** button. After sending, her risk score drops from 6 to 3.
 - **PayPal activity drawer.** Every call DisputeLess makes for Hannah, with method, path, and response code.
@@ -41,7 +40,7 @@ DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo run
 
 **Code.** The seeded simulation is deterministic: the same input always gives the same result, and "as-is" and "with fixes" use the same random numbers, so the difference comes from the fixes, not luck.
 
-**Stack.** Next.js 15, React, TypeScript, zod, AG Grid Community for the product table, deployed on Render (https://disputeless.onrender.com).
+**Stack.** Next.js 15, React, TypeScript, zod, AG Grid Community, deployed on Render (https://disputeless.onrender.com).
 
 **What is real and what is not.** Sandbox orders, disputes (including the Korean complaint text), reads, sends and tracking are real PayPal sandbox. Carrier events, earlier inquiries and closed-dispute history are demo data. Rates and win probabilities are our assumptions. The full table is in the README (https://github.com/kaeng2/afterloop#readme).
 
@@ -61,7 +60,7 @@ DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo run
 
 ## Testing instructions
 
-- **Live demo, no login needed:** https://disputeless.onrender.com — open `/intro` → click **Respond →** to reach the desk `/`, then `/listing` and `/products` by address. Full steps: `docs/submission/testing.md` in the repo. [확인 필요: 저장소 공개 뒤 GitHub 링크로]
+- **Live demo, no login needed:** https://disputeless.onrender.com — open `/intro` → click **Respond →** to reach the desk `/`, then `/listing` by address. Full steps: `docs/submission/testing.md` in the repo. [확인 필요: 저장소 공개 뒤 GitHub 링크로]
 - Public mode: reads are real PayPal sandbox calls; send, offer and add-tracking are **Simulated** (zero PayPal writes). AI answers for the demo cases are cached; uncached AI calls have an hourly cap.
 - We don't share the sandbox login (a shared login could change the demo disputes). To use your own sandbox, create a free app at developer.paypal.com and set `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` in `.env`.
 

@@ -13,7 +13,9 @@
  */
 import { Suspense } from 'react';
 
-import { applyLangParam } from '@/app/_server/locale';
+import { initLocale } from '@/app/_server/locale';
+import { langRedirectTarget } from '@/app/_shared/lang-param';
+import { LangRedirect } from '@/app/_shared/lang-redirect';
 import { loadTodayScreen } from '@/app/_server/today';
 import { reasonCopyKey } from '@/app/_shared/availability';
 import { t } from '@/app/_shared/copy';
@@ -61,7 +63,10 @@ function Pane({ item, view, selected }: { item: TodayItem; view: TodayView; sele
 
 export default async function TodayPage({ searchParams }: Props) {
   const params = await searchParams;
-  await applyLangParam('/', params);
+  // T113: `?lang=`은 전체 페이지 이동으로 (loading.tsx Suspense 안의 redirect()는 router 이동이 되어 React #310)
+  const langTarget = langRedirectTarget('/', params);
+  if (langTarget !== null) return <LangRedirect href={langTarget} />;
+  await initLocale();
   const requested = first(params.item);
   const requestedSku = first(params.sku);
   // 거르지 않은 전체를 한 번 읽는다. 거르개는 화면이 같은 값으로 한다 (`filterGroups`)

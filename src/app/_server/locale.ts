@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation';
 import { cache } from 'react';
 
 import { LOCALE_COOKIE, parseLocale, setLocaleResolver, type Locale } from '../_shared/copy';
+import { langRedirectTarget } from '../_shared/lang-param';
 
 const store = cache((): { locale: Locale } => ({ locale: 'en' }));
 setLocaleResolver(() => store().locale);
@@ -31,18 +32,14 @@ type SearchParams = Record<string, string | string[] | undefined> | undefined;
 /**
  * page 맨 앞에서. 주소에 `?lang=ko|en`이 있으면 (주소가 쿠키보다 우선) `/lang`이 쿠키를 쓰고 같은 화면으로 돌려보낸다.
  * 알 수 없는 값은 무시하고 쿠키 그대로(없으면 영어).
+ *
+ * **로딩 경계가 없는 화면(`/listing`·`/intro`)만** 쓴다 — 거기서는 `redirect()`가 첫 바이트 전이라 HTTP 307이다.
+ * `(app)` 화면은 `(app)/loading.tsx`의 Suspense 안이라 `redirect()`가 브라우저 쪽 이동(router)으로 바뀌고,
+ * 그 이동이 언어가 다른 트리로 바뀌며 React #310이 났다 (T113). `(app)` 화면은 `langRedirectTarget` +
+ * `LangRedirect`(전체 페이지 이동)를 쓴다.
  */
 export async function applyLangParam(pathname: string, searchParams: SearchParams): Promise<Locale> {
-  const raw = searchParams?.lang;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  if (value === 'ko' || value === 'en') {
-    const rest = new URLSearchParams();
-    for (const [k, v] of Object.entries(searchParams ?? {})) {
-      if (k === 'lang' || v === undefined) continue;
-      for (const item of Array.isArray(v) ? v : [v]) rest.append(k, item);
-    }
-    const qs = rest.toString();
-    redirect(`/lang?set=${value}&next=${encodeURIComponent(qs ? `${pathname}?${qs}` : pathname)}`);
-  }
+  const target = langRedirectTarget(pathname, searchParams);
+  if (target !== null) redirect(target);
   return initLocale();
 }

@@ -5,7 +5,8 @@
 > - **YouTube 공개 링크** — Devpost 양식에 넣는다
 > - **배포된 앱을 직접 녹화한다.** 시안 화면 녹화는 안 된다 ("design mockup, static prototype, or non-functional demo"는 요건 미달)
 > - **무료 라이선스 음악만.** 허락 없는 타사 상표·저작권 화면 금지
-> - **AG Grid 상품 표(`/products`)를 2~3초** 넣는다 (스폰서상 근거)
+> - **[시안 확정 대기] AG Grid 장면** — `/products` 화면은 11/12 11:15 결정으로 없앴다. AG Grid가 들어갈 화면의 시안이 오면 이 줄을 채운다 (스폰서상은 아직 미정: AG Grid 또는 Render)
+> - **배포 주소(disputeless.onrender.com)가 화면에 한 번 보이게** 한다 (브라우저 주소창 등)
 > - **실제 전송 장면**은 녹화하는 동안만 Render를 recording 모드로 바꾼다 (경희가 전환). **서연 전송은 한 번뿐**이다
 > - **화면 고정 13:00**, 녹화는 그 뒤. **녹화 중에는 재배포하지 않는다**
 > - 녹화는 **09:00 KST 이후**, 가능하면 **14:00 KST 이후** (Follow-up 날짜는 서버 UTC 날짜 기준이라 09:00 전에는 하루 이르고, 위쪽 날짜 줄은 판매자 시간대(미국 동부) 기준이라 14:00 전에는 전날이다 — 아래 3절 "날짜 규칙")
@@ -22,7 +23,7 @@
 | 무엇 | 링크 | 비고 |
 |---|---|---|
 | 공개 데모 (Render) | **https://disputeless.onrender.com** (`/api/health` → `{"ok":true,"mode":"public"}`) | `DEMO_MODE=public` — PayPal 쓰기 호출 0회, 버튼은 "Simulated" 결과만. 읽기(분쟁·주문·거래 조회)는 실제 샌드박스. 실제 전송 장면을 빼고는 이 링크로 찍어도 된다 |
-| 세 화면 주소 | `/intro` → `/` (Desk) · `/listing` · `/products` | 화면끼리 링크가 없다. **`/listing`과 `/products`는 주소창에 직접 쳐서 들어간다** (탭 없음) |
+| 화면 주소 | `/intro` → `/` (Desk) · `/listing` | 화면끼리 링크가 없다. **`/listing`은 주소창에 직접 쳐서 들어간다** (탭 없음). `/products`는 없앴다 (→ `/`로 이동) |
 | 서연 화면 바로 가기 | `/?item=PP-R-GMS-10197661` | /intro에서 누르면 여기로 온다 |
 | 실제 전송 장면 | 경희가 따로 찍음 (아래 5절) | `DEMO_MODE=recording` 별도 환경 |
 
@@ -42,12 +43,12 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /intro, 장�
 | 8 | ~8초 | Desk 왼쪽 Prevent "2 orders · Missing tracking" (경희 녹화분) | 상세 "Add tracking to 2 orders in PayPal" → **[Add all 2]** → 녹화 모드 "**✓ 2 trackers added · Orders tracking API · 201**", 버튼 "Added ✓" | — |
 | 9 | ~7초 | 위쪽 막대 **[PayPal activity]** 서랍 (경희 녹화분) | 서랍 맨 위(최신)부터 Send message 200, Add tracking 201, 그 아래 Read … 200. **위 2~3줄만** 잡는다 | "The PayPal calls in this drawer are **real sandbox calls**." ("모든 단계"라고 하지 않는다 — 배송사 기록과 Send 뒤 시나리오는 실제가 아니다) |
 | 10 | ~32초 | **/listing** (주소창에 직접) | "Demo mock — sample store admin, not a real shop" 띠. 상품 "Ribbed Wool Crewneck, Ivory · $89 · 200 units · Nov 20–Dec 2" → **[Publish product]** → 창 "DisputeLess API · quick check before you publish", "Simulating 500 sale periods · N / 500"(약 7초, 편집에서 줄임) → "**Chance of a dispute per order 4.5%** · About 9.0 disputes", "Expected loss **$770** · $472–$1,140 (P10–P90)" → **[See details and fix →]** → AI Insert 6개 클릭 → **`[__]` 칸을 실제 값으로 채운다** (5절 아래 예시) → **[Recalculate]** → "**2.1%**", "**$327**" → **[Publish product]** → "Published · Chance of a dispute **4.5% → 2.1%** · Expected loss $770 → $327 · Disputes ~9.0 → ~4.1" | "**Assumed rates, demo store** — nothing is published to a real shop." 창 머리의 DisputeLess API는 우리 `POST /api/listing-check`다 (PayPal 호출 없음) |
-| 11 | ~6초 | **/products** (주소창에 직접) | **[Turn all on]** → AG Grid 표 Knit Cardigan, Oat "$216 → $44", 다른 줄도 바뀜, 오른쪽 "With fixes $44", 빨간 점 4 → 2. 표가 바뀌는 순간을 2~3초 잡는다 | "Product table **built on AG Grid**." (스폰서상 근거) |
+| 11 | ~6초 | **[시안 확정 대기] AG Grid 장면** | `/products`는 11/12 11:15 결정으로 없앴다. AG Grid가 들어갈 화면의 시안이 오면 채운다 | — |
 | 12 | ~10초 | 로드맵 + 로고 | — | — |
 
 합계 약 2:34. 길면 4번 장면의 타이핑과 10번의 진행 표시를 편집에서 빨리 감는다.
 
-**넣지 않는 것**: Autopilot, Mike 장면, 가게 전체 숫자를 말로 하기, **Desk·/products에서 [한국어] 누르기** (지금 화면이 깨진다 — 7절), /intro의 지호 "Respond →" (서연 화면으로 간다).
+**넣지 않는 것**: Autopilot, Mike 장면, 가게 전체 숫자를 말로 하기, **Desk에서 [한국어] 누르기** (지금 화면이 깨진다 — 7절), /intro의 지호 "Respond →" (서연 화면으로 간다).
 
 ### 2-1. 다른 장면 (선택 — 시간이 남거나 4번 대신 쓸 때)
 
@@ -86,8 +87,6 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /intro, 장�
 | 10 /listing | 4.5% · About 9.0 disputes · **$770** · $472–$1,140 · 유형 Doesn't fit 1.6% / Stuck at customs 0.9% / Color looks different 0.8% | `config/listing-model.json` (가정(기획 시안)) + 수수료 $15·시간 $2, 500회 고정 시드 | 가정값. 같은 입력이면 같은 숫자 |
 | 10 /listing | 고칠 점 Add measurements −0.9 pts · customs ID −0.5 · color note −0.4 · delivery time + tracking −0.3 · peak-season −0.3 · return policy −0.2 | 같은 모델 | 가정값 |
 | 10 /listing | 고친 뒤 **2.1%** · About 4.1 · **$327** · $106–$576 · "4.5% → 2.1% · $770 → $327 · ~9.0 → ~4.1" | 같은 모델 (6개 모두 고침) | `[__]`를 채운 뒤에도 2.1% / $327 (11/12 확인) |
-| 11 /products | Knit Cardigan, Oat **$216 → $44**, 4.5 → 2.1 disputes, $67–$360 → $0–$104, 빨간 점 4 → 2. 다른 줄 Beanie + Scarf Set $255 → $71, Cashmere Coat $137 → $113, Wool Sweater $110 → $26. 카드 "could save $46 / $66 / $19 / $79" (모두 켜면 "saving $46 / $28 / $11 / $45") | `config/params.json` 시뮬레이션 500회 | 가정값. 처음에는 모두 꺼짐 ("$216 → $216") |
-| 11 /products | "PayPal sandbox · 11 transactions (last 30 days)" | 실제 거래 조회 (서랍은 "16 transactions"라고 적는다 — 세는 기간이 다름 [확인 필요]) | 읽지 않는다 |
 
 ### 날짜 규칙 (녹화 시각을 정할 때)
 
@@ -101,9 +100,9 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /intro, 장�
 
 - **데모 데이터** (시드에서 온 것, 화면에 Demo data 배지):
   - 배송사 추적·통관 기록 ("Oct 30 · Carrier: Customs hold – recipient customs ID missing") → 장면 3에서 **"demo data here"를 말로** (필수)
-  - 서연의 11/2 문의 말풍선, 이번 주 카드, /products 표, Mike의 이전 주장, 종결 분쟁 이력
+  - 서연의 11/2 문의 말풍선, 이번 주 카드, Mike의 이전 주장, 종결 분쟁 이력
   - /intro 판매자 대시보드와 /listing 쇼핑몰은 **데모용 껍데기 화면** (화면 띠에 "Demo mock")
-- **가정** (화면에 Assumption 배지): 위험 %(곡선 80% → 40%, 차지백 95%·40%·3%), 손님 반응 막대, 비용 $37·$74·$85, Send 뒤 단계의 Risk %, /listing의 4.5% → 2.1%·$770 → $327, /products의 $216 → $44. 출처는 `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 둘은 기획 시안의 가중치이고 통계가 아니다) → **장면 4에서 "our assumed model" 한 번, 장면 10에서 "assumed rates" 한 번**
+- **가정** (화면에 Assumption 배지): 위험 %(곡선 80% → 40%, 차지백 95%·40%·3%), 손님 반응 막대, 비용 $37·$74·$85, Send 뒤 단계의 Risk %, /listing의 4.5% → 2.1%·$770 → $327. 출처는 `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 둘은 기획 시안의 가중치이고 통계가 아니다) → **장면 4에서 "our assumed model" 한 번, 장면 10에서 "assumed rates" 한 번**
 - **시뮬레이션** (Simulated 배지): Send 뒤 "What happens next" 단계 전부(손님 답장·Forward to carrier·세관 통과), 공개 링크의 모든 쓰기 버튼, /listing 게시
 - **실제 PayPal 샌드박스**: 분쟁 목록·상세 조회, 주문 조회, 거래 조회(200), 녹화 모드의 한국어 send-message(200)와 추적 등록(201). 가상 판매자·샌드박스라는 것은 타이틀에서
 - **AI가 하는 일**: 한국어 번역, 답장 초안과 역번역, 화난 어조 판단, 사건 기록 요약, /listing 고칠 문구. **코드가 하는 일**: 원인 판정(통관 보류), 기대 손실과 추천, 날짜, 위험 %, 검사 3개, 보내도 되는지
@@ -142,7 +141,8 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - [ ] "assumed" 한 번씩 (장면 4, 10), "simulated" 한 번 (장면 7)
 - [ ] /intro에서는 [Handle all 2 with DisputeLess]나 서연 줄의 Respond만 누른다
 - [ ] /listing `[__]` 입력칸을 채우고 Recalculate → Publish
-- [ ] /products [Turn all on]으로 AG Grid 표가 바뀌는 순간 2~3초 + "built on AG Grid"
+- [ ] [시안 확정 대기] AG Grid 장면
+- [ ] 배포 주소(disputeless.onrender.com)가 화면에 한 번 보인다
 - [ ] 실제 전송 장면(5·6·7·8·9)은 경희 녹화분. 서연 전송 한 번뿐, 서연에게 수락·환불 없음
 - [ ] Autopilot·Mike 장면 없음, 화면에 없는 기능을 말하지 않는다
 - [ ] 무료 라이선스 음악, 3분 미만, YouTube 공개 링크
@@ -153,5 +153,4 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - 녹화 모드 화면 글자 (5절 목록) — 코드로만 확인 [확인 필요]
 - refund 갈래 진행 화면 [확인 필요]
 - 추적 두 번째 등록 시 화면 글자 [확인 필요]
-- /products "11 transactions"와 서랍 "16 transactions"의 차이 [확인 필요]
 - 이번 주 카드 $68은 보낸 뒤에도 그대로이고 "+$N just now"만 붙는다 (3차 리뷰 ⑤). 영상에서 $68을 말로 읽지 않는다.
