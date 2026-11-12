@@ -28,6 +28,7 @@ import replyModelJson from '../../../config/reply-model.json';
 import { copyTables, t } from '../_shared/copy';
 import { toDollarsRounded } from '../_shared/money';
 import { riskTone, type RiskTone } from '../_shared/motion';
+import { riskLevelTone } from '../today/risk-level';
 import { toPercentRounded } from '../_shared/percent';
 import { shortDate } from '../_shared/short-date';
 import type { CaseView, MoneyView } from './model';
@@ -356,7 +357,8 @@ export function curveView(
     steps,
     sent,
     headline: toPercentRounded(shownP ?? lastP),
-    headlineTone: riskTone(shownP ?? lastP),
+    // T122d: 위험 상자 "지금 %" 색 = 목록 칩과 같은 단계 기준 (config `desk.riskLevel`, 시안 v6 riskLvl)
+    headlineTone: riskLevelTone(shownP ?? lastP),
     headlineKey:
       sent || draftP === null ? 'case.curve.now' : noReply !== null ? 'case.curve.ifNoReply' : 'case.curve.withDraft',
     headlineVars: noReply === null ? {} : { date: noReply },

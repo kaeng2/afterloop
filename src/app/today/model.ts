@@ -9,6 +9,9 @@
  *   (줄어드는 비율이 가장 큰 상품. DECISIONS v2.10).
  * - 목록 한 줄의 점 = 위험 등급, 알약 = 상태 (T067). 둘 다 엔진 판정·묶음에서 고른다.
  *
+ * - 데모 항목 (T122d): 시드 `demoItems`(T121) Lena #1029 → Reply needed, Yuki #1051 → Questions. PayPal 사건이 아니다
+ *   (Demo data). 위험 값이 시드·엔진에 없으므로 칩·점 없음. 상세 카드는 T122c (`demo-item-card.tsx`).
+ *
  * 금액 표시는 `toDollarsRounded` 한 곳. 글자는 `today.*`·`case.view.lang.*` 문구에서 읽는다.
  * 이 파일은 PayPal·LLM을 부르지 않는다 (서버 읽기는 `../_server/today.ts`).
  */
@@ -30,8 +33,11 @@ import type {
   WeeklySummary,
 } from '@/types';
 
+import { seedDemoDisplay } from '../../../seed/index';
+import type { DemoDisplay } from '../../../seed/demo-schema';
+
 import type { RiskBand } from '../_shared/badge-keys';
-import { copyTables, t } from '../_shared/copy';
+import { copyTables, currentLocale, t } from '../_shared/copy';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
 import { toDollarsRounded } from '../_shared/money';
 import { shortDate } from '../_shared/short-date';
@@ -99,7 +105,7 @@ export type TodayStatus = { key: string; tone: 'high' | 'watch' | 'neutral' };
 export type TodayItem = {
   /** 주소의 `item` 값 (분쟁 번호 · `tracking` · 상품 SKU). */
   id: string;
-  kind: 'dispute' | 'tracking' | 'prevent';
+  kind: 'dispute' | 'tracking' | 'prevent' | 'demo';
   group: TodayGroupKey;
   href: string;
   /** 첫 줄 굵은 글자 ("Seo-yeon", "2 orders without tracking", "Knit Cardigan, Oat"). */
@@ -122,7 +128,12 @@ export type TodayItem = {
   row: TodayRowView;
   /** Prevent 항목의 오른쪽 짧은 카드 값 (T099). 엔진 값을 옮긴 것이다. 다른 항목은 없다. */
   prevent?: PreventDetail;
+  /** 데모 항목(T122d)의 시드 값 그대로 — T122c `DemoItemCard`의 `item`과 같은 모양. 다른 항목은 없다. */
+  demo?: TodayDemoItem;
 };
+
+/** 시드 `demoItems` 한 줄 (T121, 전부 Demo data). id = 시드 `key` (`lena`·`yuki`). */
+export type TodayDemoItem = DemoDisplay['demoItems'][number];
 
 /** Prevent 카드 값 (T099). 손실은 `pickPreventProduct`(센트), 처방별 절감은 `fixSavings`(센트)를 그대로 옮긴다. */
 export type PreventDetail = {
@@ -220,6 +231,8 @@ export type TodayInput = {
   rules?: PolicyConfig;
   /** 상품 거르개 (`?sku=`). 모르는 SKU면 거르지 않는다. */
   sku?: string;
+  /** 데모 항목 (T122d). 없으면 시드 `seedDemoDisplay.demoItems`. */
+  demoItems?: readonly TodayDemoItem[];
 };
 
 /**
@@ -399,6 +412,50 @@ function trackingItem(tracking: TrackingSummary, products: readonly SeedProduct[
 
 export const TRACKING_ITEM_ID = 'tracking';
 
+// ── 데모 항목 (T122d) ──────────────────────────────────────────────────────
+
+/** 데모 항목 묶음 (시안 v6 ITEMS `sec`): Lena 약속 환불 → Reply needed, Yuki 사이즈 문의 → Questions. */
+const DEMO_GROUP: Readonly<Record<TodayDemoItem['key'], TodayGroupKey>> = { lena: 'needsYou', yuki: 'routine' };
+
+/** Demo data 항목 상태 알약 (회색). */
+export const STATUS_DEMO: TodayStatus = { key: 'badge.demo', tone: 'neutral' };
+
+/**
+ * 시드 데모 항목 한 줄. 글·번호·나라는 시드 그대로 (언어만 고른다). 상품 이름·아이콘은 시드 상품(SKU)에서.
+ * 위험 값은 없다 (시드·엔진 값 없음 → 칩·점 없음, 지어내지 않는다).
+ */
+function demoItem(demo: TodayDemoItem, products: readonly SeedProduct[]): TodayItem {
+  const ko = currentLocale() === 'ko';
+  const product = products.find((candidate) => candidate.sku === demo.displaySku);
+  const who = ko ? demo.buyerLabelKo : demo.buyerLabel;
+  const category = ko ? demo.categoryKo : demo.category;
+  return {
+    id: demo.key,
+    kind: 'demo',
+    group: DEMO_GROUP[demo.key],
+    href: `/?item=${encodeURIComponent(demo.key)}`,
+    name: who,
+    label: category,
+    sub: ko ? demo.bodyKo : demo.body,
+    band: null,
+    dot: 'neutral',
+    status: STATUS_DEMO,
+    score: null,
+    dueDate: '',
+    demo,
+    row: {
+      icon: productIconOf(product?.itemName),
+      head: demo.displayNo,
+      product: product === undefined ? null : productShortName(product.itemName),
+      category,
+      categoryTone: 'neutral',
+      due: null,
+      who,
+      skus: product === undefined ? [] : [product.sku],
+    },
+  };
+}
+
 /**
  * Needs you 순서: 위험 단계 높은 순 → 같은 단계면 추적 항목(여러 주문이 걸린 항목)이 먼저 → 엔진 점수 높은 순
  * → 응답 기한 이른 순 (기한을 모르면 뒤로) → 받은 순서.
@@ -534,7 +591,7 @@ export function buildToday(input: TodayInput): TodayView {
   const store = simulateStore(input.products, [...FIX_ORDER], input.params, input.rules);
 
   // T122b (시안 v6 secs): 악용 의심으로 엔진이 건너뛴 분쟁(Mike)도 "Reply needed" 묶음 — 맨 뒤 (시안 ITEMS 순서).
-  // "Questions"(`routine` 묶음 키)는 구매자 질문 항목 자리다 (지금 데이터에 없으면 묶음이 비어 안 보인다)
+  // "Questions"(`routine` 묶음 키)는 구매자 질문 항목 자리다 (T122d: 시드 데모 항목 Yuki)
   const needsYou: TodayItem[] = [];
   const skipped: TodayItem[] = [];
   const routine: TodayItem[] = [];
@@ -543,8 +600,14 @@ export function buildToday(input: TodayInput): TodayView {
     (item.group === 'routine' ? skipped : needsYou).push(item);
   }
   needsYou.sort(compareNeedsYou);
+  // 열린 분쟁 수·상품 칩 사건 수는 실제 분쟁만 센다 (데모 항목은 PayPal 사건이 아니다)
+  const disputeItems = [...needsYou, ...skipped];
+
+  // T122d (시안 v6 ITEMS 순서 seo · jiho · lena · … · yuki · bm): 데모 Lena는 분쟁 뒤·Mike 앞, Yuki는 Questions
+  const demos = (input.demoItems ?? seedDemoDisplay.demoItems).map((demo) => demoItem(demo, input.products));
+  needsYou.push(...demos.filter((item) => item.group === 'needsYou'));
+  routine.push(...demos.filter((item) => item.group === 'routine'));
   needsYou.push(...skipped.map((item) => ({ ...item, group: 'needsYou' as const })));
-  const disputeItems = [...needsYou, ...routine];
 
   // Prevent (T076): 추적 미등록 주문 → 엔진이 고른 상품 순
   const tracking = input.tracking === null ? null : trackingItem(input.tracking, input.products);

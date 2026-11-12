@@ -247,6 +247,7 @@ describe('T122c-3 Lena #1029 · Yuki #1051 = 데모 항목, 쓰기 0 · Simulate
 
   it('KO: 시드 ko 글 · 버튼 "$24 환불"/"확인"', async () => {
     const { LocaleProvider } = await import('@/app/_shared/locale-context');
+    // eslint-disable-next-line react/no-children-prop -- LocaleProvider의 children은 필수 props (타입상)
     const inLocale = (locale: 'en' | 'ko', children: React.ReactNode) => html(createElement(LocaleProvider, { locale, children }));
     const ko = inLocale('ko', createElement(DemoItemCard, { item: { ...lenaSeed, key: 'lena' } }));
     expect(ko).toContain(`>${lenaSeed.titleKo}</h3>`);
