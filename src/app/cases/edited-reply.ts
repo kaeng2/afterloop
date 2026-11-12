@@ -106,6 +106,18 @@ export function keepSignOff(tokenized: string, originalDraftEn: string): string 
   return body === '' ? tokenized : `${body} ${SELLER_NAME_TOKEN}`;
 }
 
+/**
+ * T117 (3차 리뷰 고정 화면 ③): 고친 글 번역에 넘기는 사실값을 **토큰 글에 실제로 있는 토큰만**으로 줄인다.
+ *
+ * 이유: 번역 프롬프트의 `<facts>`에 영어 글에 없는 토큰(예: 급한 답장 "Hi, …"에는 없는 `⟦BUYER_NAME_1⟧`)이 있으면
+ * 번역이 그 토큰을 붙인다 → 초안 0개·전송본 1개로 "Facts match failed ⟦BUYER_NAME_1⟧". BUYER_NAME·SELLER_NAME·DATE
+ * 모두 같은 규칙이다. 판정(`checkTokens`)은 그대로 엄격하다 — 목록에 없는 토큰을 번역이 쓰면 `extra`로 실패한다.
+ * 보낼 때의 서버 재검사(`sendReply`)는 여전히 전체 사실값으로 한다. 순서는 원래 목록 순서를 지킨다.
+ */
+export function factsInText(tokenized: string, facts: FactToken[]): FactToken[] {
+  return facts.filter((fact) => fact.token !== '' && tokenized.includes(fact.token));
+}
+
 /** 이름 조각으로 보지 않는 호칭·짧은 낱말. */
 const HONORIFICS = new Set(['님', '씨', '様', 'さん', 'さま', '殿', 'herr', 'frau']);
 

@@ -54,7 +54,7 @@ import { ENDPOINTS } from '@/exec/request';
 import { getDispute, type DisputeDetail } from '@/paypal/disputes';
 import type { ActionPlan, Approval, DemoLink, FactToken, LlmCaller, Params, PayPalCaller, PayPalClient, PolicyConfig } from '@/types';
 
-import { editAdditions, nameLeftovers, revertToTokens, withEditChecks } from '../cases/edited-reply';
+import { editAdditions, factsInText, nameLeftovers, revertToTokens, withEditChecks } from '../cases/edited-reply';
 import { caseReplyFacts } from '../cases/reply-facts';
 import {
   EDIT_KEYS,
@@ -573,7 +573,7 @@ export async function prepareEditedReply(input: PrepareEditedInput, deps: Prepar
 
   if (deps.llm === null) return editFail(EDIT_KEYS.aiUnavailable);
   const raw = await translateReply(
-    { draftEn: tokenized, buyerLocale: reply.buyerLocale, facts: reply.facts, move: best.move },
+    { draftEn: tokenized, buyerLocale: reply.buyerLocale, facts: factsInText(tokenized, reply.facts), move: best.move },
     { llm: deps.llm },
   );
   if (!raw.ok) {
