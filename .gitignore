@@ -44,3 +44,5 @@ next-env.d.ts
 # design mockup runtime (load react@18.3.1 UMD when viewing)
 docs/design/mockup-v4/vendor/
 docs/design/mockup-v4/scene1/vendor/
+reports/design-match/v6/auto/r6/**/*.png
+reports/design-match/v6/auto/r6/**/*.webm

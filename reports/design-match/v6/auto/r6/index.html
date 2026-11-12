@@ -1,0 +1,1671 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design diff</title>
+<style>
+:root{--bg:#fff;--fg:#111;--mut:#666;--line:#ddd;--ok:#0a7a3b;--bad:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--fg:#eee;--mut:#aaa;--line:#333;--ok:#5fd38d;--bad:#ff8a80}}
+body{margin:0;padding:16px;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,sans-serif}
+table{border-collapse:collapse;margin:8px 0 24px}td,th{border:1px solid var(--line);padding:4px 8px;text-align:left}
+.ok{color:var(--ok);font-weight:700}.bad{color:var(--bad);font-weight:700}.sub{color:var(--mut)}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+figure{margin:0;min-width:0}figcaption{font-weight:700;margin-bottom:4px}img,video{width:100%;height:auto;border:1px solid var(--line);display:block}
+section{border-top:2px solid var(--line);padding-top:12px;margin-top:24px}
+@media (max-width:700px){.trio,.duo{grid-template-columns:1fr}}
+</style></head><body>
+<h1>시안 ↔ 앱 자동 비교</h1>
+<p class="sub">시안 /private/tmp/claude-501/-Users-kaeng2-repositories-paypal-hackathon/68e4e97b-9470-41c8-aa12-f4a21f8164f5/scratchpad/mock-v6-data/Desk.dc.html · 앱 http://localhost:3111/ · 2026-11-12T15:14:27.656Z · 폭 1440, 1920</p>
+<p><b>상태 66개 · 통과 0 · 설명 없는 차이 합계 <span class="bad">34965</span></b> (판정: 설명 없는 차이 0, 픽셀 상태당 ≤0.5%)</p>
+<p><a href="states.md">states.md</a> · <a href="states.json">states.json</a> · <a href="summary.json">summary.json</a></p>
+<table><thead><tr><th>상태</th><th>차이</th><th>설명 없음</th><th>픽셀 1440</th><th>픽셀 1920</th><th>판정</th></tr></thead><tbody>
+<tr><td><a href="#initial">initial</a></td><td>346</td><td class="bad">220</td><td class="bad">11.97%</td><td class="bad">9.93%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products">all-products</a></td><td>1108</td><td class="bad">710</td><td class="bad">16.72%</td><td class="bad">16.72%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#knit-cardigan">knit-cardigan</a></td><td>372</td><td class="bad">286</td><td class="bad">12.42%</td><td class="bad">10.25%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#cashmere-coat">cashmere-coat</a></td><td>133</td><td class="bad">63</td><td class="bad">6.86%</td><td class="bad">6.17%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#beanie-scarf">beanie-scarf</a></td><td>284</td><td class="bad">202</td><td class="bad">4.86%</td><td class="bad">6.93%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#1047">1047</a></td><td>308</td><td class="bad">220</td><td class="bad">9.85%</td><td class="bad">8.23%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#show-history">show-history</a></td><td>397</td><td class="bad">241</td><td class="bad">5.16%</td><td class="bad">4.91%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now">respond-now</a></td><td>869</td><td class="bad">593</td><td class="bad">14.82%</td><td class="bad">9.05%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1042">all-products__1042</a></td><td>489</td><td class="bad">333</td><td class="bad">18.57%</td><td class="bad">17.64%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1038">all-products__1038</a></td><td>1036</td><td class="bad">658</td><td class="bad">19.41%</td><td class="bad">18.17%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1029">all-products__1029</a></td><td>452</td><td class="bad">334</td><td class="bad">17.20%</td><td class="bad">16.82%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1047">all-products__1047</a></td><td>456</td><td class="bad">340</td><td class="bad">17.92%</td><td class="bad">16.94%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__5-orders">all-products__5-orders</a></td><td>558</td><td class="bad">446</td><td class="bad">17.28%</td><td class="bad">16.68%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__3-orders">all-products__3-orders</a></td><td>444</td><td class="bad">332</td><td class="bad">17.69%</td><td class="bad">16.91%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1051">all-products__1051</a></td><td>468</td><td class="bad">332</td><td class="bad">21.24%</td><td class="bad">20.36%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__product">all-products__product</a></td><td>1127</td><td class="bad">729</td><td class="bad">16.85%</td><td class="bad">16.76%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__open-cases">all-products__open-cases</a></td><td>1132</td><td class="bad">734</td><td class="bad">16.76%</td><td class="bad">16.73%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__reply-needed">all-products__reply-needed</a></td><td>1110</td><td class="bad">712</td><td class="bad">16.70%</td><td class="bad">16.77%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__prevent">all-products__prevent</a></td><td>1131</td><td class="bad">733</td><td class="bad">16.81%</td><td class="bad">16.74%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__questions">all-products__questions</a></td><td>1113</td><td class="bad">715</td><td class="bad">16.68%</td><td class="bad">16.68%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__dispute-risk">all-products__dispute-risk</a></td><td>1122</td><td class="bad">724</td><td class="bad">16.83%</td><td class="bad">16.76%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__riskiest-case">all-products__riskiest-case</a></td><td>1121</td><td class="bad">723</td><td class="bad">16.80%</td><td class="bad">16.73%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__dispute-risk-2">all-products__dispute-risk-2</a></td><td>1137</td><td class="bad">739</td><td class="bad">16.89%</td><td class="bad">16.59%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__case">all-products__case</a></td><td>1125</td><td class="bad">727</td><td class="bad">16.67%</td><td class="bad">16.54%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__dispute-type">all-products__dispute-type</a></td><td>1139</td><td class="bad">741</td><td class="bad">16.86%</td><td class="bad">16.59%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__status">all-products__status</a></td><td>1102</td><td class="bad">704</td><td class="bad">16.51%</td><td class="bad">16.50%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__buyer">all-products__buyer</a></td><td>1129</td><td class="bad">731</td><td class="bad">16.85%</td><td class="bad">16.55%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__due">all-products__due</a></td><td>1133</td><td class="bad">735</td><td class="bad">16.74%</td><td class="bad">16.55%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#knit-cardigan__1051">knit-cardigan__1051</a></td><td>356</td><td class="bad">244</td><td class="bad">19.42%</td><td class="bad">13.21%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#knit-cardigan__send">knit-cardigan__send</a></td><td>384</td><td class="bad">294</td><td class="bad">19.74%</td><td class="bad">15.76%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#beanie-scarf__refund-24">beanie-scarf__refund-24</a></td><td>309</td><td class="bad">221</td><td class="bad">5.56%</td><td class="bad">8.31%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#1047__send-proof">1047__send-proof</a></td><td>334</td><td class="bad">246</td><td class="bad">14.16%</td><td class="bad">12.87%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__respond-now">respond-now__respond-now</a></td><td>515</td><td class="bad">375</td><td class="bad">13.57%</td><td class="bad">10.68%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check">respond-now__ask-the-carrier-to-check</a></td><td>886</td><td class="bad">626</td><td class="bad">11.63%</td><td class="bad">10.25%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__refund-now">respond-now__refund-now</a></td><td>967</td><td class="bad">707</td><td class="bad">9.03%</td><td class="bad">6.56%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply">respond-now__try-a-rushed-reply</a></td><td>931</td><td class="bad">659</td><td class="bad">15.73%</td><td class="bad">14.52%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__clear">respond-now__clear</a></td><td>801</td><td class="bad">554</td><td class="bad">7.89%</td><td class="bad">6.27%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__hide">respond-now__hide</a></td><td>764</td><td class="bad">514</td><td class="bad">6.56%</td><td class="bad">5.74%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__send">respond-now__send</a></td><td>868</td><td class="bad">592</td><td class="bad">16.54%</td><td class="bad">17.00%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1038__send">all-products__1038__send</a></td><td>1046</td><td class="bad">668</td><td class="bad">20.97%</td><td class="bad">20.79%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1029__refund-24">all-products__1029__refund-24</a></td><td>481</td><td class="bad">357</td><td class="bad">17.52%</td><td class="bad">17.39%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1047__send-proof">all-products__1047__send-proof</a></td><td>482</td><td class="bad">366</td><td class="bad">18.09%</td><td class="bad">17.59%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__5-orders__add-all-5">all-products__5-orders__add-all-5</a></td><td>594</td><td class="bad">468</td><td class="bad">19.06%</td><td class="bad">18.87%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__3-orders__send">all-products__3-orders__send</a></td><td>466</td><td class="bad">354</td><td class="bad">19.95%</td><td class="bad">17.82%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#all-products__1051__looks-good">all-products__1051__looks-good</a></td><td>440</td><td class="bad">310</td><td class="bad">17.08%</td><td class="bad">18.12%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#knit-cardigan__1051__looks-good">knit-cardigan__1051__looks-good</a></td><td>328</td><td class="bad">222</td><td class="bad">12.99%</td><td class="bad">10.08%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__respond-now">respond-now__ask-the-carrier-to-check__respond-now</a></td><td>577</td><td class="bad">439</td><td class="bad">13.47%</td><td class="bad">10.61%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__add">respond-now__ask-the-carrier-to-check__add</a></td><td>917</td><td class="bad">651</td><td class="bad">11.95%</td><td class="bad">9.75%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__add-2">respond-now__ask-the-carrier-to-check__add-2</a></td><td>894</td><td class="bad">630</td><td class="bad">8.23%</td><td class="bad">7.12%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__add-3">respond-now__ask-the-carrier-to-check__add-3</a></td><td>910</td><td class="bad">646</td><td class="bad">8.64%</td><td class="bad">6.71%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__add-4">respond-now__ask-the-carrier-to-check__add-4</a></td><td>907</td><td class="bad">643</td><td class="bad">9.59%</td><td class="bad">7.53%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__hide">respond-now__ask-the-carrier-to-check__hide</a></td><td>848</td><td class="bad">588</td><td class="bad">6.34%</td><td class="bad">5.11%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__send">respond-now__ask-the-carrier-to-check__send</a></td><td>845</td><td class="bad">611</td><td class="bad">9.14%</td><td class="bad">7.93%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__respond-now">respond-now__try-a-rushed-reply__respond-now</a></td><td>585</td><td class="bad">447</td><td class="bad">13.45%</td><td class="bad">10.63%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__remove">respond-now__try-a-rushed-reply__remove</a></td><td>915</td><td class="bad">647</td><td class="bad">10.22%</td><td class="bad">9.76%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__remove-2">respond-now__try-a-rushed-reply__remove-2</a></td><td>895</td><td class="bad">627</td><td class="bad">10.31%</td><td class="bad">9.75%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__add">respond-now__try-a-rushed-reply__add</a></td><td>954</td><td class="bad">680</td><td class="bad">15.88%</td><td class="bad">14.16%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__add-2">respond-now__try-a-rushed-reply__add-2</a></td><td>914</td><td class="bad">644</td><td class="bad">12.83%</td><td class="bad">11.68%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__add-3">respond-now__try-a-rushed-reply__add-3</a></td><td>914</td><td class="bad">644</td><td class="bad">12.85%</td><td class="bad">11.71%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__add-4">respond-now__try-a-rushed-reply__add-4</a></td><td>929</td><td class="bad">657</td><td class="bad">12.14%</td><td class="bad">11.68%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__hide">respond-now__try-a-rushed-reply__hide</a></td><td>899</td><td class="bad">631</td><td class="bad">10.56%</td><td class="bad">9.98%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__send">respond-now__try-a-rushed-reply__send</a></td><td>851</td><td class="bad">617</td><td class="bad">11.41%</td><td class="bad">8.47%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__send__refund-72-now">respond-now__ask-the-carrier-to-check__send__refund-72-now</a></td><td>876</td><td class="bad">622</td><td class="bad">9.57%</td><td class="bad">9.37%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__ask-the-carrier-to-check__send__replay-this-case">respond-now__ask-the-carrier-to-check__send__replay-this-case</a></td><td>948</td><td class="bad">674</td><td class="bad">10.07%</td><td class="bad">6.12%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__send__refund-72-now">respond-now__try-a-rushed-reply__send__refund-72-now</a></td><td>898</td><td class="bad">644</td><td class="bad">11.63%</td><td class="bad">9.89%</td><td class="bad">실패</td></tr>
+<tr><td><a href="#respond-now__try-a-rushed-reply__send__replay-this-case">respond-now__try-a-rushed-reply__send__replay-this-case</a></td><td>963</td><td class="bad">689</td><td class="bad">10.10%</td><td class="bad">6.12%</td><td class="bad">실패</td></tr>
+</tbody></table>
+<section id="initial">
+<h3>initial <span class="bad">실패</span></h3>
+<p class="sub">(처음 화면) · 차이 346 · 설명 없음 220 · <a href="initial/styles.md">styles.md</a> · <a href="initial/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="initial/mock-1440.png"><img loading="lazy" src="initial/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="initial/app-1440.png"><img loading="lazy" src="initial/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="initial/diff-1440.png"><img loading="lazy" src="initial/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="initial/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="initial/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="initial/mock-1920.png"><img loading="lazy" src="initial/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="initial/app-1920.png"><img loading="lazy" src="initial/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="initial/diff-1920.png"><img loading="lazy" src="initial/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="initial/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="initial/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products">
+<h3>all-products <span class="bad">실패</span></h3>
+<p class="sub">button “All products” · 차이 1108 · 설명 없음 710 · <a href="all-products/styles.md">styles.md</a> · <a href="all-products/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products/mock-1440.png"><img loading="lazy" src="all-products/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products/app-1440.png"><img loading="lazy" src="all-products/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products/diff-1440.png"><img loading="lazy" src="all-products/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products/mock-1920.png"><img loading="lazy" src="all-products/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products/app-1920.png"><img loading="lazy" src="all-products/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products/diff-1920.png"><img loading="lazy" src="all-products/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="knit-cardigan">
+<h3>knit-cardigan <span class="bad">실패</span></h3>
+<p class="sub">button “Knit Cardigan” · 차이 372 · 설명 없음 286 · <a href="knit-cardigan/styles.md">styles.md</a> · <a href="knit-cardigan/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan/mock-1440.png"><img loading="lazy" src="knit-cardigan/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan/app-1440.png"><img loading="lazy" src="knit-cardigan/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan/diff-1440.png"><img loading="lazy" src="knit-cardigan/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan/mock-1920.png"><img loading="lazy" src="knit-cardigan/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan/app-1920.png"><img loading="lazy" src="knit-cardigan/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan/diff-1920.png"><img loading="lazy" src="knit-cardigan/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="cashmere-coat">
+<h3>cashmere-coat <span class="bad">실패</span></h3>
+<p class="sub">button “Cashmere Coat” · 차이 133 · 설명 없음 63 · <a href="cashmere-coat/styles.md">styles.md</a> · <a href="cashmere-coat/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="cashmere-coat/mock-1440.png"><img loading="lazy" src="cashmere-coat/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="cashmere-coat/app-1440.png"><img loading="lazy" src="cashmere-coat/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="cashmere-coat/diff-1440.png"><img loading="lazy" src="cashmere-coat/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="cashmere-coat/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="cashmere-coat/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="cashmere-coat/mock-1920.png"><img loading="lazy" src="cashmere-coat/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="cashmere-coat/app-1920.png"><img loading="lazy" src="cashmere-coat/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="cashmere-coat/diff-1920.png"><img loading="lazy" src="cashmere-coat/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="cashmere-coat/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="cashmere-coat/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="beanie-scarf">
+<h3>beanie-scarf <span class="bad">실패</span></h3>
+<p class="sub">button “Beanie + Scarf” · 차이 284 · 설명 없음 202 · <a href="beanie-scarf/styles.md">styles.md</a> · <a href="beanie-scarf/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="beanie-scarf/mock-1440.png"><img loading="lazy" src="beanie-scarf/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="beanie-scarf/app-1440.png"><img loading="lazy" src="beanie-scarf/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="beanie-scarf/diff-1440.png"><img loading="lazy" src="beanie-scarf/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="beanie-scarf/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="beanie-scarf/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="beanie-scarf/mock-1920.png"><img loading="lazy" src="beanie-scarf/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="beanie-scarf/app-1920.png"><img loading="lazy" src="beanie-scarf/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="beanie-scarf/diff-1920.png"><img loading="lazy" src="beanie-scarf/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="beanie-scarf/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="beanie-scarf/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="1047">
+<h3>1047 <span class="bad">실패</span></h3>
+<p class="sub">button “#1047” · 차이 308 · 설명 없음 220 · <a href="1047/styles.md">styles.md</a> · <a href="1047/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="1047/mock-1440.png"><img loading="lazy" src="1047/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="1047/app-1440.png"><img loading="lazy" src="1047/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="1047/diff-1440.png"><img loading="lazy" src="1047/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="1047/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="1047/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="1047/mock-1920.png"><img loading="lazy" src="1047/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="1047/app-1920.png"><img loading="lazy" src="1047/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="1047/diff-1920.png"><img loading="lazy" src="1047/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="1047/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="1047/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="show-history">
+<h3>show-history <span class="bad">실패</span></h3>
+<p class="sub">button “Show history” · 차이 397 · 설명 없음 241 · <a href="show-history/styles.md">styles.md</a> · <a href="show-history/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="show-history/mock-1440.png"><img loading="lazy" src="show-history/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="show-history/app-1440.png"><img loading="lazy" src="show-history/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="show-history/diff-1440.png"><img loading="lazy" src="show-history/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="show-history/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="show-history/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="show-history/mock-1920.png"><img loading="lazy" src="show-history/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="show-history/app-1920.png"><img loading="lazy" src="show-history/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="show-history/diff-1920.png"><img loading="lazy" src="show-history/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="show-history/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="show-history/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now">
+<h3>respond-now <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` · 차이 869 · 설명 없음 593 · <a href="respond-now/styles.md">styles.md</a> · <a href="respond-now/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now/mock-1440.png"><img loading="lazy" src="respond-now/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now/app-1440.png"><img loading="lazy" src="respond-now/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now/diff-1440.png"><img loading="lazy" src="respond-now/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now/mock-1920.png"><img loading="lazy" src="respond-now/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now/app-1920.png"><img loading="lazy" src="respond-now/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now/diff-1920.png"><img loading="lazy" src="respond-now/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1042">
+<h3>all-products__1042 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1042” · 차이 489 · 설명 없음 333 · <a href="all-products__1042/styles.md">styles.md</a> · <a href="all-products__1042/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1042/mock-1440.png"><img loading="lazy" src="all-products__1042/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1042/app-1440.png"><img loading="lazy" src="all-products__1042/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1042/diff-1440.png"><img loading="lazy" src="all-products__1042/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1042/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1042/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1042/mock-1920.png"><img loading="lazy" src="all-products__1042/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1042/app-1920.png"><img loading="lazy" src="all-products__1042/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1042/diff-1920.png"><img loading="lazy" src="all-products__1042/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1042/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1042/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1038">
+<h3>all-products__1038 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1038” · 차이 1036 · 설명 없음 658 · <a href="all-products__1038/styles.md">styles.md</a> · <a href="all-products__1038/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1038/mock-1440.png"><img loading="lazy" src="all-products__1038/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1038/app-1440.png"><img loading="lazy" src="all-products__1038/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1038/diff-1440.png"><img loading="lazy" src="all-products__1038/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1038/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1038/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1038/mock-1920.png"><img loading="lazy" src="all-products__1038/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1038/app-1920.png"><img loading="lazy" src="all-products__1038/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1038/diff-1920.png"><img loading="lazy" src="all-products__1038/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1038/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1038/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1029">
+<h3>all-products__1029 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1029” · 차이 452 · 설명 없음 334 · <a href="all-products__1029/styles.md">styles.md</a> · <a href="all-products__1029/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1029/mock-1440.png"><img loading="lazy" src="all-products__1029/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1029/app-1440.png"><img loading="lazy" src="all-products__1029/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1029/diff-1440.png"><img loading="lazy" src="all-products__1029/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1029/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1029/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1029/mock-1920.png"><img loading="lazy" src="all-products__1029/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1029/app-1920.png"><img loading="lazy" src="all-products__1029/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1029/diff-1920.png"><img loading="lazy" src="all-products__1029/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1029/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1029/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1047">
+<h3>all-products__1047 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1047” · 차이 456 · 설명 없음 340 · <a href="all-products__1047/styles.md">styles.md</a> · <a href="all-products__1047/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1047/mock-1440.png"><img loading="lazy" src="all-products__1047/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1047/app-1440.png"><img loading="lazy" src="all-products__1047/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1047/diff-1440.png"><img loading="lazy" src="all-products__1047/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1047/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1047/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1047/mock-1920.png"><img loading="lazy" src="all-products__1047/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1047/app-1920.png"><img loading="lazy" src="all-products__1047/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1047/diff-1920.png"><img loading="lazy" src="all-products__1047/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1047/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1047/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__5-orders">
+<h3>all-products__5-orders <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “5 orders” · 차이 558 · 설명 없음 446 · <a href="all-products__5-orders/styles.md">styles.md</a> · <a href="all-products__5-orders/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__5-orders/mock-1440.png"><img loading="lazy" src="all-products__5-orders/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__5-orders/app-1440.png"><img loading="lazy" src="all-products__5-orders/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__5-orders/diff-1440.png"><img loading="lazy" src="all-products__5-orders/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__5-orders/mock-1920.png"><img loading="lazy" src="all-products__5-orders/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__5-orders/app-1920.png"><img loading="lazy" src="all-products__5-orders/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__5-orders/diff-1920.png"><img loading="lazy" src="all-products__5-orders/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__3-orders">
+<h3>all-products__3-orders <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “3 orders” · 차이 444 · 설명 없음 332 · <a href="all-products__3-orders/styles.md">styles.md</a> · <a href="all-products__3-orders/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__3-orders/mock-1440.png"><img loading="lazy" src="all-products__3-orders/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__3-orders/app-1440.png"><img loading="lazy" src="all-products__3-orders/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__3-orders/diff-1440.png"><img loading="lazy" src="all-products__3-orders/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__3-orders/mock-1920.png"><img loading="lazy" src="all-products__3-orders/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__3-orders/app-1920.png"><img loading="lazy" src="all-products__3-orders/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__3-orders/diff-1920.png"><img loading="lazy" src="all-products__3-orders/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1051">
+<h3>all-products__1051 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1051” · 차이 468 · 설명 없음 332 · <a href="all-products__1051/styles.md">styles.md</a> · <a href="all-products__1051/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1051/mock-1440.png"><img loading="lazy" src="all-products__1051/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1051/app-1440.png"><img loading="lazy" src="all-products__1051/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1051/diff-1440.png"><img loading="lazy" src="all-products__1051/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1051/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1051/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1051/mock-1920.png"><img loading="lazy" src="all-products__1051/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1051/app-1920.png"><img loading="lazy" src="all-products__1051/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1051/diff-1920.png"><img loading="lazy" src="all-products__1051/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1051/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1051/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__product">
+<h3>all-products__product <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Product” · 차이 1127 · 설명 없음 729 · <a href="all-products__product/styles.md">styles.md</a> · <a href="all-products__product/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__product/mock-1440.png"><img loading="lazy" src="all-products__product/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__product/app-1440.png"><img loading="lazy" src="all-products__product/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__product/diff-1440.png"><img loading="lazy" src="all-products__product/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__product/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__product/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__product/mock-1920.png"><img loading="lazy" src="all-products__product/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__product/app-1920.png"><img loading="lazy" src="all-products__product/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__product/diff-1920.png"><img loading="lazy" src="all-products__product/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__product/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__product/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__open-cases">
+<h3>all-products__open-cases <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Open cases” · 차이 1132 · 설명 없음 734 · <a href="all-products__open-cases/styles.md">styles.md</a> · <a href="all-products__open-cases/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__open-cases/mock-1440.png"><img loading="lazy" src="all-products__open-cases/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__open-cases/app-1440.png"><img loading="lazy" src="all-products__open-cases/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__open-cases/diff-1440.png"><img loading="lazy" src="all-products__open-cases/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__open-cases/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__open-cases/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__open-cases/mock-1920.png"><img loading="lazy" src="all-products__open-cases/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__open-cases/app-1920.png"><img loading="lazy" src="all-products__open-cases/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__open-cases/diff-1920.png"><img loading="lazy" src="all-products__open-cases/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__open-cases/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__open-cases/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__reply-needed">
+<h3>all-products__reply-needed <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Reply needed” · 차이 1110 · 설명 없음 712 · <a href="all-products__reply-needed/styles.md">styles.md</a> · <a href="all-products__reply-needed/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__reply-needed/mock-1440.png"><img loading="lazy" src="all-products__reply-needed/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__reply-needed/app-1440.png"><img loading="lazy" src="all-products__reply-needed/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__reply-needed/diff-1440.png"><img loading="lazy" src="all-products__reply-needed/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__reply-needed/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__reply-needed/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__reply-needed/mock-1920.png"><img loading="lazy" src="all-products__reply-needed/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__reply-needed/app-1920.png"><img loading="lazy" src="all-products__reply-needed/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__reply-needed/diff-1920.png"><img loading="lazy" src="all-products__reply-needed/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__reply-needed/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__reply-needed/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__prevent">
+<h3>all-products__prevent <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Prevent” · 차이 1131 · 설명 없음 733 · <a href="all-products__prevent/styles.md">styles.md</a> · <a href="all-products__prevent/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__prevent/mock-1440.png"><img loading="lazy" src="all-products__prevent/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__prevent/app-1440.png"><img loading="lazy" src="all-products__prevent/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__prevent/diff-1440.png"><img loading="lazy" src="all-products__prevent/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__prevent/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__prevent/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__prevent/mock-1920.png"><img loading="lazy" src="all-products__prevent/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__prevent/app-1920.png"><img loading="lazy" src="all-products__prevent/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__prevent/diff-1920.png"><img loading="lazy" src="all-products__prevent/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__prevent/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__prevent/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__questions">
+<h3>all-products__questions <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Questions” · 차이 1113 · 설명 없음 715 · <a href="all-products__questions/styles.md">styles.md</a> · <a href="all-products__questions/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__questions/mock-1440.png"><img loading="lazy" src="all-products__questions/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__questions/app-1440.png"><img loading="lazy" src="all-products__questions/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__questions/diff-1440.png"><img loading="lazy" src="all-products__questions/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__questions/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__questions/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__questions/mock-1920.png"><img loading="lazy" src="all-products__questions/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__questions/app-1920.png"><img loading="lazy" src="all-products__questions/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__questions/diff-1920.png"><img loading="lazy" src="all-products__questions/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__questions/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__questions/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__dispute-risk">
+<h3>all-products__dispute-risk <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Dispute risk” · 차이 1122 · 설명 없음 724 · <a href="all-products__dispute-risk/styles.md">styles.md</a> · <a href="all-products__dispute-risk/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__dispute-risk/mock-1440.png"><img loading="lazy" src="all-products__dispute-risk/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__dispute-risk/app-1440.png"><img loading="lazy" src="all-products__dispute-risk/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__dispute-risk/diff-1440.png"><img loading="lazy" src="all-products__dispute-risk/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__dispute-risk/mock-1920.png"><img loading="lazy" src="all-products__dispute-risk/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__dispute-risk/app-1920.png"><img loading="lazy" src="all-products__dispute-risk/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__dispute-risk/diff-1920.png"><img loading="lazy" src="all-products__dispute-risk/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__riskiest-case">
+<h3>all-products__riskiest-case <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Riskiest case” · 차이 1121 · 설명 없음 723 · <a href="all-products__riskiest-case/styles.md">styles.md</a> · <a href="all-products__riskiest-case/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__riskiest-case/mock-1440.png"><img loading="lazy" src="all-products__riskiest-case/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__riskiest-case/app-1440.png"><img loading="lazy" src="all-products__riskiest-case/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__riskiest-case/diff-1440.png"><img loading="lazy" src="all-products__riskiest-case/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__riskiest-case/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__riskiest-case/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__riskiest-case/mock-1920.png"><img loading="lazy" src="all-products__riskiest-case/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__riskiest-case/app-1920.png"><img loading="lazy" src="all-products__riskiest-case/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__riskiest-case/diff-1920.png"><img loading="lazy" src="all-products__riskiest-case/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__riskiest-case/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__riskiest-case/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__dispute-risk-2">
+<h3>all-products__dispute-risk-2 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Dispute risk” #2 · 차이 1137 · 설명 없음 739 · <a href="all-products__dispute-risk-2/styles.md">styles.md</a> · <a href="all-products__dispute-risk-2/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__dispute-risk-2/mock-1440.png"><img loading="lazy" src="all-products__dispute-risk-2/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__dispute-risk-2/app-1440.png"><img loading="lazy" src="all-products__dispute-risk-2/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__dispute-risk-2/diff-1440.png"><img loading="lazy" src="all-products__dispute-risk-2/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk-2/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk-2/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__dispute-risk-2/mock-1920.png"><img loading="lazy" src="all-products__dispute-risk-2/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__dispute-risk-2/app-1920.png"><img loading="lazy" src="all-products__dispute-risk-2/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__dispute-risk-2/diff-1920.png"><img loading="lazy" src="all-products__dispute-risk-2/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk-2/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-risk-2/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__case">
+<h3>all-products__case <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Case” · 차이 1125 · 설명 없음 727 · <a href="all-products__case/styles.md">styles.md</a> · <a href="all-products__case/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__case/mock-1440.png"><img loading="lazy" src="all-products__case/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__case/app-1440.png"><img loading="lazy" src="all-products__case/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__case/diff-1440.png"><img loading="lazy" src="all-products__case/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__case/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__case/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__case/mock-1920.png"><img loading="lazy" src="all-products__case/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__case/app-1920.png"><img loading="lazy" src="all-products__case/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__case/diff-1920.png"><img loading="lazy" src="all-products__case/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__case/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__case/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__dispute-type">
+<h3>all-products__dispute-type <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Dispute type” · 차이 1139 · 설명 없음 741 · <a href="all-products__dispute-type/styles.md">styles.md</a> · <a href="all-products__dispute-type/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__dispute-type/mock-1440.png"><img loading="lazy" src="all-products__dispute-type/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__dispute-type/app-1440.png"><img loading="lazy" src="all-products__dispute-type/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__dispute-type/diff-1440.png"><img loading="lazy" src="all-products__dispute-type/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-type/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-type/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__dispute-type/mock-1920.png"><img loading="lazy" src="all-products__dispute-type/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__dispute-type/app-1920.png"><img loading="lazy" src="all-products__dispute-type/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__dispute-type/diff-1920.png"><img loading="lazy" src="all-products__dispute-type/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-type/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__dispute-type/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__status">
+<h3>all-products__status <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Status” · 차이 1102 · 설명 없음 704 · <a href="all-products__status/styles.md">styles.md</a> · <a href="all-products__status/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__status/mock-1440.png"><img loading="lazy" src="all-products__status/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__status/app-1440.png"><img loading="lazy" src="all-products__status/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__status/diff-1440.png"><img loading="lazy" src="all-products__status/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__status/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__status/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__status/mock-1920.png"><img loading="lazy" src="all-products__status/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__status/app-1920.png"><img loading="lazy" src="all-products__status/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__status/diff-1920.png"><img loading="lazy" src="all-products__status/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__status/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__status/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__buyer">
+<h3>all-products__buyer <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Buyer” · 차이 1129 · 설명 없음 731 · <a href="all-products__buyer/styles.md">styles.md</a> · <a href="all-products__buyer/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__buyer/mock-1440.png"><img loading="lazy" src="all-products__buyer/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__buyer/app-1440.png"><img loading="lazy" src="all-products__buyer/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__buyer/diff-1440.png"><img loading="lazy" src="all-products__buyer/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__buyer/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__buyer/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__buyer/mock-1920.png"><img loading="lazy" src="all-products__buyer/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__buyer/app-1920.png"><img loading="lazy" src="all-products__buyer/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__buyer/diff-1920.png"><img loading="lazy" src="all-products__buyer/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__buyer/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__buyer/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__due">
+<h3>all-products__due <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → columnheader “Due” · 차이 1133 · 설명 없음 735 · <a href="all-products__due/styles.md">styles.md</a> · <a href="all-products__due/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__due/mock-1440.png"><img loading="lazy" src="all-products__due/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__due/app-1440.png"><img loading="lazy" src="all-products__due/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__due/diff-1440.png"><img loading="lazy" src="all-products__due/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__due/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__due/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__due/mock-1920.png"><img loading="lazy" src="all-products__due/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__due/app-1920.png"><img loading="lazy" src="all-products__due/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__due/diff-1920.png"><img loading="lazy" src="all-products__due/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__due/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__due/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="knit-cardigan__1051">
+<h3>knit-cardigan__1051 <span class="bad">실패</span></h3>
+<p class="sub">button “Knit Cardigan” → button “#1051” · 차이 356 · 설명 없음 244 · <a href="knit-cardigan__1051/styles.md">styles.md</a> · <a href="knit-cardigan__1051/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan__1051/mock-1440.png"><img loading="lazy" src="knit-cardigan__1051/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan__1051/app-1440.png"><img loading="lazy" src="knit-cardigan__1051/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan__1051/diff-1440.png"><img loading="lazy" src="knit-cardigan__1051/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan__1051/mock-1920.png"><img loading="lazy" src="knit-cardigan__1051/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan__1051/app-1920.png"><img loading="lazy" src="knit-cardigan__1051/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan__1051/diff-1920.png"><img loading="lazy" src="knit-cardigan__1051/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="knit-cardigan__send">
+<h3>knit-cardigan__send <span class="bad">실패</span></h3>
+<p class="sub">button “Knit Cardigan” → button “Send” · 차이 384 · 설명 없음 294 · <a href="knit-cardigan__send/styles.md">styles.md</a> · <a href="knit-cardigan__send/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan__send/mock-1440.png"><img loading="lazy" src="knit-cardigan__send/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan__send/app-1440.png"><img loading="lazy" src="knit-cardigan__send/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan__send/diff-1440.png"><img loading="lazy" src="knit-cardigan__send/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__send/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__send/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan__send/mock-1920.png"><img loading="lazy" src="knit-cardigan__send/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan__send/app-1920.png"><img loading="lazy" src="knit-cardigan__send/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan__send/diff-1920.png"><img loading="lazy" src="knit-cardigan__send/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__send/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__send/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="beanie-scarf__refund-24">
+<h3>beanie-scarf__refund-24 <span class="bad">실패</span></h3>
+<p class="sub">button “Beanie + Scarf” → button “Refund $24” · 차이 309 · 설명 없음 221 · <a href="beanie-scarf__refund-24/styles.md">styles.md</a> · <a href="beanie-scarf__refund-24/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="beanie-scarf__refund-24/mock-1440.png"><img loading="lazy" src="beanie-scarf__refund-24/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="beanie-scarf__refund-24/app-1440.png"><img loading="lazy" src="beanie-scarf__refund-24/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="beanie-scarf__refund-24/diff-1440.png"><img loading="lazy" src="beanie-scarf__refund-24/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="beanie-scarf__refund-24/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="beanie-scarf__refund-24/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="beanie-scarf__refund-24/mock-1920.png"><img loading="lazy" src="beanie-scarf__refund-24/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="beanie-scarf__refund-24/app-1920.png"><img loading="lazy" src="beanie-scarf__refund-24/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="beanie-scarf__refund-24/diff-1920.png"><img loading="lazy" src="beanie-scarf__refund-24/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="beanie-scarf__refund-24/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="beanie-scarf__refund-24/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="1047__send-proof">
+<h3>1047__send-proof <span class="bad">실패</span></h3>
+<p class="sub">button “#1047” → button “Send proof” · 차이 334 · 설명 없음 246 · <a href="1047__send-proof/styles.md">styles.md</a> · <a href="1047__send-proof/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="1047__send-proof/mock-1440.png"><img loading="lazy" src="1047__send-proof/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="1047__send-proof/app-1440.png"><img loading="lazy" src="1047__send-proof/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="1047__send-proof/diff-1440.png"><img loading="lazy" src="1047__send-proof/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="1047__send-proof/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="1047__send-proof/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="1047__send-proof/mock-1920.png"><img loading="lazy" src="1047__send-proof/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="1047__send-proof/app-1920.png"><img loading="lazy" src="1047__send-proof/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="1047__send-proof/diff-1920.png"><img loading="lazy" src="1047__send-proof/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="1047__send-proof/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="1047__send-proof/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__respond-now">
+<h3>respond-now__respond-now <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → `button[role=switch]` · 차이 515 · 설명 없음 375 · <a href="respond-now__respond-now/styles.md">styles.md</a> · <a href="respond-now__respond-now/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__respond-now/mock-1440.png"><img loading="lazy" src="respond-now__respond-now/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__respond-now/app-1440.png"><img loading="lazy" src="respond-now__respond-now/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__respond-now/diff-1440.png"><img loading="lazy" src="respond-now__respond-now/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__respond-now/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__respond-now/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__respond-now/mock-1920.png"><img loading="lazy" src="respond-now__respond-now/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__respond-now/app-1920.png"><img loading="lazy" src="respond-now__respond-now/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__respond-now/diff-1920.png"><img loading="lazy" src="respond-now__respond-now/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__respond-now/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__respond-now/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check">
+<h3>respond-now__ask-the-carrier-to-check <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” · 차이 886 · 설명 없음 626 · <a href="respond-now__ask-the-carrier-to-check/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__refund-now">
+<h3>respond-now__refund-now <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Refund now” · 차이 967 · 설명 없음 707 · <a href="respond-now__refund-now/styles.md">styles.md</a> · <a href="respond-now__refund-now/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__refund-now/mock-1440.png"><img loading="lazy" src="respond-now__refund-now/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__refund-now/app-1440.png"><img loading="lazy" src="respond-now__refund-now/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__refund-now/diff-1440.png"><img loading="lazy" src="respond-now__refund-now/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__refund-now/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__refund-now/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__refund-now/mock-1920.png"><img loading="lazy" src="respond-now__refund-now/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__refund-now/app-1920.png"><img loading="lazy" src="respond-now__refund-now/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__refund-now/diff-1920.png"><img loading="lazy" src="respond-now__refund-now/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__refund-now/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__refund-now/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply">
+<h3>respond-now__try-a-rushed-reply <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” · 차이 931 · 설명 없음 659 · <a href="respond-now__try-a-rushed-reply/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__clear">
+<h3>respond-now__clear <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Clear” · 차이 801 · 설명 없음 554 · <a href="respond-now__clear/styles.md">styles.md</a> · <a href="respond-now__clear/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__clear/mock-1440.png"><img loading="lazy" src="respond-now__clear/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__clear/app-1440.png"><img loading="lazy" src="respond-now__clear/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__clear/diff-1440.png"><img loading="lazy" src="respond-now__clear/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__clear/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__clear/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__clear/mock-1920.png"><img loading="lazy" src="respond-now__clear/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__clear/app-1920.png"><img loading="lazy" src="respond-now__clear/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__clear/diff-1920.png"><img loading="lazy" src="respond-now__clear/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__clear/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__clear/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__hide">
+<h3>respond-now__hide <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Hide” · 차이 764 · 설명 없음 514 · <a href="respond-now__hide/styles.md">styles.md</a> · <a href="respond-now__hide/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__hide/mock-1440.png"><img loading="lazy" src="respond-now__hide/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__hide/app-1440.png"><img loading="lazy" src="respond-now__hide/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__hide/diff-1440.png"><img loading="lazy" src="respond-now__hide/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__hide/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__hide/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__hide/mock-1920.png"><img loading="lazy" src="respond-now__hide/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__hide/app-1920.png"><img loading="lazy" src="respond-now__hide/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__hide/diff-1920.png"><img loading="lazy" src="respond-now__hide/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__hide/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__hide/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__send">
+<h3>respond-now__send <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Send” · 차이 868 · 설명 없음 592 · <a href="respond-now__send/styles.md">styles.md</a> · <a href="respond-now__send/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__send/mock-1440.png"><img loading="lazy" src="respond-now__send/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__send/app-1440.png"><img loading="lazy" src="respond-now__send/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__send/diff-1440.png"><img loading="lazy" src="respond-now__send/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__send/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__send/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__send/mock-1920.png"><img loading="lazy" src="respond-now__send/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__send/app-1920.png"><img loading="lazy" src="respond-now__send/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__send/diff-1920.png"><img loading="lazy" src="respond-now__send/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__send/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__send/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1038__send">
+<h3>all-products__1038__send <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1038” → button “Send” · 차이 1046 · 설명 없음 668 · <a href="all-products__1038__send/styles.md">styles.md</a> · <a href="all-products__1038__send/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1038__send/mock-1440.png"><img loading="lazy" src="all-products__1038__send/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1038__send/app-1440.png"><img loading="lazy" src="all-products__1038__send/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1038__send/diff-1440.png"><img loading="lazy" src="all-products__1038__send/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1038__send/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1038__send/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1038__send/mock-1920.png"><img loading="lazy" src="all-products__1038__send/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1038__send/app-1920.png"><img loading="lazy" src="all-products__1038__send/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1038__send/diff-1920.png"><img loading="lazy" src="all-products__1038__send/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1038__send/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1038__send/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1029__refund-24">
+<h3>all-products__1029__refund-24 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1029” → button “Refund $24” · 차이 481 · 설명 없음 357 · <a href="all-products__1029__refund-24/styles.md">styles.md</a> · <a href="all-products__1029__refund-24/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1029__refund-24/mock-1440.png"><img loading="lazy" src="all-products__1029__refund-24/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1029__refund-24/app-1440.png"><img loading="lazy" src="all-products__1029__refund-24/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1029__refund-24/diff-1440.png"><img loading="lazy" src="all-products__1029__refund-24/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1029__refund-24/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1029__refund-24/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1029__refund-24/mock-1920.png"><img loading="lazy" src="all-products__1029__refund-24/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1029__refund-24/app-1920.png"><img loading="lazy" src="all-products__1029__refund-24/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1029__refund-24/diff-1920.png"><img loading="lazy" src="all-products__1029__refund-24/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1029__refund-24/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1029__refund-24/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1047__send-proof">
+<h3>all-products__1047__send-proof <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1047” → button “Send proof” · 차이 482 · 설명 없음 366 · <a href="all-products__1047__send-proof/styles.md">styles.md</a> · <a href="all-products__1047__send-proof/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1047__send-proof/mock-1440.png"><img loading="lazy" src="all-products__1047__send-proof/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1047__send-proof/app-1440.png"><img loading="lazy" src="all-products__1047__send-proof/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1047__send-proof/diff-1440.png"><img loading="lazy" src="all-products__1047__send-proof/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1047__send-proof/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1047__send-proof/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1047__send-proof/mock-1920.png"><img loading="lazy" src="all-products__1047__send-proof/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1047__send-proof/app-1920.png"><img loading="lazy" src="all-products__1047__send-proof/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1047__send-proof/diff-1920.png"><img loading="lazy" src="all-products__1047__send-proof/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1047__send-proof/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1047__send-proof/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__5-orders__add-all-5">
+<h3>all-products__5-orders__add-all-5 <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “5 orders” → button “Add all 5” · 차이 594 · 설명 없음 468 · <a href="all-products__5-orders__add-all-5/styles.md">styles.md</a> · <a href="all-products__5-orders__add-all-5/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__5-orders__add-all-5/mock-1440.png"><img loading="lazy" src="all-products__5-orders__add-all-5/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__5-orders__add-all-5/app-1440.png"><img loading="lazy" src="all-products__5-orders__add-all-5/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__5-orders__add-all-5/diff-1440.png"><img loading="lazy" src="all-products__5-orders__add-all-5/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders__add-all-5/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders__add-all-5/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__5-orders__add-all-5/mock-1920.png"><img loading="lazy" src="all-products__5-orders__add-all-5/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__5-orders__add-all-5/app-1920.png"><img loading="lazy" src="all-products__5-orders__add-all-5/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__5-orders__add-all-5/diff-1920.png"><img loading="lazy" src="all-products__5-orders__add-all-5/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders__add-all-5/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__5-orders__add-all-5/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__3-orders__send">
+<h3>all-products__3-orders__send <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “3 orders” → button “Send” · 차이 466 · 설명 없음 354 · <a href="all-products__3-orders__send/styles.md">styles.md</a> · <a href="all-products__3-orders__send/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__3-orders__send/mock-1440.png"><img loading="lazy" src="all-products__3-orders__send/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__3-orders__send/app-1440.png"><img loading="lazy" src="all-products__3-orders__send/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__3-orders__send/diff-1440.png"><img loading="lazy" src="all-products__3-orders__send/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders__send/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders__send/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__3-orders__send/mock-1920.png"><img loading="lazy" src="all-products__3-orders__send/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__3-orders__send/app-1920.png"><img loading="lazy" src="all-products__3-orders__send/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__3-orders__send/diff-1920.png"><img loading="lazy" src="all-products__3-orders__send/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders__send/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__3-orders__send/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="all-products__1051__looks-good">
+<h3>all-products__1051__looks-good <span class="bad">실패</span></h3>
+<p class="sub">button “All products” → button “#1051” → button “Looks good” · 차이 440 · 설명 없음 310 · <a href="all-products__1051__looks-good/styles.md">styles.md</a> · <a href="all-products__1051__looks-good/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1051__looks-good/mock-1440.png"><img loading="lazy" src="all-products__1051__looks-good/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1051__looks-good/app-1440.png"><img loading="lazy" src="all-products__1051__looks-good/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1051__looks-good/diff-1440.png"><img loading="lazy" src="all-products__1051__looks-good/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1051__looks-good/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1051__looks-good/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="all-products__1051__looks-good/mock-1920.png"><img loading="lazy" src="all-products__1051__looks-good/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="all-products__1051__looks-good/app-1920.png"><img loading="lazy" src="all-products__1051__looks-good/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="all-products__1051__looks-good/diff-1920.png"><img loading="lazy" src="all-products__1051__looks-good/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="all-products__1051__looks-good/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="all-products__1051__looks-good/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="knit-cardigan__1051__looks-good">
+<h3>knit-cardigan__1051__looks-good <span class="bad">실패</span></h3>
+<p class="sub">button “Knit Cardigan” → button “#1051” → button “Looks good” · 차이 328 · 설명 없음 222 · <a href="knit-cardigan__1051__looks-good/styles.md">styles.md</a> · <a href="knit-cardigan__1051__looks-good/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan__1051__looks-good/mock-1440.png"><img loading="lazy" src="knit-cardigan__1051__looks-good/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan__1051__looks-good/app-1440.png"><img loading="lazy" src="knit-cardigan__1051__looks-good/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan__1051__looks-good/diff-1440.png"><img loading="lazy" src="knit-cardigan__1051__looks-good/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051__looks-good/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051__looks-good/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="knit-cardigan__1051__looks-good/mock-1920.png"><img loading="lazy" src="knit-cardigan__1051__looks-good/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="knit-cardigan__1051__looks-good/app-1920.png"><img loading="lazy" src="knit-cardigan__1051__looks-good/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="knit-cardigan__1051__looks-good/diff-1920.png"><img loading="lazy" src="knit-cardigan__1051__looks-good/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051__looks-good/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="knit-cardigan__1051__looks-good/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__respond-now">
+<h3>respond-now__ask-the-carrier-to-check__respond-now <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → `button[role=switch]` · 차이 577 · 설명 없음 439 · <a href="respond-now__ask-the-carrier-to-check__respond-now/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__respond-now/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__respond-now/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__respond-now/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__respond-now/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__respond-now/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__respond-now/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__respond-now/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__respond-now/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__respond-now/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__respond-now/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__respond-now/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__respond-now/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__respond-now/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__respond-now/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__respond-now/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__respond-now/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__respond-now/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__add">
+<h3>respond-now__ask-the-carrier-to-check__add <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “+ Add” · 차이 917 · 설명 없음 651 · <a href="respond-now__ask-the-carrier-to-check__add/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__add/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__add-2">
+<h3>respond-now__ask-the-carrier-to-check__add-2 <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “+ Add” #2 · 차이 894 · 설명 없음 630 · <a href="respond-now__ask-the-carrier-to-check__add-2/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__add-2/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add-2/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-2/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add-2/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-2/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add-2/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-2/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-2/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-2/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add-2/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-2/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add-2/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-2/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add-2/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-2/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-2/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-2/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__add-3">
+<h3>respond-now__ask-the-carrier-to-check__add-3 <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “+ Add” #3 · 차이 910 · 설명 없음 646 · <a href="respond-now__ask-the-carrier-to-check__add-3/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__add-3/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add-3/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-3/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add-3/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-3/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add-3/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-3/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-3/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-3/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add-3/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-3/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add-3/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-3/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add-3/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-3/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-3/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-3/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__add-4">
+<h3>respond-now__ask-the-carrier-to-check__add-4 <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “+ Add” #4 · 차이 907 · 설명 없음 643 · <a href="respond-now__ask-the-carrier-to-check__add-4/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__add-4/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add-4/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-4/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add-4/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-4/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add-4/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-4/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-4/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-4/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__add-4/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-4/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__add-4/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-4/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__add-4/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__add-4/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-4/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__add-4/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__hide">
+<h3>respond-now__ask-the-carrier-to-check__hide <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “Hide” · 차이 848 · 설명 없음 588 · <a href="respond-now__ask-the-carrier-to-check__hide/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__hide/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__hide/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__hide/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__hide/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__hide/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__hide/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__hide/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__hide/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__hide/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__hide/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__hide/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__hide/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__hide/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__hide/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__hide/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__hide/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__hide/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__send">
+<h3>respond-now__ask-the-carrier-to-check__send <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “Send” · 차이 845 · 설명 없음 611 · <a href="respond-now__ask-the-carrier-to-check__send/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__send/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__send/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__send/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__send/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__send/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__send/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__send/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__respond-now">
+<h3>respond-now__try-a-rushed-reply__respond-now <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → `button[role=switch]` · 차이 585 · 설명 없음 447 · <a href="respond-now__try-a-rushed-reply__respond-now/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__respond-now/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__respond-now/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__respond-now/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__respond-now/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__respond-now/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__respond-now/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__respond-now/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__respond-now/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__respond-now/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__respond-now/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__respond-now/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__respond-now/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__respond-now/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__respond-now/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__respond-now/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__respond-now/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__respond-now/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__remove">
+<h3>respond-now__try-a-rushed-reply__remove <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “Remove” · 차이 915 · 설명 없음 647 · <a href="respond-now__try-a-rushed-reply__remove/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__remove/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__remove/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__remove/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__remove/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__remove/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__remove/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__remove/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__remove-2">
+<h3>respond-now__try-a-rushed-reply__remove-2 <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “Remove” #2 · 차이 895 · 설명 없음 627 · <a href="respond-now__try-a-rushed-reply__remove-2/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__remove-2/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__remove-2/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove-2/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__remove-2/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove-2/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__remove-2/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove-2/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove-2/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove-2/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__remove-2/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove-2/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__remove-2/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove-2/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__remove-2/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__remove-2/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove-2/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__remove-2/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__add">
+<h3>respond-now__try-a-rushed-reply__add <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “+ Add” · 차이 954 · 설명 없음 680 · <a href="respond-now__try-a-rushed-reply__add/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__add/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__add-2">
+<h3>respond-now__try-a-rushed-reply__add-2 <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “+ Add” #2 · 차이 914 · 설명 없음 644 · <a href="respond-now__try-a-rushed-reply__add-2/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__add-2/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add-2/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-2/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add-2/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-2/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add-2/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-2/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-2/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-2/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add-2/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-2/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add-2/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-2/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add-2/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-2/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-2/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-2/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__add-3">
+<h3>respond-now__try-a-rushed-reply__add-3 <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “+ Add” #3 · 차이 914 · 설명 없음 644 · <a href="respond-now__try-a-rushed-reply__add-3/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__add-3/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add-3/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-3/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add-3/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-3/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add-3/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-3/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-3/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-3/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add-3/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-3/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add-3/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-3/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add-3/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-3/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-3/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-3/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__add-4">
+<h3>respond-now__try-a-rushed-reply__add-4 <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “+ Add” #4 · 차이 929 · 설명 없음 657 · <a href="respond-now__try-a-rushed-reply__add-4/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__add-4/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add-4/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-4/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add-4/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-4/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add-4/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-4/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-4/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-4/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__add-4/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-4/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__add-4/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-4/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__add-4/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__add-4/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-4/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__add-4/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__hide">
+<h3>respond-now__try-a-rushed-reply__hide <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “Hide” · 차이 899 · 설명 없음 631 · <a href="respond-now__try-a-rushed-reply__hide/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__hide/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__hide/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__hide/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__hide/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__hide/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__hide/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__hide/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__hide/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__hide/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__hide/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__hide/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__hide/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__hide/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__hide/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__hide/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__hide/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__hide/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__send">
+<h3>respond-now__try-a-rushed-reply__send <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “Send” · 차이 851 · 설명 없음 617 · <a href="respond-now__try-a-rushed-reply__send/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__send/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__send/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__send/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__send/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__send/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__send/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__send/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__send__refund-72-now">
+<h3>respond-now__ask-the-carrier-to-check__send__refund-72-now <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “Send” → button “Refund $72 now” · 차이 876 · 설명 없음 622 · <a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__send__refund-72-now/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__refund-72-now/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__ask-the-carrier-to-check__send__replay-this-case">
+<h3>respond-now__ask-the-carrier-to-check__send__replay-this-case <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Ask the carrier to check” → button “Send” → button “Replay this case” · 차이 948 · 설명 없음 674 · <a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/styles.md">styles.md</a> · <a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/mock-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/app-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/diff-1440.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/mock-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/app-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__ask-the-carrier-to-check__send__replay-this-case/diff-1920.png"><img loading="lazy" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__ask-the-carrier-to-check__send__replay-this-case/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__send__refund-72-now">
+<h3>respond-now__try-a-rushed-reply__send__refund-72-now <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “Send” → button “Refund $72 now” · 차이 898 · 설명 없음 644 · <a href="respond-now__try-a-rushed-reply__send__refund-72-now/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__send__refund-72-now/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__send__refund-72-now/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__refund-72-now/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__send__refund-72-now/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__refund-72-now/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__send__refund-72-now/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__refund-72-now/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__refund-72-now/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__refund-72-now/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__send__refund-72-now/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__refund-72-now/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__send__refund-72-now/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__refund-72-now/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__send__refund-72-now/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__refund-72-now/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__refund-72-now/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__refund-72-now/app-1920.webm"></video></figure>
+</div>
+</section>
+<section id="respond-now__try-a-rushed-reply__send__replay-this-case">
+<h3>respond-now__try-a-rushed-reply__send__replay-this-case <span class="bad">실패</span></h3>
+<p class="sub">`button[role=switch]` → button “Try a rushed reply” → button “Send” → button “Replay this case” · 차이 963 · 설명 없음 689 · <a href="respond-now__try-a-rushed-reply__send__replay-this-case/styles.md">styles.md</a> · <a href="respond-now__try-a-rushed-reply__send__replay-this-case/motion.md">motion.md</a></p>
+<h4>1440px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__send__replay-this-case/mock-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__replay-this-case/mock-1440.png" alt="시안 1440"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__send__replay-this-case/app-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__replay-this-case/app-1440.png" alt="앱 1440"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__send__replay-this-case/diff-1440.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__replay-this-case/diff-1440.png" alt="차이 1440"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__replay-this-case/mock-1440.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__replay-this-case/app-1440.webm"></video></figure>
+</div>
+<h4>1920px</h4>
+<div class="trio">
+<figure><figcaption>시안</figcaption><a href="respond-now__try-a-rushed-reply__send__replay-this-case/mock-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__replay-this-case/mock-1920.png" alt="시안 1920"></a></figure>
+<figure><figcaption>앱</figcaption><a href="respond-now__try-a-rushed-reply__send__replay-this-case/app-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__replay-this-case/app-1920.png" alt="앱 1920"></a></figure>
+<figure><figcaption>차이 (빨강)</figcaption><a href="respond-now__try-a-rushed-reply__send__replay-this-case/diff-1920.png"><img loading="lazy" src="respond-now__try-a-rushed-reply__send__replay-this-case/diff-1920.png" alt="차이 1920"></a></figure>
+</div>
+<div class="duo">
+<figure><figcaption>시안 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__replay-this-case/mock-1920.webm"></video></figure>
+<figure><figcaption>앱 녹화</figcaption><video controls muted preload="none" src="respond-now__try-a-rushed-reply__send__replay-this-case/app-1920.webm"></video></figure>
+</div>
+</section>
+</body></html>

@@ -1,0 +1,1333 @@
+{
+  "mock": "/private/tmp/claude-501/-Users-kaeng2-repositories-paypal-hackathon/68e4e97b-9470-41c8-aa12-f4a21f8164f5/scratchpad/mock-v6-data/Desk.dc.html",
+  "app": "http://localhost:3111/",
+  "generatedAt": "2026-11-12T15:14:27.656Z",
+  "widths": [
+    1440,
+    1920
+  ],
+  "pass": false,
+  "unexplained": 34965,
+  "results": [
+    {
+      "state": "initial",
+      "pass": false,
+      "diffs": 346,
+      "unexplained": 220,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.11969824606877484,
+          "diffPixels": 221662,
+          "total": 1851840
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09929966811251315,
+          "diffPixels": 241751,
+          "total": 2434560
+        }
+      ]
+    },
+    {
+      "state": "all-products",
+      "pass": false,
+      "diffs": 1108,
+      "unexplained": 710,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16719050811331132,
+          "diffPixels": 389059,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1671697736179868,
+          "diffPixels": 518681,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "knit-cardigan",
+      "pass": false,
+      "diffs": 372,
+      "unexplained": 286,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.12422439464948253,
+          "diffPixels": 203569,
+          "total": 1638720
+        },
+        {
+          "width": 1920,
+          "ratio": 0.10245908391915641,
+          "diffPixels": 223869,
+          "total": 2184960
+        }
+      ]
+    },
+    {
+      "state": "cashmere-coat",
+      "pass": false,
+      "diffs": 133,
+      "unexplained": 63,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.068602273926348,
+          "diffPixels": 104023,
+          "total": 1516320
+        },
+        {
+          "width": 1920,
+          "ratio": 0.06165140482494851,
+          "diffPixels": 134114,
+          "total": 2175360
+        }
+      ]
+    },
+    {
+      "state": "beanie-scarf",
+      "pass": false,
+      "diffs": 284,
+      "unexplained": 202,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.04856230874749393,
+          "diffPixels": 73636,
+          "total": 1516320
+        },
+        {
+          "width": 1920,
+          "ratio": 0.0693039313033245,
+          "diffPixels": 150761,
+          "total": 2175360
+        }
+      ]
+    },
+    {
+      "state": "1047",
+      "pass": false,
+      "diffs": 308,
+      "unexplained": 220,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.09847987232246491,
+          "diffPixels": 149327,
+          "total": 1516320
+        },
+        {
+          "width": 1920,
+          "ratio": 0.08228706972639012,
+          "diffPixels": 179004,
+          "total": 2175360
+        }
+      ]
+    },
+    {
+      "state": "show-history",
+      "pass": false,
+      "diffs": 397,
+      "unexplained": 241,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.05161438629676335,
+          "diffPixels": 117879,
+          "total": 2283840
+        },
+        {
+          "width": 1920,
+          "ratio": 0.049130394345238096,
+          "diffPixels": 147910,
+          "total": 3010560
+        }
+      ]
+    },
+    {
+      "state": "respond-now",
+      "pass": false,
+      "diffs": 869,
+      "unexplained": 593,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1482068112633181,
+          "diffPixels": 405067,
+          "total": 2733120
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09048059903111608,
+          "diffPixels": 310790,
+          "total": 3434880
+        }
+      ]
+    },
+    {
+      "state": "all-products__1042",
+      "pass": false,
+      "diffs": 489,
+      "unexplained": 333,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.18567794279427943,
+          "diffPixels": 432080,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.17640102877475247,
+          "diffPixels": 547323,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__1038",
+      "pass": false,
+      "diffs": 1036,
+      "unexplained": 658,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.19410925467546755,
+          "diffPixels": 451700,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.18167188789191419,
+          "diffPixels": 563677,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__1029",
+      "pass": false,
+      "diffs": 452,
+      "unexplained": 334,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1720438840759076,
+          "diffPixels": 400353,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16815664964933993,
+          "diffPixels": 521743,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__1047",
+      "pass": false,
+      "diffs": 456,
+      "unexplained": 340,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.17920706133113312,
+          "diffPixels": 417022,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16940394234735973,
+          "diffPixels": 525613,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__5-orders",
+      "pass": false,
+      "diffs": 558,
+      "unexplained": 446,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.17278044210671067,
+          "diffPixels": 402067,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1668258818069307,
+          "diffPixels": 517614,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__3-orders",
+      "pass": false,
+      "diffs": 444,
+      "unexplained": 332,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1769032762651265,
+          "diffPixels": 411661,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16909775938531355,
+          "diffPixels": 524663,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__1051",
+      "pass": false,
+      "diffs": 468,
+      "unexplained": 332,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.21240803767876787,
+          "diffPixels": 494282,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.20357299401815182,
+          "diffPixels": 631630,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__product",
+      "pass": false,
+      "diffs": 1127,
+      "unexplained": 729,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16852911853685368,
+          "diffPixels": 392174,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16758618244636964,
+          "diffPixels": 519973,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__open-cases",
+      "pass": false,
+      "diffs": 1132,
+      "unexplained": 734,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16760261963696368,
+          "diffPixels": 390018,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1673296333539604,
+          "diffPixels": 519177,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__reply-needed",
+      "pass": false,
+      "diffs": 1110,
+      "unexplained": 712,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.166987675330033,
+          "diffPixels": 388587,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16771929146039605,
+          "diffPixels": 520386,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__prevent",
+      "pass": false,
+      "diffs": 1131,
+      "unexplained": 733,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16807188531353134,
+          "diffPixels": 391110,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16736573071369637,
+          "diffPixels": 519289,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__questions",
+      "pass": false,
+      "diffs": 1113,
+      "unexplained": 715,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1668252372112211,
+          "diffPixels": 388209,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1668323277640264,
+          "diffPixels": 517634,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__dispute-risk",
+      "pass": false,
+      "diffs": 1122,
+      "unexplained": 724,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16832112898789878,
+          "diffPixels": 391690,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1675649107879538,
+          "diffPixels": 519907,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__riskiest-case",
+      "pass": false,
+      "diffs": 1121,
+      "unexplained": 723,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1679696094609461,
+          "diffPixels": 390872,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1673296333539604,
+          "diffPixels": 519177,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__dispute-risk-2",
+      "pass": false,
+      "diffs": 1137,
+      "unexplained": 739,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16892618949394939,
+          "diffPixels": 393098,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16589863087871287,
+          "diffPixels": 514737,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__case",
+      "pass": false,
+      "diffs": 1125,
+      "unexplained": 727,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16665033690869088,
+          "diffPixels": 387802,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16542872060643565,
+          "diffPixels": 513279,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__dispute-type",
+      "pass": false,
+      "diffs": 1139,
+      "unexplained": 741,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1685901402640264,
+          "diffPixels": 392316,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1658625335189769,
+          "diffPixels": 514625,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__status",
+      "pass": false,
+      "diffs": 1102,
+      "unexplained": 704,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1650908450220022,
+          "diffPixels": 384173,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1649794373968647,
+          "diffPixels": 511885,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__buyer",
+      "pass": false,
+      "diffs": 1129,
+      "unexplained": 731,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16850376443894388,
+          "diffPixels": 392115,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1655450701320132,
+          "diffPixels": 513640,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__due",
+      "pass": false,
+      "diffs": 1133,
+      "unexplained": 735,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.16739892739273926,
+          "diffPixels": 389544,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16545095915841584,
+          "diffPixels": 513348,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "knit-cardigan__1051",
+      "pass": false,
+      "diffs": 356,
+      "unexplained": 244,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.19421804823276703,
+          "diffPixels": 318269,
+          "total": 1638720
+        },
+        {
+          "width": 1920,
+          "ratio": 0.13214612624487404,
+          "diffPixels": 288734,
+          "total": 2184960
+        }
+      ]
+    },
+    {
+      "state": "knit-cardigan__send",
+      "pass": false,
+      "diffs": 384,
+      "unexplained": 294,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.19743026004728131,
+          "diffPixels": 334052,
+          "total": 1692000
+        },
+        {
+          "width": 1920,
+          "ratio": 0.15763603788533564,
+          "diffPixels": 350179,
+          "total": 2221440
+        }
+      ]
+    },
+    {
+      "state": "beanie-scarf__refund-24",
+      "pass": false,
+      "diffs": 309,
+      "unexplained": 221,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.055584573177165766,
+          "diffPixels": 84284,
+          "total": 1516320
+        },
+        {
+          "width": 1920,
+          "ratio": 0.08310072815533981,
+          "diffPixels": 180774,
+          "total": 2175360
+        }
+      ]
+    },
+    {
+      "state": "1047__send-proof",
+      "pass": false,
+      "diffs": 334,
+      "unexplained": 246,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.14160137701804368,
+          "diffPixels": 214713,
+          "total": 1516320
+        },
+        {
+          "width": 1920,
+          "ratio": 0.12867249558693733,
+          "diffPixels": 279909,
+          "total": 2175360
+        }
+      ]
+    },
+    {
+      "state": "respond-now__respond-now",
+      "pass": false,
+      "diffs": 515,
+      "unexplained": 375,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.13570016848107827,
+          "diffPixels": 251295,
+          "total": 1851840
+        },
+        {
+          "width": 1920,
+          "ratio": 0.10675152799684542,
+          "diffPixels": 259893,
+          "total": 2434560
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check",
+      "pass": false,
+      "diffs": 886,
+      "unexplained": 626,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.11632000720331352,
+          "diffPixels": 310044,
+          "total": 2665440
+        },
+        {
+          "width": 1920,
+          "ratio": 0.1024797501372872,
+          "diffPixels": 358302,
+          "total": 3496320
+        }
+      ]
+    },
+    {
+      "state": "respond-now__refund-now",
+      "pass": false,
+      "diffs": 967,
+      "unexplained": 707,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.0903457545420838,
+          "diffPixels": 233916,
+          "total": 2589120
+        },
+        {
+          "width": 1920,
+          "ratio": 0.06562857756153406,
+          "diffPixels": 220134,
+          "total": 3354240
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply",
+      "pass": false,
+      "diffs": 931,
+      "unexplained": 659,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.15731395879700966,
+          "diffPixels": 441058,
+          "total": 2803680
+        },
+        {
+          "width": 1920,
+          "ratio": 0.14522909059294037,
+          "diffPixels": 534536,
+          "total": 3680640
+        }
+      ]
+    },
+    {
+      "state": "respond-now__clear",
+      "pass": false,
+      "diffs": 801,
+      "unexplained": 554,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.07885520227599575,
+          "diffPixels": 201781,
+          "total": 2558880
+        },
+        {
+          "width": 1920,
+          "ratio": 0.06266635661133371,
+          "diffPixels": 210198,
+          "total": 3354240
+        }
+      ]
+    },
+    {
+      "state": "respond-now__hide",
+      "pass": false,
+      "diffs": 764,
+      "unexplained": 514,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.06556372549019608,
+          "diffPixels": 171735,
+          "total": 2619360
+        },
+        {
+          "width": 1920,
+          "ratio": 0.05743301895645646,
+          "diffPixels": 195842,
+          "total": 3409920
+        }
+      ]
+    },
+    {
+      "state": "respond-now__send",
+      "pass": false,
+      "diffs": 868,
+      "unexplained": 592,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1653629878015124,
+          "diffPixels": 479341,
+          "total": 2898720
+        },
+        {
+          "width": 1920,
+          "ratio": 0.16998381370091897,
+          "diffPixels": 651106,
+          "total": 3830400
+        }
+      ]
+    },
+    {
+      "state": "all-products__1038__send",
+      "pass": false,
+      "diffs": 1046,
+      "unexplained": 668,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.2096620599559956,
+          "diffPixels": 487892,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.20792498195132014,
+          "diffPixels": 645133,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__1029__refund-24",
+      "pass": false,
+      "diffs": 481,
+      "unexplained": 357,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.17519604923565615,
+          "diffPixels": 423582,
+          "total": 2417760
+        },
+        {
+          "width": 1920,
+          "ratio": 0.17393041492952155,
+          "diffPixels": 560696,
+          "total": 3223680
+        }
+      ]
+    },
+    {
+      "state": "all-products__1047__send-proof",
+      "pass": false,
+      "diffs": 482,
+      "unexplained": 366,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.18093414810231023,
+          "diffPixels": 421041,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.17593820905528051,
+          "diffPixels": 545887,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__5-orders__add-all-5",
+      "pass": false,
+      "diffs": 594,
+      "unexplained": 468,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.19063789039481438,
+          "diffPixels": 465858,
+          "total": 2443680
+        },
+        {
+          "width": 1920,
+          "ratio": 0.18866842221567473,
+          "diffPixels": 614727,
+          "total": 3258240
+        }
+      ]
+    },
+    {
+      "state": "all-products__3-orders__send",
+      "pass": false,
+      "diffs": 466,
+      "unexplained": 354,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.19952256944444444,
+          "diffPixels": 464297,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.17821073122937295,
+          "diffPixels": 552938,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "all-products__1051__looks-good",
+      "pass": false,
+      "diffs": 440,
+      "unexplained": 310,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.17084020902090208,
+          "diffPixels": 397552,
+          "total": 2327040
+        },
+        {
+          "width": 1920,
+          "ratio": 0.18120842357673267,
+          "diffPixels": 562239,
+          "total": 3102720
+        }
+      ]
+    },
+    {
+      "state": "knit-cardigan__1051__looks-good",
+      "pass": false,
+      "diffs": 328,
+      "unexplained": 222,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.12986477250537004,
+          "diffPixels": 212812,
+          "total": 1638720
+        },
+        {
+          "width": 1920,
+          "ratio": 0.10077255418863504,
+          "diffPixels": 220184,
+          "total": 2184960
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__respond-now",
+      "pass": false,
+      "diffs": 577,
+      "unexplained": 439,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.1346531017798514,
+          "diffPixels": 249356,
+          "total": 1851840
+        },
+        {
+          "width": 1920,
+          "ratio": 0.10611239813354365,
+          "diffPixels": 258337,
+          "total": 2434560
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__add",
+      "pass": false,
+      "diffs": 917,
+      "unexplained": 651,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.11951762246117084,
+          "diffPixels": 320116,
+          "total": 2678400
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09749178387571245,
+          "diffPixels": 339365,
+          "total": 3480960
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__add-2",
+      "pass": false,
+      "diffs": 894,
+      "unexplained": 630,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.0822614247311828,
+          "diffPixels": 220329,
+          "total": 2678400
+        },
+        {
+          "width": 1920,
+          "ratio": 0.07115192360728075,
+          "diffPixels": 247677,
+          "total": 3480960
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__add-3",
+      "pass": false,
+      "diffs": 910,
+      "unexplained": 646,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.08637417513822009,
+          "diffPixels": 232464,
+          "total": 2691360
+        },
+        {
+          "width": 1920,
+          "ratio": 0.06713931209602955,
+          "diffPixels": 232678,
+          "total": 3465600
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__add-4",
+      "pass": false,
+      "diffs": 907,
+      "unexplained": 643,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.09594582671607553,
+          "diffPixels": 260988,
+          "total": 2720160
+        },
+        {
+          "width": 1920,
+          "ratio": 0.0752767105744603,
+          "diffPixels": 263336,
+          "total": 3498240
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__hide",
+      "pass": false,
+      "diffs": 848,
+      "unexplained": 588,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.06339810731348769,
+          "diffPixels": 165606,
+          "total": 2612160
+        },
+        {
+          "width": 1920,
+          "ratio": 0.05108035546801726,
+          "diffPixels": 174278,
+          "total": 3411840
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__send",
+      "pass": false,
+      "diffs": 845,
+      "unexplained": 611,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.09142576067422693,
+          "diffPixels": 236054,
+          "total": 2581920
+        },
+        {
+          "width": 1920,
+          "ratio": 0.07926965962441315,
+          "diffPixels": 270151,
+          "total": 3408000
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__respond-now",
+      "pass": false,
+      "diffs": 585,
+      "unexplained": 447,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.13453268100915847,
+          "diffPixels": 249133,
+          "total": 1851840
+        },
+        {
+          "width": 1920,
+          "ratio": 0.10627752037329127,
+          "diffPixels": 258739,
+          "total": 2434560
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__remove",
+      "pass": false,
+      "diffs": 915,
+      "unexplained": 647,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.10220181674565561,
+          "diffPixels": 279477,
+          "total": 2734560
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09755133092562868,
+          "diffPixels": 350061,
+          "total": 3588480
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__remove-2",
+      "pass": false,
+      "diffs": 895,
+      "unexplained": 627,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.10310214440348721,
+          "diffPixels": 281939,
+          "total": 2734560
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09753070938113073,
+          "diffPixels": 349987,
+          "total": 3588480
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__add",
+      "pass": false,
+      "diffs": 954,
+      "unexplained": 680,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.158769668825267,
+          "diffPixels": 447197,
+          "total": 2816640
+        },
+        {
+          "width": 1920,
+          "ratio": 0.14161919416797625,
+          "diffPixels": 519074,
+          "total": 3665280
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__add-2",
+      "pass": false,
+      "diffs": 914,
+      "unexplained": 644,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.12831884798909338,
+          "diffPixels": 361428,
+          "total": 2816640
+        },
+        {
+          "width": 1920,
+          "ratio": 0.11683009210756068,
+          "diffPixels": 428215,
+          "total": 3665280
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__add-3",
+      "pass": false,
+      "diffs": 914,
+      "unexplained": 644,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.12849529936378096,
+          "diffPixels": 361925,
+          "total": 2816640
+        },
+        {
+          "width": 1920,
+          "ratio": 0.11712556748734067,
+          "diffPixels": 429298,
+          "total": 3665280
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__add-4",
+      "pass": false,
+      "diffs": 929,
+      "unexplained": 657,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.12143394361354651,
+          "diffPixels": 339063,
+          "total": 2792160
+        },
+        {
+          "width": 1920,
+          "ratio": 0.11679489697922123,
+          "diffPixels": 428086,
+          "total": 3665280
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__hide",
+      "pass": false,
+      "diffs": 899,
+      "unexplained": 631,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.10557599112512407,
+          "diffPixels": 289312,
+          "total": 2740320
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09982759387791422,
+          "diffPixels": 358996,
+          "total": 3596160
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__send",
+      "pass": false,
+      "diffs": 851,
+      "unexplained": 617,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.114109657177839,
+          "diffPixels": 298237,
+          "total": 2613600
+        },
+        {
+          "width": 1920,
+          "ratio": 0.08468016431924882,
+          "diffPixels": 288590,
+          "total": 3408000
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__send__refund-72-now",
+      "pass": false,
+      "diffs": 876,
+      "unexplained": 622,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.09568280239663048,
+          "diffPixels": 258068,
+          "total": 2697120
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09374859613656783,
+          "diffPixels": 333895,
+          "total": 3561600
+        }
+      ]
+    },
+    {
+      "state": "respond-now__ask-the-carrier-to-check__send__replay-this-case",
+      "pass": false,
+      "diffs": 948,
+      "unexplained": 674,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.10066993033602623,
+          "diffPixels": 275143,
+          "total": 2733120
+        },
+        {
+          "width": 1920,
+          "ratio": 0.061165746692752,
+          "diffPixels": 210097,
+          "total": 3434880
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__send__refund-72-now",
+      "pass": false,
+      "diffs": 898,
+      "unexplained": 644,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.11626136030489592,
+          "diffPixels": 317254,
+          "total": 2728800
+        },
+        {
+          "width": 1920,
+          "ratio": 0.09892604447439353,
+          "diffPixels": 352335,
+          "total": 3561600
+        }
+      ]
+    },
+    {
+      "state": "respond-now__try-a-rushed-reply__send__replay-this-case",
+      "pass": false,
+      "diffs": 963,
+      "unexplained": 689,
+      "pixels": [
+        {
+          "width": 1440,
+          "ratio": 0.10102739726027397,
+          "diffPixels": 276120,
+          "total": 2733120
+        },
+        {
+          "width": 1920,
+          "ratio": 0.061165746692752,
+          "diffPixels": 210097,
+          "total": 3434880
+        }
+      ]
+    }
+  ]
+}
