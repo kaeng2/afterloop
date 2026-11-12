@@ -492,6 +492,7 @@
   "case.reply.placeholder": "Type a reply in any language…",
   "case.reply.rushedExample": "Hi, the package is held at customs. That's not our responsibility, please contact customs yourself. It should arrive soon.",
   "case.reply.editedNeedsCheck": "Edited — translate and check it before sending",
+  "case.reply.warnPromise": "! New promise — needs your approval",
   "case.reply.translateCheck": "Translate & check",
   "case.reply.translating": "Translating…",
   "case.reply.editedAiUnavailable": "AI unavailable — use the AI draft",

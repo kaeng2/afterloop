@@ -492,6 +492,7 @@
   "case.reply.placeholder": "답장을 입력하세요…",
   "case.reply.rushedExample": "Hi, the package is held at customs. That's not our responsibility, please contact customs yourself. It should arrive soon.",
   "case.reply.editedNeedsCheck": "고친 글이에요 — 보내기 전에 번역·검사하세요",
+  "case.reply.warnPromise": "! 새 약속 — 승인 필요",
   "case.reply.translateCheck": "번역·검사",
   "case.reply.translating": "번역 중…",
   "case.reply.editedAiUnavailable": "AI를 쓸 수 없어요 — AI 초안을 쓰세요",

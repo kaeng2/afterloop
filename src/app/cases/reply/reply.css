@@ -517,6 +517,14 @@
   display: none;
 }
 
+/* T116 F4-67: 시안 warnTxt — 13px 700 #9E2414, 맨 아래 왼쪽 */
+.reply-warn {
+  margin: 0 auto 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-pill-high-text);
+}
+
 .reply-fold {
   min-width: 0;
 }
