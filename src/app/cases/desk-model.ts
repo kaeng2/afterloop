@@ -225,7 +225,21 @@ export const CURVE_BOX = { width: 640, height: 150, top: 20, bottom: 120 } as co
  * 초안 점 = 마지막 사건 + 칸. 오른쪽(약 1/3)은 Send 뒤 단계 점 자리로 비워 둔다 → 초안 점·물결 원이 오른쪽 눈금 글자와 겹치지 않는다.
  * `reserveSlots` = 시안에서 마지막 사건 뒤에 남는 칸 수(12 − 8). 사건이 많아 이 자리가 폭을 넘을 때만 칸을 줄인다.
  */
-export const CURVE_X = { slots: 12, left: 8, reserveSlots: 4 } as const;
+export const CURVE_X = { slots: 12, left: 8, reserveSlots: 4, tickGutter: 44 } as const;
+
+/**
+ * T112: 실제 px 폭 → 곡선 폭. 소수는 반올림하고(하위 픽셀 흔들림으로 다시 그리지 않게), 0·NaN이면 기본 640(시안).
+ * 그리기 자리 값 — 확률 아님.
+ */
+export function curveWidthOf(measured: number): number {
+  return Number.isFinite(measured) && measured >= 1 ? Math.round(measured) : CURVE_BOX.width;
+}
+
+/** T112 (T103 교훈): 잰 폭이 지금 폭과 같으면 같은 값을 돌려준다 → React가 다시 그리지 않는다 (렌더 루프 없음). */
+export function nextCurveWidth(current: number, measured: number): number {
+  const next = curveWidthOf(measured);
+  return next === current ? current : next;
+}
 
 /** 시안 `lx += xStep * 0.8`: Send 뒤 단계 점 사이 간격 (칸 너비에 대한 몫 4/5, 그리기 자리 값 — 확률 아님). */
 const TRAIL_GAP = 4 / 5;
@@ -244,9 +258,13 @@ export type CurveOptions = {
    * 여기는 큰 % 아래 글의 날짜("if no reply by {date}")만 받는다. `null`·없음 = 글이 있는 상태 (지금처럼).
    */
   noReplyBy?: string | null;
+  /** T112: 그림 실제 px 폭 (ResizeObserver로 잰 값). 없으면 시안 기준 640 (서버 렌더). 높이는 늘 `CURVE_BOX.height` px. */
+  width?: number;
 };
 
 export type CurveView = {
+  /** T112: 그림 폭 = SVG viewBox 폭 = 실제 px 폭 (늘림 없음). */
+  width: number;
   dots: CurveDot[];
   /** 사건 점을 잇는 선 (SVG points 글자). */
   line: string;
@@ -284,9 +302,11 @@ const yOf = (p: number): number =>
  * 칸 너비 — **사건 수로만** 정한다 (Send 뒤 단계가 늘어도 바뀌지 않는다 → 앞 점 재배치·점프 없음).
  * 시안 값 폭/12, 사건이 많아 초안·단계 자리가 폭을 넘을 때만 줄인다.
  */
-function curveStep(eventCount: number): number {
-  const fixed = CURVE_BOX.width / CURVE_X.slots;
-  return Math.min(fixed, (CURVE_BOX.width - CURVE_X.left) / Math.max(1, eventCount - 1 + CURVE_X.reserveSlots));
+function curveStep(eventCount: number, width: number): number {
+  const fixed = width / CURVE_X.slots;
+  // T112: 오른쪽 끝 눈금 글자(100%·50%)와 끝점·물결 원이 겹치지 않게 글자 자리(tickGutter px)는 빼고 맞춘다
+  const room = width - CURVE_X.left - CURVE_X.tickGutter;
+  return Math.min(fixed, room / Math.max(1, eventCount - 1 + CURVE_X.reserveSlots));
 }
 
 /**
@@ -306,7 +326,8 @@ export function curveView(
   if (points === null || points.length === 0) return null;
   const sent = trail.length > 0;
   const firstLive = sent ? trail[0] : draftP;
-  const step = curveStep(points.length);
+  const width = curveWidthOf(options.width ?? CURVE_BOX.width);
+  const step = curveStep(points.length, width);
   const tones = options.tones?.length === points.length ? options.tones : null;
   const xOf = (index: number): number => index * step + CURVE_X.left;
   const dots = points.map((point, index) => ({
@@ -327,6 +348,7 @@ export function curveView(
   // 무응답 상태 (시안 c.empty && !sent): 답장 예측값은 이미 엔진의 빈 글 예측, 아래 글만 바꾸고 "N% → M%"는 숨긴다
   const noReply = !sent && draftP !== null && typeof options.noReplyBy === 'string' ? options.noReplyBy : null;
   return {
+    width,
     dots,
     line,
     area,
