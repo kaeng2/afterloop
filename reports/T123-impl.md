@@ -62,3 +62,14 @@
   3. README에 `--app-ready` 설명과 예(`'[role=switch]'`, `'.zone-work'`) 추가.
 - 수정 파일: `scripts/design-diff/{args,browser,run}.ts`, `README.md`, `tests/unit/design-diff.test.ts`(parseArgs 3줄 + retryFind 3건).
 - 확인: `npx vitest run tests/unit/design-diff.test.ts`, `npx tsc --noEmit`(scripts/·tests/ 오류 0), `npm run lint`(오류 0). 실제 브라우저·개발 서버는 쓰지 않았다(지시) — 실물 재현은 컨트롤 타워/브라우저 쪽에서 `--app-ready`를 주고 확인해 달라.
+
+## 후속 2 (앱 switch "Respond now" 후보 0개)
+- **재현 결과(정직하게)**: 가짜 DOM 단위 시험(`tests/unit/design-diff-find.test.ts`)에서 기존 `FIND_TARGET`의 역할·이름표 계산은 앱 모양(`<button role=switch><span aria-hidden>AI</span>Respond now<span aria-hidden>…`)과 시안 모양 양쪽에서 똑같이 `Respond now`를 돌려준다. 즉 **역할·이름표 계산 자체의 차이는 찾지 못했다.** 실제 브라우저는 쓰지 않았다(지시).
+- **가장 유력한 원인(추정)**: `--app-ready '[role=switch]'`는 상단바의 비활성 Autopilot 스위치(`src/app/_shared/autopilot-toggle.tsx`, 항상 보임)로 즉시 만족된다. 실제 "Respond now" 스위치는 `.work-head` 안에 있어 케이스 데이터가 온 뒤에야 나타나므로, 첫 컴파일이 느린 개발 서버에서는 10초 재시도를 넘길 수 있다. → `--app-ready '.work-head .tg'`를 권한다. (실패 스크린샷에 스위치가 이미 켜진 채인 것은 설명되지 않음 — 실물 확인 필요.)
+- **고친 것(방어적)**:
+  1. 이름표 비교 후보를 셋으로: 자기 글자(기존) · `aria-label` · `aria-hidden` 아닌 자손 글자 전부. NBSP·0폭 글자(U+200B–D, FEFF)는 정리.
+  2. 못 찾으면 에러에 "같은 역할 요소: ["", "Respond now (안 보임)"]"처럼 이름표와 보임 여부를 덧붙인다.
+  3. 짝짓기 key(CAPTURE)는 건드리지 않았다.
+- 수정 파일: `scripts/design-diff/{page-scripts,browser}.ts`, `tests/unit/design-diff-find.test.ts`(신규 6건).
+- 확인: `npx vitest run tests/unit/design-diff*.test.ts` 29/29 통과, `npx tsc --noEmit`·eslint에서 scripts/·tests/ 오류 0.
+- **요청**: 실물 재실행은 `--app-ready '.work-head .tg'`로. 그래도 실패하면 새 에러 문구의 "같은 역할 요소" 목록을 보내 달라.
