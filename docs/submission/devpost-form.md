@@ -42,7 +42,7 @@ https://github.com/kaeng2/afterloop
 [확인 필요: 녹화 영상 YouTube/Vimeo 링크]
 
 ### Image gallery
-Five 3:2 PNG images, 1500×1000, ≤5 MB each, from the public deployment: `docs/submission/images/01`–`05`, thumbnail = image 02. [확인 필요: 이미지 5장 아직 없음 — 촬영 뒤 업로드]
+Five 3:2 PNG images, 1500×1000, ≤5 MB each, from the public deployment: `docs/submission/images/01`–`05`, thumbnail = image 02.
 
 ## Step 3 · Additional info (hackathon questions)
 
