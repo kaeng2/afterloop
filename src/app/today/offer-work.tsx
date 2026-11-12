@@ -66,7 +66,9 @@ export function OfferWork({
   const [sendState, setSendState] = useState<SendState>('idle');
   const [outcome, setOutcome] = useState<SendOutcome | null>(null);
   const inFlight = useRef(false);
-  const { report, markDone } = useSavings();
+  const { report, markDone, unmarkDone } = useSavings();
+  /** T116 F1-45: 누르는 즉시 "Offer sent ✓"·Done today (시안 동기 setState). 실패·차단이면 되돌린다. */
+  const [optimistic, setOptimistic] = useState(false);
 
   const view = buildReplyView({ ...base, confirmed, sendState, outcome });
   const gate: SendGate =
@@ -82,6 +84,9 @@ export function OfferWork({
       setSendState('idle');
       return;
     }
+    // 결과를 모르는 동안은 Simulated로 둔다 (실제로 보냈다고 먼저 말하지 않는다). 실제 전송이면 아래에서 고친다
+    setOptimistic(true);
+    markDone(disputeId, { simulated: true });
     let next: SendOutcome;
     try {
       next = await action({ disputeId, kind: 'offer', replyId, confirmedCommitments: confirmed });
@@ -97,10 +102,14 @@ export function OfferWork({
     inFlight.current = false;
     setOutcome(next);
     setSendState(next.ok ? 'done' : 'failed');
+    setOptimistic(false);
     if (next.ok) {
       // T091 · T102: 이번 주 카드 알림 + 목록에서 "Done today"로 (화면 상태만. 가짜 전송은 Simulated)
       report(savings);
       markDone(disputeId, { simulated: next.mode === 'simulated' });
+    } else {
+      // 실패·차단: Done today에서 되돌리고 실패 글(아래 결과 줄)을 보인다 — 실패를 성공처럼 남기지 않는다
+      unmarkDone(disputeId);
     }
   }
 
@@ -154,7 +163,7 @@ export function OfferWork({
           aria-describedby={whyId}
           onClick={() => void send()}
         >
-          {sent ? t('today.offer.sent') : sendState === 'sending' ? t('case.send.sending') : t('today.offer.send')}
+          {sent || optimistic ? t('today.offer.sent') : sendState === 'sending' ? t('case.send.sending') : t('today.offer.send')}
         </button>
         {/* 전송 모드 표시 (Simulated / Live) — 서버가 정한 값 그대로 */}
         <span className={view.modeKey === REPLY_KEYS.modeLive ? 'offer-work-mode offer-work-mode-live' : 'offer-work-mode'}>

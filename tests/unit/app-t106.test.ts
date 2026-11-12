@@ -236,7 +236,8 @@ describe('T106-2 (F1-55 · F1-56 · F1-58): 지호·추적 상세 = 시안 zone-
     expect(code).toMatch(/view\.mode === 'live' && !window\.confirm\(/);
     // 끝나면 꺼진 채 "Offer sent ✓"
     expect(code).toMatch(/disabled=\{!gate\.ok \|\| sendState === 'sending' \|\| sent\}/);
-    expect(code).toMatch(/sent \? t\('today\.offer\.sent'\)/);
+    // T116 F1-45: 누르는 즉시(낙관적) "Offer sent ✓" — 결과가 실패면 되돌린다
+    expect(code).toMatch(/sent \|\| optimistic \? t\('today\.offer\.sent'\)/);
     expect(copyTables.en['today.offer.sent']).toBe('Offer sent ✓');
   });
 
@@ -289,7 +290,9 @@ describe('T106-3 (F1-59): 추적 버튼은 끝나면 꺼진 채 "Added ✓"', ()
       }),
     );
     expect(failed).toMatch(/<button type="button" class="tracking-button">Add all 2<\/button>/);
-    expect(strip(read('src/app/today/tracking-register.tsx'))).toMatch(/if \(pending \|\| finished\) return;/);
+    // T116 F1-45: 끝났거나(finished) 낙관적으로 끝난 것처럼 보이는 동안(shownDone)은 다시 누를 수 없다
+    expect(strip(read('src/app/today/tracking-register.tsx'))).toMatch(/const shownDone = finished \|\| optimistic;/);
+    expect(strip(read('src/app/today/tracking-register.tsx'))).toMatch(/if \(pending \|\| shownDone\) return;/);
   });
 });
 

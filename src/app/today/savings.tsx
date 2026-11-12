@@ -99,7 +99,16 @@ export function useSavings(): SavingsState {
 }
 
 /** 이번 주 카드의 칸 하나. 액션이 끝나면 깜빡이고(시안 `.flash`) "+$N just now"를 단다. */
-export function WeeklyBumpCell({ className, children }: { className: string; children?: ReactNode }) {
+export function WeeklyBumpCell({
+  className,
+  children,
+  showAmount = true,
+}: {
+  className: string;
+  children?: ReactNode;
+  /** T116 F1-35: 시안 `dash` 앞 3칸 모두 깜빡이되 "+$N just now"는 Money 칸에만. 거짓이면 깜빡임만. */
+  showAmount?: boolean;
+}) {
   const t = useT();
   const { bump } = useSavings();
   return (
@@ -111,7 +120,7 @@ export function WeeklyBumpCell({ className, children }: { className: string; chi
       data-bump={bump === null ? undefined : String(bump.n)}
     >
       {children}
-      {bump === null ? null : (
+      {bump === null || !showAmount ? null : (
         <span className="weekly-bump num" aria-live="polite">
           {t('today.weekly.bump', { amount: bump.amount })}
         </span>
