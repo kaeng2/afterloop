@@ -7,6 +7,8 @@
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { buildSeed } from './data';
+import { demoDisplay } from './demo-display';
+import { demoDisplayProblems, demoDisplaySchema } from './demo-schema';
 import {
   carrierEventProblems,
   disputeOrderProblems,
@@ -42,6 +44,10 @@ function main(): void {
   const orders = writeChecked('orders.json', seed.orders, seedOrdersSchema);
   const carrierEvents = writeChecked('carrier-events.json', seed.carrierEvents, seedCarrierEventsSchema);
 
+  const display = writeChecked('demo-display.json', demoDisplay, demoDisplaySchema);
+  const displayProblems = demoDisplayProblems(display, orders, buyers, disputes);
+  if (displayProblems.length > 0) throw new Error(`표시용 데이터가 시드와 어긋났다:\n  ${displayProblems.join('\n  ')}`);
+
   const problems = disputeOrderProblems(disputes, orders);
   if (problems.length > 0) throw new Error(`분쟁 → 주문 연결이 어긋났다:\n  ${problems.join('\n  ')}`);
 
@@ -63,6 +69,7 @@ function main(): void {
     `  disputes.json   ${disputes.length}건  진행 중 ${disputes.filter((d) => d.status === 'open').length} · 종결 ${disputes.filter((d) => d.status === 'closed').length} · 종결 손실 합 ${closedLossCents}¢ (${asMoney(closedLossCents)})`,
     `  orders.json     ${orders.length}건  샌드박스 ${orders.filter((o) => o.source === 'sandbox').length} · 시드 ${orders.filter((o) => o.source === 'seed').length}`,
     `  carrier-events.json  ${carrierEvents.length}건 (시연용, 전부 Demo data)  ${carrierOrders.map((id) => `${id} ${carrierEvents.filter((e) => e.orderId === id).map((e) => e.status).join(' → ')}`).join(' · ')}`,
+    `  demo-display.json  서연 기록 ${display.seoyeonHistory.length}줄 · 주문 표기 ${display.orderLabels.map((l) => l.displayNo).join(' ')} · 데모 항목 ${display.demoItems.map((i) => i.displayNo).join(' ')} (전부 Demo data)`,
     `  주문 상품별      ${Object.entries(countBy(orders, (o) => o.sku)).map(([k, v]) => `${k} ${v}`).join(' · ')}`,
     `  주문 국가별      ${Object.entries(countBy(orders, (o) => o.country)).map(([k, v]) => `${k} ${v}`).join(' · ')}`,
     `  추적 등록        ${tracked} / ${orders.length} (${((tracked / orders.length) * 100).toFixed(1)}%)`,
