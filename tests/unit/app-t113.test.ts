@@ -20,6 +20,7 @@ import { draftReply, translateReply } from '@/ai/reply';
 import { copyKeys, copyTables, setClientLocale, t } from '@/app/_shared/copy';
 import { langRedirectTarget } from '@/app/_shared/lang-param';
 import { caseReplyFacts } from '@/app/cases/reply-facts';
+import { INTRO_SAMPLE } from './intro-sample';
 import type { BoardState, Cause, FactToken, LlmCaller } from '@/types';
 
 vi.mock('server-only', () => ({}));
@@ -242,7 +243,7 @@ describe('T113-3 ko 정적 렌더에 예외가 없다', () => {
   it('위쪽 막대 · /listing · /intro', () => {
     expect(() => renderKo(createElement(TopBar, { seller: { initial: 'F', shop: 'Shop' }, dateLine: 'x' }))).not.toThrow();
     expect(() => renderKo(createElement(ListingScreen))).not.toThrow();
-    expect(() => renderKo(createElement(IntroScreen))).not.toThrow();
+    expect(() => renderKo(createElement(IntroScreen, { data: INTRO_SAMPLE }))).not.toThrow();
   });
 });
 
@@ -263,7 +264,7 @@ describe('T113-4 (app) 화면의 ?lang=은 전체 페이지 이동', () => {
       expect(code, file).toMatch(/langRedirectTarget\(/);
       expect(code, file).toMatch(/<LangRedirect href=\{langTarget\} \/>/);
     }
-    for (const file of ['src/app/listing/page.tsx', 'src/app/intro/page.tsx']) expect(read(file)).toContain('applyLangParam');
+    for (const file of ['src/app/demo/seller-dashboard/page.tsx', 'src/app/demo/store/new-product/page.tsx']) expect(read(file)).toContain('applyLangParam');
   });
 
   it('주소: 나머지 검색 값은 next에 싣고, 모르는 값은 null', () => {

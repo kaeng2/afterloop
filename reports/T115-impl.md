@@ -50,3 +50,10 @@
 2. `scripts/ai-cache/build-lib.ts` import 경로 2줄을 고쳤다 (수정 가능 폴더 밖, 폴더 이동 때문에 꼭 필요). 승인 부탁.
 3. `next.config.ts` 잠금: 308을 config로 옮기길 원하면 잠금을 풀거나 컨트롤 타워가 옮긴다 (라우트 핸들러 2개 삭제 + redirects 2줄).
 4. testing.md·README·Devpost·video-kit·정직성 표의 옛 주소(`/intro`, `/listing`)는 이 지시서 수정 가능 폴더 밖이라 고치지 않았다.
+
+## 재시도(병합 후속)
+main의 T113 시험(`tests/unit/app-t113.test.ts`)이 T115 구조와 맞지 않아 2개 실패 → 시험만 고쳤다 (코드 변경 없음, 시험이 보는 뜻은 그대로).
+- `T113-3`: `IntroScreen`이 `data` prop을 받으므로 `tests/unit/intro-sample.ts`의 `INTRO_SAMPLE`을 넘긴다 (ko 렌더 예외 없음).
+- `T113-4`: `/listing`·`/intro` 페이지(지움)를 목록에서 빼고, `applyLangParam`을 쓰는 새 페이지(`src/app/demo/seller-dashboard/page.tsx`, `src/app/demo/store/new-product/page.tsx`)로 바꿨다. `(app)` 화면은 `LangRedirect`라는 검사는 그대로.
+- 확인: `npm run lint` 오류 0 (경고 2건은 기존 `app-t098a-scenes.test.ts`), `vitest app-t113 + app-t115` 27개 통과, `test:acceptance` 15파일 통과(177 통과·9 건너뜀).
+- `npx tsc --noEmit`: `.next/types/validator.ts`가 지워진 `(app)/products/page`를 찾는 오류 1건 — 빌드 산출물(`.next`)의 묵은 캐시 때문이고 소스 오류가 아니다. 개발 서버·빌드 금지라 `.next`는 건드리지 않았다. 소스에는 tsc 오류 없음.
