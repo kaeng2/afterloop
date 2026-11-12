@@ -149,6 +149,6 @@
 | AC15~AC16, AC18~AC28 | mapper, 분류, SC4, S4, 토큰, 추적, sim, S2, S1, Transaction Search, 색상 문구, FAQ, S3 | 작성 예정 | 각 작업 |
 | T102 | Today 목록: "Done today · Simulated" 묶음 (화면 상태만) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`. `tasks/T102.md` | 사람 결정 "Yes, show it" |
 | T103 | 버그: Send 뒤 목록의 다른 항목을 눌러도 화면이 안 바뀜 (영상 흐름 막힘) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`. `tasks/T103.md` | T102 캡처 중 발견, T102 전부터 있던 문제 |
-| T104 | 답장 칸·Send 이후 버그·논리 (%p 부호, ok/refund/cb 분기, 토스트 1회, 역번역, SELLER_NAME, ✓칩, 빈 글 이유) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui`. `tasks/T104.md` | 사람 결정 09:30 차이 목록 1·2번, 13:00 고정 |
+| T104 | 답장 칸·Send 이후 버그·논리 (%p 부호, ok/refund/cb 분기, 토스트 1회, 역번역, SELLER_NAME, ✓칩, 빈 글 이유) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui`. `tasks/T104.md` | 사람 결정 09:30 차이 목록 1·2번, 13:00 고정 |
 | T105 | 위험 곡선 x 배치·점 고정·즉시 이동·색 규칙, 빈 답장=무응답 예측 | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui-scenes`. `tasks/T105.md` | 사람 결정 09:30 차이 목록 1·2번, 13:00 고정 |
 | T106 | Today 목록·칩 화면 안 전환, 지호·추적 zone-work 카드, Added ✓, 배지 감소, sticky·링크 줄 제거 | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui-desk`. `tasks/T106.md` | 사람 결정 09:30 차이 목록 1·2번, 13:00 고정 |
