@@ -144,8 +144,9 @@
   "disputes": [
     {
       "key": "D1",
-      "disputeId": "PP-R-MBJ-10197650",
-      "orderKey": "O02"
+      "disputeId": "PP-R-ZOK-10200237",
+      "orderKey": "O02",
+      "note": "2026-11-12 새 품질 사건 (실제 샌드박스 주문 6R4577433P6975506은 manifest 주문 목록 밖 — 추적 대상에 넣지 않으려고. 시드 표시 주문은 O02)"
     },
     {
       "key": "D2",
@@ -170,6 +171,13 @@
       "orderKey": "O04",
       "demoExcluded": true,
       "note": "연습용, 시연 제외 (2026-11-10): 녹화 전 실제 전송 시험용. 화면에 내지 않는다. 제안은 보내기만 하고 수락하지 않는다."
+    },
+    {
+      "key": "D1-old",
+      "disputeId": "PP-R-MBJ-10197650",
+      "orderKey": "O02",
+      "demoExcluded": true,
+      "note": "옛 지호 색상 분쟁 — 사람 결정 2026-11-12 20:35로 숨김. 아무 조치도 하지 않는다"
     }
   ]
 }

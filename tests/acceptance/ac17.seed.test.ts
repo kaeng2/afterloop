@@ -184,7 +184,8 @@ describe('AC17 주문 214건', () => {
 // 종결 손실 (센트): 전액 환불 = 상품 가격, 패소 = 상품 가격 + f(1500), 승소 = 0. 수수료는 질 때만 (SPEC 5장)
 describe('AC17 분쟁 9건 (원문 6-4)', () => {
   it.each([
-    ['D1', 'B02', 'FK-CD-OAT', 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED', 'B1', 'open', null, 'sandbox', 'O02'],
+    // 2026-11-12 사람 결정 20:35: 지호 D1 = 새 품질 사건 (B1 색상 → B3 품질), 계약·인수 테스트 변경 승인
+    ['D1', 'B02', 'FK-CD-OAT', 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED', 'B3', 'open', null, 'sandbox', 'O02'],
     ['D2', 'B01', 'FK-SW-NV', 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED', 'A2', 'open', null, 'sandbox', 'O01'],
     ['D3', 'B04', 'FK-BN-SET', 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED', 'F1', 'open', null, 'sandbox', 'O08'],
     ['D4', 'B08', 'FK-CD-OAT', 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED', 'B1', 'closed', 4800, 'seed', null],

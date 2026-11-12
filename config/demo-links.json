@@ -1,14 +1,22 @@
 {
-  "version": "demo-links-2026-11-10.v1",
+  "version": "demo-links-2026-11-12.v2",
   "note": "SPEC v2.5 9-4장. 실제 샌드박스 분쟁 ↔ 시드. 비밀값 아님. 연습용 분쟁(O04)이 걸리면 showOnScreen false · liveSendAllowed true로 추가한다",
   "links": [
     {
-      "paypalDisputeId": "PP-R-MBJ-10197650",
+      "paypalDisputeId": "PP-R-ZOK-10200237",
       "seedDisputeId": "D1",
       "carrierOrderId": "O02",
       "showOnScreen": true,
       "liveSendAllowed": true,
-      "note": "지호. 실제 전송은 녹화 때 한 번"
+      "note": "지호 #1038 새 품질 사건 (사람 결정 2026-11-12 20:35, 샌드박스 주문 6R4577433P6975506·capture 0GS51093S92438905). PayPal 응답 기한 없음 — 기한·구매 5주 전·반품 30일은 시드 Demo data, 원인 B3. 실제 전송은 녹화 때 한 번"
+    },
+    {
+      "paypalDisputeId": "PP-R-MBJ-10197650",
+      "seedDisputeId": null,
+      "carrierOrderId": null,
+      "showOnScreen": false,
+      "liveSendAllowed": false,
+      "note": "옛 지호 색상 분쟁. 사람 결정 2026-11-12 20:35: 새 품질 사건 PP-R-ZOK-10200237로 바꾸고 화면에서 숨김 (HEY처럼). 아무 조치도 하지 않는다"
     },
     {
       "paypalDisputeId": "PP-R-GMS-10197661",
