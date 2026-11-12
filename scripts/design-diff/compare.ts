@@ -23,15 +23,50 @@ function normalize(prop: string, v: string): string {
   return v.trim();
 }
 
-export function compareStyles(state: string, width: number, mock: ElementSnap[], app: ElementSnap[]): DiffItem[] {
+/** --loose-tags에서 서로 짝지어도 되는 글자 태그 (h1~h6 ↔ b/strong/span) */
+const LOOSE_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'strong', 'span']);
+const looseOk = (e: ElementSnap) => LOOSE_TAGS.has(e.tag) && (e.role === '' || e.role === 'heading');
+
+/** key로 짝 못 찾은 것끼리 태그만 다르고 글자가 같으면 문서 순서대로 짝짓는다. 시안 key → 앱 요소 */
+export function loosePairs(mock: ElementSnap[], app: ElementSnap[]): Map<string, ElementSnap> {
+  const ak = new Set(app.map((e) => e.key));
+  const mk = new Set(mock.map((e) => e.key));
+  const pool = new Map<string, ElementSnap[]>();
+  for (const a of app) {
+    if (mk.has(a.key) || !looseOk(a) || !a.text) continue;
+    const l = pool.get(a.text) ?? [];
+    l.push(a);
+    pool.set(a.text, l);
+  }
+  const out = new Map<string, ElementSnap>();
+  for (const m of mock) {
+    if (ak.has(m.key) || !looseOk(m) || !m.text) continue;
+    const a = pool.get(m.text)?.shift();
+    if (a) out.set(m.key, a);
+  }
+  return out;
+}
+
+export interface CompareOpts {
+  /** 태그만 다르고 글자가 같은 h1~h6 ↔ b/strong/span을 '태그 다름' 한 줄로 짝짓고 스타일 비교를 계속한다 */
+  looseTags?: boolean;
+}
+
+export function compareStyles(state: string, width: number, mock: ElementSnap[], app: ElementSnap[], opts: CompareOpts = {}): DiffItem[] {
   const out: DiffItem[] = [];
   const am = new Map(app.map((e) => [e.key, e]));
   const mm = new Map(mock.map((e) => [e.key, e]));
+  const loose = opts.looseTags ? loosePairs(mock, app) : new Map<string, ElementSnap>();
+  const pairedApp = new Set([...loose.values()].map((a) => a.key));
   for (const m of mock) {
-    const a = am.get(m.key);
+    let a = am.get(m.key);
     if (!a) {
-      out.push({ state, width, kind: 'missing', key: m.key, role: m.role, text: m.text, selectors: m.matches, exceptions: [] });
-      continue;
+      a = loose.get(m.key);
+      if (!a) {
+        out.push({ state, width, kind: 'missing', key: m.key, role: m.role, text: m.text, selectors: m.matches, exceptions: [] });
+        continue;
+      }
+      out.push({ state, width, kind: 'tag', key: m.key, role: m.role, text: m.text, prop: 'tag', mock: m.tag, app: `${a.tag} (${a.key})`, selectors: [...new Set([...m.matches, ...a.matches])], exceptions: [] });
     }
     for (const prop of Object.keys(m.styles)) {
       const mv = normalize(prop, m.styles[prop] ?? '');
@@ -54,7 +89,7 @@ export function compareStyles(state: string, width: number, mock: ElementSnap[],
     }
   }
   for (const a of app) {
-    if (!mm.has(a.key)) out.push({ state, width, kind: 'extra', key: a.key, role: a.role, text: a.text, selectors: a.matches, exceptions: [] });
+    if (!mm.has(a.key) && !pairedApp.has(a.key)) out.push({ state, width, kind: 'extra', key: a.key, role: a.role, text: a.text, selectors: a.matches, exceptions: [] });
   }
   return out;
 }

@@ -89,7 +89,8 @@ export interface SideCapture {
   video?: string;
 }
 
-export type DiffKind = 'style' | 'missing' | 'extra' | 'pixel' | 'motion' | 'repro';
+/** tag: --loose-tags에서 태그만 다르고 글자가 같아 짝지은 요소 (스타일 비교는 계속) */
+export type DiffKind = 'style' | 'missing' | 'extra' | 'pixel' | 'motion' | 'repro' | 'tag';
 
 export interface DiffItem {
   state: string;

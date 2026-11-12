@@ -73,3 +73,12 @@
 - 수정 파일: `scripts/design-diff/{page-scripts,browser}.ts`, `tests/unit/design-diff-find.test.ts`(신규 6건).
 - 확인: `npx vitest run tests/unit/design-diff*.test.ts` 29/29 통과, `npx tsc --noEmit`·eslint에서 scripts/·tests/ 오류 0.
 - **요청**: 실물 재실행은 `--app-ready '.work-head .tg'`로. 그래도 실패하면 새 에러 문구의 "같은 역할 요소" 목록을 보내 달라.
+
+## 후속 3 (sc-interp span · sr-only 글자 · 태그만 다른 요소)
+- 근거: `reports/T124c-impl.md` '도구 문제' A·B (main). 이 세션은 그 파일 읽기 권한이 없어 **지시문의 요약**을 근거로 했다.
+- **(A) 시안 `<span class="sc-interp">`**: `page-scripts.ts` 공통 `__ddOwn`(자기 글자)이 직계 `span.sc-interp`의 글자를 문서 순서대로 합친다. CAPTURE는 `span.sc-interp` 자체를 건너뛴다. → 시안 `<h2><span class=sc-interp>Case history</span></h2>`가 앱 `<h2>Case history</h2>`와 같은 key `heading|Case history`가 된다. 같은 함수를 쓰는 FIND_TARGET 이름표도 같이 맞춰진다(앱 쪽은 sc-interp가 없어 영향 없음).
+- **(B) 화면 읽기 전용 글자**: CAPTURE에서 자기 또는 조상이 sr-only면 세지 않는다 — `clip-path: inset(≥50%)` · `clip: rect(…)` 넓이 0 · 너비·높이 1px 이하 + overflow hidden/clip. 조상 판정은 한 번 캡처 안에서 memo. FIND_TARGET(클릭 대상)에는 적용하지 않았다(숨긴 체크박스 같은 입력을 누르는 단계를 깨지 않으려고).
+- **(C) `--loose-tags`(기본 꺼짐)**: key로 짝 못 찾은 것 중 태그가 h1~h6/b/strong/span이고(역할 없음 또는 heading) 글자가 같은 것을 문서 순서로 짝짓는다. 새 차이 종류 `tag` 한 줄(시안 태그 ↔ `앱 태그 (앱 key)`) + 스타일 비교는 계속(key는 시안 쪽). styles.md에 "태그만 다른 요소" 절. 예외 `kind: "tag"`로 설명 가능. 꺼져 있으면 예전과 똑같다.
+- 수정 파일: `scripts/design-diff/{page-scripts,compare,types,args,run,report}.ts`, `scripts/design-diff/README.md`, `tests/unit/design-diff-capture.test.ts`(신규 15건: 가짜 DOM으로 CAPTURE·FIND_TARGET 실행, loose 짝짓기, parseArgs).
+- 확인: `npx vitest run tests/unit/design-diff` 44/44 통과. `npx tsc --noEmit`은 `.next/types/validator.ts`(오래된 생성물, 이 작업과 무관) 3줄 외 오류 0. eslint(scripts/design-diff, 새 시험) 오류 0. 개발 서버·실제 브라우저·`.env`는 쓰지 않았다(지시).
+- 남은 것: 실물 재실행(v6 round2)으로 가짜 차이가 줄었는지는 컨트롤 타워/브라우저 쪽에서 확인해 달라. `--loose-tags`를 기본으로 켤지는 그 결과를 보고 사람이 정한다.

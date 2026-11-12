@@ -73,6 +73,12 @@ export function stylesMd(r: StateResult, rules: ExceptionRule[]): string {
     for (const d of st) L.push(`| ${d.width} | \`${mdCell(d.key)}\` | ${d.prop} | ${mdCell(d.mock)} | ${mdCell(d.app)} | ${exCell(d, rm)} |`);
     L.push('');
   }
+  const tg = ds.filter((d) => d.kind === 'tag');
+  if (tg.length) {
+    L.push('## 태그만 다른 요소 (--loose-tags)', '', '| 폭 | 요소 | 시안 태그 | 앱 태그(key) | 예외 |', '|---|---|---|---|---|');
+    for (const d of tg) L.push(`| ${d.width} | \`${mdCell(d.key)}\` | ${mdCell(d.mock)} | ${mdCell(d.app)} | ${exCell(d, rm)} |`);
+    L.push('');
+  }
   const mx = ds.filter((d) => d.kind === 'missing' || d.kind === 'extra');
   L.push('## 짝이 없는 요소', '');
   if (!mx.length) L.push('없음', '');

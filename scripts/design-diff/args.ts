@@ -14,6 +14,8 @@ export interface Args {
   headed: boolean;
   analyzeOnly: boolean;
   regen: boolean;
+  /** h1~h6 ↔ b/strong/span처럼 태그만 다르고 글자가 같으면 '태그 다름' 한 줄로 짝짓는다 */
+  looseTags: boolean;
   maxDepth?: number;
   maxStates?: number;
 }
@@ -21,14 +23,14 @@ export interface Args {
 const USAGE = `사용법: npx tsx scripts/design-diff/run.ts --mock <시안 폴더> --app <앱 URL> --out <결과 폴더>
   [--states s1,s2] [--widths 1440,1920] [--entry Desk.dc.html] [--states-file states.json]
   [--exceptions exceptions.json] [--app-ready <css selector>] [--vendor <react UMD 폴더>] [--chrome <실행 파일>] [--channel chrome]
-  [--max-depth 4] [--max-states 120] [--analyze-only] [--regen] [--headed]`;
+  [--max-depth 4] [--max-states 120] [--analyze-only] [--regen] [--headed] [--loose-tags]`;
 
 export function usage(): string {
   return USAGE;
 }
 
 export function parseArgs(argv: string[]): Args {
-  const a: Args = { out: 'out/design-diff', widths: [1440, 1920], headed: false, analyzeOnly: false, regen: false };
+  const a: Args = { out: 'out/design-diff', widths: [1440, 1920], headed: false, analyzeOnly: false, regen: false, looseTags: false };
   const need = (i: number, k: string) => {
     const v = argv[i + 1];
     if (v === undefined || v.startsWith('--')) throw new Error(`${k} 값이 없다\n${USAGE}`);
@@ -88,6 +90,9 @@ export function parseArgs(argv: string[]): Args {
         break;
       case '--regen':
         a.regen = true;
+        break;
+      case '--loose-tags':
+        a.looseTags = true;
         break;
       case '--headed':
         a.headed = true;
