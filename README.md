@@ -252,12 +252,26 @@ Live demo: https://disputeless.onrender.com/demo/seller-dashboard (public mode �
 
 Public mode makes real sandbox reads. Send, Send offer, Add all, Refund, Looks good and Forward are **Simulated** (zero PayPal writes).
 
-- Numbers marked **Assumption** come from stated assumptions; items marked **Demo data** come from seed data. See the [honesty table](docs/submission/honesty-table.md).
+- Numbers marked **Assumption** come from stated assumptions; items marked **Demo data** come from seed data. See the [honesty table](docs/honesty-table.md).
 - Language: **EN | 한국어** at the top right of the seller dashboard and the desk switches screen text only (numbers, buyer messages and AI text stay the same). `/demo/store/new-product` uses the language remembered from the other screens, or add `?lang=ko` (or `?lang=en`) to its address.
 - AI answers for the demo cases are cached. Uncached AI calls on the public link have an hourly cap; when it is reached, the screen says so instead of calling the model.
 - We do not share the PayPal sandbox login, because a shared login could change the demo dispute cases for every other tester. To run DisputeLess against your own sandbox: create a free app at [developer.paypal.com](https://developer.paypal.com) (Sandbox → Apps & Credentials), put its credentials in a local `.env` file as `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`, copy `.env.example` to `.env` for the other names, and run `npm install && npm run build && npm start`.
 
 > **Data integrity note:** All percentages, case costs, and projected reductions above are outputs of assumed demo models, not measured results.
+
+## Repository map
+
+| Path | What it holds |
+| --- | --- |
+| `src/engine/` | Deterministic risk, expected-cost and listing-simulation engines (all numbers come from here) |
+| `src/ai/` | Claude prompts and validation for classification, replies and listing fixes |
+| `src/paypal/`, `src/exec/` | PayPal sandbox client (OAuth, Orders, Disputes, tracking) and the approval-gated executor |
+| `src/app/` | Next.js app: seller dashboard demo, DisputeLess desk, new-listing check |
+| `config/` | Assumed rates, policy rules, screen text (EN/KO), motion timings |
+| `seed/`, `data/` | Demo seed data and the cached AI answers used on the public link |
+| `scripts/` | Sandbox setup, demo order creation and AI-cache build (`npm run sandbox:*`, `npm run ai-cache:build`) |
+| `tests/` | Unit, acceptance and (opt-in) sandbox tests |
+| `docs/` | [Testing guide](docs/testing.md) and [honesty table](docs/honesty-table.md) |
 
 ## License
 
