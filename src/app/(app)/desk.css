@@ -218,7 +218,7 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 .dk .curve-tick{font-size:10px;color:#9AA0A6}
 /* L181–L183: transition은 polyline에만 있고 points는 전환되지 않는다 → 시안에서 점·ping은 바로 옮겨 간다 (차이 목록 ② 17) */
 .dk .curve-ping,.dk .curve-dot-draft{transition:none}
-.dk .curve-side{display:flex;flex-direction:column;justify-content:center;gap:2px;border-left:1px solid #E4E6E9;padding-left:16px}
+.dk .curve-side{display:flex;flex-direction:column;justify-content:center;gap:2px;border-left:1px solid #E4E6E9;padding-left:16px;align-items:stretch}
 .dk .curve-side-label{font-size:13px;font-weight:700;color:#3F4144}
 /* L748 risk.st */
 .dk .curve-headline{font-size:44px;font-weight:900;letter-spacing:-1.2px;line-height:1.05;font-variant-numeric:tabular-nums}
@@ -489,11 +489,13 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 .dk .today-risk-low{background:#ECEEF0;color:#3F4144}
 .dk .it.done .today-risk{display:none}
 /* T125a (round5): 위험 칩이 없는 줄(ENG-08)은 도구가 구매자 글을 이 줄 상자에 붙인다 — 시안 who span(12px #6C7378, 18px)과 같은 글자 */
-.dk .today-item-subrow{font-size:12px;line-height:18px;color:#6C7378}
+.dk .today-item-subrow{font-size:12px;line-height:18px;color:#6C7378;min-height:22px}
 /* PP-R 보조 줄(DATA-01)은 시안에 자리가 없다 — 구매자 줄과 같은 보조 글 크기로 (줄 높이 차이를 줄인다) */
 .dk .today-item-ref{font-size:12px;line-height:18px;color:#6C7378}
 /* 시안 `<b>`는 bold(700). 제목 h2 안 b는 굵기를 그대로 받는다 (bolder → 900 방지) */
 .dk .today-group-title b,.dk .weekly-title b,.dk .desk-card-title b{font-weight:inherit}
+/* v6 L341 "Best" = `.ai` 알약(inline-flex·gap 4px·r1000) + padding 2px 8px */
+.dk .choice-best-tag{display:inline-flex;align-items:center;gap:4px;border-radius:1000px}
 
 /* L180-228 전체 현황 */
 .dk .today-overview{display:flex;flex-direction:column;gap:16px}
