@@ -119,7 +119,7 @@ export const demoDisplay: DemoDisplay = {
     {
       key: 'jiho',
       displayNo: '#1038',
-      paypalRef: null, // T119 분쟁 접수 뒤 컨트롤 타워가 demo-links 지시
+      paypalRef: 'PP-R-ZOK-10200237', // T121b: 새 품질 분쟁 (PayPal 응답 기한 없음 — 기한은 시드 Demo data)
       seedDisputeId: null,
       orderId: null,
       buyerId: 'B02',

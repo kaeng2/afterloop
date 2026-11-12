@@ -4,7 +4,7 @@
     "buyerId": "B02",
     "sku": "FK-CD-OAT",
     "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
-    "subtype": "B1",
+    "subtype": "B3",
     "status": "open",
     "lossCents": null,
     "source": "sandbox",
