@@ -15,6 +15,7 @@ import 'server-only';
 
 import { cache } from 'react';
 
+import { repairDaysFromConfig, repairFacts } from '@/ai/repair';
 import { draftReply, type ReplyDraft } from '@/ai/reply';
 import { recommend } from '@/engine/recommend';
 import type { CaseEvent, FactToken } from '@/types';
@@ -29,7 +30,7 @@ import { loadHistorySummary } from '../history-summary-source';
 import { currentLocale } from '../../_shared/copy';
 import { caseEventsFor, englishLookup } from '../history';
 import { caseMessages, type CaseViewInput } from '../model';
-import { buyerLocaleOf, caseReplyFacts } from '../reply-facts';
+import { buyerLocaleOf, caseReplyFacts, type CaseReplyFacts } from '../reply-facts';
 
 export type CaseLoad =
   | { kind: 'not_found' }
@@ -51,6 +52,23 @@ export type CaseLoad =
        */
       historySummary: string | null;
     };
+
+/**
+ * 수의 사실값 (T122f, SPEC v2.16). 무료 수선(repair)이면 날짜·이름 토큰 뒤에 수선 기간 `⟦DAYS_1⟧`
+ * (`repairFacts`의 토큰·종류 — 값은 `config/rules.json` `reply.repairDays`)를 붙인다. 다른 수는 그대로다.
+ * 설정에 기간이 없으면 붙이지 않는다 (프롬프트가 기간 문장을 뺀다 — 지어내지 않는다).
+ *
+ * 값은 날짜 토큰처럼 **원래 값**(영업일 수 `"5"`)이다. 화면·전송의 `fillFactTokens`가 `formatFact`로 언어별 표기
+ * ("5 business days"·"5영업일")를 만든다 — `repairFacts`의 현지 표기 값을 그대로 넣으면 `formatFact`가 예외를 던져
+ * 미리보기가 채워지지 않는다. 검사(`checkTokens`)는 원래 값에서 언어별 표기를 모두 만들어 직접 쓴 값을 찾는다.
+ * 1부 초안(`loadCaseDraft`)과 2부 답장 칸(`reply/load.ts`)이 **같은 이 함수**를 부른다 (초안 검사와 전송본 검사가 같은 토큰을 보게).
+ */
+export function withMoveFacts(both: CaseReplyFacts, move: string | null): CaseReplyFacts {
+  if (move !== 'repair') return both;
+  const days = repairDaysFromConfig();
+  const days1 = days === null ? [] : repairFacts('en').map((fact) => ({ ...fact, value: String(days) }));
+  return { draft: [...both.draft, ...days1], outgoing: [...both.outgoing, ...days1] };
+}
 
 /** 화면에 내도 되는 분쟁 번호인가 (연결 표의 `showOnScreen`). 표에 없으면 거짓. */
 export function isOnScreen(disputeId: string): boolean {
@@ -74,19 +92,20 @@ export const loadCaseDraft = cache(async (disputeId: string): Promise<ReplyDraft
 
   const board = pickBoard(loaded);
   const best = recommend(board).best;
-  // 무료 수선 수는 AI 초안 경로에 아직 없다 (T120b 전) → 초안 없음
-  if (board.cause === undefined || best === null || best.move === 'repair') return unavailable;
+  // T122f: 무료 수선(repair)도 AI 초안 경로를 탄다 (T120b 끝). 기간은 `⟦DAYS_1⟧` 사실값으로만 (`withMoveFacts`)
+  if (board.cause === undefined || best === null) return unavailable;
 
   // 사실값 = 날짜 + 이름 토큰 (초안은 영어 꼴). 이름 값은 AI에 가지 않는다 — 토큰 이름·뜻만 간다 (T056)
   const buyerLocale = buyerLocaleOf(loaded.buyer) ?? 'en';
   let facts: FactToken[];
   try {
-    facts = caseReplyFacts({
+    const both = caseReplyFacts({
       now: new Date().toISOString(),
       dueDate: board.dueDate,
       buyerId: loaded.buyer?.id ?? null,
       buyerLocale,
-    }).draft;
+    });
+    facts = withMoveFacts(both, best.move).draft;
   } catch {
     return unavailable; // 날짜를 만들 수 없거나 이름 설정이 깨졌다 → 초안 없음 (지어내지 않는다)
   }

@@ -35,7 +35,7 @@ import { buildCaseView } from '../model';
 import { liveSendAllowedFor } from '../practice';
 import { caseReplyFacts } from '../reply-facts';
 import { buildReplyView, type ReplyViewInput } from '../reply-model';
-import { loadCase } from '../view/load';
+import { loadCase, withMoveFacts } from '../view/load';
 
 /** 브라우저로 넘기는 값 (직렬화할 수 있는 것만). 전송 상태는 답장 칸이 들고 있다. */
 export type ReplyLoad = {
@@ -83,12 +83,16 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
   let draftFacts: FactToken[] = [];
   let facts: FactToken[] = [];
   try {
-    const both = caseReplyFacts({
-      now: new Date().toISOString(),
-      dueDate: board.dueDate,
-      buyerId: loaded.loaded.buyer?.id ?? null,
-      buyerLocale: buyerLocale ?? 'en',
-    });
+    // T122f: 무료 수선이면 수선 기간 `⟦DAYS_1⟧`도 (1부 초안과 같은 `withMoveFacts`)
+    const both = withMoveFacts(
+      caseReplyFacts({
+        now: new Date().toISOString(),
+        dueDate: board.dueDate,
+        buyerId: loaded.loaded.buyer?.id ?? null,
+        buyerLocale: buyerLocale ?? 'en',
+      }),
+      best?.move ?? null,
+    );
     draftFacts = both.draft;
     facts = both.outgoing;
   } catch {
@@ -96,8 +100,8 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
     facts = [];
   }
   const draftSource = resolveDraftSource();
-  // 'repair'는 AI 초안 경로에 넘기지 않는다 (T120b 전) → 초안 없음
-  const move = best?.move === 'repair' ? null : (best?.move ?? null);
+  // T122f: 'repair'도 AI 초안·번역 경로를 탄다 (T120b 끝). 쓰기 관문·약속 검사·Simulated는 다른 수와 같다
+  const move = best?.move ?? null;
 
   let draft: ReplyDraft = UNAVAILABLE;
   let translation: ReplyTranslation | null = null;
