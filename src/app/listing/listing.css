@@ -73,7 +73,7 @@
 /* L67 */ .ls-store-name b{font-family:Georgia,serif;font-size:17px;letter-spacing:-0.2px}
 /* L67 */ .ls-store-name span{font-size:11px;color:#6C7378}
 /* L68 */ .ls-search{flex:1;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;background:#F3F4F6;color:#6C7378;font-size:14px}
-/* L68 */ .ls-search input{border:0;background:transparent;font:inherit;outline:0;flex:1;min-width:0}
+/* L68 */ .ls-search input{padding:1px 2px /* 시안 input 브라우저 기본 padding (globals *{padding:0}이 지운 것 — T111, 머리 +2px) */;border:0;background:transparent;font:inherit;outline:0;flex:1;min-width:0}
 /* L69 */ .ls-avatar{width:34px;height:34px;border-radius:50%;background:#E3E7EC;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#3F4144}
 /* L71 */ .ls-body{display:flex;align-items:flex-start}
 /* L72 */ .ls-side{position:sticky;top:59px;width:220px;flex-shrink:0;min-height:calc(100vh - 59px);padding:16px 12px;background:#FAFAFB;border-right:1px solid #E4E6E9;display:flex;flex-direction:column;gap:2px}
@@ -81,6 +81,8 @@
 .ls button.snav{border:0;background:transparent;font:inherit;font-size:14px;font-weight:700;width:100%;text-align:left;cursor:default}
 .ls button.snav:hover{background:#EEF0F3}
 .ls button.snav.on{background:#FFFFFF;color:#000000}
+/* T111: 시안 L74 마지막 메뉴는 20px 아이콘 칸 + gap 10px 뒤에 글이 시작한다. 앱은 PayPal 로고 없음(예외 E7)이라 글 시작 x만 같게 비워 둔다 (왼쪽 padding 10 + 20 + 10) */
+.ls-side > .snav:last-child{padding-left:40px}
 /* L74 */ .ls-side-h{margin:18px 10px 6px;font-size:11px;font-weight:700;color:#6C7378;letter-spacing:.4px;text-transform:uppercase}
 /* L75·L117 */ .ls-apib-ic{width:20px;height:20px;border-radius:6px;background:#0B0F14;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 /* L75 시안 선색 #00A8EA는 PayPal 로고 안 색 — 예외 E7 (DECISIONS 11/11 22:55 "PayPal 로고 없음", T098 규칙 2): 앱 마크 선은 시안 그라디언트 끝색 #60CDFF */ .ls-mark-line{fill:none;stroke:#60CDFF}
