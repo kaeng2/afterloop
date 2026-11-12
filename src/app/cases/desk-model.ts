@@ -30,6 +30,7 @@ import { toDollarsRounded } from '../_shared/money';
 import { riskTone, type RiskTone } from '../_shared/motion';
 import { toPercentRounded } from '../_shared/percent';
 import { shortDate } from '../_shared/short-date';
+import type { DemoHistoryRow, DisplayLabel } from '../_shared/demo-display';
 import type { CaseView, MoneyView } from './model';
 
 // ───────────────────────────── 상품 아이콘 · 범주 알약 ─────────────────────────────
@@ -176,6 +177,8 @@ export type HistoryRowView = {
   demo: boolean;
   /** 표시 문구 키 (`case.history.flag.*`). */
   flagKeys: string[];
+  /** T122e: 이미 언어를 고른 표시 글 (시드 `seoyeonHistory[].flag`, 판매자 실수 줄만). "Before DisputeLess · <글>" 칩. */
+  flags?: string[];
 };
 
 export type HistoryView = {
@@ -214,6 +217,34 @@ export function historyView(events: readonly CaseEvent[], spanDays: number | nul
     rows,
     summary: summary === null || summary.trim() === '' ? null : summary.trim(),
     usesDemo: rows.some((row) => row.demo),
+  };
+}
+
+/** 시드 기록 줄의 색 → 사건 종류 (화면 표시용 짝일 뿐 — 곡선·엔진 입력에 쓰지 않는다). */
+const KIND_OF_TONE: Record<HistoryTone, CaseEventKind> = { buyer: 'buyer_message', bad: 'seller_reply', sys: 'carrier_event' };
+
+/**
+ * T122e (결정 20:35 ③): 서연 사건 기록 = 시드 8줄(`seoyeonHistoryRows`) + 실제 PayPal 줄. 색은 시드 `actor` 그대로
+ * (시안 whoCol). "Before DisputeLess" 칩은 `bad` 줄의 표시 글만. 시드 줄 = Demo data, 실제 줄은 배지 없음.
+ * 위험 곡선은 실제 사건(`CaseEvent[]`)으로 그대로 그린다 — 줄 수가 다르면 곡선은 자기 색 규칙을 쓴다(`curveView`).
+ */
+export function demoHistoryView(rows: readonly DemoHistoryRow[], spanDays: number | null, summary: string | null): HistoryView | null {
+  if (rows.length === 0) return null;
+  const view = rows.map((row) => ({
+    date: shortDate(row.at),
+    text: row.text,
+    kind: row.paypal && row.tone === 'sys' ? ('dispute_opened' as const) : KIND_OF_TONE[row.tone],
+    tone: row.tone,
+    demo: row.demo,
+    flagKeys: [],
+    ...(row.flag === null ? {} : { flags: [row.flag] }),
+  }));
+  return {
+    count: view.length,
+    spanDays,
+    rows: view,
+    summary: summary === null || summary.trim() === '' ? null : summary.trim(),
+    usesDemo: view.some((row) => row.demo),
   };
 }
 
@@ -407,6 +438,10 @@ export type CaseDesk = {
   history: HistoryView | null;
   /** 위험 곡선 점 (어댑터). 없으면 `null`. */
   curvePoints: RiskPoint[] | null;
+  /** T122e: 제목이 표시용 번호(#1042)일 때 실제 PayPal 분쟁 번호 (머리글 둘째 줄). 없으면 `null`·없음. */
+  ref?: string | null;
+  /** T122e: 제목 번호·상품 표기가 표시용 시드면 참 → Demo data. */
+  demoTitle?: boolean;
 };
 
 export type CaseDeskInput = {
@@ -424,6 +459,8 @@ export type CaseDeskInput = {
   curvePoints: RiskPoint[] | null;
   /** 위험 단계 (머리글 범주 알약 색). */
   band: 'High' | 'Watch' | 'Low' | null;
+  /** T122e: 표시용 시드 짝 (`displayLabelFor`, 서버가 찾는다). 있으면 제목 = "#1042 · Wool Sweater", `ref` = 실제 번호. */
+  display?: Pick<DisplayLabel, 'displayNo' | 'product' | 'paypalRef'> | null;
 };
 
 /**
@@ -437,12 +474,18 @@ export function buildCaseDesk(input: CaseDeskInput): CaseDesk {
     view.compare.after === null || before.expectedLoss === null
       ? null
       : t('case.choice.paypalOnly', { action: t(before.actionKey), amount: before.expectedLoss.display });
+  const display = input.display ?? null;
   return {
     icon: productIconOf(input.productName),
-    title: t('case.head.title', {
-      disputeId: view.header.disputeId,
-      product: view.header.productName ?? t('case.view.productUnknown'),
-    }),
+    title:
+      display === null
+        ? t('case.head.title', {
+            disputeId: view.header.disputeId,
+            product: view.header.productName ?? t('case.view.productUnknown'),
+          })
+        : t('case.head.title', { disputeId: display.displayNo, product: display.product }),
+    ref: display?.paypalRef ?? null,
+    demoTitle: display !== null,
     category: categoryLabel(input.board.reason, input.board.cause?.subtype),
     categoryTone: input.band === 'High' ? 'high' : 'neutral',
     meta: headMetaParts({

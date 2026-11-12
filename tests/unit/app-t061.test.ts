@@ -624,12 +624,13 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     now: new Date('2026-11-10T17:00:00.000Z'),
   });
 
-  it('5줄 (T076 → T122b 시안 v6): Reply needed 3 (서연 · 지호 · Mike) + Prevent 2 (추적 · 가디건). Questions는 질문 항목이 없어 안 보인다', () => {
+  // T122e: Prevent에 시드 표시용 "3 orders · Customs ID missing"(Demo data)이 추적 다음에 온다
+  it('6줄 (T076 → T122b → T122e 시안 v6): Reply needed 3 (서연 · 지호 · Mike) + Prevent 3 (추적 · 통관번호 · 가디건). Questions는 질문 항목이 없어 안 보인다', () => {
     expect(view.groups.map((g) => [g.key, g.items.length])).toEqual([
       ['needsYou', 3],
-      ['prevent', 2],
+      ['prevent', 3],
     ]);
-    expect(view.count).toBe(5);
+    expect(view.count).toBe(6);
   });
 
   it('연습용(HEY)·옛 서연(GAH) 분쟁은 화면에 내지 않는다 (연결 표)', () => {
@@ -643,7 +644,8 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     expect(mike.status).toEqual({ key: 'today.skipped', tone: 'neutral' });
     expect(mike.dot).toBe('neutral');
     const markup = html(createElement(TodayList, { view, selectedId: null, paypalNotice: null }));
-    const row = markup.slice(markup.indexOf('Mike Morgan'));
+    // T122e: 목록 아래 줄은 시드 표기 "buyer_m · US" — 줄은 항목 id로 찾는다
+    const row = markup.slice(markup.indexOf('data-item="PP-R-FYT-10197651"'));
     // T076: 알약은 범주, 상태 "Skipped"는 화면 읽기 글자로
     expect(row.slice(0, row.indexOf('</li>'))).toMatch(/<span class="today-sr-only">[^<]*· Skipped<\/span>/);
     expect(row.slice(0, row.indexOf('</li>'))).not.toContain('risk-low');

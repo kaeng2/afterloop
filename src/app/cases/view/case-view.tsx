@@ -64,9 +64,12 @@ export function CaseHeader({ view, desk: deskInput }: { view: CaseViewData; desk
             </h2>
             {/* T122a 시안 v6 L249: 제목 옆 분류 칩은 늘 회색 `c-n` (v4의 high = 빨강 규칙 삭제) */}
             {desk.category === null ? null : <span className="desk-chip">{desk.category}</span>}
+            {/* T122e: 제목 번호·상품 표기가 표시용 시드(#1042)면 Demo data */}
+            {desk.demoTitle === true ? <Badge kind="demo" /> : null}
           </div>
           <p className="case-meta num">
             {desk.meta.join(' · ')}
+            {desk.ref === undefined || desk.ref === null ? null : <span className="case-ref"> · {desk.ref}</span>}
             {status === null ? null : <span className="case-status"> · {status}</span>}
           </p>
         </div>

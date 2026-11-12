@@ -35,6 +35,7 @@ import { ALL_PRODUCTS_PARAM, casesOf, filterGroups, firstItemFor } from '@/app/t
 import { BackToAll, DetailEmpty, DetailPane, TodaySelectionProvider } from '@/app/today/selection';
 import { ProductFilterBar, TodayList } from '@/app/today/today-list';
 import { TrackingDetail } from '@/app/today/tracking-detail';
+import { WorkDetail } from '@/app/today/work-card';
 
 import '@/app/today/today.css';
 // T107: 시안 Desk.dc.html <style> 통째 복사 (`.dk` 루트 아래로만)
@@ -58,7 +59,15 @@ function Pane({ item, view, selected }: { item: TodayItem; view: TodayView; sele
       />
     );
   }
-  if (item.kind === 'prevent') return item.prevent === undefined ? null : <PreventCard detail={item.prevent} row={item.row} />;
+  if (item.kind === 'prevent') {
+    if (item.prevent !== undefined) return <PreventCard detail={item.prevent} row={item.row} />;
+    // T122e: 표시용 예방 줄(통관번호, Demo data)은 머리만 — 실제 대상·버튼이 없다 (보내는 것 0)
+    return (
+      <WorkDetail row={item.row}>
+        <p className="small muted">{t('today.prevent.noAction')}</p>
+      </WorkDetail>
+    );
+  }
   const detail = <CaseDetail key={item.id} disputeId={item.id} row={item.row} />;
   return selected ? (
     detail

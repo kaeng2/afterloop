@@ -32,6 +32,7 @@ import type {
 
 import type { RiskBand } from '../_shared/badge-keys';
 import { copyTables, t } from '../_shared/copy';
+import { displayLabelFor, preventRowLabel } from '../_shared/demo-display';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
 import { toDollarsRounded } from '../_shared/money';
 import { shortDate } from '../_shared/short-date';
@@ -151,6 +152,13 @@ export type TodayRowView = {
   who: string | null;
   /** 이 항목이 걸린 상품 SKU (상품 거르개). */
   skus: string[];
+  /**
+   * T122e: 머리가 표시용 번호(#1042 …)일 때 실제 PayPal 분쟁 번호 (`PP-R-…`, 보조 줄). 없으면 `null`·없음.
+   * 연결 짝은 시드 `orderLabels[].paypalRef` = `config/demo-links.json`의 `paypalDisputeId`.
+   */
+  ref?: string | null;
+  /** T122e: 머리·상품·손님·건수 글이 표시용 시드(`seed/demo-display`)에서 왔으면 참 → Demo data 배지. */
+  demo?: boolean;
 };
 
 export type TodayGroup = { key: TodayGroupKey; title: string; hint: string; items: TodayItem[] };
@@ -330,7 +338,7 @@ function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: Param
       ? null
       : t('today.row.who', { name: latinName(loaded.buyer.name), country: loaded.buyer.country });
 
-  return {
+  const item: TodayItem = {
     id: loaded.disputeId,
     kind: 'dispute',
     group: routine ? 'routine' : 'needsYou',
@@ -355,6 +363,30 @@ function disputeItem(loaded: LoadedDispute, rules?: PolicyConfig, params?: Param
       skus: loaded.product === null ? [] : [loaded.product.sku],
     },
   };
+  return withDisplayLabel(item, loaded.disputeId);
+}
+
+/**
+ * T122e (결정 20:35 ③): 표시용 시드에 짝이 있는 분쟁이면 머리 = 표시 번호(#1042), 상품·손님 = 시안 표기(Demo data),
+ * 실제 분쟁 번호는 `ref`(보조 줄). 상품 거르개도 표시 상품(`displaySku`)을 따른다 — 상품 글과 칩이 어긋나지 않게.
+ * 위험·판정·기한·범주는 그대로(엔진·실제 값). 짝이 없으면 그대로 돌려준다.
+ */
+function withDisplayLabel(item: TodayItem, disputeId: string): TodayItem {
+  const label = displayLabelFor(disputeId);
+  if (label === null) return item;
+  return {
+    ...item,
+    row: {
+      ...item.row,
+      icon: productIconOf(label.productEn),
+      head: label.displayNo,
+      product: label.product,
+      who: label.who,
+      skus: [label.displaySku],
+      ref: label.paypalRef,
+      demo: true,
+    },
+  };
 }
 
 /** 추적 미등록 주문의 상품 SKU (상품 이름이 같은 시드 상품). */
@@ -371,7 +403,7 @@ function trackingItem(tracking: TrackingSummary, products: readonly SeedProduct[
   if (count === 0) return null;
   const skus = skusOfOrders(tracking.untracked, products);
   const onlyProduct = skus.length === 1 ? products.find((product) => product.sku === skus[0]) : undefined;
-  return {
+  const item: TodayItem = {
     id: TRACKING_ITEM_ID,
     kind: 'tracking',
     group: 'prevent',
@@ -395,6 +427,56 @@ function trackingItem(tracking: TrackingSummary, products: readonly SeedProduct[
       skus,
     },
   };
+  return withPreventLabel(item, 'tracking', count);
+}
+
+/**
+ * T122e (결정 20:35 ③): 예방 줄의 머리·아래 줄 = 표시용 시드 ("5 orders" · "Shipped 3+ days ago · 4 countries"), Demo data.
+ * **실제 등록 대상 수(`realCount`, 서버 조회)는 바꾸지 않는다** — 항목 이름(`name`, 화면 읽기)·상세 카드 제목·버튼은 실제 수.
+ * 표시 건수와 실제 수가 다르면 아래 줄에 그 사실을 붙인다 (카드 머리에도 같은 줄이 보인다).
+ */
+function withPreventLabel(item: TodayItem, key: 'tracking' | 'customs-id', realCount: number | null): TodayItem {
+  const label = preventRowLabel(key);
+  if (label === null) return item;
+  const head = label.count === 1 ? t('today.row.ordersOne', { count: label.count }) : t('today.row.orders', { count: label.count });
+  const honest =
+    realCount === null || realCount === label.count
+      ? label.who
+      : t(realCount === 1 ? 'today.prevent.demoCountOne' : 'today.prevent.demoCount', { who: label.who, real: realCount });
+  return { ...item, row: { ...item.row, head, product: t('today.row.severalProducts'), who: honest, demo: true } };
+}
+
+/** "Customs ID missing" 예방 줄 (T122e, 시드 `preventRows` customs-id). 실제 PayPal 대상·버튼이 없다 — 머리만 있는 상세. */
+export const CUSTOMS_ID_ITEM_ID = 'customs-id';
+
+function customsIdItem(): TodayItem | null {
+  const label = preventRowLabel('customs-id');
+  if (label === null) return null;
+  const base: TodayItem = {
+    id: CUSTOMS_ID_ITEM_ID,
+    kind: 'prevent',
+    group: 'prevent',
+    href: `/?item=${CUSTOMS_ID_ITEM_ID}`,
+    name: label.line,
+    label: null,
+    sub: null,
+    band: null,
+    dot: 'neutral',
+    status: STATUS_PREVENT,
+    score: null,
+    dueDate: '',
+    row: {
+      icon: 'multi',
+      head: '',
+      product: null,
+      category: t('today.row.customsIdMissing'),
+      categoryTone: 'neutral',
+      due: null,
+      who: null,
+      skus: [],
+    },
+  };
+  return withPreventLabel(base, 'customs-id', null);
 }
 
 export const TRACKING_ITEM_ID = 'tracking';
@@ -550,8 +632,11 @@ export function buildToday(input: TodayInput): TodayView {
   const tracking = input.tracking === null ? null : trackingItem(input.tracking, input.products);
   const pick = pickPreventProduct(store);
   const pickedProduct = pick === null ? undefined : input.products.find((product) => product.sku === pick.sku);
+  // T122e: 시안 v6 예방 줄 순서 = 추적 → 통관번호(Demo data) → 엔진이 고른 상품
+  const customsId = customsIdItem();
   const prevent = [
     ...(tracking === null ? [] : [tracking]),
+    ...(customsId === null ? [] : [customsId]),
     ...(pick === null || pickedProduct === undefined
       ? []
       : [preventItem(pick, pickedProduct, preventFixes(pickedProduct, input.params, input.rules), selectedSkuOf(input))]),

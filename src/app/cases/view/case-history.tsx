@@ -63,6 +63,12 @@ export function CaseHistoryCard({ history }: { history: HistoryView }) {
                   {t('case.history.beforeTag', { flag: t(key) })}
                 </span>
               ))}
+              {/* T122e: 시드 기록의 판매자 실수 줄 표시 글 (이미 언어를 고른 값) */}
+              {(row.flags ?? []).map((flag) => (
+                <span key={flag} className="desk-chip desk-chip-bad">
+                  {t('case.history.beforeTag', { flag })}
+                </span>
+              ))}
               {row.demo ? <Badge kind="demo" /> : null}
             </span>
           </li>

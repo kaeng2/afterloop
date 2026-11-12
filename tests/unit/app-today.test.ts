@@ -219,8 +219,9 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     const [needsYou, prevent] = view.groups;
     expect(needsYou.items.map((item) => item.id)).toEqual([D2, D1, D3]);
     expect(needsYou.items.map((item) => item.name)).toEqual(['Seo-yeon', 'Ji-ho', 'Mike Morgan']);
-    expect(prevent.items.map((item) => item.id)).toEqual([TRACKING_ITEM_ID, 'FK-CD-OAT']);
-    expect(prevent.items.map((item) => item.name)).toEqual(['2 orders without tracking', 'Knit Cardigan, Oat']);
+    // T122e: 추적 다음에 시드 표시용 통관번호 줄 (Demo data). 추적 항목 이름(화면 읽기)은 실제 수 2건 그대로
+    expect(prevent.items.map((item) => item.id)).toEqual([TRACKING_ITEM_ID, 'customs-id', 'FK-CD-OAT']);
+    expect(prevent.items.map((item) => item.name)).toEqual(['2 orders without tracking', '3 orders · Customs ID missing', 'Knit Cardigan, Oat']);
     expect(t('today.group.routine')).toBe('Questions');
   });
 
@@ -264,10 +265,10 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
   it('Today (N)의 N = 목록에 보이는 항목 수', () => {
     const view = today();
     expect(view.count).toBe(items(view).length);
-    expect(view.count).toBe(5);
+    expect(view.count).toBe(6);
     const html = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
     expect(html.match(/class="today-item it( on)?"/g)?.length).toBe(view.count);
-    expect(t('shell.todayTab', { count: view.count })).toBe('Today (5)');
+    expect(t('shell.todayTab', { count: view.count })).toBe('Today (6)');
   });
 
   it('Lena 환불 · Yuki 사이즈 문의 · 통관부호 문의 항목이 없다', () => {
@@ -280,7 +281,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     const view = today(null);
     expect(items(view).some((item) => item.kind === 'tracking')).toBe(false);
     expect(view.groups[0].items.map((item) => item.id)).toEqual([D2, D1, D3]);
-    expect(view.count).toBe(4);
+    expect(view.count).toBe(5);
   });
 
   it('미등록 주문이 0건이면 추적 항목이 없다', () => {
@@ -291,7 +292,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
   it('PayPal을 읽지 못하면(분쟁 0건) Prevent만 남는다', () => {
     const view = buildToday({ disputes: [], tracking: null, products: seedProducts, now: NOW });
     expect(view.groups.map((group) => group.key)).toEqual(['prevent']);
-    expect(view.count).toBe(1);
+    expect(view.count).toBe(2); // 통관번호(Demo data) + 엔진이 고른 상품
   });
 
   it('고른 항목: 주소의 item이 있으면 그것, 없거나 모르면 첫 항목(서연). Prevent는 고르지 않는다', () => {
@@ -357,7 +358,7 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
     expect(pick?.sku).toBe(top.sku);
     expect(pick?.cutPercent).toBe(Math.round(top.ratio * 100));
 
-    const prevent = today().groups[1].items.find((item) => item.kind === 'prevent');
+    const prevent = today().groups[1].items.find((item) => item.kind === 'prevent' && item.prevent !== undefined);
     expect(prevent?.sub).toBe(t('today.prevent.sub', { stock: product('FK-CD-OAT').stock, percent: pick?.cutPercent as number }));
     expect(prevent?.sub).toBe('120 left · fixes cut likely loss by about 80%');
     expect(prevent?.row.who).toBe(prevent?.sub);
@@ -365,7 +366,7 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
 
   it('Prevent 항목은 엔진 `pickPreventProduct` 값 그대로다 (화면에 고르기 함수가 없다, T067)', () => {
     const pick = pickPreventProduct(store);
-    const prevent = today().groups[1].items.find((item) => item.kind === 'prevent') as TodayItem;
+    const prevent = today().groups[1].items.find((item) => item.kind === 'prevent' && item.prevent !== undefined) as TodayItem;
     expect(prevent.id).toBe(pick?.sku);
     const code = readFileSync(path.join(ROOT, 'src/app/today/model.ts'), 'utf8');
     expect(code).toMatch(/pickPreventProduct\(store\)/);

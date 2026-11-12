@@ -23,7 +23,7 @@ import { seedProducts } from '../../seed/index';
 
 const ROOT =path.resolve(__dirname, '../..');
 const view = buildToday({ disputes: [], tracking: null, products: seedProducts, now: new Date('2026-11-10T09:00:00Z') });
-const prevent = view.groups.flatMap((group) => group.items).find((item) => item.kind === 'prevent');
+const prevent = view.groups.flatMap((group) => group.items).find((item) => item.kind === 'prevent' && item.prevent !== undefined);
 
 describe('T099 미리보기 제목 = 구매자 이름', () => {
   it('서연·지호 각각 이름으로, 대명사가 없다 (en·ko)', () => {
