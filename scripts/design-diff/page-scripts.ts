@@ -44,7 +44,28 @@ function __ddRole(el){
 // 시안 런타임(support.js)은 {{…}} 값마다 스타일 없는 <span class="sc-interp">를 만든다. 그 글자는 부모의 자기 글자로 친다.
 function __ddInterp(el){return !!(el&&el.nodeType===1&&el.tagName==='SPAN'&&/(^|\s)sc-interp(\s|$)/.test((el.getAttribute&&el.getAttribute('class'))||''));}
 function __ddText(el){var s='';for(var i=0;i<el.childNodes.length;i++){var c=el.childNodes[i];if(c.nodeType===3)s+=c.nodeValue;else if(c.nodeType===1)s+=__ddText(c);}return s;}
-function __ddOwn(el){var s='';for(var i=0;i<el.childNodes.length;i++){var c=el.childNodes[i];if(c.nodeType===3)s+=c.nodeValue;else if(__ddInterp(c))s+=__ddText(c);}return __ddCollapse(s);}
+// 투명 감싸개: 자기 상자 스타일이 없는(배경 투명·테두리 0·안쪽/바깥 여백 0·display inline) span이 부모의 유일한 요소 자식이고
+// 부모의 보이는 글자를 전부 가진 경우. 그 글자는 부모의 자기 글자로 치고 감싸개는 따로 잡지 않는다
+// (앱 T124a: <span class=pill><span>글자</span></span> ↔ 시안 <span class=pill><span class=sc-interp>글자</span></span>).
+// 시안 sc-interp는 이 규칙의 한 경우로, 스타일·글자 조건 없이 언제나 감싸개다 (글자와 섞여도 문서 순서로 합친다).
+function __ddZero(v){v=String(v==null?'':v).trim();return v===''||/^0(px)?( 0(px)?)*$/.test(v);}
+function __ddBare(el){
+  if(!el||el.nodeType!==1||el.tagName!=='SPAN') return false;
+  var p=el.parentElement; if(!p||p.children.length!==1) return false;
+  var t=__ddCollapse(__ddText(el)); if(!t||t!==__ddCollapse(__ddText(p))) return false;
+  var cs=getComputedStyle(el), g=function(k){return cs.getPropertyValue?cs.getPropertyValue(k):'';};
+  var bg=String(g('background-color')||'').replace(/\s+/g,'');
+  if(bg&&bg!=='transparent'&&bg!=='rgba(0,0,0,0)') return false;
+  var bi=String(g('background-image')||''); if(bi&&bi!=='none') return false;
+  var sides=['top','right','bottom','left'];
+  for(var i=0;i<4;i++){if(!__ddZero(g('border-'+sides[i]+'-width'))) return false;}
+  if(!__ddZero(g('padding'))||!__ddZero(g('margin'))) return false;
+  if(String(g('display')||'')!=='inline') return false;
+  if(__ddSrSelf(el)) return false;
+  return true;
+}
+function __ddWrap(el){return __ddInterp(el)||__ddBare(el);}
+function __ddOwn(el){var s='';for(var i=0;i<el.childNodes.length;i++){var c=el.childNodes[i];if(c.nodeType===3)s+=c.nodeValue;else if(__ddWrap(c))s+=__ddText(c);}return __ddCollapse(s);}
 // 화면 읽기 전용(sr-only) 글자: clip-path inset(50%↑) · clip 넓이 0 · 1px 이하 + overflow hidden/clip
 function __ddSrSelf(el){
   var cs=getComputedStyle(el), cp=String(cs.clipPath||cs.getPropertyValue&&cs.getPropertyValue('clip-path')||'');
@@ -130,7 +151,7 @@ ${COMMON}
   var all=document.querySelectorAll('body *');
   for(var i=0;i<all.length;i++){var el=all[i];var tag=el.tagName.toLowerCase();
     if(tag==='script'||tag==='style'||tag==='noscript'||tag==='template') continue;
-    if(__ddInterp(el)) continue; // 글자는 부모 쪽 __ddOwn에 들어갔다
+    if(__ddWrap(el)) continue; // 투명 감싸개(sc-interp 포함): 글자는 부모 쪽 __ddOwn에 들어갔다
     var role=__ddRole(el), own=__ddOwn(el);
     if(!role && !own) continue;
     if(!__ddVisible(el)) continue;

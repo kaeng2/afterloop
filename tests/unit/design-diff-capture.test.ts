@@ -70,6 +70,39 @@ describe('CAPTURE: 시안 sc-interp span (A)', () => {
   });
 });
 
+describe('CAPTURE: 투명 감싸개 span (후속 4)', () => {
+  const PILL = { display: 'inline-flex', 'background-color': 'rgba(5, 55, 130, 0.08)', padding: '2px 8px' };
+  const BARE = { display: 'inline', 'background-color': 'rgba(0, 0, 0, 0)', padding: '0px', margin: '0px', 'border-top-width': '0px' };
+  const bare = (s: string, css: Css = BARE) => E('span', {}, [T(s)], css);
+  const pill = (kid: FNode) => E('span', { class: 'pill' }, [kid], PILL);
+
+  it('앱 겉 알약>안쪽 맨 span ↔ 시안 겉 알약>sc-interp: 같은 key, 겉 스타일끼리 비교', () => {
+    const mock = capture([pill(interp('for PayPal sellers'))]);
+    const app = capture([pill(bare('for PayPal sellers'))]);
+    expect(mock.map((e) => e.key)).toEqual(['span|for PayPal sellers']);
+    expect(app.map((e) => e.key)).toEqual(['span|for PayPal sellers']);
+    expect(app[0].styles['background-color']).toBe('rgba(5, 55, 130, 0.08)');
+    expect(compareStyles('s', 1440, mock, app)).toEqual([]);
+  });
+  it('숫자 배지·칩도 (여러 겹 맨 span도 합친다)', () => {
+    expect(keys([pill(bare('2'))])).toEqual(['span|2']);
+    expect(keys([E('div', { class: 'chip' }, [E('span', {}, [bare('Not received · Customs hold')], BARE)], PILL)])).toEqual(['div|Not received · Customs hold']);
+  });
+  it('안쪽 span에 자기 스타일이 있으면 감싸개가 아니다', () => {
+    expect(keys([pill(bare('x', { ...BARE, 'background-color': 'red' }))])).toEqual(['span|x']);
+    expect(keys([pill(bare('x', { ...BARE, padding: '0px 4px' }))])).toEqual(['span|x']);
+    expect(keys([pill(bare('x', { ...BARE, display: 'inline-block' }))])).toEqual(['span|x']);
+    expect(keys([pill(bare('x', { ...BARE, 'border-top-width': '1px' }))])).toEqual(['span|x']);
+  });
+  it('형제 요소가 있거나 부모 글자를 다 갖지 않으면 감싸개가 아니다', () => {
+    expect(keys([E('div', {}, [bare('a'), bare('b')])])).toEqual(['span|a', 'span|b']);
+    expect(keys([E('div', {}, [T('Total: '), bare('$5')])])).toEqual(['div|Total:', 'span|$5']);
+  });
+  it('FIND_TARGET: 버튼>맨 span 글자를 버튼 이름표로 본다', () => {
+    expect(find([E('button', {}, [bare('Send reply')])], { role: 'button', text: 'Send reply' }).ok).toBe(true);
+  });
+});
+
 describe('CAPTURE: 화면 읽기 전용 글자 (B)', () => {
   it('clip-path inset(50%) 요소는 세지 않는다', () => {
     expect(keys([E('div', {}, [T('Shown'), E('span', { class: 'sr-only' }, [T('Hidden label')], SR, { width: 1, height: 1 })])])).toEqual(['div|Shown']);

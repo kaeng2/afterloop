@@ -82,3 +82,10 @@
 - 수정 파일: `scripts/design-diff/{page-scripts,compare,types,args,run,report}.ts`, `scripts/design-diff/README.md`, `tests/unit/design-diff-capture.test.ts`(신규 15건: 가짜 DOM으로 CAPTURE·FIND_TARGET 실행, loose 짝짓기, parseArgs).
 - 확인: `npx vitest run tests/unit/design-diff` 44/44 통과. `npx tsc --noEmit`은 `.next/types/validator.ts`(오래된 생성물, 이 작업과 무관) 3줄 외 오류 0. eslint(scripts/design-diff, 새 시험) 오류 0. 개발 서버·실제 브라우저·`.env`는 쓰지 않았다(지시).
 - 남은 것: 실물 재실행(v6 round2)으로 가짜 차이가 줄었는지는 컨트롤 타워/브라우저 쪽에서 확인해 달라. `--loose-tags`를 기본으로 켤지는 그 결과를 보고 사람이 정한다.
+
+## 후속 4 (투명 감싸개 span, 양쪽 공통)
+- 문제: 후속 3의 sc-interp 합치기는 시안 쪽만이었다. 앱(T124a)은 글자를 겉 알약 요소 안의 클래스 없는 안쪽 `<span>`에 넣어서 '시안: 겉 span이 글자 주인' ↔ '앱: 안쪽 맨 span이 글자 주인'으로 짝이 어긋났다 (`span|for PayPal sellers` 배경 rgba(5,55,130,.08) ↔ transparent, `span|2` 배지, `span|Not received · Customs hold` 칩).
+- 고침 (`page-scripts.ts` 공통 `__ddBare`/`__ddWrap`): `span`이 자기 상자 스타일이 없고(배경색 투명 · background-image none · 네 변 테두리 두께 0 · padding 0 · margin 0 · display inline · sr-only 아님) 부모의 유일한 요소 자식이며 부모 글자 전체(공백 정리 후)와 같은 글자를 가지면 **투명 감싸개**다. `__ddOwn`이 감싸개 글자를 부모 자기 글자로 합치고, CAPTURE는 감싸개를 건너뛴다. 여러 겹도 차례로 합쳐진다. sc-interp는 이 규칙의 한 경우다(조건 없이 언제나 감싸개, 글자와 섞여도 합친다 — 후속 3 그대로). FIND_TARGET 이름표도 같은 함수를 써서 같이 맞춰진다.
+- 감싸개가 아닌 경우(예전처럼 따로 잡음): 안쪽 span에 배경·padding·테두리가 있거나 display가 inline이 아님 · 형제 요소가 있음 · 부모에 다른 글자가 더 있음(`Total: <span>$5</span>`).
+- 시험: `tests/unit/design-diff-capture.test.ts`에 5건 추가 (가짜 DOM: 겉 알약>안쪽 맨 span ↔ 겉 알약>sc-interp가 같은 key `span|for PayPal sellers`로 짝지어지고 겉 배경 rgba(5,55,130,0.08)끼리 비교되어 차이 0 · 배지 `2`와 여러 겹 칩 · 스타일 있는 안쪽 span 4종 · 형제/부분 글자 · FIND_TARGET 버튼). `npx vitest run tests/unit/design-diff` 49/49 통과. tsc는 `.next/types` 생성물 외 오류 0, eslint 오류 0. 개발 서버·브라우저·`.env`는 쓰지 않았다.
+- 남은 것: 실물 재실행(v6 round2)에서 가짜 차이가 줄었는지는 컨트롤 타워/브라우저 쪽에서 확인해야 한다.
