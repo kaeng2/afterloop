@@ -13,7 +13,7 @@ import introEn from '../../config/intro.en.json';
 import introKo from '../../config/intro.ko.json';
 
 (globalThis as { React?: typeof React }).React = React;
-const { IntroScreen } = await import('@/app/intro/intro-screen');
+const { IntroScreen } = await import('@/app/demo/seller-dashboard/intro-screen');
 
 const ROOT = path.resolve(__dirname, '../..');
 const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
@@ -22,7 +22,7 @@ const SEOYEON = '/?item=PP-R-GMS-10197661';
 
 describe('T078 /intro', () => {
   it('경로 파일이 있다', () => {
-    expect(read('src/app/intro/page.tsx')).toMatch(/IntroScreen/);
+    expect(read('src/app/demo/seller-dashboard/page.tsx')).toMatch(/IntroScreen/);
   });
 
   it('링크는 세 곳(아이콘, 말풍선 버튼 포함 4개 중 같은 길)만 있고 모두 Today(서연)로 간다', () => {
@@ -39,7 +39,7 @@ describe('T078 /intro', () => {
     const inert = buttons.filter((b) => b.includes('aria-disabled="true"'));
     expect(inert.length).toBeGreaterThanOrEqual(9);
     for (const b of inert) expect(b).toContain('type="button"');
-    const source = read('src/app/intro/intro-screen.tsx');
+    const source = read('src/app/demo/seller-dashboard/intro-screen.tsx');
     const onClicks = source.match(/onClick=/g) ?? [];
     expect(onClicks).toHaveLength(2); // EN / KO 언어 선택뿐
   });
@@ -52,7 +52,7 @@ describe('T078 /intro', () => {
   });
 
   it('화면 코드·css에 남보라가 없고 PayPal 글꼴·로고도 없다 (T089: 시안 v4 파랑은 허용)', () => {
-    for (const file of ['src/app/intro/intro-screen.tsx', 'src/app/intro/intro.css', 'src/app/intro/page.tsx']) {
+    for (const file of ['src/app/demo/seller-dashboard/intro-screen.tsx', 'src/app/demo/seller-dashboard/intro.css', 'src/app/demo/seller-dashboard/page.tsx']) {
       const text = read(file);
       for (const violet of ['#5b3cc4', '#a996f0', 'rgba(91, 60, 196']) expect(text.toLowerCase(), file).not.toContain(violet);
       expect(/font-family\s*:[^;]*paypal/i.test(text), file).toBe(false);
@@ -61,7 +61,7 @@ describe('T078 /intro', () => {
   });
 
   it('서버·fetch·엔진·AI import가 없다 (정적 검사)', () => {
-    for (const file of ['src/app/intro/intro-screen.tsx', 'src/app/intro/page.tsx']) {
+    for (const file of ['src/app/demo/seller-dashboard/intro-screen.tsx', 'src/app/demo/seller-dashboard/page.tsx']) {
       const text = read(file).replace(/_server\/locale/g, '');
       expect(/\bfetch\s*\(/.test(text), file).toBe(false);
       expect(/from\s+['"]@\/(engine|ai|exec|paypal)/.test(text), file).toBe(false);

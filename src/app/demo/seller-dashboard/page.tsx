@@ -4,7 +4,8 @@
  */
 import type { Metadata } from 'next';
 
-import { applyLangParam } from '../_server/locale';
+import { applyLangParam } from '../../_server/locale';
+import { SELLER_DASHBOARD_PATH } from '../../_shared/routes';
 import { IntroScreen } from './intro-screen';
 
 export const metadata: Metadata = { title: 'Seller dashboard (demo mock)' };
@@ -12,6 +13,6 @@ export const metadata: Metadata = { title: 'Seller dashboard (demo mock)' };
 type Props = { searchParams: Promise<{ lang?: string | string[] }> };
 
 export default async function IntroPage({ searchParams }: Props) {
-  await applyLangParam('/intro', await searchParams);
+  await applyLangParam(SELLER_DASHBOARD_PATH, await searchParams);
   return <IntroScreen />;
 }

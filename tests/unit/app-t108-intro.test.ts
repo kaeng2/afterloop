@@ -10,13 +10,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 (globalThis as { React?: typeof React }).React = React;
-const { IntroScreen } = await import('@/app/intro/intro-screen');
+const { IntroScreen } = await import('@/app/demo/seller-dashboard/intro-screen');
 
 const ROOT = path.resolve(__dirname, '../..');
 const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
 const MOCK = read('docs/design/mockup-v4/scene1/Scene1.dc.html');
-const SCENE1 = read('src/app/intro/scene1.css');
-const INTRO = read('src/app/intro/intro.css');
+const SCENE1 = read('src/app/demo/seller-dashboard/scene1.css');
+const INTRO = read('src/app/demo/seller-dashboard/intro.css');
 const html = renderToStaticMarkup(React.createElement(IntroScreen));
 
 /** 시안 <style> 블록의 규칙(선택자{본문}) 목록. */

@@ -6,7 +6,7 @@
  */
 import type { ListingFixDrafts } from '@/types';
 
-import { getLlm } from '../_server/llm';
+import { getLlm } from '../../../_server/llm';
 import { listingFixesFor } from './fixes';
 
 export async function draftListingFixesAction(input: {

@@ -14,12 +14,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import type { Locale } from '../_shared/copy';
-import { writeLocaleCookie } from '../_shared/language-switch';
-import { useLocale } from '../_shared/locale-context';
+import type { Locale } from '../../_shared/copy';
+import { writeLocaleCookie } from '../../_shared/language-switch';
+import { useLocale } from '../../_shared/locale-context';
 
-import introEn from '../../../config/intro.en.json';
-import introKo from '../../../config/intro.ko.json';
+import introEn from '../../../../config/intro.en.json';
+import introKo from '../../../../config/intro.ko.json';
 import './scene1.css';
 import './intro.css';
 

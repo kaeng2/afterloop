@@ -13,8 +13,8 @@
  * 이 함수들에는 쓰기 호출이 없다. 결과에는 키·응답·만든 시각만 담는다 (환경변수·헤더·요청 글 없음).
  */
 import { getLlm } from '@/app/_server/llm';
-import { listingFixesFor } from '@/app/listing/fixes';
-import { initialForm, type ListingLocale } from '@/app/listing/model';
+import { listingFixesFor } from '@/app/demo/store/new-product/fixes';
+import { initialForm, type ListingLocale } from '@/app/demo/store/new-product/model';
 import { loadReply } from '@/app/cases/reply/load';
 import { loadCase } from '@/app/cases/view/load';
 import { loadDemoDisputes } from '@/app/_server/disputes';
