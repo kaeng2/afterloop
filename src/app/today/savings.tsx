@@ -106,7 +106,8 @@ export function WeeklyBumpCell({ className, children }: { className: string; chi
     <div
       // 깜빡임을 매번 다시 틀도록 n마다 key를 바꾼다
       key={bump?.n ?? 0}
-      className={bump === null ? className : `${className} weekly-cell-flash`}
+      // T107 시안 L700: 홀수 번째 = .flash, 짝수 번째 = .rise (연속 bump가 번갈아 보이게)
+      className={bump === null ? className : `${className} ${bump.n % 2 === 1 ? 'weekly-cell-flash' : 'weekly-cell-rise'}`}
       data-bump={bump === null ? undefined : String(bump.n)}
     >
       {children}

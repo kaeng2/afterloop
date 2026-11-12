@@ -29,6 +29,8 @@ import { ProductFilterBar, TodayList } from '@/app/today/today-list';
 import { TrackingDetail } from '@/app/today/tracking-detail';
 
 import '@/app/today/today.css';
+// T107: 시안 Desk.dc.html <style> 통째 복사 (`.dk` 루트 아래로만)
+import '@/app/(app)/desk.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,7 +82,7 @@ export default async function TodayPage({ searchParams }: Props) {
     // T106: 고른 항목·상품도 화면 상태 (주소는 화면이 맞춘다)
     <SavingsProvider>
       <TodaySelectionProvider initialItem={selected?.id ?? null} initialSku={sku}>
-        <div className="today-page">
+        <div className="dk today-page">
           <ProductFilterBar filter={view.filter} cases={casesOf(view.groups)} />
           <div className="today">
             <TodayList view={view} weekly={weekly} selectedId={selected?.id ?? null} paypalNotice={paypalNotice} />

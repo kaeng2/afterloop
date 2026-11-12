@@ -1,0 +1,194 @@
+/*
+ * Desk (`/`) 전용 CSS (T107, 사람 결정 2026-11-12 09:25 "시안 CSS 통째 복사").
+ *
+ * 1부: 시안 `docs/design/mockup-v4/Desk.dc.html` L16–L93 `<style>` 블록 그대로. 줄마다 시안 줄 번호 주석.
+ *      값·keyframes는 그대로이고, 선택자 앞에만 화면 루트 `.dk `를 붙였다 (다른 화면 — /products·/intro·/listing — 에
+ *      `.btn`·`.chip` 같은 이름이 새지 않게. `body`·`.dk *`·`@keyframes`는 그대로).
+ * 2부: 시안 루트 `.dk`(L96) 기본값 + 시안 인라인 style 값을 앱 요소 class에 옮긴 규칙 (주석 = 시안 줄 번호).
+ *
+ * 이 파일은 `/` 화면(page.tsx)에서만 import한다. 위쪽 막대는 공용(`_shared/top-bar.tsx`)이라 `body:has(.dk)`로만 바꾼다.
+ */
+
+/* ── 1부: 시안 <style> (L16–L93) ─────────────────────────────────────────── */
+/* L16 */ body{margin:0}
+/* L17 */ .dk *{box-sizing:border-box}
+/* L18 */ .dk .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:15px;font-weight:700;white-space:nowrap;transition:background-color .15s ease}
+/* L19 */ .dk .btn:disabled{opacity:.45;cursor:default}
+/* L20 */ .dk .b-black{background:#000000;color:#FFFFFF}.dk .b-black:hover{background:#333333}
+/* L21 */ .dk .b-tint{background:#05378214;color:#000000}.dk .b-tint:hover{background:#05378227}
+/* L22 */ .dk .b-sm{min-height:34px;padding:6px 14px;font-size:13px}
+/* L23 */ .dk .btn:focus-visible,.dk .it:focus-visible,.dk .pf:focus-visible,.dk .npath:focus-visible,.dk .nmini:focus-visible,.dk .ndraft:focus-visible,.dk .hbtn:focus-visible,.dk .nav:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+/* L24 */ .dk .chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+/* L25 */ .dk .c-n{background:#ECEEF0;color:#3F4144}.dk .c-bad{background:#FBE7E4;color:#9E2414}.dk .c-blue{background:#E3F3FF;color:#002991}
+/* L26 */ .dk .ai{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 8px;border-radius:1000px;font-size:12px;font-weight:900;color:#FFFFFF;background:linear-gradient(120deg,#002991 0%,#0066F5 55%,#60CDFF 100%);box-shadow:rgba(0,102,245,0.35) 0 2px 8px;white-space:nowrap}
+/* L27 */ .dk .nav{min-height:38px;padding:8px 16px;border-radius:1000px;font-size:14px;font-weight:700;color:#000000A1;text-decoration:none;display:inline-flex;align-items:center}
+/* L28 */ .dk .nav.on{background:#FFFFFF;color:#000000}
+/* L29 */ .dk .nav:hover{color:#000000}
+/* product filter */
+/* L31 */ .dk .pf{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:16px;border:2px solid #E4E6E9;background:#FFFFFF;font:inherit;text-align:left;cursor:pointer;color:#000000;min-width:0}
+/* L32 */ .dk .pf:hover{border-color:#9AA0A6}.dk .pf.on{border-color:#002991;background:#F5F9FF}
+/* L33 */ .dk .ptile{width:38px;height:38px;border-radius:12px;background:#F1EFEA;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+/* inbox */
+/* L35 */ .dk .sec{border-radius:20px;background:#FFFFFF;border:1px solid #E4E6E9;overflow:hidden}
+/* L36 */ .dk .sech{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#F6F7F9;border-bottom:1px solid #E4E6E9}
+/* L37 */ .dk .it{display:flex;gap:12px;width:100%;padding:12px 16px;border:0;border-top:1px solid #F1EFEA;background:#FFFFFF;font:inherit;text-align:left;cursor:pointer;color:#000000;transition:background-color .15s}
+/* L38 */ .dk .it:first-child{border-top:0}
+/* L39 */ .dk .it:hover{background:#F5F7FB}.dk .it.on{background:#E3F3FF;box-shadow:inset 4px 0 0 #0066F5}
+/* L40 */ .dk .it.done{opacity:.55}
+/* L41 */ .dk .sev{position:absolute;right:-3px;top:-3px;width:12px;height:12px;border-radius:50%;border:2px solid #FFFFFF}
+/* case */
+/* L43 */ .dk .zone-buyer{border-radius:24px;background:#EEF1F5;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+/* L44 */ .dk .bub-in{max-width:78%;background:#FFFFFF;border-radius:6px 18px 18px 18px;padding:12px 16px;box-shadow:rgba(0,0,0,0.05) 0 1px 3px}
+/* L45 */ .dk .bub-out{max-width:78%;background:#002991;color:#FFFFFF;border-radius:18px 6px 18px 18px;padding:12px 16px}
+/* L46 */ .dk .bub-sim{max-width:78%;background:#FFFFFF;border:2px dashed #9AA0A6;border-radius:6px 18px 18px 18px;padding:12px 16px}
+/* L47 */ .dk .zone-work{position:relative;border-radius:24px;background:#FFFFFF;padding:22px 22px 20px;display:flex;flex-direction:column;gap:18px;box-shadow:rgba(0,41,145,0.10) 0 10px 32px,rgba(0,0,0,0.05) 0 2px 6px;border:1px solid #E4E6E9;overflow:hidden}
+/* L48 */ .dk .zone-work::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#002991,#0066F5,#60CDFF)}
+/* L49 */ .dk .nstep{width:32px;height:32px;border-radius:50%;background:#0A1B3D;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0}
+/* L50 */ .dk .stp{display:flex;gap:14px}
+/* L51 */ .dk .rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px}
+/* L52 */ .dk .rline{flex:1;width:2px;background:#CFD3D8;margin:6px 0 -12px}
+/* L53 */ .dk .stpc{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+/* L54 */ .dk .stph{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:32px}
+/* L55 */ .dk .stph b,.dk .stph label{font-size:17px;font-weight:900;letter-spacing:-0.2px}
+/* L56 */ .dk .stph .sub{font-size:13px;color:#6C7378}
+/* L57 */ .dk .editor{border-radius:18px;border:2px solid #CFD3D8;background:#FFFFFF;overflow:hidden;transition:border-color .3s ease;min-width:0}
+/* L58 */ .dk .editor textarea{width:100%;border:0;outline:0;resize:vertical;min-height:120px;padding:14px 16px 46px;font:inherit;font-size:15px;line-height:1.55;color:#000000;background:#FFFFFF;display:block}
+/* L59 */ .dk .editor:focus-within{box-shadow:#FFFFFF 0 0 0 2px,#097FF5 0 0 0 4px}
+/* L60 */ .dk .tray{background:#F6F7F9;border-top:1px solid #E4E6E9;padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+/* L61 */ .dk .trayh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 2px 2px}
+/* L62 */ .dk .gchip{background:#FFFFFF;color:#0A1B3D;box-shadow:inset 0 0 0 1px #E4E6E9;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+/* L63 */ @keyframes pop{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none}}
+/* L64 */ .dk .gmore{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:2px 10px;border-radius:1000px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:700;color:#0A1B3D;cursor:pointer;margin-left:auto}
+/* L65 */ .dk .gmore:hover{background:#E4E6E9}
+/* L66 */ .dk .gmore:focus-visible{outline:2px solid #097FF5;outline-offset:2px}
+/* L67 */ .dk .tsum{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:1000px;font-size:11px;font-weight:700;background:#FFFFFF;color:#3F4144;box-shadow:inset 0 0 0 1px #E4E6E9}
+/* L68 */ .dk .npath{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:16px;border:2px solid #E4E6E9;background:#FFFFFF;font:inherit;text-align:left;cursor:pointer;color:#000000;min-width:0;transition:border-color .15s,background-color .15s}
+/* L69 */ .dk .npath:hover{border-color:#6C7378}.dk .npath.on{border-color:#0A1B3D;background:#F3F5F9}.dk .npath:disabled{cursor:default;opacity:.6}
+/* L70 */ .dk .nradio{width:18px;height:18px;border-radius:50%;border:2px solid #9AA0A6;flex-shrink:0;background:#FFFFFF}
+/* L71 */ .dk .nradio.on{border:6px solid #0A1B3D}
+/* L72 */ .dk .ndraft{width:100%;resize:vertical;min-height:124px;padding:12px 14px 44px;border-radius:16px;border:2px solid #CFD3D8;font:inherit;font-size:15px;line-height:1.55;color:#000000;background:#FFFFFF}
+/* L73 */ .dk .nlint{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;animation:rise .3s ease both}
+/* L74 */ .dk .nl-miss,.dk .nl-bad{background:#FFFFFF}.dk .nlint{padding:7px 10px;border-radius:10px}
+/* L75 */ .dk .nic{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;flex-shrink:0}
+/* L76 */ .dk .nic-good{background:#0A1B3D;color:#FFFFFF}.dk .nic-miss{background:#ECEEF0;color:#3F4144}.dk .nic-bad{background:#C4321F;color:#FFFFFF}
+/* L77 */ .dk .nmini{min-height:28px;padding:2px 12px;border-radius:1000px;border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:900;background:#000000;color:#FFFFFF;flex-shrink:0}
+/* L78 */ .dk .nmini.ghost{background:#FFFFFF;color:#9E2414;box-shadow:inset 0 0 0 2px #E8796B}
+/* L79 */ .dk .nmini:disabled{opacity:.5;cursor:default}
+/* L80 */ .dk .hbtn{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:6px 14px;border-radius:1000px;border:2px solid #CFD3D8;background:#FFFFFF;font:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#000000}
+/* L81 */ .dk .hbtn:hover{border-color:#000000}
+/* L82 */ .dk .step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;animation:rise .45s cubic-bezier(.2,1.2,.4,1) both}
+/* L83 */ .dk .sic{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+/* L84 */ .dk .ndots{display:inline-flex;gap:3px}.dk .ndots span{width:6px;height:6px;border-radius:50%;background:#9AA0A6;animation:ndot 1s infinite ease-in-out}.dk .ndots span:nth-child(2){animation-delay:.15s}.dk .ndots span:nth-child(3){animation-delay:.3s}
+/* L85 */ @keyframes ndot{0%,80%,100%{opacity:.3;transform:none}40%{opacity:1;transform:translateY(-3px)}}
+/* L86 */ @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* L87 */ .dk .rise{animation:rise .35s ease both}
+/* L88 */ @keyframes ping{0%{r:7;opacity:.6}100%{r:20;opacity:0}}
+/* L89 */ .dk .ping{animation:ping 1.4s ease-out infinite}
+/* L90 */ @keyframes flash{0%{background:#60CDFF}100%{background:transparent}}
+/* L91 */ .dk .flash{animation:flash 1.6s ease}
+/* L92 */ .dk .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:20;display:flex;gap:12px;align-items:center;padding:14px 20px;border-radius:16px;background:#000000;color:#FFFFFF;box-shadow:rgba(0,0,0,0.25) 0 8px 24px;animation:rise .35s ease}
+/* L93 */ .dk .ko{font-family:'Noto Sans KR',Figtree,sans-serif}
+
+/* ── 2부: 시안 루트 + 인라인 style ────────────────────────────────────────── */
+
+/* L96 루트. globals.css body(16px · #3F4144 · 회색 바탕)를 여기서 다시 정해 상속을 끊는다.
+   글꼴 이름만 next/font 변수로 (Figtree · Noto Sans KR = layout.tsx가 붙인 같은 글꼴) */
+.dk{min-height:100vh;background:#FFFFFF;color:#000000;font-family:var(--font-figtree),var(--font-noto-kr),Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5}
+/* L93 `.ko`도 같은 이유로 글꼴 이름만 변수로 */
+.dk .ko{font-family:var(--font-noto-kr),var(--font-figtree),sans-serif}
+/* AI 알약: 시안은 쓰는 곳마다 box-shadow:none (L125·L216·L249·L264…). 그림자는 zone-work 머리(L240·L315·L352)만.
+   line-height는 시안처럼 물려받는다 (앱 .ai-pill 1.2 대신) */
+.dk .ai-pill{box-shadow:none;line-height:inherit}
+.dk .zone-work-head .ai-pill{box-shadow:rgba(0,102,245,0.35) 0 2px 8px}
+@media (prefers-reduced-motion:reduce){.dk *,.dk *::before{animation:none !important;transition:none !important}}
+body:has(.dk){background:#FFFFFF}
+
+/* L99–L105 위쪽 막대 (공용 막대를 Desk일 때만) */
+body:has(.dk) .shell-bar{position:sticky;top:0;z-index:6;background:#FFFFFF;border-bottom:1px solid #E4E6E9;color:#000000;font-size:15px;line-height:1.5}
+body:has(.dk) .shell-bar-inner{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:12px 28px;min-height:0}
+body:has(.dk) .shell-brand{display:flex;align-items:center;gap:10px}
+body:has(.dk) .shell-wordmark{display:inline-flex;align-items:baseline;font-size:22px;font-weight:900;letter-spacing:-0.7px;line-height:1;color:#0B0F14;padding-bottom:6px}
+body:has(.dk) .shell-wordmark-accent{position:relative;color:#0070E0}
+body:has(.dk) .shell-wordmark-curve{position:absolute;left:0;top:100%;margin-top:1px;width:calc(100% + 8px);height:9px;overflow:visible}
+body:has(.dk) .shell-wordmark-curve path{stroke:url(#dlg-desk)}
+body:has(.dk) .dlg-s0{stop-color:#003087}body:has(.dk) .dlg-s1{stop-color:#0070E0}body:has(.dk) .dlg-s2{stop-color:#00A8EA}
+body:has(.dk) .shell-divider{width:1px;height:22px;background:#CFD3D8;margin:0 4px}
+body:has(.dk) .shell-for{font-size:13px;font-weight:700;color:#002991;padding:4px 12px;border-radius:1000px;background:#05378214}
+body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
+
+/* L109–L116 상품 거르개 줄 */
+.dk .product-filter{position:static;display:flex;align-items:center;gap:10px;padding:14px 28px;background:#F6F7F9;border-bottom:1px solid #E4E6E9;overflow-x:auto}
+.dk .product-filter-list{display:flex;gap:10px;padding:0;margin:0}
+.dk .product-filter-text{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.dk .product-filter-name{font-size:14px;font-weight:700;white-space:nowrap}
+.dk .product-filter-sub{font-size:12px;color:#3F4144;white-space:nowrap}
+.dk .product-filter-summary{margin-left:auto;font-size:13px;color:#3F4144;white-space:nowrap}
+/* L112 아이콘 svg 24px · stroke #002991 1.6 */
+.dk .ptile .product-icon{width:24px;height:24px}
+.dk .ptile .product-icon path{stroke:#002991;stroke-width:1.6}
+/* L687 badgeSt */
+.dk .ptile .product-tile-badge{position:absolute;right:-6px;top:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:1000px;background:#C4321F;color:#FFFFFF;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;border:2px solid #FFFFFF}
+
+/* L119 두 칸: flex-wrap (좁으면 왼쪽 칸 위 · 오른쪽 칸 아래) */
+.dk .today{display:flex;flex-wrap:wrap;align-items:flex-start}
+/* L122 왼쪽 칸 */
+.dk .today-list{flex:1 1 360px;max-width:400px;min-width:300px;padding:20px 20px 40px 28px;display:flex;flex-direction:column;gap:14px}
+/* L155 오른쪽 칸 */
+.dk .today-detail{flex:999 1 640px;min-width:0;padding:20px 28px 48px 8px;display:flex;flex-direction:column;gap:18px;background:#FFFFFF}
+/* 휴대폰 폭 (앱 쪽 추가: 시안 고정 폭 1440 · 16px 옆 여백) */
+@media (max-width:56rem){
+  .dk .product-filter{padding:12px 16px}
+  .dk .today-list{max-width:none;min-width:0;padding:16px}
+  .dk .today-detail{flex-basis:100%;padding:16px}
+}
+
+/* L124–L135 "DisputeLess this week" 카드 */
+.dk .weekly{border-radius:24px;padding:18px;background:linear-gradient(150deg, #001C64 0%, #002991 55%, #0B48C4 100%);color:#FFFFFF;display:flex;flex-direction:column;gap:12px}
+.dk .weekly-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dk .weekly-titles{display:flex;flex-direction:column}
+.dk .weekly-title{font-size:16px;font-weight:700;color:#FFFFFF;line-height:1.5;letter-spacing:normal}
+.dk .weekly-sub{font-size:12px;color:#C9E3FF}
+.dk .weekly-head-end{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.dk .weekly-grid{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:8px}
+.dk .weekly-cell{border-radius:16px;padding:10px 12px;background:rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:2px;min-width:0}
+.dk .weekly-label{font-size:11px;color:#C9E3FF;line-height:1.3}
+.dk .weekly-value{font-size:24px;font-weight:900;letter-spacing:-0.5px;line-height:1.15;font-variant-numeric:tabular-nums}
+/* L698 subSt: 평소 #C9E3FF, '+' 있으면 #60CDFF (`.weekly-bump`) */
+.dk .weekly-note{font-size:11px;font-weight:700;color:#C9E3FF;line-height:1.5}
+.dk .weekly-bump{font-size:11px;font-weight:700;color:#60CDFF}
+/* L700 연속 bump: 홀수 = .flash, 짝수 = .rise (같은 칸) */
+.dk .weekly-cell-flash{animation:flash 1.6s ease}
+.dk .weekly-cell-rise{animation:rise .35s ease both}
+
+/* L137–L151 묶음 카드 (.sec · .sech) */
+.dk .today-groups{display:flex;flex-direction:column;gap:14px}
+.dk .today-group-bar{width:4px;height:18px;border-radius:2px;flex-shrink:0}
+.dk .today-group-title{font-size:15px;font-weight:700;color:#000000;line-height:1.5;letter-spacing:normal}
+.dk .today-group-count{font-weight:700;color:#6C7378}
+.dk .today-group-hint{margin-left:auto;font-size:12px;color:#6C7378}
+.dk .today-items>li+li{border-top:1px solid #F1EFEA}
+/* L142–L146 항목 줄 (.it) */
+.dk .ptile.product-tile-sm{width:36px;height:36px}
+.dk .ptile.product-tile-sm .product-icon{width:22px;height:22px}
+/* L162 · L348 머리글 타일 52px r16 · svg 30px stroke 1.5 */
+.dk .ptile.product-tile-lg{width:52px;height:52px;border-radius:16px}
+.dk .ptile.product-tile-lg .product-icon{width:30px;height:30px}
+.dk .ptile.product-tile-lg .product-icon path{stroke-width:1.5}
+.dk .today-item-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.dk .today-item-top{display:flex;gap:6px;align-items:baseline;min-width:0}
+.dk .today-item-name{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.dk .today-item-product{font-size:14px;color:#3F4144;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dk .today-item-tags{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dk .today-item-due{font-size:12px;color:#3F4144}
+.dk .today-item-sub{font-size:12px;color:#6C7378}
+.dk .today-item-simulated{font-size:12px;font-weight:700;color:#6C7378}
+/* L704 catSt: high = #FBE7E4/#9E2414, 나머지 #ECEEF0/#3F4144 */
+.dk .today-pill-high{background:#FBE7E4;color:#9E2414}
+.dk .today-pill-watch,.dk .today-pill-neutral{background:#ECEEF0;color:#3F4144}
+/* L705 sevCol · L708 done */
+.dk .today-dot-high{background:#C4321F}.dk .today-dot-watch{background:#002991}.dk .today-dot-low,.dk .today-dot-neutral{background:#9AA0A6}.dk .today-dot-done{background:#CFD3D8}
+/* L710 secBar */
+.dk .today-group-needsYou .today-group-bar{background:#C4321F}.dk .today-group-prevent .today-group-bar{background:#002991}.dk .today-group-routine .today-group-bar{background:#9AA0A6}.dk .today-group-done .today-group-bar{background:#CFD3D8}
+
+/* L362 토스트 ✓ 원 */
+.dk .savings-toast-check{width:24px;height:24px;border-radius:50%;background:#60CDFF;color:#002991;display:inline-flex;align-items:center;justify-content:center;font-weight:900}

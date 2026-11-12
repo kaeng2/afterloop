@@ -266,7 +266,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     expect(view.count).toBe(items(view).length);
     expect(view.count).toBe(5);
     const html = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
-    expect(html.match(/class="today-item"/g)?.length).toBe(view.count);
+    expect(html.match(/class="today-item it( on)?"/g)?.length).toBe(view.count);
     expect(t('shell.todayTab', { count: view.count })).toBe('Today (5)');
   });
 
@@ -317,7 +317,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     const view = today();
     const html = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D1, paypalNotice: null }));
     expect(html.match(/aria-current="true"/g)?.length).toBe(1);
-    expect(html).toMatch(new RegExp(`<button type="button" class="today-item" aria-current="true" data-item="${D1}"`));
+    expect(html).toMatch(new RegExp(`<button type="button" class="today-item it on" aria-current="true" data-item="${D1}"`));
     // T076: 날짜 줄은 위쪽 막대로 옮겼다 (TopBar dateLine)
     expect(view.dateLine).toBe('Tue, Nov 10 · Black Friday in 17 days');
     expect(html).not.toContain('href="/products"');
@@ -419,12 +419,12 @@ describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
     const view = today();
     const markup = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
     // 점은 상품 아이콘(장식, aria-hidden) 안 오른쪽 위
-    expect(markup).toMatch(/<span class="product-tile product-tile-sm" aria-hidden="true">.*?<span class="product-tile-dot today-dot today-dot-high"><\/span><\/span>/);
+    expect(markup).toMatch(/<span class="product-tile ptile product-tile-sm" aria-hidden="true">.*?<span class="product-tile-dot sev today-dot today-dot-high"><\/span><\/span>/);
     // 알약 = 범주 (서연은 위험 High라 빨강)
-    expect(markup).toContain('<span class="today-pill today-pill-high">Not received · Customs hold</span>');
-    expect(markup).toContain('<span class="today-pill today-pill-neutral">Not as described · Color</span>');
-    expect(markup).toContain('<span class="today-pill today-pill-neutral">Missing tracking</span>');
-    expect(markup).toContain('<span class="today-pill today-pill-neutral">Not received · Repeat claim</span>');
+    expect(markup).toContain('<span class="today-pill chip today-pill-high">Not received · Customs hold</span>');
+    expect(markup).toContain('<span class="today-pill chip today-pill-neutral">Not as described · Color</span>');
+    expect(markup).toContain('<span class="today-pill chip today-pill-neutral">Missing tracking</span>');
+    expect(markup).toContain('<span class="today-pill chip today-pill-neutral">Not received · Repeat claim</span>');
     // 상태(High · Watch · Waiting approval · Prevent · Skipped)는 화면 읽기 글자로 남는다
     for (const status of ['High', 'Watch', 'Waiting approval', 'Prevent', 'Skipped']) {
       expect(markup).toMatch(new RegExp(`<span class="today-sr-only">[^<]*· ${status}</span>`));

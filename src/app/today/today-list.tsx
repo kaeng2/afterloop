@@ -12,7 +12,7 @@
  * 키보드로 고를 수 있고(T106, 화면 안 상태), 고른 항목에는 `aria-current`가 붙는다.
  * T106 (F1-33): 카드 아래 "Stock left could cost …" 링크 줄은 없다 (시안에 없음. /products는 주소로만).
  */
-import { Badge } from '../_shared/badges';
+import { AiPill, Badge } from '../_shared/badges';
 import { t } from '../_shared/copy';
 import { weeklyView, type TodayView, type WeeklyView } from './model';
 import { WeeklyBumpCell } from './savings';
@@ -32,7 +32,11 @@ export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
           </h2>
           <span className="weekly-sub">{t('today.weekly.sub')}</span>
         </div>
-        {weekly.usesDemoData ? <Badge kind="demo" /> : null}
+        {/* T107 시안 L125: 오른쪽 AI 알약 (그림자 없음). Demo data는 시드가 섞일 때만 그 옆에 */}
+        <span className="weekly-head-end">
+          {weekly.usesDemoData ? <Badge kind="demo" /> : null}
+          <AiPill decorative />
+        </span>
       </div>
       <div className="weekly-grid">
         <div className="weekly-cell">

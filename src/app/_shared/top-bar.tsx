@@ -38,6 +38,14 @@ function Wordmark() {
         <span className="shell-wordmark-accent" aria-hidden="true">
           {accent}
           <svg className="shell-wordmark-curve" viewBox="0 0 100 10" preserveAspectRatio="none" focusable="false">
+            {/* T107: 시안 L101 그라데이션 (Desk에서만 `body:has(.dk)`로 칠한다. 다른 화면은 강조색 단색 그대로) */}
+            <defs>
+              <linearGradient id="dlg-desk" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0" className="dlg-s0" />
+                <stop offset=".55" className="dlg-s1" />
+                <stop offset="1" className="dlg-s2" />
+              </linearGradient>
+            </defs>
             <path d="M2 3H80C89 3 94 5 98 9" />
           </svg>
         </span>
