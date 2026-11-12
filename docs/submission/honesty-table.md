@@ -1,4 +1,4 @@
-<!-- 메모(한국어): README에 넣을 정직성 표 초안. 근거는 PRD v3 16장, SPEC v2.10, DECISIONS, config/params.json. 심사위원이 30초에 읽도록 짧게 줄임. 가정값 목록은 params.json의 source 기준. -->
+<!-- 메모(한국어): 정직성 표 (README·Devpost가 이 파일을 가리킨다). 근거는 PRD v3 16장, SPEC v2.10, DECISIONS, config/params.json. 심사위원이 30초에 읽도록 짧게 줄임. 가정값 목록은 params.json·reply-model.json·listing-model.json의 source 기준. -->
 
 # What is real, what is assumed
 
@@ -6,11 +6,12 @@ DisputeLess is a hackathon prototype on the **PayPal sandbox** with a **fictiona
 
 | Column | What it covers |
 |---|---|
-| **Real (PayPal sandbox)** | 13 sandbox orders (Orders API, captured). 3 live demo disputes, including the buyer-filed Korean complaint text. Dispute list and detail reads. Messages sent in Korean and English (HTTP 200, tested on a practice dispute). A partial-refund offer via make-offer (HTTP 200, practice dispute). Per-order tracking via `POST /v2/checkout/orders/{id}/track` (201). Sales read via Transaction Search `GET /v1/reporting/transactions` (cached 15 min). |
+| **Real (PayPal sandbox)** | 13 sandbox orders (Orders API, captured). 3 live demo disputes, including the buyer-filed Korean complaint text. Dispute list and detail reads. Messages sent in Korean and English (HTTP 200, tested on a practice dispute). A partial-refund offer via make-offer (HTTP 200, practice dispute). Per-order tracking via `POST /v2/checkout/orders/{id}/track` (201). Transaction Search `GET /v1/reporting/transactions` returned 200 in our sandbox setup check and is implemented in code, but **no current screen calls it**. |
 | **Assumptions** | See the list below. Rates, win probabilities, and policy choices that we set ourselves. Marked with an Assumption badge in the app. |
 | **Demo data** | Carrier tracking and customs events (for example "Oct 30 · Customs hold" on Seo-yeon's order). Pre-dispute inquiries (Seo-yeon's Nov 2 message, which drives the "no reply yet" signal). Mike's two earlier claims. 6 closed disputes and the order history behind the $413 loss total. Order dates on screen. Buyers outside the sandbox. Marked with a Demo data badge. |
-| **What AI does** | Translates the buyer's Korean message. Writes reply coaching, the short "reply covers" chips, and the English draft with a natural Korean version, then back-translates it. Judges an angry tone. Classifies cases that no rule covers. Writes the color-note wording. Facts (dates, amounts, names) reach the AI only as tokens such as `⟦DATE_1⟧` and are filled in by code. |
-| **What code decides** | The cause of a case (rule: a customs hold in the carrier record means "held at customs", with zero AI calls). Expected loss and the suggested move and amount. The follow-up date (send date + 7 days, pulled earlier if the PayPal response deadline comes sooner). The risk score. Token checks and the "no promises outside policy" check. The send gate (a Send button stays off if any check fails). |
+| **Simulated** | Everything under "What happens next · Simulated" after a send: the buyer's reply, Forward to carrier, customs release and their Risk %. These are expected steps, not real events, and the path branches on the sent reply's forecast. Every write button on the public link (Send, Send offer, Add all) and Publish on the demo store. Marked Simulated. |
+| **What AI does** | Translates the buyer's Korean message. Writes reply coaching, the short "reply covers" chips, and the English draft with a natural Korean version, then back-translates it. Judges an angry tone. Classifies cases that no rule covers. Summarizes a case's history. In the new-listing check, writes suggested listing text for six gaps, with `[__]` blanks for the seller's real details (no numbers from AI). Facts (dates, amounts, names) reach the AI only as tokens such as `⟦DATE_1⟧` and are filled in by code. |
+| **What code decides** | The cause of a case (rule: a customs hold in the carrier record means "held at customs", with zero AI calls). Expected loss and the suggested move and amount. The follow-up date (send date + 7 days, pulled earlier if the PayPal response deadline comes sooner). The risk % (curve 80% → 40%) and the reply forecast (for example rushed reply 95%, AI draft 40%), and the new-listing check (4.5% → 2.1%). Token checks and the "no promises outside policy" check. The send gate (a Send button stays off if any check fails). |
 
 ## Assumptions (`config/params.json`)
 
@@ -24,6 +25,15 @@ DisputeLess is a hackathon prototype on the **PayPal sandbox** with a **fictiona
 | Offer size 15% of the order | Our fixed policy value, not optimized. |
 | Seller time per dispute $2 | Cost of the seller's time. Assumption. |
 | Current habit: 50% full refund, 50% fight | Baseline behavior used for "as-is". Assumption. |
+
+## Assumptions (`config/reply-model.json`, `config/listing-model.json`)
+
+Both files are marked `source: "가정(기획 시안)"`: **assumption (design draft)**. The weights come from our design prototype, not from statistics. They drive the largest numbers on screen.
+
+| File | What it drives |
+|---|---|
+| `config/reply-model.json` | The live reply forecast and risk %: the curve "80% → 40%", rushed reply "Chargeback 95%" and "Expected cost $85", AI draft "Chargeback 40%", the buyer-reaction bars and mood, the "+N pts" chips, and the Risk % of each "What happens next · Simulated" step. The engine calibrates it to the `params.json` values above (the AI draft costs about $37, the same as the Reply card). |
+| `config/listing-model.json` | The new-listing check at `/demo/store/new-product`: base dispute rates by type, the peak-season multiplier, fix effects and win chances, run over 500 simulated sale periods with a fixed seed. It gives 4.5%, $770 ($472–$1,140) before fixes and 2.1%, $327 ($106–$576) after. The $15 fee, $2 time cost and refund share come from `params.json`. |
 
 **Not an assumption:** the **$15 dispute fee** is PayPal's published US Standard Dispute Fee. We charge it only when the seller loses, which matches PayPal's published rule for the Standard fee. That Hannah is on the Standard fee is an assumption (see limit 2).
 

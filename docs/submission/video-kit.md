@@ -6,7 +6,7 @@
 > - **배포된 앱을 직접 녹화한다.** 시안 화면 녹화는 안 된다 ("design mockup, static prototype, or non-functional demo"는 요건 미달)
 > - **무료 라이선스 음악만.** 허락 없는 타사 상표·저작권 화면 금지
 > - **[시안 확정 대기] AG Grid 장면** — `/products` 화면은 11/12 11:15 결정으로 없앴다. AG Grid가 들어갈 화면의 시안이 오면 이 줄을 채운다 (스폰서상은 아직 미정: AG Grid 또는 Render)
-> - **배포 주소(disputeless.onrender.com)가 화면에 한 번 보이게** 한다 (브라우저 주소창 등)
+> - **배포 주소가 화면에 한 번 또렷이 보이게** 한다: 브라우저 주소창의 `disputeless.onrender.com`과 위쪽 막대의 "**Public demo · simulated sends**" 글자가 한 화면에 함께 잡히게 (공개 링크에서 찍은 장면 2·3·4·10 중 하나. 주소창을 숨기는 전체 화면 녹화는 그 장면만 피한다)
 > - **실제 전송 장면**은 녹화하는 동안만 Render를 recording 모드로 바꾼다 (경희가 전환). **서연 전송은 한 번뿐**이다
 > - **화면 고정 13:00**, 녹화는 그 뒤. **녹화 중에는 재배포하지 않는다**
 > - 녹화는 **09:00 KST 이후**, 가능하면 **14:00 KST 이후** (Follow-up 날짜는 서버 UTC 날짜 기준이라 09:00 전에는 하루 이르고, 위쪽 날짜 줄은 판매자 시간대(미국 동부) 기준이라 14:00 전에는 전날이다 — 아래 3절 "날짜 규칙")
@@ -22,7 +22,7 @@
 
 | 무엇 | 링크 | 비고 |
 |---|---|---|
-| 공개 데모 (Render) | **https://disputeless.onrender.com** (`/api/health` → `{"ok":true,"mode":"public"}`) | `DEMO_MODE=public` — PayPal 쓰기 호출 0회, 버튼은 "Simulated" 결과만. 읽기(분쟁·주문·거래 조회)는 실제 샌드박스. 실제 전송 장면을 빼고는 이 링크로 찍어도 된다 |
+| 공개 데모 (Render) | **https://disputeless.onrender.com** (`/api/health` → `{"ok":true,"mode":"public"}`) | `DEMO_MODE=public` — PayPal 쓰기 호출 0회, 버튼은 "Simulated" 결과만. 읽기(분쟁·주문 조회)는 실제 샌드박스. 실제 전송 장면을 빼고는 이 링크로 찍어도 된다 |
 | 화면 주소 | `/demo/seller-dashboard` → `/` (Desk) · `/demo/store/new-product` | 화면끼리 링크가 없다. **`/demo/store/new-product`은 주소창에 직접 쳐서 들어간다** (탭 없음). `/products`는 없앴다 (→ `/`로 이동) |
 | 서연 화면 바로 가기 | `/?item=PP-R-GMS-10197661` | /demo/seller-dashboard에서 누르면 여기로 온다 |
 | 실제 전송 장면 | 경희가 따로 찍음 (아래 5절) | `DEMO_MODE=recording` 별도 환경 |
@@ -42,7 +42,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 | 7 | ~15초 | Send 뒤 "**What happens next · Simulated**" (경희 녹화분에서 이어서) | "Expected steps after your reply — not real events" → "Seo-yeon replied with the customs ID · Simulated · Risk 0%" (통관번호는 P•••••••9012로 가려짐) → **[Forward to carrier]** 클릭 → "Customs ID forwarded to the carrier", "Customs released the parcel" → 토스트 "**Dashboard updated · +$37 kept**", 왼쪽 "**Done today · Simulated (1)**"(녹화 모드 글자는 [확인 필요]), 이번 주 카드 "+$37 just now" | "What happens next is **a simulated scenario** — expected steps, not real events." |
 | 8 | ~8초 | Desk 왼쪽 Prevent "2 orders · Missing tracking" (경희 녹화분) | 상세 "Add tracking to 2 orders in PayPal" → **[Add all 2]** → 녹화 모드 "**✓ 2 trackers added · Orders tracking API · 201**", 버튼 "Added ✓" | — |
 | 9 | ~7초 | 위쪽 막대 **[PayPal activity]** 서랍 (경희 녹화분) | 서랍 맨 위(최신)부터 Send message 200, Add tracking 201, 그 아래 Read … 200. **위 2~3줄만** 잡는다 | "The PayPal calls in this drawer are **real sandbox calls**." ("모든 단계"라고 하지 않는다 — 배송사 기록과 Send 뒤 시나리오는 실제가 아니다) |
-| 10 | ~32초 | **/demo/store/new-product** (주소창에 직접) | "Demo mock — sample store admin, not a real shop" 띠. 상품 "Ribbed Wool Crewneck, Ivory · $89 · 200 units · Nov 20–Dec 2" → **[Publish product]** → 창 "DisputeLess API · quick check before you publish", "Simulating 500 sale periods · N / 500"(약 7초, 편집에서 줄임) → "**Chance of a dispute per order 4.5%** · About 9.0 disputes", "Expected loss **$770** · $472–$1,140 (P10–P90)" → **[See details and fix →]** → AI Insert 6개 클릭 → **`[__]` 칸을 실제 값으로 채운다** (5절 아래 예시) → **[Recalculate]** → "**2.1%**", "**$327**" → **[Publish product]** → "Published · Chance of a dispute **4.5% → 2.1%** · Expected loss $770 → $327 · Disputes ~9.0 → ~4.1" | "**Assumed rates, demo store** — nothing is published to a real shop." 창 머리의 DisputeLess API는 우리 `POST /api/listing-check`다 (PayPal 호출 없음) |
+| 10 | ~32초 | **/demo/store/new-product** (주소창에 직접) | "Demo mock — sample store admin, not a real shop" 띠. 상품 "Ribbed Wool Crewneck, Ivory · $89 · 200 units · Nov 20–Dec 2" → **[Publish product]** → 창 "DisputeLess API · quick check before you publish", "Simulating 500 sale periods · N / 500"(약 7초, 편집에서 줄임) → "**Chance of a dispute per order 4.5%** · About 9.0 disputes", "Expected loss **$770** · $472–$1,140 (P10–P90)" → **결과 창 안을 아래로 스크롤**해서 **[See details and fix →]** (1920×1080에서는 스크롤해야 보인다) → AI Insert 6개 클릭 → **`[__]` 칸을 실제 값으로 채운다** (5절 아래 예시) → **[Recalculate]** → "**2.1%**", "**$327**" → **[Publish product]** → "Published · Chance of a dispute **4.5% → 2.1%** · Expected loss $770 → $327 · Disputes ~9.0 → ~4.1" | "**Assumed rates, demo store** — nothing is published to a real shop." 창 머리의 DisputeLess API는 우리 `POST /api/listing-check`다 (PayPal 호출 없음) |
 | 11 | ~6초 | **[시안 확정 대기] AG Grid 장면** | `/products`는 11/12 11:15 결정으로 없앴다. AG Grid가 들어갈 화면의 시안이 오면 채운다 | — |
 | 12 | ~10초 | 로드맵 + 로고 | — | — |
 
@@ -57,7 +57,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 | 장면 | 하는 일 | 화면 글자 | 비고 |
 |---|---|---|---|
 | A. 급한 답장을 칩으로 고치기 | [Try a rushed reply] → "+ Add" 3번 → "Remove" 2번 → 95% → **40%**, "5 good" → [Translate & check] → "Checked — this is what will be sent" → [Send in Korean] | 진행은 7번과 같은 "Seo-yeon replied with the customs ID" 흐름 | Translate & check는 실시간 AI 번역 1회 (약 7초, 공개 링크 시간당 한도를 쓴다). 3차 리뷰 버그 ①(⟦SELLER_NAME_1⟧로 막힘)은 11/12 로컬 빌드에서 **재현되지 않았다** (통과, Send 켜짐) |
-| B. 급한 답장을 그대로 보내면 (차지백 갈래) | [Try a rushed reply] → [Translate & check] → [Send in Korean] | "Reply sent in Korean · Simulated · **Risk 95%**" → "**Seo-yeon replied angrily**" “답이 이게 다예요? 카드사에 이의제기할게요.” → "Consider a full refund before it becomes a chargeback" **[Approve refund]** → "Refund approved · You approved · no refund was made, nothing was sent to PayPal" | 보낸 답장의 예측(ok / refund / cb)에 따라 갈래가 나뉜다 (DECISIONS 11/12 09:30). refund 갈래("Refund the order in full")는 이번에 화면으로 만들어 보지 못했다 [확인 필요] |
+| B. 급한 답장을 그대로 보내면 (차지백 갈래) — **찍을 수 없다. 이번 녹화에서 쓰지 않는다** | **지금 빌드(f2a9fb3)에서는 [Translate & check]에서 "✕ Facts match failed ⟦BUYER_NAME_1⟧"로 막혀 Send가 꺼진다** (3차-b 리뷰 버그 ①). ⟦BUYER_NAME_1⟧ 수정(T117)은 녹화가 끝난 뒤 배포한다. 아래 동작은 그 배포 뒤의 예정: [Try a rushed reply] → [Translate & check] → [Send in Korean] | "Reply sent in Korean · Simulated · **Risk 95%**" → "**Seo-yeon replied angrily**" “답이 이게 다예요? 카드사에 이의제기할게요.” → "Consider a full refund before it becomes a chargeback" **[Approve refund]** → "Refund approved · You approved · no refund was made, nothing was sent to PayPal" | 보낸 답장의 예측(ok / refund / cb)에 따라 갈래가 나뉜다 (DECISIONS 11/12 09:30). refund 갈래("Refund the order in full")는 이번에 화면으로 만들어 보지 못했다 [확인 필요] |
 | C. 지호 카드 | 왼쪽 Reply needed의 "PP-R-MBJ-10197650 · Knit Cardigan" → "**Offer 15% back ($7.20), the buyer keeps it**" → [Send offer] → "Offer sent ✓ · Simulated · nothing was sent", 이번 주 카드 "+$30 just now" | 버튼 글자는 "Send offer" (금액 없음) | 녹화 모드에서 실제 제안(make-offer)은 **한 번만** 보낼 수 있다 (사람 규칙: 서연·지호 실제 전송은 녹화 때 한 번만, 제안은 보내기만 하고 수락하지 않는다). 연습은 공개 링크에서만 |
 
 ## 3. 숫자 대조표 (화면 글자 ↔ 나온 곳)
@@ -104,7 +104,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
   - /demo/seller-dashboard 판매자 대시보드와 /demo/store/new-product 쇼핑몰은 **데모용 껍데기 화면** (화면 띠에 "Demo mock")
 - **가정** (화면에 Assumption 배지): 위험 %(곡선 80% → 40%, 차지백 95%·40%·3%), 손님 반응 막대, 비용 $37·$74·$85, Send 뒤 단계의 Risk %, /demo/store/new-product의 4.5% → 2.1%·$770 → $327. 출처는 `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 둘은 기획 시안의 가중치이고 통계가 아니다) → **장면 4에서 "our assumed model" 한 번, 장면 10에서 "assumed rates" 한 번**
 - **시뮬레이션** (Simulated 배지): Send 뒤 "What happens next" 단계 전부(손님 답장·Forward to carrier·세관 통과), 공개 링크의 모든 쓰기 버튼, /demo/store/new-product 게시
-- **실제 PayPal 샌드박스**: 분쟁 목록·상세 조회, 주문 조회, 거래 조회(200), 녹화 모드의 한국어 send-message(200)와 추적 등록(201). 가상 판매자·샌드박스라는 것은 타이틀에서
+- **실제 PayPal 샌드박스**: 분쟁 목록·상세 조회, 주문 조회, 녹화 모드의 한국어 send-message(200)와 추적 등록(201). 가상 판매자·샌드박스라는 것은 타이틀에서
 - **AI가 하는 일**: 한국어 번역, 답장 초안과 역번역, 화난 어조 판단, 사건 기록 요약, /demo/store/new-product 고칠 문구. **코드가 하는 일**: 원인 판정(통관 보류), 기대 손실과 추천, 날짜, 위험 %, 검사 3개, 보내도 되는지
 - **하지 말 말**: "guarantees", "predicts accurately", "AI found the customs hold"(원인은 코드가 판단), "every step was a real PayPal call", "analyzes your PayPal dispute history"(/demo/store/new-product은 PayPal 이력을 읽지 않는다)
 
@@ -133,16 +133,16 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 ## 6. 녹화 체크 (기획자 쪽)
 
 - [ ] 녹화 시각: 09:00 KST 이후 (가능하면 **14:00 KST 이후** — 날짜 줄과 Follow-up이 맞는다). 녹화 중 재배포 없음
-- [ ] 녹화 전에 공개 링크의 네 화면을 한 번씩 열어 둔다 (첫 로드 3~7초). 서랍도 한 번 연다
+- [ ] 녹화 전에 공개 링크의 세 화면을 한 번씩 열어 둔다 (첫 로드 3~7초). 서랍도 한 번 연다
 - [ ] 1920×1080, 확대 100%, 밝은 화면. 언어는 **EN** 그대로
 - [ ] 화면 숫자 = 3절 표 (특히 80% → 40%, 95%, $37 / $74 / $85, 4.5% → 2.1%, $770 → $327, $216 → $44)
 - [ ] Follow-up 날짜 = 녹화일 + 7 (11/12면 "11월 19일")
 - [ ] "demo data here"가 내레이션에 있다 (장면 3)
 - [ ] "assumed" 한 번씩 (장면 4, 10), "simulated" 한 번 (장면 7)
 - [ ] /demo/seller-dashboard에서는 [Handle all 3 with DisputeLess]나 서연 줄의 Respond만 누른다
-- [ ] /demo/store/new-product `[__]` 입력칸을 채우고 Recalculate → Publish
+- [ ] /demo/store/new-product 결과 창 안을 스크롤해 [See details and fix →] → `[__]` 입력칸을 채우고 Recalculate → Publish
 - [ ] [시안 확정 대기] AG Grid 장면
-- [ ] 배포 주소(disputeless.onrender.com)가 화면에 한 번 보인다
+- [ ] 배포 주소: 주소창의 `disputeless.onrender.com`과 "Public demo · simulated sends"가 한 화면에 함께 보인다 (한 번)
 - [ ] 실제 전송 장면(5·6·7·8·9)은 경희 녹화분. 서연 전송 한 번뿐, 서연에게 수락·환불 없음
 - [ ] Autopilot·Mike 장면 없음, 화면에 없는 기능을 말하지 않는다
 - [ ] 무료 라이선스 음악, 3분 미만, YouTube 공개 링크
@@ -152,5 +152,6 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - ~~[한국어] 버튼을 Desk에서 누르면 화면이 깨진다~~ → T113으로 고침 (11/12). 한국어 화면도 찍을 수 있다.
 - 녹화 모드 화면 글자 (5절 목록) — 코드로만 확인 [확인 필요]
 - refund 갈래 진행 화면 [확인 필요]
+- 2-1 장면 B(급한 답장 그대로 Send → 차지백 갈래)는 지금 빌드에서 ⟦BUYER_NAME_1⟧ 검사 실패로 Send가 꺼진다 (3차-b 리뷰 버그 ①). T117 수정은 녹화 뒤 배포하므로 **이번 녹화에서는 찍지 않는다**.
 - 추적 두 번째 등록 시 화면 글자 [확인 필요]
 - 이번 주 카드 $68은 보낸 뒤에도 그대로이고 "+$N just now"만 붙는다 (3차 리뷰 ⑤). 영상에서 $68을 말로 읽지 않는다.

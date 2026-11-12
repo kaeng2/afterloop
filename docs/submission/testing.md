@@ -6,14 +6,14 @@ Open these three addresses. They are separate screens; none links to the others 
 
 | Order | Address | What you see |
 |---|---|---|
-| 1 | [`/demo/seller-dashboard`](https://disputeless.onrender.com/demo/seller-dashboard) | First scene: a demo seller dashboard (marked "Demo mock — not a real PayPal page"). Click **Handle all with DisputeLess** or **Respond →** to go to the desk. |
+| 1 | [`/demo/seller-dashboard`](https://disputeless.onrender.com/demo/seller-dashboard) | First scene: a demo seller dashboard (marked "Demo mock — not a real PayPal page"). Click **Handle all 3 with DisputeLess** (or **Respond** on Seo-yeon's row) to go to the desk. The other rows' Respond links also open Seo-yeon's case; pick Ji-ho or Mike from the desk's list instead. |
 | 2 | [`/`](https://disputeless.onrender.com/) | The DisputeLess desk: three real PayPal sandbox disputes. Pick Seo-yeon's case (Wool Sweater) to see the risk curve, the options the engine compared, and the reply editor with a live forecast. **Send** is simulated in public mode. |
 | 3 | [`/demo/store/new-product`](https://disputeless.onrender.com/demo/store/new-product) | New-listing check: a demo store admin "Add a product" form. **Publish product** runs the pre-publish check (500 simulated sale periods, assumed rates); **See details and fix** shows what to add. Standalone screen. |
 
 Notes
 - The first request after the server wakes up can take a few seconds (Render free tier + PayPal sandbox reads). After that, clicks are fast.
 - Numbers marked **Assumption** come from stated assumptions; items marked **Demo data** come from seed data. See the [honesty table](honesty-table.md).
-- Language: **EN | 한국어** at the top right switches screen text only (numbers, buyer messages and AI text stay the same).
+- Language: **EN | 한국어** at the top right of the seller dashboard and the desk switches screen text only (numbers, buyer messages and AI text stay the same). `/demo/store/new-product` has no switch: it keeps the language you last chose on the other screens, or add `?lang=ko` (or `?lang=en`) to its address.
 - AI: answers for the demo cases are cached. Uncached AI calls on the public link have an hourly cap; when it is reached, the screen says so instead of calling the model.
 
 ## Test credentials

@@ -10,8 +10,8 @@
 
 Standalone addresses on the [live demo](https://disputeless.onrender.com):
 
-1. **`/demo/seller-dashboard`** — first scene (demo seller dashboard) → click **Respond →** to reach **`/`**, the DisputeLess desk with three real PayPal sandbox disputes.
-2. **`/demo/store/new-product`** — new-listing check before you publish (Scene 3).
+1. **`/demo/seller-dashboard`** — a demo seller dashboard (mock, not a real PayPal page) → click **Handle all 3 with DisputeLess** (or **Respond** on Seo-yeon's row) to reach **`/`**, the DisputeLess desk with three real PayPal sandbox disputes. The other rows' Respond links also open Seo-yeon's case; pick Ji-ho or Mike from the desk's list.
+2. **`/demo/store/new-product`** (type it in the address bar) — the new-listing check that runs before you publish a product.
 
 Public mode never writes to PayPal; sends are simulated. Details: [docs/submission/testing.md](docs/submission/testing.md).
 
@@ -110,36 +110,4 @@ claude   # 첫 메시지: "tasks/T004.md 를 읽고 작업해줘"
 
 ## 정직성 표
 
-발표와 제출물에서 무엇이 실제 PayPal 샌드박스이고 무엇이 시드·가정인지 구분한다. (내용은 기능이 완성되면 채운다)
-
-| 기능 | 실제 PayPal 샌드박스 | 시드 데이터 | 가정값 |
-|---|---|---|---|
-| OAuth 토큰 발급 | | | |
-| 분쟁 목록·상세 조회 | | | |
-| BoardState 변환 (허용 대응) | | | |
-| 원인 분류 (LLM) | | | |
-| 기대 손실 계산 | | | |
-| 정책 규칙 R1~R5 | | | |
-| 메시지 초안·번역 | | | |
-| send-message | | | |
-| make-offer | | | |
-| accept-claim / provide-evidence | | | |
-| 분쟁 종결 (구매자 수락 / adjudicate) | | | |
-| 추적번호 일괄 등록 | | | |
-| 분쟁함 | | | |
-| 상품 진단 리허설 | | | |
-| 원인 리포트 | | | |
-| 분류 정확도 평가 | | | |
-
-### 가정값과 근거
-현재 값의 정본은 [config/params.json](config/params.json)이다. 여기에는 근거만 적는다.
-
-| 가정값 | config 키 | source | 근거 출처 |
-|---|---|---|---|
-| 승소 확률 p_win | `pWinBase` | | |
-| 패소 수수료 f | `feeCents` | | |
-| 대응 시간 비용 (증빙 / 제안) | `tFightCents`, `tOfferCents` | | |
-| 재구매 가치 V | `repurchaseValueCents` | | |
-| 이탈 확률 (싸움 / 수락 / 환불) | `cFight`, `cAccept`, `cRefund` | | |
-| 제안 비율 x | `offerRate` | | |
-| 수락률 곡선 (기본률 / 배수 / 상한) | `pAcceptBase`, `pAcceptSlope`, `pAcceptCap` | | |
+정직성 표(실제 PayPal 샌드박스 · 데모 데이터 · 가정값 · 시뮬레이션 · AI가 하는 일 · 코드가 정하는 일 · 알려진 한계)는 [docs/submission/honesty-table.md](docs/submission/honesty-table.md) 한 곳에 둔다. 가정값의 정본은 [config/params.json](config/params.json), [config/reply-model.json](config/reply-model.json), [config/listing-model.json](config/listing-model.json)이다.
