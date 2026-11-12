@@ -25,7 +25,7 @@ import type { CheckTokensFn, FactToken, TokenCheck } from '@/types';
 // ───────────────────────────── 토큰 문법 ─────────────────────────────
 
 /** 토큰 종류 (계약: `src/types.ts` 6부 `FactToken['kind']`). */
-const KINDS: readonly FactToken['kind'][] = [
+const KINDS: readonly TokenKind[] = [
   'DATE',
   'AMOUNT',
   'TRACKING',
@@ -33,7 +33,13 @@ const KINDS: readonly FactToken['kind'][] = [
   // v2.9 이름 토큰 (T056). 값은 `src/ai/names.ts`가 `config/rules.json`의 `reply.names`에서 만든다
   'BUYER_NAME',
   'SELLER_NAME',
+  // v2.16 수선 기간 (T120b). 값은 `repairDaysFact`가 만든 현지 표기다.
+  // `FactToken['kind']`(`src/types.ts`)에는 아직 없다 — 컨트롤 타워 결정 대기. 그 전까지는 여기서만 넓혀 쓴다
+  'DAYS',
 ];
+
+/** 이 파일이 아는 토큰 종류 = 계약의 종류 + 수선 기간 (`DAYS`). */
+export type TokenKind = FactToken['kind'] | 'DAYS';
 
 /** 이름 종류. 값 글자를 "직접 쓴 사실값"으로 세지 않는다 (이름 검사는 하지 않는다. T056 1번). */
 const NAME_KINDS: ReadonlySet<FactToken['kind']> = new Set<FactToken['kind']>(['BUYER_NAME', 'SELLER_NAME']);
@@ -145,6 +151,33 @@ function formatDate(raw: string, locale: FactLocale): string {
   }
 }
 
+/** 영업일 수(양의 정수 문자열) → 현지 표기 (`5 business days`, `5영업일`). 점·소수는 만들지 않는다. */
+function formatBusinessDays(raw: string, locale: FactLocale): string {
+  if (!/^[1-9][0-9]{0,2}$/.test(raw)) throw new Error('DAYS 값은 영업일 수(양의 정수)여야 한다');
+  switch (locale) {
+    case 'ko':
+      return `${raw}영업일`;
+    case 'en':
+      return `${raw} business days`;
+    case 'ja':
+      return `${raw}営業日`;
+    case 'de':
+      return `${raw} Werktage`;
+    default:
+      throw new Error('모르는 언어다');
+  }
+}
+
+/**
+ * 수선 기간 사실값 (`⟦DAYS_1⟧`). 값은 이미 현지 표기다 (`fillTokens`는 값을 그대로 채운다).
+ * 일수는 `config/rules.json`의 `reply.repairDays`에서 온다 — 모델은 숫자를 보지 못한다.
+ * `kind`가 계약 타입에 없어 한 번 좁힌다 (계약에 `DAYS`가 들어가면 이 단언이 필요 없어진다).
+ */
+export function repairDaysFact(days: number, locale: FactLocale, token = '⟦DAYS_1⟧'): FactToken {
+  const value = formatBusinessDays(String(days), locale);
+  return { token, kind: 'DAYS' as FactToken['kind'], value };
+}
+
 /**
  * 센트 정수 → `$7.20` (모든 언어 공통, USD).
  * 정수·문자열 연산만 쓴다 (`/100` 후 `toFixed` 같은 부동소수 연산 금지. `src/exec/amount.ts`와 같은 방식).
@@ -163,12 +196,14 @@ function formatAmount(raw: string): string {
  * `AMOUNT`: 센트 정수 → `$7.20`. `TRACKING`·`CUSTOMS_STATUS`: 그대로.
  * `BUYER_NAME`·`SELLER_NAME`: 그대로 — 값이 이미 그 언어 꼴이다 (`서연 님`. 언어 꼴은 `src/ai/names.ts`가 고른다).
  */
-export function formatFact(kind: FactToken['kind'], raw: string, locale: FactLocale): string {
+export function formatFact(kind: TokenKind, raw: string, locale: FactLocale): string {
   switch (kind) {
     case 'DATE':
       return formatDate(raw, locale);
     case 'AMOUNT':
       return formatAmount(raw);
+    case 'DAYS':
+      return formatBusinessDays(raw, locale);
     case 'TRACKING':
     case 'CUSTOMS_STATUS':
     case 'BUYER_NAME':
@@ -555,7 +590,7 @@ function needlesOf(fact: FactToken): string[] {
   for (const locale of FACT_LOCALES) {
     try {
       // 값이 이미 현지 표기면(예: `$7.20`) `formatFact`가 예외를 던진다. 그때는 값 그대로만 쓴다
-      needles.add(formatFact(fact.kind, fact.value, locale));
+      needles.add(formatFact(fact.kind as TokenKind, fact.value, locale));
     } catch {
       /* 현지 표기를 만들 수 없는 값은 건너뛴다 */
     }
