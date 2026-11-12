@@ -1,23 +1,29 @@
 'use client';
 
 /**
- * 제안이 먼저인 분쟁(지호)의 짧은 zone-work 카드 (T106, 시안 L345-357 · 차이 목록 F1-55 · F1-56).
+ * 지호(#1038) 한 장 카드 (T106 → T122c 시안 v6 L443–L478, 차이 목록 V6-B45 ~ V6-B51). 두 갈래를 **데이터로** 고른다
+ * (`case-detail.tsx`가 엔진 최선 수로):
  *
- *   AI 알약 · "Offer 15% back ($7.20), the buyer keeps it" · 한 줄 설명 · [Send offer] → "Offer sent ✓"(꺼짐) + Simulated
+ *   - `kind: 'message'` = 새 품질 사건 + 엔진 `repair` 수 → 실행 send-message (돈이 움직이지 않음)
+ *   - `kind: 'offer'`   = 기존 색상 사례 + 엔진 `offer` 수 (15% $7.20) → 실행 make-offer
  *
- * **관문은 답장 칸과 같다**: 보기용 값은 `buildReplyView`, 버튼을 켤지는 `canSendOffer`, 보내기는 서버 액션
- * `sendReplyAction`({ kind: 'offer', replyId, confirmedCommitments })만 — 금액·글은 보내지 않는다(서버가 엔진으로 다시
- * 만든다). 실제 전송 모드면 확인 창을 거친다. 전송 모드(Simulated/Live) 글은 서버가 정한 `modeKey` 그대로 보인다.
- * 금액은 제목·확인 창·버튼 모두 같은 표기(엔진 `amountCents` → `toDollarsCents`, 부르는 쪽이 넘긴다).
+ *   [구매자 대화] · AI 알약 · 제목 · 설명 · "Keeps ≈$N" · "How AI handled this" 4단계 ·
+ *   "What the buyer will receive (L)" + Translated · "On approval" + 호출 이름 · [Send] → "Sent ✓"(꺼짐) + Simulated
+ *
+ * **관문은 답장 칸과 같다**: 보기용 값은 `buildReplyView`, 버튼을 켤지는 `canSendOffer`(제안) / `canSend`(메시지),
+ * 보내기는 서버 액션 `sendReplyAction`({ kind, replyId, confirmedCommitments })만 — 금액·글은 보내지 않는다(서버가
+ * 엔진으로 다시 만든다). 실제 전송 모드면 확인 창을 거친다. 전송 모드(Simulated/Live) 글은 서버가 정한 `modeKey` 그대로.
+ * 보낼 글은 서버가 검사한 전송본(`view.outgoing`)만 보인다 — 없으면 상자 대신 "AI 답장이 준비되지 않음" 알림.
  * 이 파일은 PayPal·AI를 부르지 않고 숫자를 만들지 않는다.
  */
 import { useRef, useState } from 'react';
 
-import { useT } from '../_shared/locale-context';
+import { useLocale, useT } from '../_shared/locale-context';
 import { sendReplyAction } from '../cases/actions';
 import {
   BLOCK_KEYS,
   buildReplyView,
+  canSend,
   canSendOffer,
   REPLY_KEYS,
   type ReplyViewInput,
@@ -25,8 +31,8 @@ import {
   type SendOutcome,
   type SendState,
 } from '../cases/reply-model';
+import { OneCard, translatedFor, type OneCardMessage } from './one-card';
 import { useSavings } from './savings';
-import { WorkCard } from './work-card';
 
 /** 판매자가 확인한 약속 범주 (답장 칸과 같은 값). */
 type CommitmentCategory = ReplyViewInput['confirmed'][number];
@@ -36,14 +42,24 @@ export type OfferWorkProps = {
   base: Omit<ReplyViewInput, 'confirmed' | 'sendState' | 'outcome'>;
   /** 서버가 기억한 답장 번호. 없으면 보낼 수 없다. */
   replyId: string | null;
-  /** 카드 제목 (엔진 제안 금액·비율로 서버가 만든 글). */
+  /** 갈래: `offer` = make-offer (기존 색상 사례), `message` = send-message (repair). 서버가 엔진 계획으로 고른다. */
+  kind?: 'offer' | 'message';
+  /** 카드 제목 (엔진 값·데이터로 서버가 만든 글). */
   title: string;
   /** 한 줄 설명. */
   body: string;
-  /** 엔진 제안 금액 표기 (제목과 같은 표기). 확인 창에 쓴다. */
-  amount: string;
-  /** 구매자가 받을 글 접힘 제목 ("Ji-ho will see (Korean)"). */
-  readsLabel: string;
+  /** 엔진 제안 금액 표기 (제목과 같은 표기). 제안 확인 창에 쓴다. 메시지 갈래는 `null`. */
+  amount: string | null;
+  /** 구매자 언어 이름 ("Korean"). "What the buyer will receive (Korean)". */
+  languageName: string;
+  /** "Keeps ≈$N" (엔진 `actionSavings` 표기를 문구에 넣은 글). 없으면 알약 없음. */
+  keep?: string | null;
+  /** "How AI handled this" 단계 글 (서버가 엔진·데이터 값으로 채운 문구). */
+  steps?: string[];
+  /** 구매자 대화 (실제 분쟁 글). 없으면 칸 없음. */
+  message?: OneCardMessage | null;
+  /** "On approval" 호출 이름 (실제 이름만: make-offer / send-message). */
+  api: string;
   /** T091 "+$N just now" (엔진 actionSavings 표기). 없으면 금액 없는 완료 알림만. */
   savings?: string | null;
   /** 테스트용 서버 액션 대신. */
@@ -54,32 +70,46 @@ export function OfferWork({
   disputeId,
   base,
   replyId,
+  kind = 'offer',
   title,
   body,
   amount,
-  readsLabel,
+  languageName,
+  keep = null,
+  steps = [],
+  message = null,
+  api,
   savings = null,
   action = sendReplyAction,
 }: OfferWorkProps) {
   const t = useT();
+  const uiLocale = useLocale();
   const [confirmed, setConfirmed] = useState<CommitmentCategory[]>([]);
   const [sendState, setSendState] = useState<SendState>('idle');
   const [outcome, setOutcome] = useState<SendOutcome | null>(null);
   const inFlight = useRef(false);
   const { report, markDone, unmarkDone } = useSavings();
-  /** T116 F1-45: 누르는 즉시 "Offer sent ✓"·Done today (시안 동기 setState). 실패·차단이면 되돌린다. */
+  /** T116 F1-45: 누르는 즉시 "Sent ✓"·Done today (시안 동기 setState). 실패·차단이면 되돌린다. */
   const [optimistic, setOptimistic] = useState(false);
 
   const view = buildReplyView({ ...base, confirmed, sendState, outcome });
   const gate: SendGate =
-    replyId === null && view.gate.hasDraft ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation } : canSendOffer(view);
+    replyId === null && view.gate.hasDraft
+      ? { ok: false, reasonKey: BLOCK_KEYS.noTranslation }
+      : kind === 'offer'
+        ? canSendOffer(view)
+        : canSend(view);
   const sent = sendState === 'done' && outcome !== null && outcome.ok;
 
   async function send() {
     if (!gate.ok || replyId === null || inFlight.current || sent) return;
     inFlight.current = true;
     setSendState('sending');
-    if (view.mode === 'live' && !window.confirm(t('case.send.confirmLiveOffer', { disputeId, amount }))) {
+    const confirmText =
+      kind === 'offer' && amount !== null
+        ? t('case.send.confirmLiveOffer', { disputeId, amount })
+        : t('case.send.confirmLive', { disputeId });
+    if (view.mode === 'live' && !window.confirm(confirmText)) {
       inFlight.current = false;
       setSendState('idle');
       return;
@@ -89,7 +119,7 @@ export function OfferWork({
     markDone(disputeId, { simulated: true });
     let next: SendOutcome;
     try {
-      next = await action({ disputeId, kind: 'offer', replyId, confirmedCommitments: confirmed });
+      next = await action({ disputeId, kind, replyId, confirmedCommitments: confirmed });
     } catch {
       next = {
         ok: false,
@@ -124,10 +154,52 @@ export function OfferWork({
   const result = view.result;
   const titleId = `offer-work-title-${disputeId}`;
   const whyId = `offer-work-why-${disputeId}`;
+  const done = sent || optimistic;
+  const code = base.buyerLocale === null ? null : base.buyerLocale.slice(0, 2).toLowerCase();
+  const draftText = view.available && view.outgoing !== null ? view.outgoing.text : null;
+  // Translated 줄 = 영어 역번역. 화면이 영어이고 보낼 글이 영어가 아닐 때만 (KO 화면은 시안 ko 사전처럼 비운다)
+  const draftTr = uiLocale === 'en' ? translatedFor(view.backTranslationEn, code, uiLocale) : null;
 
   return (
-    <WorkCard titleId={titleId} title={title} body={body} className="offer-work">
-      {view.unavailableKey === null ? null : <p className="notice">{t(view.unavailableKey)}</p>}
+    <OneCard
+      titleId={titleId}
+      title={title}
+      body={body}
+      keep={keep}
+      message={message}
+      steps={steps}
+      className="offer-work"
+      draft={
+        draftText === null
+          ? null
+          : {
+              title: t(done ? 'card.draftSentT' : 'card.draftT', { language: languageName }),
+              code,
+              original: draftText,
+              translated: draftTr,
+              sent: done,
+            }
+      }
+      approval={{ label: t('card.apiT'), api }}
+      action={
+        <>
+          <button
+            type="button"
+            className="btn b-black"
+            disabled={!gate.ok || sendState === 'sending' || sent}
+            aria-describedby={whyId}
+            onClick={() => void send()}
+          >
+            {done ? t('card.sent') : sendState === 'sending' ? t('case.send.sending') : t('card.send')}
+          </button>
+          {/* 전송 모드 표시 (Simulated / Live) — 서버가 정한 값 그대로 */}
+          <span className={view.modeKey === REPLY_KEYS.modeLive ? 'oc-mode offer-work-mode offer-work-mode-live' : 'oc-mode offer-work-mode'}>
+            {t(view.modeKey)}
+          </span>
+        </>
+      }
+    >
+      {draftText === null ? <p className="notice">{t(view.unavailableKey ?? 'card.noDraft')}</p> : null}
       {view.addedInTranslation.length === 0 ? null : (
         <div className="notice" role="alert">
           <p>{t('case.reply.addedInTranslation')}</p>
@@ -154,27 +226,11 @@ export function OfferWork({
           ))}
         </fieldset>
       )}
-
-      <div className="offer-work-foot">
-        <button
-          type="button"
-          className="tracking-button"
-          disabled={!gate.ok || sendState === 'sending' || sent}
-          aria-describedby={whyId}
-          onClick={() => void send()}
-        >
-          {sent || optimistic ? t('today.offer.sent') : sendState === 'sending' ? t('case.send.sending') : t('today.offer.send')}
-        </button>
-        {/* 전송 모드 표시 (Simulated / Live) — 서버가 정한 값 그대로 */}
-        <span className={view.modeKey === REPLY_KEYS.modeLive ? 'offer-work-mode offer-work-mode-live' : 'offer-work-mode'}>
-          {t(view.modeKey)}
-        </span>
-        <span id={whyId} className="small muted">
-          {gate.ok || gate.reasonKey === null || result !== null ? null : t(gate.reasonKey)}
-        </span>
-      </div>
-
-      <div className="offer-work-result" aria-live="polite">
+      <span id={whyId} className="small muted" hidden={gate.ok || gate.reasonKey === null || result !== null}>
+        {gate.ok || gate.reasonKey === null || result !== null ? null : t(gate.reasonKey)}
+      </span>
+      {/* 빈 칸이 카드 gap(18px)을 차지하지 않게 결과가 없으면 숨긴다 (자리는 그대로 — T118) */}
+      <div className="offer-work-result" aria-live="polite" hidden={result === null}>
         {result === null ? null : result.kind === 'simulated' ? (
           <p className="small">{t('case.send.simulated')}</p>
         ) : result.kind === 'sent' ? (
@@ -196,15 +252,6 @@ export function OfferWork({
           </div>
         )}
       </div>
-
-      {view.available && view.outgoing !== null ? (
-        <details className="offer-work-note">
-          <summary className="small">{readsLabel}</summary>
-          <p className="small" lang={base.buyerLocale ?? undefined}>
-            {view.outgoing.text}
-          </p>
-        </details>
-      ) : null}
-    </WorkCard>
+    </OneCard>
   );
 }
