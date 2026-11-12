@@ -293,8 +293,8 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 .dk .reply-box-title{font-size:12px;font-weight:700;color:#3F4144}
 .dk .reply-box .reply-outgoing{font-size:14px}
 .dk .reply-box .reply-outgoing:lang(ko){font-family:var(--font-noto-kr),var(--font-figtree),sans-serif}
-/* L295–L302 예상 반응 · 기분 */
-.dk .reaction{display:grid;grid-template-columns:minmax(0, 1fr) 140px;gap:16px;align-items:center;padding:12px 16px;border-radius:16px;background:#F6F7F9}
+/* L295–L302 예상 반응 · 기분. T122a 시안 v6 L392: 오른쪽 칸 140px → 200px */
+.dk .reaction{display:grid;grid-template-columns:minmax(0, 1fr) 200px;gap:16px;align-items:center;padding:12px 16px;border-radius:16px;background:#F6F7F9}
 .dk .reaction-head{display:flex;justify-content:flex-start;gap:8px;font-size:12px}
 .dk .reaction-head>:first-child{margin-right:auto}
 .dk .reaction-head .num{color:#3F4144}
@@ -303,14 +303,50 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 /* L843 pSt: #000000, cb ≥ .5면 #C4321F */
 .dk .reaction-legend strong{color:#000000}
 .dk .reaction-legend strong.reaction-legend-high{color:#C4321F}
-.dk .reaction-mood{display:flex;flex-direction:column;align-items:flex-end;text-align:right;border-left:1px solid #E4E6E9;padding-left:14px}
+/* T122a 시안 v6 L393: border-left #E4E6E9 · padding-left 16px · gap 2px */
+.dk .reaction-mood{display:flex;flex-direction:column;align-items:flex-end;text-align:right;border-left:1px solid #E4E6E9;padding-left:16px;gap:2px}
 .dk .reaction-mood-label{font-size:12px;font-weight:700;color:#3F4144}
-/* L844 moodSt 22px · <b> 700 · line-height 1.2 */
-.dk .reaction-mood-value{font-size:22px;font-weight:700;line-height:1.2;color:#000000}
+/* v6 L393: 무응답 % 16px/700 #9AA0A6 취소선 → 화살표 16px #6C7378 → 지금 % (rToSt 30px/900, line-height 1.1, -0.5px, 높으면 #C4321F 아니면 #002991, color .3s) */
+.dk .reaction-risk{display:inline-flex;align-items:baseline;gap:6px;white-space:nowrap}
+.dk .reaction-risk-from{font-size:16px;font-weight:700;color:#9AA0A6;text-decoration:line-through}
+.dk .reaction-risk-arrow{font-size:16px;color:#6C7378}
+.dk .reaction-risk-to{font-size:30px;line-height:1.1;font-weight:900;letter-spacing:-0.5px;font-variant-numeric:tabular-nums;transition:color .3s ease;color:#002991}
+.dk .reaction-risk-to.reaction-risk-high{color:#C4321F}
+/* v6 L393 "{moodNext} · <b moodSt>" 12px #3F4144 nowrap. v6 L1058 moodSt 12px (line-height 속성 삭제), color .3s */
+.dk .reaction-mood-next{font-size:12px;color:#3F4144;white-space:nowrap}
+.dk .reaction-mood-value{font-size:12px;font-weight:700;color:#000000;transition:color .3s ease}
 .dk .reaction-mood-value.reaction-mood-bad{color:#C4321F}
-.dk .reaction-mood-now{font-size:11px;color:#6C7378}
 /* L305 Send = `.btn.b-black` (15px · border 0 · gap 8px · 44px) */
 .dk .reply-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;font-size:15px;font-weight:700}
+
+/* ── T122a 시안 v6 "✦ AI Respond now" 스위치 · 빈 답장 카드 (L49 · L323–L332 · L364–L368) ── */
+/* v6 L49 (1부 <style> 규칙 그대로, 앞에 .dk) */
+.dk .tg{display:inline-flex;align-items:center;gap:10px;padding:6px 6px 6px 14px;border-radius:1000px;border:0;background:#0A1B3D;font:inherit;font-size:14px;font-weight:700;color:#FFFFFF;cursor:pointer;box-shadow:rgba(10,27,61,.25) 0 4px 12px}.dk .tg:hover{background:#13284F}.dk .tg-tr{position:relative;width:44px;height:26px;border-radius:1000px;background:#4A5878;transition:background .2s ease;flex-shrink:0}.dk .tg-kn{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:rgba(0,0,0,.25) 0 1px 3px;transition:left .2s ease}.dk .tg.on .tg-tr{background:#0070E0}.dk .tg.on .tg-kn{left:21px}
+.dk .tg:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+/* v6 L325 스위치 안 AI 알약 box-shadow:none */
+.dk .tg .ai-pill{box-shadow:none}
+/* v6 L324 꺼짐 카드: radius 24 · 테두리 #E4E6E9 · 흰 바탕 · padding 18/20 · 세로 gap 12 · 그림자 */
+.dk .work.work-simple{border-radius:24px;border:1px solid #E4E6E9;background:#FFFFFF;padding:18px 20px;display:flex;flex-direction:column;gap:12px;box-shadow:rgba(0,0,0,0.04) 0 2px 8px}
+/* v6 L325 · L332 머리: 양끝 정렬 · gap 12 · wrap. 왼쪽 "Your reply" 18px + (켜짐) 부제 13px #6C7378 gap 10 */
+.dk .work>.work-head{justify-content:space-between;gap:12px}
+.dk .work-head-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dk .work-head-left .desk-card-sub{font-size:13px;color:#6C7378}
+.dk .work-head-left .desk-card-title{margin:0}
+.dk .reply-simple{display:flex;flex-direction:column;gap:12px}
+/* v6 L326 textarea rows 4 */
+.dk .reply-simple-input{width:100%;resize:vertical;border:1px solid #CFD3D8;border-radius:16px;padding:14px 16px;font:inherit;font-size:15px;line-height:1.5;color:#0B0F14;background:#FFFFFF;outline:none;display:block}
+.dk .reply-simple-input:focus-visible{box-shadow:#FFFFFF 0 0 0 2px,#097FF5 0 0 0 4px}
+/* v6 L327 아랫줄: 힌트 12px #6C7378 + Send */
+.dk .reply-simple-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dk .reply-simple-hint{font-size:12px;color:#6C7378}
+.dk .reply-simple-foot .reply-send{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-left:auto}
+.dk .reply-box-simple{align-self:stretch}
+/* v6 L366: 번역 칸은 editor 안쪽 아래 (#F6F7F9 · 위 테두리 #E4E6E9 · padding 10/14/12). 글 14px (koSt) */
+.dk .reply-editor .reply-box-in{border-radius:0;border-top:1px solid #E4E6E9;background:#F6F7F9;padding:10px 14px 12px;min-width:0;align-self:auto}
+/* v6 L368: 점검 tray 테두리 1px #E4E6E9 · radius 18 · align-self stretch · min-width 0 (v6 L60 .tray 바탕·안쪽 여백 그대로) */
+.dk .reply-pair>.reply-tray{border:1px solid #E4E6E9;border-radius:18px;align-self:stretch;min-width:0;background:#F6F7F9;padding:10px 12px 12px}
+/* v6 L314: 말풍선 보조줄 "Translated" 굵은 #0070E0 */
+.dk .case-bubble-tr{font-weight:700;color:#0070E0}
 
 /* ── 다른 항목 상세 (L345–L356 "Other cases": 지호 · 추적 · 상품 · Mike) ── */
 .dk .work-detail{display:flex;flex-direction:column;gap:16px}

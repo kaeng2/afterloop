@@ -293,8 +293,11 @@ describe('F3-22 · F4-32: 빈 답장 = 무응답 예측 (엔진 빈 글 + 늦은
     const b = await base();
     html(panel(b, { forecaster }));
     const anchor = buildReplyView({ ...b, confirmed: [], sendState: 'idle', outcome: null }).draftEn?.text as string;
-    expect(seen[seen.length - 1].text).toBe(anchor);
-    expect(seen[seen.length - 1].delayDays).toBe(DELAY);
+    // T122a: 마지막 호출은 위험 상자 "전" 값(무응답 예측). 글 예측은 글 그대로 + delayDays 그대로
+    const typed = seen.filter((input) => input.text !== '');
+    expect(typed[typed.length - 1].text).toBe(anchor);
+    expect(typed[typed.length - 1].delayDays).toBe(DELAY);
+    expect(seen[seen.length - 1]).toMatchObject({ text: '', delayDays: DELAY + 2 });
   });
 
   it('답장 칸이 곡선 상자에 무응답 날짜를 넣는다 (글이 있으면 null)', () => {

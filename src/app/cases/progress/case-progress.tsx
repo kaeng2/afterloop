@@ -154,7 +154,6 @@ function Bubbles({
   state,
   outcome,
   live,
-  language,
   buyerShort,
   sentText,
   sentLocale,
@@ -182,8 +181,9 @@ function Bubbles({
               {sentText}
             </p>
             <p className="cprog-bubble-sub">
-              {/* T116 F5-19: 고친 글(Translate & check 뒤)이면 시안 v.sentAuto, 아니면 v.sentKo */}
-              {t(sentEdited ? 'case.progress.sentAutoBubble' : 'case.progress.sentBubble', { language })}
+              {/* T116 F5-19: 고친 글(Translate & check 뒤)이면 시안 v.sentAuto, 아니면 v.sentKo.
+                  T122a 시안 v6 L534: "Sent · translated" (언어 이름 없음). "auto" 표기는 Send 이후 예외(Auto 없음)로 빼서 두 키가 같은 글 */}
+              {t(sentEdited ? 'case.progress.sentAutoBubble' : 'case.progress.sentBubble')}
               {live ? null : ` · ${t('case.progress.simulated')}`}
             </p>
           </div>

@@ -230,10 +230,11 @@ describe('배치: 한 열, 위에서 아래로', () => {
       at('id="work-title"'),
       at('class="choice-list"'),
       at('class="reply-textarea"'),
+      // T122a 시안 v6 L366–L368: 번역 칸은 입력칸 아래(editor 안), 점검 tray는 그 오른쪽
+      at('class="reply-block reply-box reply-box-in"'),
       at('class="reply-tray-chips"'),
-      at('class="reply-block reply-box"'),
       at('class="reply-foot"'),
-      at('Send in Korean'),
+      at('>Send</button>'),
     ];
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     // 예측 어댑터가 없으면(null) 위험 곡선 카드는 그리지 않는다. 비교 카드는 선택지 카드로 바뀌었다
@@ -269,14 +270,15 @@ describe('배치: 한 열, 위에서 아래로', () => {
     expect(bubble).toMatch(/max-width:/);
   });
 
-  it('T090 두 칸 나란히: 왼쪽 입력칸(영어 초안 미리보기), 오른쪽 "She’ll see (Korean)" 검사받은 전송본 (회색 바탕, 테두리 없음)', async () => {
+  it('T122a 두 칸 나란히(시안 v6): 왼쪽 editor = 입력칸 + 아래 "Translation (Korean)" 검사받은 전송본, 오른쪽 점검 tray', async () => {
     const markup = await fullMarkup();
     const pair = markup.slice(markup.indexOf('class="reply-pair"'), markup.indexOf('class="reply-foot"'));
-    const editor = pair.slice(0, pair.indexOf('class="reply-block reply-box"'));
+    const editor = pair.slice(0, pair.indexOf('class="reply-block reply-box reply-box-in"'));
     expect(editor).toMatch(/<textarea[^>]*class="reply-textarea"[^>]*lang="en"/);
-    const outgoing = pair.slice(pair.indexOf('class="reply-block reply-box"'));
-    // 지시서 T090 8번: 제목은 시안 문구 그대로, 언어 이름만 데이터(구매자 언어)에서
-    expect(outgoing).toContain(t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') }));
+    const outgoing = pair.slice(pair.indexOf('class="reply-block reply-box reply-box-in"'), pair.indexOf('class="reply-tray"'));
+    // 제목은 시안 v6 문구 그대로, 언어 이름만 데이터(구매자 언어)에서
+    expect(outgoing).toContain(t('case.reply.translationTitle', { language: t('case.view.lang.KO') }));
+    expect(outgoing).toContain('Translation (Korean)');
     expect(outgoing).toContain('lang="ko"');
     // 출처 표시: "Use AI draft" 단추의 AI 알약 (미리보기 칸에는 배지를 두지 않는다 — 시안)
     expect(markup).toContain('class="ai-pill ai-pill-small"');
@@ -310,7 +312,7 @@ describe('배치: 한 열, 위에서 아래로', () => {
     expect(markup).not.toContain('coaching tips');
   });
 
-  it('T090 맨 아래 한 줄: 검사 줄 없음(Details 안 3개), 전송 모드 작은 글씨가 [Send in Korean] 왼쪽', async () => {
+  it('T090 맨 아래 한 줄: 검사 줄 없음(Details 안 3개), 전송 모드 작은 글씨가 [Send] 왼쪽 (T122a 시안 v6 "Send")', async () => {
     const markup = await fullMarkup();
     const foot = markup.slice(markup.indexOf('class="reply-foot"'), markup.indexOf('class="reply-result"'));
     expect(foot).not.toContain('Facts match');
@@ -327,8 +329,8 @@ describe('배치: 한 열, 위에서 아래로', () => {
 
     const actions = foot.slice(foot.indexOf('class="reply-actions"'));
     expect(actions).toContain(`class="reply-mode">${t('case.send.mode.simulated')}`);
-    expect(actions.indexOf(t('case.send.mode.simulated'))).toBeLessThan(actions.indexOf('Send in Korean'));
-    expect(actions).toMatch(/<button type="button" class="reply-button"[^>]*>Send in Korean</);
+    expect(actions.indexOf(t('case.send.mode.simulated'))).toBeLessThan(actions.indexOf('>Send</button>'));
+    expect(actions).toMatch(/<button type="button" class="reply-button"[^>]*>Send</);
   });
 
   it('켜짐이면 버튼 옆 글자가 "Live · PayPal sandbox"', async () => {
@@ -483,7 +485,7 @@ describe('지호 꼴 (T076 시안 v4 짧은 카드): "Offer N% back ($X), the bu
       new RegExp(`<button type="button" class="reply-button"[^>]*>${t('case.send.offerButton', { amount: toDollarsRounded(700) }).replace(/[$·]/g, '.')}</button>`),
     );
     // 메시지만 보내는 버튼은 없다 (제안이 먼저인 건에서 늘 꺼져 있던 버튼 — 관문 판정은 그대로)
-    expect(actions).not.toContain('Send in Korean');
+    expect(actions).not.toContain('>Send</button>');
     expect((actions.match(/<button/g) ?? []).length).toBe(1);
     const css = read('src/app/cases/reply/reply.css');
     expect(css.match(/\.reply-send\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/flex-direction:\s*column/);
@@ -567,7 +569,8 @@ describe('재시도 1번: 1920×1080 한 화면 (세로 자리 줄이기)', () =
     const start = markup.indexOf('class="case-bubble"');
     const bubble = markup.slice(start, markup.indexOf('</li>', start));
     const sub = bubble.slice(bubble.indexOf('class="case-bubble-sub"'));
-    expect(sub).toContain(`<span>${copyTables.en['case.view.translated']}</span> · <span lang="en">`);
+    // T122a 시안 v6 L314: "Translated"는 굵은 파랑 <b>
+    expect(sub).toContain(`<b class="case-bubble-tr">${copyTables.en['case.view.translated']}</b> · <span lang="en">`);
     expect(sub.split('</p>')[0]).toMatch(/ · <span class="num">[^<]+<\/span>/);
     expect(markup).not.toContain('<p class="case-bubble-meta"');
     const css = read('src/app/cases/view/case.css');

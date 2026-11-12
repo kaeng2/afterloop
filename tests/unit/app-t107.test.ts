@@ -89,7 +89,8 @@ describe('T107-3 한국어 화면 말풍선 (시안 DI.ko msgs: 번역 없이 �
 
   it('영어 화면: "Translated · 영어 · 날짜" (그대로)', () => {
     const markup = render();
-    expect(markup).toContain(`<span>${t('case.view.translated', undefined, 'en')}</span>`);
+    // T122a 시안 v6 L314: "Translated" 굵은 파랑 <b>
+    expect(markup).toContain(`<b class="case-bubble-tr">${t('case.view.translated', undefined, 'en')}</b>`);
     expect(markup).toContain('Tracking has not changed in a week.');
   });
 

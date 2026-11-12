@@ -309,8 +309,8 @@ describe('5~6번: 답장 칸 — 접기와 검사 줄', () => {
       createElement(ReplyPanel, { disputeId: ID, base: replyBase(draft, translation), replyId: null, languageKey: 'case.view.lang.KO', buyerShort: 'Seo-yeon' }),
     );
     expect(markup).not.toContain('coaching tips');
-    // T090 시안: 오른쪽 제목 "She'll see (Korean)" (언어 이름은 데이터에서)
-    const reads = markup.indexOf(t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') }));
+    // T122a 시안 v6: 입력칸 아래 번역 칸 제목 "Translation (Korean)" (언어 이름은 데이터에서)
+    const reads = markup.indexOf(t('case.reply.translationTitle', { language: t('case.view.lang.KO') }));
     const write = markup.indexOf('class="reply-textarea"');
     expect(write).toBeGreaterThan(0);
     expect(reads).toBeGreaterThan(write);
@@ -383,7 +383,7 @@ describe('전송 상태 표시: 모드 글자는 서버 모드에서', () => {
       const markup = html(
         createElement(ReplyPanel, { disputeId: ID, base: replyBase(draft, translation, { mode, liveAllowed }), replyId: null, languageKey: 'case.view.lang.KO' }),
       );
-      const actions = markup.slice(markup.indexOf('class="reply-actions"'), markup.indexOf('Send in Korean'));
+      const actions = markup.slice(markup.indexOf('class="reply-actions"'), markup.indexOf('>Send</button>'));
       expect(actions).toContain(`class="reply-mode${key === 'case.send.mode.live' ? ' reply-mode-live' : ''}">${t(key)}`);
     }
   });

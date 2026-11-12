@@ -30,6 +30,7 @@ const { WeeklyBumpCell } = await import('@/app/today/savings');
 const { TrackingRegister } = await import('@/app/today/tracking-register');
 const { WorkZone } = await import('@/app/cases/view/work-zone');
 const { SentProvider } = await import('@/app/cases/view/sent-state');
+const { DeskSelectionProvider } = await import('@/app/cases/view/desk-selection');
 
 describe('1. F1-35 이번 주 카드: 앞 3칸 모두 깜빡임, "+$N"은 Money 칸만', () => {
   it('Open·Money·Replies 칸이 모두 WeeklyBumpCell이고, Money 외에는 금액을 달지 않는다', () => {
@@ -182,15 +183,25 @@ describe('7. F4-67 입력 중 새 약속 경고', () => {
 });
 
 describe('8. F5-3 Send 뒤 랜드마크 이름 "Case progress"', () => {
-  it('보내기 전: aria-labelledby (Respond now 제목)', () => {
-    const markup = html(createElement(SentProvider, null, createElement(WorkZone, { titleId: 'work-title' }, 'x')));
-    expect(markup).toBe('<section class="work zone-work" aria-labelledby="work-title">x</section>');
+  it('보내기 전 (T122a 시안 v6): 스위치 꺼짐 = aria-labelledby "Your reply" 제목, 켜짐 = aria-label "Respond now" (시안 workT)', () => {
+    const off = html(
+      createElement(SentProvider, null, createElement(DeskSelectionProvider, { initialPath: 'custom' }, createElement(WorkZone, { titleId: 'work-title' }, 'x'))),
+    );
+    expect(off).toMatch(/^<section class="work work-simple" aria-labelledby="work-title">/);
+    const on = html(
+      createElement(
+        SentProvider,
+        null,
+        createElement(DeskSelectionProvider, { initialPath: 'custom', initialAiOn: true }, createElement(WorkZone, { titleId: 'work-title' }, 'x')),
+      ),
+    );
+    expect(on).toMatch(new RegExp(`^<section class="work zone-work" aria-label="${t('case.work.title')}">`));
   });
 
   it('보낸 뒤: aria-label = case.progress.zone, 보이는 제목 문구는 그대로', () => {
     const code = strip(read('src/app/cases/view/work-zone.tsx'));
-    expect(code).toMatch(/aria-label=\{sent \? t\('case\.progress\.zone'\) : undefined\}/);
-    expect(code).toMatch(/aria-labelledby=\{sent \? undefined : titleId\}/);
+    expect(code).toMatch(/aria-label=\{sent \? t\('case\.progress\.zone'\) : aiOn \? t\('case\.work\.title'\) : undefined\}/);
+    expect(code).toMatch(/aria-labelledby=\{sent \|\| aiOn \? undefined : titleId\}/);
     expect(copyTables.en['case.progress.zone']).toBe('Case progress');
     expect(copyTables.en['case.progress.title']).toBe('What happens next · Simulated');
     expect(strip(read('src/app/cases/view/case-view.tsx'))).toMatch(/<WorkZone\s+titleId="work-title"/);
@@ -200,10 +211,12 @@ describe('8. F5-3 Send 뒤 랜드마크 이름 "Case progress"', () => {
 describe('9·10·11. F5-19·21·24 Send 뒤 말풍선·단계', () => {
   const code = strip(read('src/app/cases/progress/case-progress.tsx'));
 
-  it('F5-19: 고친 글이면 "Auto-translated to Korean", 아니면 "Sent in Korean" (· Simulated 그대로)', () => {
-    expect(t('case.progress.sentAutoBubble', { language: 'Korean' }, 'en')).toBe('Auto-translated to Korean');
-    expect(t('case.progress.sentBubble', { language: 'Korean' }, 'en')).toBe('Sent in Korean');
-    expect(code).toMatch(/t\(sentEdited \? 'case\.progress\.sentAutoBubble' : 'case\.progress\.sentBubble', \{ language \}\)/);
+  it('F5-19 → T122a 시안 v6 L534: 보낸 말풍선 "Sent · translated" (· Simulated 그대로, "auto" 표기 없음 — Send 이후 예외)', () => {
+    expect(t('case.progress.sentAutoBubble', undefined, 'en')).toBe('Sent · translated');
+    expect(t('case.progress.sentBubble', undefined, 'en')).toBe('Sent · translated');
+    expect(t('case.progress.sentBubble', undefined, 'ko')).toBe('보냄');
+    expect(copyTables.en['case.progress.sentAutoBubble']).not.toMatch(/auto/i);
+    expect(code).toMatch(/t\(sentEdited \? 'case\.progress\.sentAutoBubble' : 'case\.progress\.sentBubble'\)/);
     expect(code).toMatch(/\{live \? null : ` · \$\{t\('case\.progress\.simulated'\)\}`\}/);
     const panel = strip(read('src/app/cases/reply/reply-panel.tsx'));
     expect(panel).toMatch(/sentEdited=\{sentSnap !== null && anchor !== null && sentSnap\.text !== anchor\}/);

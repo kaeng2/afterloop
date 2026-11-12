@@ -231,7 +231,8 @@ describe('만들 것 1 · 완료 기준 1: 선택지 카드 누르기', () => {
     expect(forecastReply(input(REFUND_NOTE, anchor)).pChargeback).not.toBeCloseTo(engine.pChargeback, 6);
 
     const markup = html(
-      createElement(DeskSelectionProvider, { initialPath: 'refund' }, panel(b, { initialText: REFUND_NOTE })),
+      // T122a: 환불 카드는 "✦ AI Respond now" 스위치를 켠 상태에서만 보인다
+      createElement(DeskSelectionProvider, { initialPath: 'refund', initialAiOn: true }, panel(b, { initialText: REFUND_NOTE })),
     );
     const r = reactionView(engine, true);
     expect(r?.chargeback).toBe(choice?.chargeback);
