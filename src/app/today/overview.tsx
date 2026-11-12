@@ -4,7 +4,7 @@
  * "All products" 전체 현황 (T122b, 시안 v6 L179-229 `isAll`). 오른쪽 칸에서 All products 칩 + 고른 항목 없음일 때만 보인다.
  *
  * - 요약 카드 5개: Open cases · Reply needed · Prevent · Questions · Avg. dispute risk. 숫자는 목록 항목 수(세기만).
- *   평균은 엔진 함수가 없어 "—" (화면에서 평균을 내지 않는다 — 보고서).
+ *   평균은 엔진 `meanRisk`(T120d) 자리(`mean-risk.ts`)가 낸다 — 병합 전이면 "—" (화면에서 평균을 내지 않는다).
  * - **AG Grid 표 2개** (공용 설정 `_shared/grid/grid.ts`): "Products" · "Cases by risk". 열 머리를 누르면 정렬(↓/↑),
  *   행을 누르면(또는 Enter·Space) 사건을 연다 — 화면 안 고르기 상자(`selection.tsx`)만 바뀐다. 위험 열 = 막대 + %(엔진
  *   무응답 pChargeback, 값 없으면 "—"). 높은 위험 행은 옅은 빨강(시안 `.hi`), 마지막으로 연 행은 강조.
@@ -49,6 +49,7 @@ import {
   type OvProductRow,
   type OvTop,
 } from './overview-model';
+import { dashboardMeanRisk } from './mean-risk';
 import { riskChipParts } from './risk-values';
 import { useRiskValues } from './risk-values';
 import { useSavings } from './savings';
@@ -418,6 +419,7 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
   );
 
   const { kpis } = overview;
+  const avg = dashboardMeanRisk(kpis.topRisks);
   return (
     <section className="today-overview" hidden={!shown} aria-label={t('today.ov.title')}>
       <div className="ov-head">
@@ -437,7 +439,8 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
         <Kpi tone="reply" label={t('today.ov.kReply')} value={String(kpis.reply)} sub={t('today.groupHint.needsYou')} />
         <Kpi tone="prevent" label={t('today.ov.kPrevent')} value={String(kpis.prevent)} sub={t('today.groupHint.prevent')} />
         <Kpi tone="questions" label={t('today.ov.kQuestions')} value={String(kpis.questions)} sub={t('today.groupHint.routine')} />
-        <Kpi tone="avg" label={t('today.ov.kAvg')} value={t('today.ov.none')} sub={t('today.ov.kAvgSub', { count: kpis.topRows })} big />
+        {/* T122d: 평균은 엔진 `meanRisk`(T120d) 자리 — 상품 줄마다 최고 위험 목록을 넘긴다. 값이 없으면 "—" */}
+        <Kpi tone="avg" label={t('today.ov.kAvg')} value={avg === null ? t('today.ov.none') : riskChipParts(avg).percent} sub={t('today.ov.kAvgSub', { count: kpis.topRows })} big />
       </div>
 
       <div className="ov-block">

@@ -3,7 +3,7 @@
  * 들어간다 — 타입 말고는 아무것도 import하지 않는다.
  *
  * **계산하지 않는다** — 항목 수를 세고, 엔진 위험 값(`ListRiskValues`, 무응답 pChargeback)을 옮기고, 가장 큰 값을 고르기만
- * 한다. 평균은 내지 않는다 (엔진에 평균 함수가 없다 → "Avg. dispute risk" 카드는 "—", 보고서 참고).
+ * 한다. 평균은 내지 않는다 — 상품 줄마다 최고 위험 목록(`kpis.topRisks`)을 엔진 `meanRisk`(T120d) 자리(`mean-risk.ts`)에 넘긴다.
  *
  * - Products 표: 칩 상품마다 한 줄 + 한 상품에 걸리지 않은 항목(추적·여러 상품)이 있으면 "Several products" 한 줄
  *   (시안 `multi`). 끝낸 항목(`done`)은 세지 않는다 (시안 `!s.done[i.id]`). 위험 = 그 줄의 값이 있는 항목 중 가장 큰 값.
@@ -65,7 +65,17 @@ export type OvCaseRow = {
   done: boolean;
 };
 
-export type OvKpis = { open: number; reply: number; prevent: number; questions: number; products: number; units: number; topRows: number };
+export type OvKpis = {
+  open: number;
+  reply: number;
+  prevent: number;
+  questions: number;
+  products: number;
+  units: number;
+  topRows: number;
+  /** 상품 줄마다 최고 위험(엔진 값) 목록 — "Avg. dispute risk" 엔진 평균의 입력 (T122d, 시안 `avgR`). 값 없는 줄은 뺀다. */
+  topRisks: number[];
+};
 
 export type Overview = { products: OvProductRow[]; cases: OvCaseRow[]; kpis: OvKpis };
 
@@ -131,7 +141,7 @@ export function buildOverview(input: {
       product: item.row.product,
       category: item.row.category,
       section: isDone ? 'done' : section,
-      who: item.kind === 'dispute' ? (item.row.who ?? '') : '',
+      who: item.kind === 'dispute' || item.kind === 'demo' ? (item.row.who ?? '') : '',
       due: item.row.due,
       dueMs: dueMsOf(item),
       done: isDone,
@@ -149,6 +159,7 @@ export function buildOverview(input: {
       products: filter.products,
       units: filter.units,
       topRows: products.filter((row) => row.top !== null).length,
+      topRisks: products.flatMap((row) => (row.risk === null ? [] : [row.risk])),
     },
   };
 }

@@ -15,6 +15,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { copyTables, t } from '@/app/_shared/copy';
 import { riskTone } from '@/app/_shared/motion';
+import { meanRisk } from '@/engine/mean-risk';
+import { riskChipParts as chipParts } from '@/app/today/risk-values';
+import { loadRiskLevel, riskLevelOf, riskLevelTone } from '@/app/today/risk-level';
 import type { ProductFilterView, TodayGroup, TodayGroupKey, TodayItem } from '@/app/today/model';
 import { MULTI_KEY, buildOverview, compareRisk, type OvCaseRow, type OvProductRow } from '@/app/today/overview-model';
 import { ALL_PRODUCTS_PARAM, filterGroups, firstItemFor, todaySearch } from '@/app/today/screen-model';
@@ -92,11 +95,16 @@ const RISK = { [SEO]: 0.89, [JIHO]: 0.38 };
 // ───────────────────────────── 4. 목록 위험 % 칩 ─────────────────────────────
 
 describe('T122b-4: 목록 줄마다 위험 % 칩 (엔진 값, 단계·색은 설정 기준)', () => {
-  it('단계는 config/motion.json riskColor(riskTone) 기준: high → High, mid → Medium, low → Low', () => {
-    for (const p of [0.02, 0.19, 0.2, 0.38, 0.49, 0.5, 0.89]) {
-      const tone = riskTone(p);
-      expect(riskLevel(p)).toBe(tone === 'high' ? 'high' : tone === 'mid' ? 'med' : 'low');
-    }
+  it('단계는 config/motion.json desk.riskLevel(T122d, 시안 riskLvl 45%·20%) 기준: high → High, med → Medium, low → Low', () => {
+    expect(loadRiskLevel()).toEqual({ highFrom: 0.45, midFrom: 0.2 });
+    expect(() => loadRiskLevel({ desk: {} })).toThrow();
+    expect(riskLevelOf(0.3, { highFrom: 0.3, midFrom: 0.1 })).toBe('high');
+    expect([0.1, 0.3, 0.5].map((p) => riskLevelTone(p))).toEqual(['low', 'mid', 'high']);
+    expect([0.02, 0.19, 0.2, 0.38, 0.449, 0.45, 0.49, 0.5, 0.89].map(riskLevel)).toEqual([
+      'low', 'low', 'med', 'med', 'med', 'high', 'high', 'high', 'high',
+    ]);
+    // 알약·입력칸 테두리 빨강은 따로 riskColor(50%) — 단계 기준과 섞지 않는다
+    expect(riskTone(0.49)).toBe('mid');
     expect(riskChipParts(0.89)).toEqual({ percent: '89%', level: 'high', levelKey: 'today.risk.level.high' });
     expect(t('today.risk.chip', { percent: '89%', level: t('today.risk.level.high') })).toBe('89% · High');
     expect(copyTables.ko['today.risk.level.med']).toBe('중간');
@@ -155,8 +163,12 @@ describe('T122b-5: "All products" 전체 현황 값 (세기만, 엔진 위험 �
     expect(multi.top?.id).toBe('tracking');
   });
 
-  it('요약 카드 숫자 = 열린 항목 수 (평균은 엔진 함수가 없어 화면이 내지 않는다)', () => {
-    expect(ov.kpis).toEqual({ open: 5, reply: 3, prevent: 2, questions: 0, products: 4, units: 375, topRows: 3 });
+  it('요약 카드 숫자 = 열린 항목 수 (평균은 화면이 내지 않는다 — 상품 줄 최고 위험 목록만 엔진 자리에 넘긴다, T122d)', () => {
+    expect(ov.kpis).toEqual({
+      open: 5, reply: 3, prevent: 2, questions: 0, products: 4, units: 375, topRows: 3,
+      topRisks: ov.products.flatMap((row) => (row.risk === null ? [] : [row.risk])),
+    });
+    expect(ov.kpis.topRisks.length).toBeGreaterThan(0);
     const done = buildOverview({ groups: GROUPS, filter: FILTER, done: { [SEO]: { simulated: false } }, risk: RISK, severalName: 'S' });
     expect(done.kpis.open).toBe(4);
     expect(done.products[0]).toMatchObject({ open: 1, risk: null, top: { id: MIKE } });
@@ -235,7 +247,9 @@ describe('T122b-5: "All products" 전체 현황 값 (세기만, 엔진 위험 �
     expect(markup).toMatch(/<span class="ag-tag"><svg[\s\S]*?<\/svg>AG Grid<\/span>/);
     expect(markup.match(/class="ov-k"/g)).toHaveLength(5);
     expect(markup).toContain('Avg. dispute risk');
-    expect(markup).toMatch(/class="ov-k-val ov-k-val-big">—</);
+    const avgExpected = meanRisk(ov.kpis.topRisks);
+    expect(avgExpected).not.toBeNull();
+    expect(markup).toContain(`class="ov-k-val ov-k-val-big">${chipParts(avgExpected as number).percent}<`);
     expect(markup).toContain('Riskiest case · 3 products');
     expect(markup.match(/class="ag ov-grid"/g)).toHaveLength(2);
     expect(markup).toContain('<div class="ag-f"><span>4 rows</span><span>Sorted by Dispute risk ↓</span></div>');
