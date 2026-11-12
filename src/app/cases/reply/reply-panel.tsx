@@ -705,7 +705,7 @@ export function ReplyPanel({
 
   function onChip(row: EffectRowView) {
     if (typing) return;
-    setText((now) => applyChip(now, row));
+    setText((now) => applyChip(now, row, (value) => detector(value, { translated })?.hits ?? null));
     desk.setPath('custom');
   }
 
