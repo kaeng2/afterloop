@@ -53,7 +53,7 @@ Length: 1233 characters.
 No login is needed. Open https://disputeless.onrender.com/demo/seller-dashboard (the first load can take a few seconds while the free Render server wakes up).
 
 1. Reply to Seo-yeon. Click "Handle all 3 with DisputeLess". Turn on "✦ AI Respond now", click "Try a rushed reply" (95%), then "Use AI draft" (40%), open "Details", and click "Send". Watch "What happens next · Simulated" and click "Forward to carrier".
-2. See the other cases. Click the "Knit Cardigan" product chip to open Ji-ho's card (#1038, "Keeps ≈$34", "How AI handled this"). Click "All products" for the two AG Grid tables, then "PayPal activity" (top right) for the call log.
+2. See the other cases. Click the "Knit Cardigan" product chip to open Ji-ho's card (#1038, "Keeps ≈$34", "How AI handled this"; the case is now under PayPal review, so its send-message step is simulated in the demo). Click "All products" for the two AG Grid tables, then "PayPal activity" (top right) for the call log.
 3. Check a new listing. Type /demo/store/new-product in the address bar. Click "Publish product" (4.5%), "See details and fix", insert the AI text, then "Recalculate" (2.1%).
 
 Public mode makes real PayPal sandbox reads. Send, Send offer, Add all, Refund, Looks good and Forward are Simulated (zero PayPal writes). AI answers for the demo cases are cached; uncached AI calls have an hourly cap. We don't share the sandbox login, because a shared login could change the demo disputes. To run it on your own sandbox: https://github.com/kaeng2/afterloop/blob/main/docs/submission/testing.md
