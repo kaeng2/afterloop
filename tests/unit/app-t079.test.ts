@@ -534,7 +534,7 @@ describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 
     expect(app).not.toMatch(/loadTodayForRequest/);
     expect(app).toMatch(/<TopBar/);
     expect(read('src/app/demo/seller-dashboard/page.tsx')).toBeTruthy();
-    for (const page of ['src/app/(app)/page.tsx', 'src/app/(app)/products/page.tsx', 'src/app/(app)/cases/[disputeId]/page.tsx']) {
+    for (const page of ['src/app/(app)/page.tsx', 'src/app/(app)/cases/[disputeId]/page.tsx']) {
       expect(read(page), page).toBeTruthy();
     }
     // T078 덮개(position: fixed)를 걷었다

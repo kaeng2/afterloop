@@ -22,7 +22,7 @@ describe('safeNext', () => {
   });
 
   it('같은 사이트 경로는 pathname+search로', () => {
-    expect(safeNext('/products?x=1', BASE)).toBe('/products?x=1');
+    expect(safeNext('/listing?x=1', BASE)).toBe('/listing?x=1');
     expect(safeNext('/', BASE)).toBe('/');
   });
 

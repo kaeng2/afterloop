@@ -418,9 +418,5 @@ describe('T084 5: 로딩 표시 · Today (N) Suspense · 처방 토글 startTran
     expect(layout).toMatch(/<TopBar /);
   });
 
-  it('처방 토글 다시 계산은 startTransition 안에서', () => {
-    const screen = read('src/app/products/products-screen.tsx');
-    expect(screen).toMatch(/onToggle=\{\(id\) => startTransition\(\(\) => setFixesOn/);
-    expect(screen).toMatch(/onAllOn=\{\(\) => startTransition\(\(\) => setFixesOn/);
-  });
+  // T114: /products 화면(처방 토글 startTransition)은 11/12 11:15 결정으로 지웠다.
 });
