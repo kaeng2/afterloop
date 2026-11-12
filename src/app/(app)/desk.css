@@ -99,7 +99,7 @@
 /* AI 알약: 시안은 쓰는 곳마다 box-shadow:none (L125·L216·L249·L264…). 그림자는 zone-work 머리(L240·L315·L352)만.
    line-height는 시안처럼 물려받는다 (앱 .ai-pill 1.2 대신) */
 .dk .ai-pill{box-shadow:none;line-height:inherit}
-.dk .zone-work-head .ai-pill{box-shadow:rgba(0,102,245,0.35) 0 2px 8px}
+.dk .work-head>.ai-pill,.dk .zone-work>.ai-pill,.dk .work-head-ai>.ai-pill{box-shadow:rgba(0,102,245,0.35) 0 2px 8px}
 @media (prefers-reduced-motion:reduce){.dk *,.dk *::before{animation:none !important;transition:none !important}}
 body:has(.dk){background:#FFFFFF}
 
@@ -189,6 +189,125 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 .dk .today-dot-high{background:#C4321F}.dk .today-dot-watch{background:#002991}.dk .today-dot-low,.dk .today-dot-neutral{background:#9AA0A6}.dk .today-dot-done{background:#CFD3D8}
 /* L710 secBar */
 .dk .today-group-needsYou .today-group-bar{background:#C4321F}.dk .today-group-prevent .today-group-bar{background:#002991}.dk .today-group-routine .today-group-bar{background:#9AA0A6}.dk .today-group-done .today-group-bar{background:#CFD3D8}
+
+/* ── 서연 상세 위쪽 (L157–L235) ── */
+/* 카드 제목 <b> 18px 700 #000 (L172 · L199 · L223 · L240). em 크기는 루트 15px에서 줄어드니 px로 */
+.dk .desk-card-title{font-size:18px;font-weight:700;color:#000000;line-height:1.5;letter-spacing:normal}
+.dk .desk-card-sub{font-size:12px;color:#6C7378}
+.dk .case-page{display:flex;flex-direction:column;gap:18px;min-width:0}
+/* L160–L167 머리글 */
+.dk .case-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.dk .case-head-main{display:flex;gap:14px;align-items:center}
+.dk .case-head-text{display:flex;flex-direction:column;gap:4px}
+.dk .case-head-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dk .case-title{margin:0;font-size:24px;font-weight:900;letter-spacing:-0.4px;line-height:1.5;color:#000000}
+.dk .case-meta{font-size:14px;color:#3F4144}
+/* 시안 L165에 없는 상태 꼬리 (" · Waiting for your reply") — 화면 읽기 글자로만 남긴다 */
+.dk .case-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* 범주 칩·AI read 태그 = 시안 `.chip` · `.c-n` · `.c-bad` (L24–L25) */
+.dk .desk-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap;background:#ECEEF0;color:#3F4144}
+.dk .desk-chip-bad{background:#FBE7E4;color:#9E2414}
+/* L170–L193 위험 곡선 카드 */
+.dk .curve-card{display:grid;grid-template-columns:minmax(0, 1fr) 190px;gap:16px;align-items:stretch;padding:16px 18px;border-radius:24px;border:1px solid #E4E6E9;background:#FFFFFF}
+.dk .curve-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dk .curve-tick{font-size:10px;color:#9AA0A6}
+.dk .curve-side{display:flex;flex-direction:column;justify-content:center;gap:2px;border-left:1px solid #E4E6E9;padding-left:16px}
+.dk .curve-side-label{font-size:13px;font-weight:700;color:#3F4144}
+/* L748 risk.st */
+.dk .curve-headline{font-size:44px;font-weight:900;letter-spacing:-1.2px;line-height:1.05;font-variant-numeric:tabular-nums}
+.dk .curve-side-sub{font-size:12px;color:#6C7378}
+.dk .curve-fromto{font-size:12px;font-weight:700;color:#002991}
+/* L197–L219 Case history */
+.dk .history-card{border-radius:20px;border:1px solid #E4E6E9;background:#FFFFFF;overflow:hidden}
+.dk .history-head{display:flex;align-items:center;gap:14px;padding:12px 16px;flex-wrap:wrap}
+.dk .history-sub{font-size:12px;color:#6C7378}
+.dk .history-dots{display:flex;align-items:center;gap:0;flex:1;min-width:140px}
+/* L752 line · dot */
+.dk .history-dot-line{flex:1;height:2px;background:#E4E6E9;min-width:6px}
+.dk .history-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dk .history-dot-buyer{background:#3F4144}.dk .history-dot-bad{background:#C4321F}.dk .history-dot-sys{background:#9AA0A6}
+/* L202 [Show history] = 시안 `.hbtn` (L80–L81, transition 없음) */
+.dk .history-head .desk-button-outline{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:6px 14px;border-radius:1000px;border:2px solid #CFD3D8;background:#FFFFFF;font:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#000000;transition:none}
+.dk .history-head .desk-button-outline:hover{border-color:#000000}
+.dk .history-head .desk-button-outline:focus-visible{box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px}
+/* L205–L211 펼친 줄 */
+.dk .history-list{padding:4px 16px 12px;border-top:1px solid #F1EFEA}
+.dk .history-row{display:grid;grid-template-columns:64px 16px minmax(0, 1fr);gap:10px;align-items:start;padding:7px 0}
+.dk .history-date{font-size:12px;color:#6C7378;font-variant-numeric:tabular-nums;padding-top:1px}
+.dk .history-row .history-dot{margin-top:6px}
+.dk .history-text{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px;color:#000000}
+/* L215–L218 AI 요약 줄 */
+.dk .history-summary{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;background:#F5F9FF;border-top:1px solid #E4E6E9;margin:0;font-size:14px;line-height:1.55;color:#0A1B3D}
+.dk .history-summary .ai-pill{flex-shrink:0;margin-top:1px}
+/* L222–L235 Buyer messages (= 시안 `.zone-buyer` · `.bub-in`) */
+.dk .case-conversation{border-radius:24px;background:#EEF1F5;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.dk .case-conversation .desk-card-head{display:flex;align-items:baseline;gap:10px}
+.dk .case-thread{gap:12px}
+.dk .case-bubble-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.dk .case-bubble{max-width:78%;background:#FFFFFF;border-radius:6px 18px 18px 18px;padding:12px 16px;box-shadow:rgba(0,0,0,0.05) 0 1px 3px}
+/* L228 원문 = `.ko` 15px #000 (상속) */
+.dk .case-bubble-original{font-size:15px;line-height:1.5;color:#000000}
+.dk .case-bubble-original:lang(ko){font-family:var(--font-noto-kr),var(--font-figtree),sans-serif}
+/* L759 subSt */
+.dk .case-bubble-sub{font-size:12px;color:#3F4144;margin-top:4px}
+/* L231 AI read */
+.dk .case-read{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding-left:4px}
+.dk .case-read-label{font-size:11px;font-weight:900;color:#002991}
+/* 카드사 문구 강조(`.case-mark`)는 시안에 없지만 사람 결정 2026-11-10 v2.10 ①이라 남긴다 (보고서 예외 목록) */
+
+/* ── Respond now (L237–L310, 시안 `.zone-work`) ── */
+.dk .work-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* L240 부제 13px #6C7378 */
+.dk .work-head .desk-card-sub{font-size:13px;color:#6C7378}
+/* L50–L56 단계 (.stp · .rail · .stpc · .stph) */
+.dk .desk-step{display:flex;gap:14px}
+.dk .desk-step-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:32px}
+.dk .desk-step-title{font-size:17px;font-weight:900;letter-spacing:-0.2px;color:#000000}
+.dk .desk-step-sub{font-size:13px;color:#6C7378}
+/* L249–L251 선택지 카드 (.npath) 안 */
+.dk .choice-title{font-size:14px;line-height:1.3;font-weight:700}
+.dk .choice-how{font-size:12px;color:#3F4144;line-height:1.35}
+.dk .choice-numbers{font-size:12px;color:#3F4144}
+/* L781 cbSt font-weight 900 */
+.dk .choice-cb{font-weight:900}
+/* L69 `.npath:disabled{opacity:.6}` (타이핑 중) */
+.dk .choice:not(.choice-blocked) .choice-button:disabled{cursor:default;opacity:.6}
+/* L263–L265 도구 단추 = `.btn.b-tint.b-sm` (13px · transition background-color .15s) */
+.dk .desk-button-tint{min-height:34px;padding:6px 14px;font-size:13px;font-weight:700;gap:8px;transition:background-color .15s ease}
+/* L58 textarea 15px · 1.55 · #000 */
+.dk .reply-textarea{font-size:15px;line-height:1.55;color:#000000}
+/* L840 pillSt */
+.dk .reply-editor-pill{right:12px;bottom:12px;padding:4px 12px;border-radius:1000px;font-size:13px;font-weight:900;color:#FFFFFF}
+/* L275 tray 머리 · L67 `.tsum` 11px */
+.dk .reply-tray-title{font-size:12px;font-weight:700;color:#3F4144}
+.dk .reply-tray-sum{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:1000px;font-size:11px;font-weight:700;background:#FFFFFF;color:#3F4144;box-shadow:inset 0 0 0 1px #E4E6E9}
+/* L282 ✓ 칩 = `.chip.gchip` */
+.dk .reply-chip{gap:4px;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700}
+.dk .reply-chip.reply-chip-good{background:#FFFFFF;color:#0A1B3D;box-shadow:inset 0 0 0 1px #E4E6E9}
+/* L268 draftGrid gap 12px · L293 미리보기 칸 */
+.dk .reply-pair{gap:12px}
+.dk .reply-box{border-radius:18px;background:#F6F7F9;padding:12px 14px;min-width:0;align-self:start}
+.dk .reply-box-title{font-size:12px;font-weight:700;color:#3F4144}
+.dk .reply-box .reply-outgoing{font-size:14px}
+.dk .reply-box .reply-outgoing:lang(ko){font-family:var(--font-noto-kr),var(--font-figtree),sans-serif}
+/* L295–L302 예상 반응 · 기분 */
+.dk .reaction{display:grid;grid-template-columns:minmax(0, 1fr) 140px;gap:16px;align-items:center;padding:12px 16px;border-radius:16px;background:#F6F7F9}
+.dk .reaction-head{display:flex;justify-content:flex-start;gap:8px;font-size:12px}
+.dk .reaction-head>:first-child{margin-right:auto}
+.dk .reaction-head .num{color:#3F4144}
+.dk .reaction-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px}
+.dk .reaction-legend li{display:inline-flex;align-items:center;gap:5px}
+/* L843 pSt: #000000, cb ≥ .5면 #C4321F */
+.dk .reaction-legend strong{color:#000000}
+.dk .reaction-legend strong.reaction-legend-high{color:#C4321F}
+.dk .reaction-mood{display:flex;flex-direction:column;align-items:flex-end;text-align:right;border-left:1px solid #E4E6E9;padding-left:14px}
+.dk .reaction-mood-label{font-size:12px;font-weight:700;color:#3F4144}
+/* L844 moodSt 22px · <b> 700 · line-height 1.2 */
+.dk .reaction-mood-value{font-size:22px;font-weight:700;line-height:1.2;color:#000000}
+.dk .reaction-mood-value.reaction-mood-bad{color:#C4321F}
+.dk .reaction-mood-now{font-size:11px;color:#6C7378}
+/* L305 Send = `.btn.b-black` (15px · border 0 · gap 8px · 44px) */
+.dk .reply-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 20px;border-radius:1000px;border:0;font-size:15px;font-weight:700}
 
 /* L362 토스트 ✓ 원 */
 .dk .savings-toast-check{width:24px;height:24px;border-radius:50%;background:#60CDFF;color:#002991;display:inline-flex;align-items:center;justify-content:center;font-weight:900}
