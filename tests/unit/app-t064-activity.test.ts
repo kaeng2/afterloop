@@ -37,7 +37,8 @@ const orderId = (key: string) => {
 };
 const UNTRACKED = [orderId('O05'), orderId('O07')];
 
-const D1 = 'PP-R-MBJ-10197650';
+const D1 = 'PP-R-ZOK-10200237'; // 지호 새 품질 사건 (2026-11-12 20:35)
+const MBJ = 'PP-R-MBJ-10197650'; // 옛 지호 색상 분쟁 — 화면 X
 const D2 = 'PP-R-GMS-10197661';
 const D3 = 'PP-R-FYT-10197651';
 const GAH = 'PP-R-GAH-10197649';
@@ -75,7 +76,7 @@ function fakePayPalFetch() {
       new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
     if (url.pathname === '/v1/oauth2/token') return json(200, { access_token: 'fake-access-token', expires_in: 32400, token_type: 'Bearer' });
     if (url.pathname === '/v1/customer/disputes' && method === 'GET') {
-      return json(200, { items: [D1, D2, D3, GAH, HEY].map(listItem), links: [] });
+      return json(200, { items: [D1, D2, D3, GAH, HEY, MBJ].map(listItem), links: [] });
     }
     const dispute = url.pathname.match(/^\/v1\/customer\/disputes\/([^/]+)$/);
     if (method === 'GET' && dispute !== null) return json(200, { ...DETAIL_FIXTURE, dispute_id: decodeURIComponent(dispute[1]) });
@@ -221,6 +222,7 @@ describe('T064 3: 연습용(HEY·O04)·시연 제외(GAH)는 보이지 않는다
     await listDisputes(client);
     await getDispute(client, HEY);
     await getDispute(client, GAH);
+    await getDispute(client, MBJ); // 옛 지호 — 화면 X (2026-11-12 20:35)
     await client.get(`/v2/checkout/orders/${orderId('O04')}`);
     await client.call({ method: 'POST', path: `/v1/customer/disputes/${HEY}/send-message`, requestId: 'r', body: {} });
 
@@ -228,7 +230,7 @@ describe('T064 3: 연습용(HEY·O04)·시연 제외(GAH)는 보이지 않는다
     expect(records).toHaveLength(1);
     expect(records[0].summary).toEqual({ kind: 'cases', count: 3 });
     const text = JSON.stringify(records);
-    for (const word of ['HEY', 'GAH', orderId('O04')]) expect(text).not.toContain(word);
+    for (const word of ['HEY', 'GAH', 'MBJ', orderId('O04')]) expect(text).not.toContain(word);
     // 호출은 실제로 나갔다 (기록만 안 한다)
     expect(paypal.seen.filter((s) => s.path.includes(HEY)).length).toBe(2);
   });

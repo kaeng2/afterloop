@@ -48,7 +48,7 @@ const DETAIL_FIXTURE = JSON.parse(readFileSync(path.join(ROOT, 'tests/fixtures/d
 
 /** 실제 연결 표의 화면 분쟁 번호 (D2 서연, D1 지호). 호출은 모두 가짜다. */
 const D2_ID = 'PP-R-GMS-10197661';
-const D1_ID = 'PP-R-MBJ-10197650';
+const D1_ID = 'PP-R-ZOK-10200237'; // 지호 새 품질 사건 (2026-11-12 20:35, 시드 D1 = B3)
 
 /** 가짜 자격 증명 (글자만. 실제 값이 아니다). */
 const FAKE_PAYPAL = {
@@ -130,7 +130,13 @@ const D2_AFTER: BoardState = {
   hasDeliveredTracking: false,
   cause: ruleCause('A2', 'Customs hold – recipient customs ID missing'),
 };
-const JIHO: BoardState = { ...D1_JIHO, disputeId: D1_ID, dueDate: inTwentyDays };
+/**
+ * 제안(make-offer) 경로를 지키는 보드: 원인을 **B1(색상)**으로 시험 안에서 고정한다.
+ * 시드 D1은 2026-11-12 20:35부터 B3(품질 → repair·send-message)이지만, 제안 관문 검사는 그대로 둔다.
+ */
+const JIHO: BoardState = { ...D1_JIHO, disputeId: D1_ID, dueDate: inTwentyDays, cause: ruleCause('B1') };
+/** 지금 시드의 지호 (B3 품질) — repair 추천, send-message로 보낸다. */
+const JIHO_B3: BoardState = { ...JIHO, cause: ruleCause('B3') };
 
 function loaded(board: BoardState, demo: BoardState | null, buyerId: string): LoadedDispute {
   const buyer = seedBuyers.find((b) => b.id === buyerId);
@@ -183,6 +189,14 @@ const seoyeon = () => {
 const jiho = () => {
   loadedNow = result(loaded(JIHO, null, 'B02'));
   answer(JIHO_DRAFT, JIHO_OUT, JIHO_BACK);
+};
+/** 지금 시드의 지호 (B3 품질 → repair, send-message). 금액·약속 없는 수선 안내 (⟦DAYS_1⟧은 코드가 채운다). */
+const JIHO_REPAIR_DRAFT = 'Hello ⟦BUYER_NAME_1⟧, I am sorry the sleeve unraveled. I can repair it; it takes about ⟦DAYS_1⟧.\n\n⟦SELLER_NAME_1⟧';
+const JIHO_REPAIR_OUT = '안녕하세요 ⟦BUYER_NAME_1⟧, 올이 풀려 죄송해요. 수선해 드릴게요. ⟦DAYS_1⟧ 정도 걸려요.\n\n⟦SELLER_NAME_1⟧';
+const JIHO_REPAIR_BACK = 'Hello ⟦BUYER_NAME_1⟧, sorry the sleeve unraveled. I will repair it. It takes about ⟦DAYS_1⟧.\n\n⟦SELLER_NAME_1⟧';
+const jihoB3 = () => {
+  loadedNow = result(loaded(JIHO_B3, null, 'B02'));
+  answer(JIHO_REPAIR_DRAFT, JIHO_REPAIR_OUT, JIHO_REPAIR_BACK);
 };
 
 let paypal: ReturnType<typeof fakePayPalFetch>;
@@ -316,6 +330,24 @@ describe('T070 3: recording — 지금과 같다', () => {
     stubEnv({ ...FAKE_PAYPAL, DEMO_MODE: 'recording' });
     jiho();
     const outcome = await pressSend(D1_ID, 'offer');
+    expect(outcome).toEqual({ ok: true, mode: 'simulated', disputeId: D1_ID });
+    expect(paypal.writes()).toHaveLength(0);
+  });
+
+  it('지금 시드 지호(B3 품질 → repair): 스위치 켜짐 + 허용 → send-message 1회, make-offer 0회', async () => {
+    stubEnv({ ...FAKE_PAYPAL, ...ALL_SWITCHES_ON, DEMO_MODE: 'recording' });
+    jihoB3();
+    const outcome = await pressSend(D1_ID, 'message');
+    expect(outcome).toMatchObject({ ok: true, mode: 'live', endpoint: 'send-message', status: 200 });
+    const writes = paypal.writes();
+    expect(writes.map((w) => w.path)).toEqual([`/v1/customer/disputes/${D1_ID}/send-message`]);
+    expect(writes.some((w) => w.path.endsWith('/make-offer'))).toBe(false);
+  });
+
+  it('지금 시드 지호(B3): public이면 스위치를 켜도 Simulated, 쓰기 0회', async () => {
+    stubEnv({ ...FAKE_PAYPAL, ...ALL_SWITCHES_ON, DEMO_MODE: 'public' });
+    jihoB3();
+    const outcome = await pressSend(D1_ID, 'message');
     expect(outcome).toEqual({ ok: true, mode: 'simulated', disputeId: D1_ID });
     expect(paypal.writes()).toHaveLength(0);
   });

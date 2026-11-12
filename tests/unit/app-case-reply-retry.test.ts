@@ -70,7 +70,7 @@ const ruleCause = (subtype: Cause['subtype'], causeNote?: string): Cause => ({
 
 /** 실제 연결 표의 화면 분쟁 번호 (D2 서연, D1 지호). 호출은 모두 가짜다. */
 const D2_ID = 'PP-R-GMS-10197661';
-const D1_ID = 'PP-R-MBJ-10197650';
+const D1_ID = 'PP-R-ZOK-10200237'; // 지호 새 품질 사건 (2026-11-12 20:35, 시드 D1 = B3)
 
 const inTwentyDays = new Date(Date.now() + 20 * 24 * 3_600_000).toISOString();
 
@@ -94,7 +94,11 @@ const D2_AFTER: BoardState = {
   isDemo: true,
   cause: ruleCause('A2', 'Customs hold – recipient customs ID missing'),
 };
-const JIHO: BoardState = { ...D1_JIHO, disputeId: D1_ID, dueDate: inTwentyDays };
+/**
+ * 제안(make-offer) 경로를 지키는 보드: 원인을 **B1(색상)**으로 시험 안에서 고정한다 (4번 묶음).
+ * 시드 D1은 2026-11-12 20:35부터 B3(품질 → repair·send-message) — 그 경로는 app-t122f·ops-t070이 본다.
+ */
+const JIHO: BoardState = { ...D1_JIHO, disputeId: D1_ID, dueDate: inTwentyDays, cause: ruleCause('B1') };
 
 const buyer = (id: string) => {
   const found = seedBuyers.find((b) => b.id === id);
@@ -339,7 +343,7 @@ describe('3번: 미리보기는 채운 값으로, 보내는 글 미리보기 = �
 
 // ── 4. 지호: 주 버튼 "Send offer · $7" ───────────────────────────────
 
-describe('4번: 지호 — 주 버튼은 엔진 제안 금액, 메시지 버튼은 꺼짐', () => {
+describe('4번: 지호(B1 색상 보드) — 주 버튼은 엔진 제안 금액, 메시지 버튼은 꺼짐', () => {
   async function jihoReply(statusCode = OFFER_STATUS) {
     loadedNow = result(loaded(JIHO, null, 'B02', statusCode));
     answer(OFFER_DRAFT, OFFER_OUTGOING, 'Hello ⟦BUYER_NAME_1⟧, I offer {{offerAmount}}.\n\n⟦SELLER_NAME_1⟧');
@@ -432,6 +436,7 @@ describe('4번: 지호 — 주 버튼은 엔진 제안 금액, 메시지 버튼�
         { id: D1_ID, links: [{ paypalDisputeId: D1_ID, seedDisputeId: 'D1', carrierOrderId: 'O02', showOnScreen: true, liveSendAllowed: false }] },
         { id: 'PP-R-HEY-10197767', links: [] }, // 실제 표의 연습용 (showOnScreen false)
         { id: 'PP-R-GAH-10197649', links: [] }, // 실제 표의 옛 서연 (showOnScreen false)
+        { id: 'PP-R-MBJ-10197650', links: [] }, // 실제 표의 옛 지호 색상 분쟁 (showOnScreen false · liveSendAllowed false)
         { id: 'PP-R-NOPE-1', links: [] },
       ];
       for (const { id, links } of cases) {

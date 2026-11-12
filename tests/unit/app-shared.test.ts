@@ -120,7 +120,8 @@ describe('T047 금액 표시', () => {
 /** 시험용 분쟁 목록 항목 (목록 걸러 내기는 `dispute_id`만 본다). */
 const summary = (dispute_id: string) => ({ dispute_id });
 
-const D1 = 'PP-R-MBJ-10197650';
+const D1 = 'PP-R-ZOK-10200237'; // 지호 새 품질 사건 (결정 2026-11-12 20:35)
+const OLD_JIHO = 'PP-R-MBJ-10197650'; // 옛 지호 색상 분쟁 — 화면 X·전송 X
 const D2 = 'PP-R-GMS-10197661';
 const D3 = 'PP-R-FYT-10197651';
 const OLD_SEOYEON = 'PP-R-GAH-10197649';
@@ -148,7 +149,7 @@ describe('T047 연결 표 읽기', () => {
   });
 
   it('화면에 낼 분쟁만 남긴다: 연습용·시연 제외·표에 없는 분쟁은 빠진다 (AC19 초안 1번)', () => {
-    const given = [summary(D1), summary(OLD_SEOYEON), summary(D2), summary(PRACTICE), summary(D3), summary('PP-R-ZZZ-1')];
+    const given = [summary(OLD_JIHO), summary(D1), summary(OLD_SEOYEON), summary(D2), summary(PRACTICE), summary(D3), summary('PP-R-ZZZ-1')];
     expect(withoutDemoExcluded(given).map((s) => s.dispute_id)).toEqual([D1, D2, D3]);
   });
 
@@ -161,6 +162,7 @@ describe('T047 연결 표 읽기', () => {
     expect(isLiveSendAllowed(D2)).toBe(true);
     expect(isLiveSendAllowed(D3)).toBe(false); // PayPal 심사 단계
     expect(isLiveSendAllowed(OLD_SEOYEON)).toBe(false);
+    expect(isLiveSendAllowed(OLD_JIHO)).toBe(false);
     expect(isLiveSendAllowed(PRACTICE)).toBe(true); // 연습용 (화면에는 내지 않는다)
     expect(isLiveSendAllowed('PP-R-ZZZ-1')).toBe(false);
     expect(isLiveSendAllowed('')).toBe(false);

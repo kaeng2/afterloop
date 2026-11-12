@@ -18,13 +18,14 @@ export const INTRO_SAMPLE: IntroData = {
       mentionsChargeback: true,
     },
     {
-      id: 'PP-R-MBJ-10197650',
+      id: 'PP-R-ZOK-10200237', // 지호 새 품질 사건 (결정 2026-11-12 20:35)
       buyer: { en: 'Ji-ho Park', ko: '박지호' },
       product: 'Knit Cardigan, Oat',
       amount: '$48.00',
       reason: 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED',
       repeat: false,
-      due: { en: 'Nov 29', ko: '11/29' },
+      // ZOK는 PayPal 응답 기한 없음 (DECISIONS 2026-11-12) — 캐시가 차도 null. config fallbackDue엔 옛 MBJ 키만 있다 (T126 보고)
+      due: null,
       mentionsChargeback: false,
     },
     {

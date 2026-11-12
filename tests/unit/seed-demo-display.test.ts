@@ -52,9 +52,13 @@ describe('T121 표시용 주문 번호', () => {
       paypalDisputeId: string;
       seedDisputeId: string | null;
     }[];
+    // 번호로 찾는다 (지호 표시 라벨은 seedDisputeId null, 연결 표 ZOK 줄은 D1 — 2026-11-12 20:35)
     for (const l of d.orderLabels.filter((x) => x.paypalRef !== null)) {
-      expect(links.find((k) => k.seedDisputeId === l.seedDisputeId)?.paypalDisputeId, l.key).toBe(l.paypalRef);
+      const link = links.find((k) => k.paypalDisputeId === l.paypalRef);
+      expect(link, l.key).toBeDefined();
+      if (l.seedDisputeId !== null) expect(link?.seedDisputeId, l.key).toBe(l.seedDisputeId);
     }
+    expect(links.find((k) => k.paypalDisputeId === 'PP-R-ZOK-10200237')?.seedDisputeId).toBe('D1');
   });
   it('지호 구매일 = 시연일 5주 전, 반품 기간 30일 (시드)', () => {
     expect(d.jihoPurchase).toEqual({ orderDate: '2026-10-06', returnWindowDays: 30, weeksAgo: 5 });

@@ -45,7 +45,7 @@ vi.mock('@/app/_server/llm', () => ({ getLlm: () => ({ ok: true, llm: fakeLlm })
 const ROOT = path.resolve(__dirname, '../..');
 
 /** 실제 연결 표의 지호 분쟁 번호 (호출은 모두 가짜다). */
-const D1_ID = 'PP-R-MBJ-10197650';
+const D1_ID = 'PP-R-ZOK-10200237'; // 지호 새 품질 사건 (2026-11-12 20:35)
 const inTwentyDays = new Date(Date.now() + 20 * 24 * 3_600_000).toISOString();
 // 지호 = B3 품질(반품 기간 지남) → 엔진 추천 repair (v2.16)
 const JIHO_REPAIR: BoardState = { ...withSubtype(D1_JIHO, 'B3', 1), disputeId: D1_ID, dueDate: inTwentyDays };
