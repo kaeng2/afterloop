@@ -43,7 +43,7 @@ DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo run
 
 **Code.** The seeded simulation is deterministic: the same input always gives the same result, and "as-is" and "with fixes" use the same random numbers, so the difference comes from the fixes, not luck.
 
-**Stack.** Next.js 15, React, TypeScript, zod, AG Grid Community, deployed on Render (https://disputeless.onrender.com).
+**Stack.** Next.js 15, React, TypeScript, zod, AG Grid Community for the All products overview tables (Products and Cases by risk), deployed on Render (https://disputeless.onrender.com).
 
 **What is real and what is not.** Sandbox orders, disputes (including the Korean complaint text), reads, sends and tracking are real PayPal sandbox. Carrier events, earlier inquiries and closed-dispute history are demo data. Rates, win probabilities, the reply forecast and the new-listing check weights are our assumptions. The full table is in `docs/submission/honesty-table.md` (https://github.com/kaeng2/afterloop/blob/main/docs/submission/honesty-table.md).
 

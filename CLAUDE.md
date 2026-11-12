@@ -76,7 +76,7 @@
     - 혁신성: "새롭고 기존과 다른가"
     - 발표: "영상이 처음부터 끝까지 작동하는 모습을 보여 주나, 따라가기 쉬운가"
   - **특별상 5개 모두 평가**: Most Creative, Most Impactful, Best Demo Delivery, Best Use of PayPal + AI, Best Use of Agentic Commerce (각각 가능성 높음/중간/낮음 + 이유 한 줄).
-  - **스폰서상은 하나만 받을 수 있다**: AG Grid, Render, APIMatic 중 가장 가능성 높은 것 **하나**를 추천하고 이유를 적는다.
+  - **스폰서상은 하나만 받을 수 있다**: 사람 결정 2026-11-12 20:40으로 **AG Grid**를 노린다. 리뷰는 AG Grid 근거(All products 화면 AG Grid 표, 영상 2~3초, Devpost Stack)가 충분한지 평가하고, Render·APIMatic과 비교한 가능성을 적는다.
 - **리뷰의 고칠 것은 바로 반영하지 않는다.** 사람에게 먼저 보여 주고 승인받은 것만 지시서로 옮긴다.
 
 ## 브라우저 작업

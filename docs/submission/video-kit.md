@@ -5,7 +5,7 @@
 > - **YouTube 공개 링크** — Devpost 양식에 넣는다
 > - **배포된 앱을 직접 녹화한다.** 시안 화면 녹화는 안 된다 ("design mockup, static prototype, or non-functional demo"는 요건 미달)
 > - **무료 라이선스 음악만.** 허락 없는 타사 상표·저작권 화면 금지
-> - **[시안 확정 대기] AG Grid 장면** — `/products` 화면은 11/12 11:15 결정으로 없앴다. AG Grid가 들어갈 화면의 시안이 오면 이 줄을 채운다 (스폰서상은 아직 미정: AG Grid 또는 Render)
+> - **All products 화면의 AG Grid 표를 2~3초** 넣는다 — Desk 상품 칩 [All products] → "Products"·"Cases by risk" 두 표(열 머리 눌러 정렬, 표 아래 "AG Grid" 꼬리표). **스폰서상 = AG Grid** (사람 결정 2026-11-12 20:40)
 > - **배포 주소가 화면에 한 번 또렷이 보이게** 한다: 브라우저 주소창의 `disputeless.onrender.com`과 위쪽 막대의 "**Public demo · simulated sends**" 글자가 한 화면에 함께 잡히게 (공개 링크에서 찍은 장면 2·3·4·10 중 하나. 주소창을 숨기는 전체 화면 녹화는 그 장면만 피한다)
 > - **실제 전송 장면**은 녹화하는 동안만 Render를 recording 모드로 바꾼다 (경희가 전환). **서연 전송은 한 번뿐**이다
 > - **화면 고정 13:00**, 녹화는 그 뒤. **녹화 중에는 재배포하지 않는다**
@@ -43,7 +43,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 | 8 | ~8초 | Desk 왼쪽 Prevent "2 orders · Missing tracking" (경희 녹화분) | 상세 "Add tracking to 2 orders in PayPal" → **[Add all 2]** → 녹화 모드 "**✓ 2 trackers added · Orders tracking API · 201**", 버튼 "Added ✓" | — |
 | 9 | ~7초 | 위쪽 막대 **[PayPal activity]** 서랍 (경희 녹화분) | 서랍 맨 위(최신)부터 Send message 200, Add tracking 201, 그 아래 Read … 200. **위 2~3줄만** 잡는다 | "The PayPal calls in this drawer are **real sandbox calls**." ("모든 단계"라고 하지 않는다 — 배송사 기록과 Send 뒤 시나리오는 실제가 아니다) |
 | 10 | ~32초 | **/demo/store/new-product** (주소창에 직접) | "Demo mock — sample store admin, not a real shop" 띠. 상품 "Ribbed Wool Crewneck, Ivory · $89 · 200 units · Nov 20–Dec 2" → **[Publish product]** → 창 "DisputeLess API · quick check before you publish", "Simulating 500 sale periods · N / 500"(약 7초, 편집에서 줄임) → "**Chance of a dispute per order 4.5%** · About 9.0 disputes", "Expected loss **$770** · $472–$1,140 (P10–P90)" → **결과 창 안을 아래로 스크롤**해서 **[See details and fix →]** (1920×1080에서는 스크롤해야 보인다) → AI Insert 6개 클릭 → **`[__]` 칸을 실제 값으로 채운다** (5절 아래 예시) → **[Recalculate]** → "**2.1%**", "**$327**" → **[Publish product]** → "Published · Chance of a dispute **4.5% → 2.1%** · Expected loss $770 → $327 · Disputes ~9.0 → ~4.1" | "**Assumed rates, demo store** — nothing is published to a real shop." 창 머리의 DisputeLess API는 우리 `POST /api/listing-check`다 (PayPal 호출 없음) |
-| 11 | ~6초 | **[시안 확정 대기] AG Grid 장면** | `/products`는 11/12 11:15 결정으로 없앴다. AG Grid가 들어갈 화면의 시안이 오면 채운다 | — |
+| 11 | ~6초 | **Desk → [All products]** (전체 현황) | 요약 카드 5개(Open cases · Reply needed · Prevent · Questions · Avg. dispute risk) → **AG Grid 표 "Products"** 머리 "Dispute risk"를 눌러 정렬 → 행을 눌러 사건 열기. 표 아래 "N rows · Sorted by …"와 "AG Grid" 꼬리표가 보이게 2~3초 | "The overview tables are built on **AG Grid**." (스폰서상 근거). 숫자는 실제 목록·엔진 값 |
 | 12 | ~10초 | 로드맵 + 로고 | — | — |
 
 합계 약 2:34. 길면 4번 장면의 타이핑과 10번의 진행 표시를 편집에서 빨리 감는다.
@@ -141,7 +141,7 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - [ ] "assumed" 한 번씩 (장면 4, 10), "simulated" 한 번 (장면 7)
 - [ ] /demo/seller-dashboard에서는 [Handle all 3 with DisputeLess]나 서연 줄의 Respond만 누른다
 - [ ] /demo/store/new-product 결과 창 안을 스크롤해 [See details and fix →] → `[__]` 입력칸을 채우고 Recalculate → Publish
-- [ ] [시안 확정 대기] AG Grid 장면
+- [ ] All products 화면 AG Grid 표 2~3초 (정렬 한 번, "AG Grid" 꼬리표 보이게)
 - [ ] 배포 주소: 주소창의 `disputeless.onrender.com`과 "Public demo · simulated sends"가 한 화면에 함께 보인다 (한 번)
 - [ ] 실제 전송 장면(5·6·7·8·9)은 경희 녹화분. 서연 전송 한 번뿐, 서연에게 수락·환불 없음
 - [ ] Autopilot·Mike 장면 없음, 화면에 없는 기능을 말하지 않는다
@@ -155,3 +155,20 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - ~~2-1 장면 B ⟦BUYER_NAME_1⟧ 막힘~~ → T117로 고침, 배포 1429b98에서 확인 (11/12). 장면 B를 찍을 수 있다.
 - 추적 두 번째 등록 시 화면 글자 [확인 필요]
 - 이번 주 카드 $68은 보낸 뒤에도 그대로이고 "+$N just now"만 붙는다 (3차 리뷰 ⑤). 영상에서 $68을 말로 읽지 않는다.
+
+## 8. 시안 v6 값 → 실제 화면 값 (못 맞춘 값만, 사람 결정 2026-11-12 20:35 ⑤)
+
+| 자리 | 시안 v6 | 실제 화면 | 이유 |
+|---|---|---|---|
+| 지호 "Keeps ≈$N" | $41 | **≈$34** | 엔진 repair 값 (수선비 $7·수락률 0.8 가정, AC35) |
+| 지호 "How AI handled" 3단계 비용 | "≈$7 for you" vs "$48" | "≈$16 for you" vs "$50" | 엔진 기대 손실 (repair 1642¢, 환불 5000¢ = $48 + 대응 시간 $2) |
+| 지호 구매자 메시지 | 시안 문장(약 70자) | 실제 원문 117자 | PayPal 최소 120자 규칙으로 더 길게 접수 — 화면은 실제 원문 그대로 |
+| 지호 응답 기한 | Nov 19 꼴 | 시드 기본값 (Demo data) | PayPal 응답에 seller_response_due_date 없음 |
+| 지호 사건 번호 보조 줄 | — | PP-R-ZOK-10200237 | 실제 PayPal 값 |
+| 서연 위험 | 89% | 무응답 예측 91% / AI 초안 40% | 엔진 값 |
+| 이번 주 카드 4칸 | 4 · $312 · 18 · 14 min | 실제 3건 · $71 · 3 · 사실 문장 | 성과 숫자 금지 (11/11 22:55) |
+| 마이크 위험 칩 | 12% | 없음 | 답장 칸이 없어 무응답 예측을 만들지 않음 (예외, 11/12 컨트롤 타워) |
+| Yuki 버튼 | "Auto-sent · Nov 10" | [Looks good] → Simulated | Auto 없음 예외 (11/12 결정) |
+| 스위치 끄기 | 글 남김 | 답장 비움 | 20:40 결정문 (V6-E7) |
+| 타이핑 | 32ms·1글자 | 같음 | — |
+
