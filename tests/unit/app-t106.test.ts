@@ -120,14 +120,14 @@ describe('T106-1 (F1-18 · F1-19 · F1-47): 항목·칩 클릭은 서버 요청 
     expect(markup).not.toMatch(new RegExp(`class="today-item it[^"]*"[^>]*data-item="${SEO}"`));
     expect(markup).toContain(`class="today-item it" data-item="${JIHO}"`);
     expect(markup).toContain(`class="today-item it" data-item="${MIKE}"`);
-    // 거르개로 목록에서 빠져도 고른 상세는 그대로 보인다 (시안 L688)
+    // 처음 상태로 받은 고른 상세는 보인다
     expect(markup).toMatch(new RegExp(`data-item="${SEO}">SEO-DETAIL`));
     expect(markup).toMatch(new RegExp(`data-item="${JIHO}" hidden="">JIHO-DETAIL`));
     expect(markup).toMatch(/aria-pressed="true" data-sku="FK-CD-OAT"/);
-    // setSku는 고른 항목(itemId)을 주소에 그대로 싣는다
+    // T122b (시안 v6 pickProduct): 칩을 누르면 그 상품의 첫 항목을 고른다 (T106 "고른 항목 유지"는 v6에서 바뀌었다).
+    // All products(null)면 고른 항목 없음 → 전체 현황
     const code = strip(read('src/app/today/selection.tsx'));
-    expect(code).toMatch(/setSkuState\(next\);\s*syncAddress\(next, itemId\);/);
-    expect(code).not.toMatch(/setItemId\(null\)/);
+    expect(code).toMatch(/const itemId = next === null \? null : firstItemFor\(groups, next, done\);\s*syncAddress\(next, itemId\);/);
   });
 
   it('상세는 첫 요청에 모두 그려 두고 고른 것만 보인다 (나머지 분쟁은 Suspense로 나중에)', () => {
@@ -142,10 +142,11 @@ describe('T106-1 (F1-18 · F1-19 · F1-47): 항목·칩 클릭은 서버 요청 
     expect(filterGroups(GROUPS, null)).toEqual(GROUPS);
     expect(filterGroups(GROUPS, 'FK-SW-NV').map((g) => [g.key, g.items.map((i) => i.id)])).toEqual([['needsYou', [SEO]]]);
     expect(filterGroups(GROUPS, 'FK-BN-SET').map((g) => g.key)).toEqual(['prevent']);
-    expect(todaySearch('', null, SEO)).toBe(`?item=${SEO}`);
+    // T122b: All products는 `?sku=all` (주소에 sku가 없으면 처음 상태 = 첫 항목의 상품이라서)
+    expect(todaySearch('', null, SEO)).toBe(`?sku=all&item=${SEO}`);
     expect(todaySearch(`?lang=ko&item=${SEO}`, 'FK-CD-OAT', SEO)).toBe(`?lang=ko&item=${SEO}&sku=FK-CD-OAT`);
-    expect(todaySearch('?sku=FK-CD-OAT&item=tracking', null, 'tracking')).toBe('?item=tracking');
-    expect(todaySearch('?sku=A', null, null)).toBe('');
+    expect(todaySearch('?sku=FK-CD-OAT&item=tracking', null, 'tracking')).toBe('?sku=all&item=tracking');
+    expect(todaySearch('?sku=A', null, null)).toBe('?sku=all');
   });
 });
 

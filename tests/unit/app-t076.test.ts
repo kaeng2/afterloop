@@ -691,13 +691,12 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
   const view = buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW) });
   const markup = html(createElement(TodayList, { view, selectedId: D2, paypalNotice: null }));
 
-  it('묶음: Reply needed(서연·지호) / Prevent(추적 2건·가디건) / Routine(Mike)', () => {
+  it('묶음 (T122b 시안 v6): Reply needed(서연·지호·Mike 맨 뒤) / Prevent(추적 2건·가디건)', () => {
     expect(view.groups.map((g) => [g.title, g.items.map((i) => i.id)])).toEqual([
-      ['Reply needed', [D2, D1]],
+      ['Reply needed', [D2, D1, D3]],
       ['Prevent', ['tracking', 'FK-CD-OAT']],
-      ['Routine', [D3]],
     ]);
-    expect(view.groups.map((g) => g.hint)).toEqual([t('today.groupHint.needsYou'), t('today.groupHint.prevent'), t('today.groupHint.routine')]);
+    expect(view.groups.map((g) => g.hint)).toEqual([t('today.groupHint.needsYou'), t('today.groupHint.prevent')]);
   });
 
   it('분쟁 줄 머리 = PayPal 분쟁 번호, 서연 "Reply by Nov 30", 구매자 · 나라, 범주 알약', () => {

@@ -9,7 +9,8 @@
  *   값이 CSS 변수라 어두운 화면에서도 `globals.css`가 바꾼 값을 그대로 따른다.
  * - 기본 열 설정: 정렬·필터·열 메뉴·열 옮기기·열 너비 바꾸기를 끈다 (작은 표).
  *
- * 지금 이 설정을 그리는 화면은 없다. DOM·네트워크 없음. 계산하지 않는다.
+ * T122b: Desk 오른쪽 "All products" 전체 현황의 표 2개(`src/app/today/overview.tsx`)가 쓴다 (`deskGridTheme`·`sortableCol`).
+ * DOM·네트워크 없음. 계산하지 않는다.
  */
 import {
   CellStyleModule,
@@ -61,6 +62,73 @@ export const GRID_THEME_PARAMS = {
 } satisfies Parameters<typeof themeQuartz.withParams>[0];
 
 export const gridTheme = themeQuartz.withParams(GRID_THEME_PARAMS);
+
+/**
+ * Desk "All products" 표 모양 (T122b, 시안 v6 `.ag`·`.ag-h`·`.ag-hc`·`.ag-r`·`.ag-c`). 색은 `desk.css`의 `--dk-ag-*`
+ * 변수(시안 값)에서 읽는다 — 코드에 색을 쓰지 않는다. 바깥 테두리·둥근 모서리는 `.ag` 상자(시안)가 그린다.
+ */
+export const DESK_GRID_THEME_PARAMS = {
+  ...GRID_THEME_PARAMS,
+  accentColor: 'var(--dk-ag-accent)',
+  backgroundColor: 'var(--dk-ag-bg)',
+  foregroundColor: 'var(--dk-ag-fg)',
+  textColor: 'var(--dk-ag-fg)',
+  subtleTextColor: 'var(--dk-ag-muted)',
+  borderColor: 'var(--dk-ag-border)',
+  chromeBackgroundColor: 'var(--dk-ag-head-bg)',
+  headerBackgroundColor: 'var(--dk-ag-head-bg)',
+  headerTextColor: 'var(--dk-ag-head-fg)',
+  headerCellHoverBackgroundColor: 'var(--dk-ag-head-hover)',
+  headerFontWeight: 700,
+  headerFontSize: 12,
+  fontSize: 14,
+  fontFamily: 'inherit',
+  cellHorizontalPadding: 14,
+  wrapperBorder: false,
+  wrapperBorderRadius: 0,
+  rowBorder: { color: 'var(--dk-ag-row-border)' },
+  headerRowBorder: { color: 'var(--dk-ag-border)' },
+  rowHoverColor: 'var(--dk-ag-hover)',
+  selectedRowBackgroundColor: 'var(--dk-ag-hover)',
+} satisfies Parameters<typeof themeQuartz.withParams>[0];
+
+export const deskGridTheme = themeQuartz.withParams(DESK_GRID_THEME_PARAMS);
+
+/** 시안 `.ag-r{min-height:52px}`·`.ag-hc{padding:10px 14px; font-size:12px}`(12 × 1.5 + 20) */
+export const DESK_GRID_ROW_HEIGHT = 52;
+export const DESK_GRID_HEADER_HEIGHT = 38;
+
+/**
+ * 열 폭(px) — 시안 그대로. Products `pCols` = minmax(170px,2fr) 104px 112px 84px 92px minmax(132px,1.2fr) minmax(160px,1.5fr),
+ * Cases `cCols` = 132px minmax(150px,1.5fr) minmax(170px,1.5fr) 128px minmax(120px,1.1fr) 120px.
+ * `fr`는 AG Grid `flex`, `minmax(Npx, …)`는 `minWidth`, 고정 폭은 `width`.
+ */
+export const DESK_OV_COLS = {
+  products: {
+    name: { flex: 2, minWidth: 170 },
+    open: { width: 104 },
+    reply: { width: 112 },
+    prevent: { width: 84 },
+    questions: { width: 92 },
+    risk: { flex: 1.2, minWidth: 132 },
+    top: { flex: 1.5, minWidth: 160 },
+  },
+  cases: {
+    risk: { width: 132 },
+    case: { flex: 1.5, minWidth: 150 },
+    type: { flex: 1.5, minWidth: 170 },
+    status: { width: 128 },
+    buyer: { flex: 1.1, minWidth: 120 },
+    due: { width: 120 },
+  },
+} as const satisfies Record<string, Record<string, ColDef>>;
+
+/**
+ * 정렬할 수 있는 열 (T122b 시안 `sortHead`): 숫자·위험 열은 처음 누르면 높은 순(↓), 글자 열은 낮은 순(↑).
+ * 다시 누르면 반대로 — "정렬 없음"으로 돌아가지 않는다 (시안 `d: -st.d`).
+ */
+export const sortableCol = (numeric: boolean) =>
+  ({ sortable: true, sortingOrder: numeric ? ['desc', 'asc'] : ['asc', 'desc'] }) as const satisfies ColDef;
 
 /** 정렬·필터·열 메뉴·열 옮기기·열 너비 바꾸기를 끈 기본 열 설정 */
 export const GRID_DEFAULT_COL_DEF = {

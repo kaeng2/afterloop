@@ -33,11 +33,26 @@ export function openCaseCount(cases: readonly OpenCase[], done: DoneMap, sku: st
   return cases.filter((item) => !Object.hasOwn(done, item.id) && (sku === null || item.skus.includes(sku))).length;
 }
 
-/** 지금 주소의 검색 글(`?a=b`)에 고른 상품·항목을 맞춘다. 비면 빈 글. */
+/**
+ * 상품 칩을 눌렀을 때 오른쪽에 열 항목 (T122b, 시안 v6 `pickProduct`): 그 상품 항목 중 Reply needed → Prevent →
+ * Questions 순으로 끝내지 않은 첫 항목, 없으면 그 상품의 첫 항목, 없으면 `null` (빈 상품 안내).
+ */
+export function firstItemFor(groups: readonly TodayGroup[], sku: string, done: DoneMap): string | null {
+  const shown = filterGroups(groups, sku);
+  for (const key of ['needsYou', 'prevent', 'routine'] as const) {
+    const open = shown.find((group) => group.key === key)?.items.find((item) => !Object.hasOwn(done, item.id));
+    if (open !== undefined) return open.id;
+  }
+  return shown[0]?.items[0]?.id ?? null;
+}
+
+/** 주소의 "All products" 값 (`?sku=all`). 주소에 `sku`가 없으면 처음 상태(시안 초기 state: 첫 항목의 상품)다. */
+export const ALL_PRODUCTS_PARAM = 'all';
+
+/** 지금 주소의 검색 글(`?a=b`)에 고른 상품·항목을 맞춘다. 비면 빈 글. All products는 `?sku=all`. */
 export function todaySearch(current: string, sku: string | null, item: string | null): string {
   const params = new URLSearchParams(current);
-  if (sku === null) params.delete('sku');
-  else params.set('sku', sku);
+  params.set('sku', sku ?? ALL_PRODUCTS_PARAM);
   if (item === null) params.delete('item');
   else params.set('item', item);
   const query = params.toString();

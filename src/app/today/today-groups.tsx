@@ -19,15 +19,28 @@ import { regroupDone, type DoneMap, type ListGroup, type ListRow } from './done-
 import type { TodayGroup } from './model';
 import { useSavings } from './savings';
 import { filterGroups } from './screen-model';
+import { riskChipParts, useRiskValues, type ListRiskValues } from './risk-values';
 import { useTodaySelection } from './selection';
 
 type OnSelect = (itemId: string) => void;
 const NO_SELECT: OnSelect = () => undefined;
+const NO_RISK: ListRiskValues = {};
 
-function ItemRow({ row: listRow, selected, onSelect }: { row: ListRow; selected: boolean; onSelect: OnSelect }) {
+function ItemRow({
+  row: listRow,
+  selected,
+  onSelect,
+  risk,
+}: {
+  row: ListRow;
+  selected: boolean;
+  onSelect: OnSelect;
+  risk: ListRiskValues;
+}) {
   const t = useT();
   const { item, done, simulatedLabel } = listRow;
   const { row } = item;
+  const chip = done || !Object.hasOwn(risk, item.id) ? null : riskChipParts(risk[item.id]);
   return (
     <li>
       {/* T106 (F1-47, 시안 L141 `<button>`): 화면 안 상태로 바로 고른다 (서버 왕복 없음, 키보드로 고를 수 있다) */}
@@ -51,7 +64,17 @@ function ItemRow({ row: listRow, selected, onSelect }: { row: ListRow; selected:
             {row.due === null ? null : <span className="today-item-due num">{row.due}</span>}
             {simulatedLabel ? <span className="today-item-simulated">{t('case.progress.simulated')}</span> : null}
           </span>
-          {row.who === null ? null : <span className="today-item-sub">{row.who}</span>}
+          {/* T122b 시안 v6 L148: 아래 줄 = 구매자 + 오른쪽 위험 % 칩 (엔진 무응답 pChargeback. 값이 없거나 끝낸 항목은 칩 없음) */}
+          {row.who === null && chip === null ? null : (
+            <span className="today-item-subrow">
+              <span className="today-item-sub">{row.who ?? ''}</span>
+              {chip === null ? null : (
+                <span className={`today-risk today-risk-${chip.level}`} title={t('today.risk.tip')}>
+                  {t('today.risk.chip', { percent: chip.percent, level: t(chip.levelKey) })}
+                </span>
+              )}
+            </span>
+          )}
           <span className="today-sr-only">
             {item.name}
             {item.label === null ? '' : ` · ${item.label}`} · {t(item.status.key)}
@@ -62,7 +85,17 @@ function ItemRow({ row: listRow, selected, onSelect }: { row: ListRow; selected:
   );
 }
 
-function GroupCard({ group, selectedId, onSelect }: { group: ListGroup; selectedId: string | null; onSelect: OnSelect }) {
+function GroupCard({
+  group,
+  selectedId,
+  onSelect,
+  risk,
+}: {
+  group: ListGroup;
+  selectedId: string | null;
+  onSelect: OnSelect;
+  risk: ListRiskValues;
+}) {
   const t = useT();
   const title = group.titleKey === null ? group.title : t(group.titleKey);
   return (
@@ -76,7 +109,7 @@ function GroupCard({ group, selectedId, onSelect }: { group: ListGroup; selected
       </div>
       <ul className="today-items">
         {group.rows.map((row) => (
-          <ItemRow key={row.item.id} row={row} selected={row.item.id === selectedId} onSelect={onSelect} />
+          <ItemRow key={row.item.id} row={row} selected={row.item.id === selectedId} onSelect={onSelect} risk={risk} />
         ))}
       </ul>
     </section>
@@ -90,12 +123,15 @@ function GroupCard({ group, selectedId, onSelect }: { group: ListGroup; selected
 export function TodayGroups({ groups, selectedId }: { groups: TodayGroup[]; selectedId: string | null }) {
   const { done } = useSavings();
   const selection = useTodaySelection();
+  // T122b: 위험 % 칩 값은 값 상자(`risk-values.tsx`)에서 읽는다
+  const risk = useRiskValues();
   return (
     <TodayGroupsView
       groups={selection === null ? groups : filterGroups(groups, selection.sku)}
       done={done}
       selectedId={selection === null ? selectedId : selection.itemId}
       onSelect={selection?.select}
+      risk={risk}
     />
   );
 }
@@ -106,16 +142,19 @@ export function TodayGroupsView({
   done,
   selectedId,
   onSelect = NO_SELECT,
+  risk = NO_RISK,
 }: {
   groups: TodayGroup[];
   done: DoneMap;
   selectedId: string | null;
   onSelect?: OnSelect;
+  /** 항목 id → 엔진 무응답 pChargeback. 없는 항목은 칩 없음. */
+  risk?: ListRiskValues;
 }) {
   return (
     <>
       {regroupDone(groups, done).map((group) => (
-        <GroupCard key={group.key} group={group} selectedId={selectedId} onSelect={onSelect} />
+        <GroupCard key={group.key} group={group} selectedId={selectedId} onSelect={onSelect} risk={risk} />
       ))}
     </>
   );
