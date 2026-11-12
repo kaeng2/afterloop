@@ -533,13 +533,17 @@ function productFilter(
 export function buildToday(input: TodayInput): TodayView {
   const store = simulateStore(input.products, [...FIX_ORDER], input.params, input.rules);
 
+  // T122b (시안 v6 secs): 악용 의심으로 엔진이 건너뛴 분쟁(Mike)도 "Reply needed" 묶음 — 맨 뒤 (시안 ITEMS 순서).
+  // "Questions"(`routine` 묶음 키)는 구매자 질문 항목 자리다 (지금 데이터에 없으면 묶음이 비어 안 보인다)
   const needsYou: TodayItem[] = [];
+  const skipped: TodayItem[] = [];
   const routine: TodayItem[] = [];
   for (const loaded of input.disputes) {
     const item = disputeItem(loaded, input.rules, input.params);
-    (item.group === 'routine' ? routine : needsYou).push(item);
+    (item.group === 'routine' ? skipped : needsYou).push(item);
   }
   needsYou.sort(compareNeedsYou);
+  needsYou.push(...skipped.map((item) => ({ ...item, group: 'needsYou' as const })));
   const disputeItems = [...needsYou, ...routine];
 
   // Prevent (T076): 추적 미등록 주문 → 엔진이 고른 상품 순
