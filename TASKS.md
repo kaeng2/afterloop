@@ -154,4 +154,6 @@
 | T106 | Today 목록·칩 화면 안 전환, 지호·추적 zone-work 카드, Added ✓, 배지 감소, sticky·링크 줄 제거 | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui-desk`. `tasks/T106.md` | 사람 결정 09:30 차이 목록 1·2번, 13:00 고정 |
 | T107 | Desk 시안 CSS 통째 복사 (09:25 방식) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui`. `tasks/T107.md` | 사람 결정 09:25 + "Yes, start now", 12:15 보고 |
 | T108 | /intro 시안 CSS 통째 복사 | ui | 완료 | v2.15 | — | — | 모델 `claude-sonnet-5-5`, 브랜치 `lane/ui-scenes`. `tasks/T108.md` | 사람 결정 09:25 + "Yes, start now", 12:15 보고 |
-| T109 | /listing 시안 CSS 통째 복사 | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui-desk`. `tasks/T109.md` | 사람 결정 09:25 + "Yes, start now", 12:15 보고 |
+| T109 | /listing 시안 CSS 통째 복사 | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui-desk`. `tasks/T109.md` | 사람 결정 09:25 + "Yes, start now", 12:15 보고 |
+| T110 | Desk 그림 비교 1차 후속 (목록 번호 꺾임, 이번 주 카드 머리, 세로 어긋남) | ui | 진행 | v2.15 | T107 | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T110.md` | 09:25 ③ |
+| T111 | /listing 그림 비교 1차 후속 (1–2px 세로 어긋남) | ui | 진행 | v2.15 | T109 | — | 모델 `claude-sonnet-5-5`, `lane/ui-desk`. `tasks/T111.md` | 09:25 ③ |
