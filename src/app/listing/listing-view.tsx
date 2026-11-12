@@ -1,10 +1,12 @@
 /**
- * /listing 그림 (T087, 시안 docs/design/mockup-v4/scene3/Main.dc.html의 배치·간격·카드 모양).
+ * /listing 그림 (T087 → T109, 시안 docs/design/mockup-v4/scene3/Main.dc.html).
  * 상태를 바꾸지 않고 `buildView` 값만 그린다 (시험이 정적 렌더로 본다). 손잡이는 `handlers`로 받는다.
  *
+ * - T109: 시안 class(btn·b-black·card·fld·lab·chip·ai·ph·addph·ins·sheet·rise·tipw·snav·apib…)를 그대로 쓰고,
+ *   시안 인라인 style 값은 listing.css의 `ls-*` class 규칙(주석 = 시안 줄 번호)으로 옮겼다. 이 파일에는 색·그림자 값이 없다.
  * - 쇼핑몰 껍데기(왼쪽 메뉴·검색창·가게 이름)는 고정 데모 — 버튼은 `aria-disabled`, 핸들러 없음.
  * - "Add photo"는 시안처럼 동작한다 (T098a): 고른 사진을 이 브라우저에서만 "Your photo"로 보여 준다. 올리지 않고 계산과 무관.
- * - 숫자 옆 "≈ Assumption", 고칠 문구 옆 "AI suggests". 색은 listing.css 변수(우리 강조색)만.
+ * - 숫자 옆 "≈ Assumption", 고칠 문구 옆 "AI suggests" (예외 — 사람 결정 11/12 "Keep as is").
  */
 import { AiSuggestsBadge, AssumptionBadge } from '../_shared/badges';
 import type { FieldView, FormKey, ListingView } from './model';
@@ -57,18 +59,20 @@ function Mark({ size = 14 }: { size?: number }) {
   );
 }
 
+/** 시안 L43 `.ai` (L111 작은 것은 padding 1px 7px) */
 function AiChip({ small = false }: { small?: boolean }) {
-  return <span className={small ? 'ls-ai ls-ai-sm' : 'ls-ai'}>AI</span>;
+  return <span className={small ? 'ai ls-ai-sm' : 'ai'}>AI</span>;
 }
 
+/** 시안 L117·L167 `.apib` */
 function ApiPill({ v }: { v: ListingView }) {
   return (
-    <span className="ls-apib" title={v.c.apiBy}>
+    <span className="apib" title={v.c.apiBy}>
       <span className="ls-apib-ic">
         <Mark />
       </span>
       <b>{v.c.apiName}</b>
-      <span className="ls-livedot" aria-hidden="true" />
+      <span className="livedot" aria-hidden="true" />
       <span>{v.c.apiOn}</span>
     </span>
   );
@@ -76,7 +80,7 @@ function ApiPill({ v }: { v: ListingView }) {
 
 function Dots({ dots, size }: { dots: (ListingDisputeType | null)[]; size: 'sm' | 'md' }) {
   return (
-    <div className={`ls-dots ls-dots-${size}`} aria-hidden="true">
+    <div className={`ls-dots-${size}`} aria-hidden="true">
       {dots.map((k, i) => (
         <span key={i} className={k === null ? 'ls-dot' : `ls-dot ${TYPE_TONE[k]}`} />
       ))}
@@ -102,21 +106,22 @@ function Blanks({ text }: { text: string }) {
   );
 }
 
+/** 시안 L107–L113 */
 function Field({ f, h, v }: { f: FieldView; h: ListingHandlers; v: ListingView }) {
   const gap = f.missing.length > 0;
   return (
-    <div className={f.flash === null ? 'ls-field' : `ls-field ${f.flash % 2 ? 'ls-flA' : 'ls-flB'}`} data-field={f.key}>
-      <label htmlFor={f.id} className="ls-lab ls-lab-row">
+    <div className={f.flash === null ? 'ls-field' : `ls-field ${f.flash % 2 ? 'flA' : 'flB'}`} data-field={f.key}>
+      <label htmlFor={f.id} className="lab ls-lab-row">
         {f.label}
         {gap ? (
-          <span className="ls-chip ls-chip-gap" data-missing={f.missing.map((m) => m.fix).join(' ')}>
+          <span className="chip ls-chip-gap" data-missing={f.missing.map((m) => m.fix).join(' ')}>
             {v.c.gap}: {f.missing.map((m) => m.label).join(' · ')}
           </span>
         ) : null}
       </label>
       <textarea
         id={f.id}
-        className={gap ? 'ls-fld ls-fld-gap' : 'ls-fld'}
+        className={gap ? 'fld gap' : 'fld'}
         rows={f.rows}
         value={f.value}
         onChange={(e) => h.edit(f.key, e.target.value)}
@@ -124,7 +129,7 @@ function Field({ f, h, v }: { f: FieldView; h: ListingHandlers; v: ListingView }
       {f.inserts.length > 0 ? (
         <div className="ls-ins-row">
           {f.inserts.map((i) => (
-            <button key={i.fix} type="button" className="ls-ins" disabled={i.done} data-insert={i.fix} onClick={() => h.insert(i.fix)}>
+            <button key={i.fix} type="button" className="ins" disabled={i.done} data-insert={i.fix} onClick={() => h.insert(i.fix)}>
               <AiChip small />
               {i.done ? `${i.label} · ${v.c.inserted}` : `${v.c.insert}: ${i.label}`}
             </button>
@@ -143,6 +148,7 @@ function Field({ f, h, v }: { f: FieldView; h: ListingHandlers; v: ListingView }
   );
 }
 
+/** 시안 L64–L79 */
 function Shell({ v, children }: { v: ListingView; children: React.ReactNode }) {
   const n = v.c.nav;
   return (
@@ -173,7 +179,7 @@ function Shell({ v, children }: { v: ListingView; children: React.ReactNode }) {
       <div className="ls-body">
         <nav aria-label={n.label} className="ls-side">
           {(['home', 'orders', 'products', 'customers', 'analytics', 'marketing'] as const).map((k) => (
-            <button key={k} type="button" className={k === 'products' ? 'ls-snav on' : 'ls-snav'} aria-disabled="true">
+            <button key={k} type="button" className={k === 'products' ? 'snav on' : 'snav'} aria-disabled="true">
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <path d={NAV_ICON[k]} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -181,20 +187,20 @@ function Shell({ v, children }: { v: ListingView; children: React.ReactNode }) {
             </button>
           ))}
           <span className="ls-side-h">{n.apps}</span>
-          <button type="button" className="ls-snav" aria-disabled="true">
+          <button type="button" className="snav" aria-disabled="true">
             <span className="ls-apib-ic">
               <Mark />
             </span>
             {n.disputeless}
           </button>
           {/* "PayPal payments"는 아이콘 없이 글자만 (T087 규칙 3) */}
-          <button type="button" className="ls-snav" aria-disabled="true">
+          <button type="button" className="snav" aria-disabled="true">
             {n.payments}
           </button>
         </nav>
         <main className="ls-main">
           <div className="ls-crumb">
-            <span>{n.products}</span>
+            <span className="ls-crumb-a">{n.products}</span>
             <span aria-hidden="true">›</span>
             <b>{v.c.crumb}</b>
           </div>
@@ -205,35 +211,36 @@ function Shell({ v, children }: { v: ListingView; children: React.ReactNode }) {
   );
 }
 
+/** 시안 L85–L122 */
 function Editor({ v, h, userPhotos }: { v: ListingView; h: ListingHandlers; userPhotos: string[] }) {
   const c = v.c;
   const isDetail = v.screen === 'detail';
   return (
-    <section className="ls-card ls-editor">
+    <section className="card ls-editor">
       {isDetail ? (
         <div className="ls-head">
           <b>{c.detailT}</b>
           <span>{c.detailS}</span>
         </div>
       ) : null}
-      <div className="ls-group">
-        <span className="ls-lab">{c.photos}</span>
+      <div className="ls-photo-block">
+        <span className="lab">{c.photos}</span>
         <div className="ls-photos">
           {c.photoItems.map((p) => (
-            <div key={p.src} className="ls-ph">
+            <div key={p.src} className="ph">
               {/* eslint-disable-next-line @next/next/no-img-element -- 고정 데모 사진 4장 (public/listing) */}
               <img src={p.src} alt={p.label} />
-              <span className="ls-phl">{p.label}</span>
+              <span className="phl">{p.label}</span>
             </div>
           ))}
           {userPhotos.map((src) => (
-            <div key={src} className="ls-ph" data-user-photo="">
+            <div key={src} className="ph" data-user-photo="">
               {/* eslint-disable-next-line @next/next/no-img-element -- 사용자가 고른 사진 (blob URL, 올리지 않음) */}
               <img src={src} alt={c.yours} />
-              <span className="ls-phl">{c.yours}</span>
+              <span className="phl">{c.yours}</span>
             </div>
           ))}
-          <label className="ls-addph">
+          <label className="addph">
             <input
               type="file"
               accept="image/*"
@@ -244,7 +251,7 @@ function Editor({ v, h, userPhotos }: { v: ListingView; h: ListingHandlers; user
                 e.target.value = '';
               }}
             />
-            <span className="ls-addic" aria-hidden="true">
+            <span className="addic" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24">
                 <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
               </svg>
@@ -256,26 +263,26 @@ function Editor({ v, h, userPhotos }: { v: ListingView; h: ListingHandlers; user
       </div>
       <div className="ls-grid3">
         <label className="ls-group">
-          <span className="ls-lab">{c.fTitle}</span>
-          <input className="ls-fld" value={v.form.title} onChange={(e) => h.edit('title', e.target.value)} />
+          <span className="lab">{c.fTitle}</span>
+          <input className="fld" value={v.form.title} onChange={(e) => h.edit('title', e.target.value)} />
         </label>
         <label className="ls-group">
-          <span className="ls-lab">{c.fPrice}</span>
-          <input className="ls-fld" value={v.priceText} readOnly />
+          <span className="lab">{c.fPrice}</span>
+          <input className="fld" value={v.priceText} readOnly />
         </label>
         <label className="ls-group">
-          <span className="ls-lab">{c.fUnits}</span>
-          <input className="ls-fld" value={v.unitsText} readOnly />
+          <span className="lab">{c.fUnits}</span>
+          <input className="fld" value={v.unitsText} readOnly />
         </label>
       </div>
       <div className="ls-grid-dates">
         <label className="ls-group">
-          <span className="ls-lab">{c.fFrom}</span>
-          <input type="date" className="ls-fld" value={v.form.from} onChange={(e) => h.edit('from', e.target.value)} />
+          <span className="lab">{c.fFrom}</span>
+          <input type="date" className="fld" value={v.form.from} onChange={(e) => h.edit('from', e.target.value)} />
         </label>
         <label className="ls-group">
-          <span className="ls-lab">{c.fTo}</span>
-          <input type="date" className="ls-fld" value={v.form.to} onChange={(e) => h.edit('to', e.target.value)} />
+          <span className="lab">{c.fTo}</span>
+          <input type="date" className="fld" value={v.form.to} onChange={(e) => h.edit('to', e.target.value)} />
         </label>
         <span className={v.peak ? 'ls-peak on' : 'ls-peak'}>{v.datesValid ? (v.peak ? c.peakOn : c.peakOff) : c.datesInvalid}</span>
       </div>
@@ -295,10 +302,10 @@ function Editor({ v, h, userPhotos }: { v: ListingView; h: ListingHandlers; user
       {v.screen === 'edit' || v.screen === 'sheet' ? (
         <div className="ls-actions">
           <ApiPill v={v} />
-          <button type="button" className="ls-btn ls-b-tint" aria-disabled="true">
+          <button type="button" className="btn b-tint" aria-disabled="true">
             {c.saveDraft}
           </button>
-          <button type="button" className="ls-btn ls-b-black" data-action="publish" disabled={!v.datesValid} onClick={h.publish}>
+          <button type="button" className="btn b-black" data-action="publish" disabled={!v.datesValid} onClick={h.publish}>
             {c.publish}
           </button>
         </div>
@@ -307,6 +314,7 @@ function Editor({ v, h, userPhotos }: { v: ListingView; h: ListingHandlers; user
   );
 }
 
+/** 시안 L126–L169 */
 function Panel({ v, h }: { v: ListingView; h: ListingHandlers }) {
   const p = v.panel;
   if (p === null) return null;
@@ -325,37 +333,37 @@ function Panel({ v, h }: { v: ListingView; h: ListingHandlers }) {
           </span>
         </div>
       </div>
-      <section className="ls-card ls-card-tight">
+      <section className="card ls-card-risk">
         <div className="ls-panel-top">
-          <div className="ls-group-tight">
-            <span className="ls-lab">{c.probL}</span>
+          <div className="ls-prob-col">
+            <span className="lab">{c.probL}</span>
             <div className="ls-big-row">
               <span className={p.improved ? 'ls-big good' : 'ls-big'} data-value="prob">
                 {p.prob}
               </span>
               <AssumptionBadge />
             </div>
-            <span className="ls-sub" data-part="probSub">
+            <span className="ls-prob-sub" data-part="probSub">
               {p.probSub} · {p.before}
             </span>
           </div>
-          <div className="ls-tipw">
+          <div className="tipw ls-tipw">
             <span className="ls-tip-l">
               {c.lossL}
-              <button type="button" className="ls-tipq" aria-label={c.lossHow}>
+              <button type="button" className="tipq" aria-label={c.lossHow}>
                 i
               </button>
             </span>
             <b className="ls-loss" data-value="loss">
               {p.loss} <AssumptionBadge />
             </b>
-            <span className="ls-sub">{p.lossRange}</span>
-            <span className="ls-tipb" role="tooltip">
+            <span className="ls-range">{p.lossRange}</span>
+            <span className="tipb" role="tooltip">
               {p.lossTip}
             </span>
           </div>
         </div>
-        <div className="ls-group-tight">
+        <div className="ls-dots-block">
           <Dots dots={p.dots} size="sm" />
           <span className="ls-tiny">{p.dotsL}</span>
         </div>
@@ -376,8 +384,10 @@ function Panel({ v, h }: { v: ListingView; h: ListingHandlers }) {
           ))}
         </div>
         <div className={p.dirty ? 'ls-status dirty' : 'ls-status'}>
-          <span role="status">{p.status}</span>
-          <button type="button" className="ls-btn ls-b-ai ls-b-sm" data-action="recalc" disabled={p.recalcDisabled} onClick={h.recalc}>
+          <span className="ls-status-t" role="status">
+            {p.status}
+          </span>
+          <button type="button" className="btn b-ai b-sm" data-action="recalc" disabled={p.recalcDisabled} onClick={h.recalc}>
             {p.recalcLabel}
           </button>
         </div>
@@ -387,7 +397,7 @@ function Panel({ v, h }: { v: ListingView; h: ListingHandlers }) {
           </div>
         ) : null}
       </section>
-      <section className="ls-card ls-card-tight ls-checks">
+      <section className="card ls-checks">
         <b>{c.reduceT}</b>
         {p.checks.map((x) => (
           <div key={x.k} className="ls-check" data-check={x.k}>
@@ -399,9 +409,9 @@ function Panel({ v, h }: { v: ListingView; h: ListingHandlers }) {
             {x.on ? null : <AssumptionBadge />}
           </div>
         ))}
-        <div className="ls-actions ls-actions-split">
+        <div className="ls-actions-split">
           <ApiPill v={v} />
-          <button type="button" className="ls-btn ls-b-black" data-action="publishFinal" disabled={p.running} onClick={h.publishFinal}>
+          <button type="button" className="btn b-black" data-action="publishFinal" disabled={p.running} onClick={h.publishFinal}>
             {c.publishNow}
           </button>
         </div>
@@ -410,6 +420,7 @@ function Panel({ v, h }: { v: ListingView; h: ListingHandlers }) {
   );
 }
 
+/** 시안 L176–L253 */
 function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
   const s = v.sheet;
   if (s === null) return null;
@@ -417,7 +428,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
   return (
     <>
       <div className="ls-scrim" aria-hidden="true" />
-      <div className="ls-sheet" role="dialog" aria-modal="true" aria-label={c.sheetKicker}>
+      <div className="sheet" role="dialog" aria-modal="true" aria-label={c.sheetKicker}>
         <span className="ls-grab" aria-hidden="true" />
         <div className="ls-kicker">
           <AiChip />
@@ -427,7 +438,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
           <>
             <div className="ls-an">
               <div className="ls-spin-wrap" aria-hidden="true">
-                <svg className="ls-spin" width="96" height="96" viewBox="0 0 96 96">
+                <svg className="spin" width="96" height="96" viewBox="0 0 96 96">
                   <circle cx="48" cy="48" r="40" className="ls-spin-track" strokeWidth="8" />
                   <path d="M48 8a40 40 0 0 1 40 40" className="ls-spin-arc" strokeWidth="8" strokeLinecap="round" />
                   <defs>
@@ -437,12 +448,12 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                     </linearGradient>
                   </defs>
                 </svg>
-                <svg className="ls-pulse-ic" width="40" height="40" viewBox="0 0 24 24">
+                <svg className="pulse ls-pulse-ic" width="40" height="40" viewBox="0 0 24 24">
                   <path d="M4 18l5-6 4 3 7-9" className="ls-pulse-line" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                   <circle cx="20" cy="6" r="2" className="ls-pulse-dot" />
                 </svg>
               </div>
-              <div className="ls-group-tight">
+              <div className="ls-an-col">
                 <b className="ls-an-t">{c.anT}</b>
                 <span className="ls-an-s">{s.anS}</span>
                 <ol className="ls-steps">
@@ -476,21 +487,21 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
             </div>
           </>
         ) : (
-          <div className="ls-rise ls-result">
+          <div className="rise ls-result">
             <b className="ls-res-t">{c.resT}</b>
             <div className="ls-basis" aria-label={c.basisT}>
               {s.basis.map((b) => (
                 <div key={b.k} className="ls-basis-cell">
                   <span className="ls-basis-k">{b.k}</span>
                   <b>{b.v}</b>
-                  {b.chip ? <span className="ls-chip ls-chip-peak">{b.chip}</span> : null}
+                  {b.chip ? <span className="chip ls-chip-peak">{b.chip}</span> : null}
                   {'assumption' in b && b.assumption ? <AssumptionBadge source={b.v} /> : null}
                 </div>
               ))}
             </div>
             <div className="ls-hero">
-              <div className="ls-group-tight">
-                <span className="ls-lab">{c.probL}</span>
+              <div className="ls-hero-l">
+                <span className="lab">{c.probL}</span>
                 <span className="ls-hero-n" data-value="prob">
                   {s.prob}
                 </span>
@@ -498,7 +509,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                   {s.probSub} <AssumptionBadge />
                 </span>
               </div>
-              <div className="ls-group-tight">
+              <div className="ls-hero-r">
                 <Dots dots={s.dots} size="md" />
                 <div className="ls-legend">
                   {s.legend.map((l) => (
@@ -511,8 +522,8 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                 <span className="ls-tiny">{s.dotsL}</span>
               </div>
             </div>
-            <div className="ls-group-tight">
-              <span className="ls-lab">
+            <div className="ls-top-block">
+              <span className="lab">
                 {c.topT2} <AssumptionBadge />
               </span>
               <div className="ls-top">
@@ -526,7 +537,7 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                       <b>{t.pct}</b>
                       <span className="ls-top-of">{t.of}</span>
                     </div>
-                    <span className="ls-sub">{t.why}</span>
+                    <span className="ls-top-why">{t.why}</span>
                   </div>
                 ))}
               </div>
@@ -542,15 +553,15 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <div className="ls-group-tight">
+                <div className="ls-bf-col">
                   <b>{c.bfT}</b>
-                  <span className="ls-sub">{c.bfB}</span>
+                  <span>{c.bfB}</span>
                 </div>
               </div>
             ) : null}
             <div className="ls-split">
-              <div className="ls-group-tight">
-                <span className="ls-lab">{c.fixT}</span>
+              <div className="ls-fix-col">
+                <span className="lab">{c.fixT}</span>
                 {s.fixes.map((x) => (
                   <div key={x.k} className="ls-fix" data-fix={x.k}>
                     <span className="ls-fix-plus" aria-hidden="true">
@@ -564,21 +575,21 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
               </div>
               <div className="ls-loss-box">
                 <div className="ls-loss-row">
-                  <span className="ls-lab">{c.lossL}</span>
+                  <span className="lab">{c.lossL}</span>
                   <b className="ls-loss" data-value="loss">
                     {s.loss} <AssumptionBadge />
                   </b>
                 </div>
-                <span className="ls-sub">{s.lossRange}</span>
+                <span className="ls-range">{s.lossRange}</span>
                 <span className="ls-loss-how">{c.lossHow}</span>
-                <span className="ls-sub">{s.lossTip}</span>
+                <span className="ls-loss-tip">{s.lossTip}</span>
               </div>
             </div>
-            <div className="ls-actions">
-              <button type="button" className="ls-btn ls-b-tint" data-action="publishAnyway" onClick={h.publishAnyway}>
+            <div className="ls-sheet-actions">
+              <button type="button" className="btn b-tint" data-action="publishAnyway" onClick={h.publishAnyway}>
                 {c.publishAnyway}
               </button>
-              <button type="button" className="ls-btn ls-b-ai" data-action="toDetail" onClick={h.toDetail}>
+              <button type="button" className="btn b-ai" data-action="toDetail" onClick={h.toDetail}>
                 {c.seeDetail} →
               </button>
             </div>
@@ -589,12 +600,13 @@ function Sheet({ v, h }: { v: ListingView; h: ListingHandlers }) {
   );
 }
 
+/** 시안 L258–L270 */
 function Done({ v, h }: { v: ListingView; h: ListingHandlers }) {
   const d = v.done;
   if (d === null) return null;
   return (
     <div className="ls-done-wrap">
-      <section className="ls-card ls-rise ls-done">
+      <section className="card rise ls-done">
         <span className="ls-done-ic" aria-hidden="true">
           ✓
         </span>
@@ -610,10 +622,10 @@ function Done({ v, h }: { v: ListingView; h: ListingHandlers }) {
         </div>
         <span className="ls-done-note">{d.note}</span>
         <div className="ls-done-actions">
-          <button type="button" className="ls-btn ls-b-tint" data-action="backEdit" onClick={h.backEdit}>
+          <button type="button" className="btn b-tint" data-action="backEdit" onClick={h.backEdit}>
             {v.c.backEdit}
           </button>
-          <button type="button" className="ls-btn ls-b-black" data-action="restart" onClick={h.restart}>
+          <button type="button" className="btn b-black" data-action="restart" onClick={h.restart}>
             {v.c.restart}
           </button>
         </div>
