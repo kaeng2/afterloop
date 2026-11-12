@@ -24,12 +24,12 @@
 |---|---|---|
 | 공개 데모 (Render) | **https://disputeless.onrender.com** (`/api/health` → `{"ok":true,"mode":"public"}`) | `DEMO_MODE=public` — PayPal 쓰기 호출 0회, 버튼은 "Simulated" 결과만. 읽기(분쟁·주문·거래 조회)는 실제 샌드박스. 실제 전송 장면을 빼고는 이 링크로 찍어도 된다 |
 | 화면 주소 | `/demo/seller-dashboard` → `/` (Desk) · `/demo/store/new-product` | 화면끼리 링크가 없다. **`/demo/store/new-product`은 주소창에 직접 쳐서 들어간다** (탭 없음). `/products`는 없앴다 (→ `/`로 이동) |
-| 서연 화면 바로 가기 | `/?item=PP-R-GMS-10197661` | /intro에서 누르면 여기로 온다 |
+| 서연 화면 바로 가기 | `/?item=PP-R-GMS-10197661` | /demo/seller-dashboard에서 누르면 여기로 온다 |
 | 실제 전송 장면 | 경희가 따로 찍음 (아래 5절) | `DEMO_MODE=recording` 별도 환경 |
 
 ## 2. 장면 순서 (3분 미만, 목표 2:30 안팎)
 
-PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-dashboard, 장면 2 = Desk(`/`), 장면 3 = /demo/store/new-product** (Black Friday 리허설은 /listing으로 바뀌었다). 화면 모양은 시안 v4다. Autopilot 없음.
+PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-dashboard, 장면 2 = Desk(`/`), 장면 3 = /demo/store/new-product** (Black Friday 리허설은 /demo/store/new-product으로 바뀌었다). 화면 모양은 시안 v4다. Autopilot 없음.
 
 | # | 길이(안) | 화면 / 주소 | 하는 일 (화면 글자 그대로) | 말로 밝힐 것 |
 |---|---|---|---|---|
@@ -48,7 +48,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 
 합계 약 2:34. 길면 4번 장면의 타이핑과 10번의 진행 표시를 편집에서 빨리 감는다.
 
-**넣지 않는 것**: Autopilot, Mike 장면, 가게 전체 숫자를 말로 하기, /intro의 지호 "Respond →" (서연 화면으로 간다).
+**넣지 않는 것**: Autopilot, Mike 장면, 가게 전체 숫자를 말로 하기, /demo/seller-dashboard의 지호 "Respond →" (서연 화면으로 간다).
 
 ### 2-1. 다른 장면 (선택 — 시간이 남거나 4번 대신 쓸 때)
 
@@ -93,7 +93,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 - **Follow-up 날짜(답장 속 "11월 19일")** = 서버 UTC 날짜 + 7일. **09:00 KST 전**에는 하루 이르게 나온다 (공식 규칙 상자).
 - **Desk 위쪽 날짜 줄** = 판매자 시간대(미국 동부) 날짜. **14:00 KST 전**에는 전날이다. 예) 11/12 13:30 KST에 찍으면 "Wed, Nov 11 · Black Friday in 16 days", 14:00 KST 이후면 "Thu, Nov 12 · Black Friday in 15 days".
 - 그래서 **11/12 14:00 KST 이후**에 찍으면 날짜 줄(Nov 12)과 Follow-up(Nov 19 = +7)이 서로 맞는다. 그 전에 찍으면 날짜 줄이 Nov 11이라 "8일 뒤"처럼 보인다.
-- /intro의 "Black Friday in 17 days"는 고정 문구다. Desk 숫자와 다르다 → **며칠 남았는지는 말로 읽지 않는다.**
+- /demo/seller-dashboard의 "Black Friday in 17 days"는 고정 문구다. Desk 숫자와 다르다 → **며칠 남았는지는 말로 읽지 않는다.**
 - **녹화 중에는 재배포하지 않는다.** (재배포하면 서버 메모리의 서랍 기록과 캐시가 비워진다.)
 
 ## 4. 말로 밝혀야 하는 곳 (데모 데이터 · 가정 · 실제)
@@ -102,11 +102,11 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
   - 배송사 추적·통관 기록 ("Oct 30 · Carrier: Customs hold – recipient customs ID missing") → 장면 3에서 **"demo data here"를 말로** (필수)
   - 서연의 11/2 문의 말풍선, 이번 주 카드, Mike의 이전 주장, 종결 분쟁 이력
   - /demo/seller-dashboard 판매자 대시보드와 /demo/store/new-product 쇼핑몰은 **데모용 껍데기 화면** (화면 띠에 "Demo mock")
-- **가정** (화면에 Assumption 배지): 위험 %(곡선 80% → 40%, 차지백 95%·40%·3%), 손님 반응 막대, 비용 $37·$74·$85, Send 뒤 단계의 Risk %, /listing의 4.5% → 2.1%·$770 → $327. 출처는 `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 둘은 기획 시안의 가중치이고 통계가 아니다) → **장면 4에서 "our assumed model" 한 번, 장면 10에서 "assumed rates" 한 번**
+- **가정** (화면에 Assumption 배지): 위험 %(곡선 80% → 40%, 차지백 95%·40%·3%), 손님 반응 막대, 비용 $37·$74·$85, Send 뒤 단계의 Risk %, /demo/store/new-product의 4.5% → 2.1%·$770 → $327. 출처는 `config/params.json`, `config/reply-model.json`, `config/listing-model.json` (뒤의 둘은 기획 시안의 가중치이고 통계가 아니다) → **장면 4에서 "our assumed model" 한 번, 장면 10에서 "assumed rates" 한 번**
 - **시뮬레이션** (Simulated 배지): Send 뒤 "What happens next" 단계 전부(손님 답장·Forward to carrier·세관 통과), 공개 링크의 모든 쓰기 버튼, /demo/store/new-product 게시
 - **실제 PayPal 샌드박스**: 분쟁 목록·상세 조회, 주문 조회, 거래 조회(200), 녹화 모드의 한국어 send-message(200)와 추적 등록(201). 가상 판매자·샌드박스라는 것은 타이틀에서
 - **AI가 하는 일**: 한국어 번역, 답장 초안과 역번역, 화난 어조 판단, 사건 기록 요약, /demo/store/new-product 고칠 문구. **코드가 하는 일**: 원인 판정(통관 보류), 기대 손실과 추천, 날짜, 위험 %, 검사 3개, 보내도 되는지
-- **하지 말 말**: "guarantees", "predicts accurately", "AI found the customs hold"(원인은 코드가 판단), "every step was a real PayPal call", "analyzes your PayPal dispute history"(/listing은 PayPal 이력을 읽지 않는다)
+- **하지 말 말**: "guarantees", "predicts accurately", "AI found the customs hold"(원인은 코드가 판단), "every step was a real PayPal call", "analyzes your PayPal dispute history"(/demo/store/new-product은 PayPal 이력을 읽지 않는다)
 
 ## 5. 실제 전송 장면 (녹화 모드, 경희가 따로 찍음)
 
@@ -139,7 +139,7 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - [ ] Follow-up 날짜 = 녹화일 + 7 (11/12면 "11월 19일")
 - [ ] "demo data here"가 내레이션에 있다 (장면 3)
 - [ ] "assumed" 한 번씩 (장면 4, 10), "simulated" 한 번 (장면 7)
-- [ ] /intro에서는 [Handle all 3 with DisputeLess]나 서연 줄의 Respond만 누른다
+- [ ] /demo/seller-dashboard에서는 [Handle all 3 with DisputeLess]나 서연 줄의 Respond만 누른다
 - [ ] /demo/store/new-product `[__]` 입력칸을 채우고 Recalculate → Publish
 - [ ] [시안 확정 대기] AG Grid 장면
 - [ ] 배포 주소(disputeless.onrender.com)가 화면에 한 번 보인다
