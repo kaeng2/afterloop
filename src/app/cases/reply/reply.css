@@ -45,15 +45,20 @@
   box-shadow: var(--shadow-editor-focus);
 }
 
+/* T118 ①: 시안 L58 아래 여백 46px을 나눈다 — 40px은 스크롤되지 않는 칸 쪽, 6px은 글자 칸 쪽 (합 46px 그대로).
+   글자 칸 안 여백은 스크롤 영역이라 긴 글이 그 위로 지나가며 알약(L840 bottom 12px) 밑에 깔렸다.
+   알약 위 끝 = 12 + 4 + 13px×1.5(물려받는 줄 높이) + 4 = 39.5px < 40px → 글자가 알약 밑으로 가지 않는다. */
 .reply-editor-field {
   position: relative;
+  padding-bottom: 40px;
+  background: var(--color-surface);
 }
 
 .reply-textarea {
   display: block;
   width: 100%;
   min-height: 120px;
-  padding: 14px 16px 46px;
+  padding: 14px 16px 6px;
   font: inherit;
   font-size: var(--reply-text-size);
   line-height: 1.55;

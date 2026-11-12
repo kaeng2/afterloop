@@ -183,7 +183,7 @@ describe('7. F4-67 입력 중 새 약속 경고', () => {
 
 describe('8. F5-3 Send 뒤 랜드마크 이름 "Case progress"', () => {
   it('보내기 전: aria-labelledby (Respond now 제목)', () => {
-    const markup = html(createElement(SentProvider, null, createElement(WorkZone, { titleId: 'work-title', children: 'x' })));
+    const markup = html(createElement(SentProvider, null, createElement(WorkZone, { titleId: 'work-title' }, 'x')));
     expect(markup).toBe('<section class="work zone-work" aria-labelledby="work-title">x</section>');
   });
 
@@ -192,7 +192,7 @@ describe('8. F5-3 Send 뒤 랜드마크 이름 "Case progress"', () => {
     expect(code).toMatch(/sent \? \(\s*<section className="work zone-work" aria-label=\{t\('case\.progress\.zone'\)\}>/);
     expect(copyTables.en['case.progress.zone']).toBe('Case progress');
     expect(copyTables.en['case.progress.title']).toBe('What happens next · Simulated');
-    expect(strip(read('src/app/cases/view/case-view.tsx'))).toMatch(/<WorkZone titleId="work-title">/);
+    expect(strip(read('src/app/cases/view/case-view.tsx'))).toMatch(/<WorkZone\s+titleId="work-title"/);
   });
 });
 

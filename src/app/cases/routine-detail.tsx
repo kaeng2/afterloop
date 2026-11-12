@@ -8,6 +8,7 @@
  * 그리기만 한다. 상태 문장은 엔진 판정(`decideAutopilot`)과 규칙 이름에서 고른 문구다 (`today/model.ts`의
  * `routineLine`). 언제 이 화면을 쓰는지는 `case-detail.tsx`가 같은 판정으로 정한다 (목록의 Routine 묶음과 같은 규칙).
  */
+import { Badge } from '../_shared/badges';
 import { t } from '../_shared/copy';
 import type { TodayRowView } from '../today/model';
 import { WorkCard, WorkDetail } from '../today/work-card';
@@ -28,10 +29,16 @@ export function RoutineDetail({
   line: string;
   row?: TodayRowView | null;
 }) {
+  // T118 ②: 반복 미수령 주장(이전 분쟁 수·배송 기록)은 시드 데이터다 (정직성 표) → 다른 곳과 같은 Demo data 배지
+  const claim = (
+    <>
+      {line} <Badge kind="demo" />
+    </>
+  );
   if (row !== null) {
     return (
       <WorkDetail row={row} className="routine-detail">
-        <WorkCard titleId={`routine-title-${view.header.disputeId}`} ai={false} title={t('case.routine.label')} body={line} />
+        <WorkCard titleId={`routine-title-${view.header.disputeId}`} ai={false} title={t('case.routine.label')} body={claim} />
       </WorkDetail>
     );
   }
@@ -39,7 +46,7 @@ export function RoutineDetail({
     <div className="case-page">
       <CaseHeader view={view} desk={desk} />
       <section className="case-summary case-routine" aria-label={t('case.routine.label')}>
-        <p className="case-summary-text">{line}</p>
+        <p className="case-summary-text">{claim}</p>
       </section>
     </div>
   );
