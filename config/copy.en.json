@@ -246,6 +246,7 @@
   "case.reply.fact.CUSTOMS_STATUS": "Customs status",
   "case.reply.fact.BUYER_NAME": "Buyer name",
   "case.reply.fact.SELLER_NAME": "Your signature",
+  "case.reply.fact.DAYS": "Repair time",
   "case.reply.check.nameHonorific": "No extra title next to the buyer's name",
   "case.reply.addedInTranslation": "The translation added a promise that is not in your draft. Reload to translate again, or change the draft. Confirming does not unlock this.",
   "case.reply.outsidePolicy": "Promises outside your policy — confirm each one before sending",
