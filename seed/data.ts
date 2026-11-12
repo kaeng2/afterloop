@@ -119,7 +119,7 @@ const priceOf = (sku: string): number => {
 /** 원문 6-2 그대로. 국가는 ISO 코드 (한국 KR · 미국 US · 일본 JP · 독일 DE · 영국 GB) */
 export const buyers: SeedBuyer[] = [
   { id: 'B01', name: '김서연 Seo-yeon Kim', country: 'KR', language: 'KO', sandbox: true, role: '대표 시나리오: 통관 보류 + "카드사에 이의제기" (SC4)' },
-  { id: 'B02', name: '박지호 Ji-ho Park', country: 'KR', language: 'KO', sandbox: true, role: '색상 분쟁, 오토파일럿이 승인 대기로 올림 (SC5)' },
+  { id: 'B02', name: '박지호 Ji-ho Park', country: 'KR', language: 'KO', sandbox: true, role: '품질 분쟁(소매 올 풀림, 반품 기간 지남), 오토파일럿이 승인 대기로 올림 (SC5)' },
   { id: 'B03', name: 'Yuki T.', country: 'JP', language: 'JA', sandbox: true, role: '사이즈 문의 → 오토파일럿 자동 답변 (SC5)' },
   { id: 'B04', name: 'Mike Morgan', country: 'US', language: 'EN', sandbox: true, role: '반복 미수령 주장, 자동 처리 제외 (SC5)' },
   { id: 'B05', name: 'Lena K.', country: 'DE', language: 'DE', sandbox: true, role: '환불 약속 4일 경과 (SC3, P1)' },
@@ -175,7 +175,7 @@ type DisputeDraft = Omit<SeedDispute, 'lossCents' | 'orderId'> & {
  * D7 O09 · D8 O10(이전 주장 2건) — 나머지는 그 구매자의 같은 상품 시드 주문 1건이다.
  */
 export const disputeDrafts: DisputeDraft[] = [
-  { id: 'D1', buyerId: 'B02', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'open', outcome: null, source: 'sandbox', orderId: 'O02' },
+  { id: 'D1', buyerId: 'B02', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B3', status: 'open', outcome: null, source: 'sandbox', orderId: 'O02' },
   { id: 'D2', buyerId: 'B01', sku: 'FK-SW-NV', reason: INR, subtype: 'A2', status: 'open', outcome: null, source: 'sandbox', orderId: 'O01' },
   // D3은 배송 완료 기록이 있는 주문에 걸려야 F1(반복 주장) 규칙이 성립한다 (config/rules.json의 abuse)
   { id: 'D3', buyerId: 'B04', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'open', outcome: null, source: 'sandbox', orderId: 'O08', requireTracked: true },
@@ -240,7 +240,7 @@ export const sandboxOrderDrafts: ({ id: string } & DatedOrderDraft)[] = [
   // 11/09 문의 "벌써 3주째"보다 3주 이상 앞이어야 한다 (2026-10-19 이전)
   { id: 'O01', buyerId: 'B01', sku: 'FK-SW-NV', country: 'KR', tracked: true, date: '2026-10-17' }, // D2 INR
   // 10/20 색상 문의("사진이랑 색이 너무 달라요")보다 앞 — 받아 보고 나서 말한 불만이다
-  { id: 'O02', buyerId: 'B02', sku: 'FK-CD-OAT', country: 'KR', tracked: false, date: '2026-10-15' }, // D1 SNAD
+  { id: 'O02', buyerId: 'B02', sku: 'FK-CD-OAT', country: 'KR', tracked: false, date: '2026-10-15' }, // D1 SNAD 품질(B3). 화면의 5주 전·30일은 demo-display.json jihoPurchase(Demo data)
   { id: 'O03', buyerId: 'B03', sku: 'FK-CD-OAT', country: 'JP', tracked: false, date: '2026-09-18' },
   { id: 'O04', buyerId: 'B03', sku: 'FK-SW-NV', country: 'JP', tracked: false, date: '2026-10-09' },
   { id: 'O05', buyerId: 'B03', sku: 'FK-BN-SET', country: 'JP', tracked: false, date: '2026-10-25' },
@@ -460,11 +460,11 @@ export const tableInquiries: SeedInquiry[] = [
     isDemo: true,
   },
   {
-    date: '2026-10-20',
+    date: '2026-11-09',
     buyerId: 'B02',
-    original: '사진이랑 색이 너무 달라요. 베이지가 아니라 회색이에요.',
-    english: "The color is very different from the photo. It's grey, not beige.",
-    signal: 'B1',
+    original: '산 지 5주 정도 됐는데 소매 쪽 올이 풀려서 입을 수가 없어요. 반품 기간이 지난 건 알지만 너무 속상해요. 방법이 없을까요?',
+    english: "I bought it about 5 weeks ago and the sleeve is unraveling, so I can't wear it. I know the return window has passed, but I'm really upset. Is there anything you can do?",
+    signal: 'B3',
     isDemo: true,
   },
   {

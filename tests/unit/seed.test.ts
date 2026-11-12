@@ -56,7 +56,7 @@ const TABLE_6_1 = [
 /** 원문 6-2. orders·inquiries·disputes는 표의 '주문 / 문의 / 분쟁' 칸 */
 const TABLE_6_2 = [
   { id: 'B01', name: '김서연 Seo-yeon Kim', country: 'KR', language: 'KO', sandbox: true, role: '대표 시나리오: 통관 보류 + "카드사에 이의제기" (SC4)', orders: 1, inquiries: 2, disputes: 1 },
-  { id: 'B02', name: '박지호 Ji-ho Park', country: 'KR', language: 'KO', sandbox: true, role: '색상 분쟁, 오토파일럿이 승인 대기로 올림 (SC5)', orders: 1, inquiries: 1, disputes: 1 },
+  { id: 'B02', name: '박지호 Ji-ho Park', country: 'KR', language: 'KO', sandbox: true, role: '품질 분쟁(소매 올 풀림, 반품 기간 지남), 오토파일럿이 승인 대기로 올림 (SC5)', orders: 1, inquiries: 1, disputes: 1 },
   { id: 'B03', name: 'Yuki T.', country: 'JP', language: 'JA', sandbox: true, role: '사이즈 문의 → 오토파일럿 자동 답변 (SC5)', orders: 3, inquiries: 1, disputes: 0 },
   { id: 'B04', name: 'Mike Morgan', country: 'US', language: 'EN', sandbox: true, role: '반복 미수령 주장, 자동 처리 제외 (SC5)', orders: 5, inquiries: 4, disputes: 3 },
   { id: 'B05', name: 'Lena K.', country: 'DE', language: 'DE', sandbox: true, role: '환불 약속 4일 경과 (SC3, P1)', orders: 2, inquiries: 1, disputes: 0 },
@@ -109,11 +109,11 @@ const TABLE_6_3 = [
     signal: 'C1',
   },
   {
-    date: '2026-10-20',
+    date: '2026-11-09',
     buyer: '박지호',
-    original: '사진이랑 색이 너무 달라요. 베이지가 아니라 회색이에요.',
-    english: "The color is very different from the photo. It's grey, not beige.",
-    signal: 'B1',
+    original: '산 지 5주 정도 됐는데 소매 쪽 올이 풀려서 입을 수가 없어요. 반품 기간이 지난 건 알지만 너무 속상해요. 방법이 없을까요?',
+    english: "I bought it about 5 weeks ago and the sleeve is unraveling, so I can't wear it. I know the return window has passed, but I'm really upset. Is there anything you can do?",
+    signal: 'B3',
   },
   {
     date: '2026-10-11',
@@ -152,7 +152,7 @@ const SNAD = 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED';
  * 사유 코드는 PayPal reason 값 (SNAD / INR / UNAUTHORISED).
  */
 const TABLE_6_4 = [
-  { id: 'D1', buyer: '박지호', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'open', lossCents: null, source: 'sandbox', outcome: null, orderId: 'O02' },
+  { id: 'D1', buyer: '박지호', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B3', status: 'open', lossCents: null, source: 'sandbox', outcome: null, orderId: 'O02' },
   { id: 'D2', buyer: '김서연', sku: 'FK-SW-NV', reason: INR, subtype: 'A2', status: 'open', lossCents: null, source: 'sandbox', outcome: null, orderId: 'O01' },
   { id: 'D3', buyer: 'buyer_m***', sku: 'FK-BN-SET', reason: INR, subtype: 'F1', status: 'open', lossCents: null, source: 'sandbox', outcome: null, orderId: 'O08' },
   { id: 'D4', buyer: 'Olivia R.', sku: 'FK-CD-OAT', reason: SNAD, subtype: 'B1', status: 'closed', lossCents: 4800, source: 'seed', outcome: 'full_refund', orderId: null },
