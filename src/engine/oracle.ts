@@ -4,6 +4,7 @@
  *   L_fight  = (1 − p_win)(A + f) + t
  *   L_offer  = p_acc·x·A + (1 − p_acc)(1 − p_win)(A + f) + t   (거절되면 다투기로 가지만 t는 한 번만)
  *   L_refund = A + t
+ *   L_repair = p_rep·R + (1 − p_rep)(1 − p_win)(A + f) + t   (v2.16 B3 품질 무료 수선, R = 수선 판매자 비용)
  *
  * f(분쟁 수수료)는 질 때만 부과한다. 제안이 수락되면, 환불하면 면제 (SPEC 5장, 13장 Q7).
  * 재구매 가치 V·이탈 확률 c·p_acc 곡선은 v2에서 쓰지 않는다.
@@ -75,6 +76,31 @@ export function offerLoss(board: BoardState, params: Params, pWin: number): Move
     expectedLossCents: roundCents(pAcc * offerCents + (1 - pAcc) * (1 - pWin) * (a + f) + t),
     branches: [
       { label: 'accept', prob: pAcc, lossCents: offerCents + t },
+      { label: 'reject_win', prob: (1 - pAcc) * pWin, lossCents: roundCents(t) },
+      { label: 'reject_lose', prob: (1 - pAcc) * (1 - pWin), lossCents: roundCents(a + f + t) },
+    ],
+  };
+}
+
+/**
+ * 무료 수선 제안 (SPEC v2.16, AC35): 수락되면 수선비 R(왕복 배송비는 손님 부담), 거절되면 다투기 분기 (t는 한 번만).
+ * 돈이 PayPal로 움직이지 않는다 (실행은 send_message). 수선비는 센트 정수 가정값이라 분기 Σ가 기대 손실과 맞는다.
+ */
+export function repairLoss(
+  board: BoardState,
+  params: Params,
+  pWin: number,
+  repairCostCents: number,
+  pAcceptRepair: number,
+): MoveLoss {
+  const a = board.amountCents;
+  const f = params.feeCents;
+  const t = params.timeCostCents;
+  const pAcc = pAcceptRepair;
+  return {
+    expectedLossCents: roundCents(pAcc * repairCostCents + (1 - pAcc) * (1 - pWin) * (a + f) + t),
+    branches: [
+      { label: 'accept', prob: pAcc, lossCents: roundCents(repairCostCents + t) },
       { label: 'reject_win', prob: (1 - pAcc) * pWin, lossCents: roundCents(t) },
       { label: 'reject_lose', prob: (1 - pAcc) * (1 - pWin), lossCents: roundCents(a + f + t) },
     ],

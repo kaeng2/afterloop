@@ -53,6 +53,7 @@ type MovePlan = Pick<ActionPlan, 'apiMove' | 'amountCents' | 'refundType' | 'mes
  * SPEC 5장 표대로 수를 계획으로 바꾼다.
  * - offer → `make_offer`, 금액 x·A, `REFUND` (안내 문구는 make-offer의 `note`로 가므로 메시지 불필요)
  * - refund → `accept_claim`, 금액 A, `REFUND`
+ * - repair → `send_message`, 금액 없음, 메시지 필요 (v2.16)
  * - fight → 평가의 실행 API(`provide_evidence` 또는 `send_message`), 금액 없음, 메시지 필요
  */
 function movePlan(board: BoardState, evaluation: Evaluation, params: Params, apiMove: NonNullable<Evaluation['apiMove']>): MovePlan {
@@ -72,6 +73,12 @@ function movePlan(board: BoardState, evaluation: Evaluation, params: Params, api
   if (evaluation.move === 'refund') {
     if (apiMove !== 'accept_claim') throw new Error(ERROR.apiMoveMismatch(evaluation.move, apiMove));
     return { apiMove, amountCents: board.amountCents, refundType: 'REFUND', messageRequired: false };
+  }
+
+  // repair(v2.16): 무료 수선 안내 메시지만 보낸다. 돈이 움직이지 않는다.
+  if (evaluation.move === 'repair') {
+    if (apiMove !== 'send_message') throw new Error(ERROR.apiMoveMismatch(evaluation.move, apiMove));
+    return { apiMove, amountCents: null, refundType: null, messageRequired: true };
   }
 
   if (apiMove !== 'provide_evidence' && apiMove !== 'send_message') {

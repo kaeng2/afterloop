@@ -7,12 +7,20 @@ import type { BoardState, Category, Evaluation, MoveType, PolicyConfig, Recommen
 export const BLOCKED = {
   /** 부분 환불 제안 대상(B1·B2)이 아니다 (SPEC 5장). */
   offerScope: 'OFFER_SCOPE',
+  /** 수선 제안 가정값(repairCostCents·pAcceptRepair)이 설정에 없다 (SPEC v2.16). */
+  repairParams: 'REPAIR_PARAMS',
   /** 원인이 아직 없어 p_win을 정할 수 없다 (SPEC 5장 p_win, 6장 3번 규칙). */
   noCause: 'NO_CAUSE',
 } as const;
 
 /** 동점일 때 고르는 고정 순서 (SPEC 5장). `all`의 순서도 이 순서다. */
 export const MOVE_ORDER: readonly Evaluation['move'][] = ['fight', 'offer', 'refund'];
+
+/**
+ * 수선 제안을 포함한 평가·동점 순서 (SPEC v2.16). repair는 맨 뒤라 기존 세 수의 순서·동점 결과는 그대로다.
+ * `sim.ts`는 세 수만 다루므로 `MOVE_ORDER`를 계속 쓴다.
+ */
+export const ALL_MOVE_ORDER: readonly Evaluation['move'][] = [...MOVE_ORDER, 'repair'];
 
 /** 세부 유형의 대분류 (B1 → B). */
 export function categoryOf(subtype: Subtype): Category {
@@ -37,6 +45,7 @@ export function fightApiMove(board: BoardState): MoveType | null {
 /** 수를 실행할 API (SPEC 5장 표). 허용되지 않으면 null. */
 export function apiMoveFor(move: Evaluation['move'], board: BoardState): MoveType | null {
   if (move === 'fight') return fightApiMove(board);
+  if (move === 'repair') return board.allowedMoves.includes('send_message') ? 'send_message' : null;
   const required: MoveType = move === 'offer' ? 'make_offer' : 'accept_claim';
   return board.allowedMoves.includes(required) ? required : null;
 }
@@ -45,6 +54,15 @@ export function apiMoveFor(move: Evaluation['move'], board: BoardState): MoveTyp
 export function isOfferInScope(board: BoardState, rules: PolicyConfig): boolean {
   const subtype = board.cause?.subtype;
   return subtype !== undefined && rules.offer.eligibleSubtypes.includes(subtype);
+}
+
+/**
+ * 무료 수선 제안은 `rules.repair.eligibleSubtypes`(B3 품질)만 평가한다 (SPEC v2.16).
+ * 규칙에 `repair`가 없으면 어느 유형도 대상이 아니다.
+ */
+export function isRepairInScope(board: BoardState, rules: PolicyConfig): boolean {
+  const subtype = board.cause?.subtype;
+  return subtype !== undefined && (rules.repair?.eligibleSubtypes ?? []).includes(subtype);
 }
 
 /**
@@ -64,7 +82,7 @@ export function offerComesFirst(board: BoardState, recommendation: Recommendatio
 
 /**
  * 기대 손실이 가장 작은 수. 차단된 수와 계산하지 않은 수는 고르지 않는다.
- * 동점이면 MOVE_ORDER 순서(fight → offer → refund), 고를 수 없으면 null ("직접 처리").
+ * 동점이면 ALL_MOVE_ORDER 순서(fight → offer → refund → repair), 고를 수 없으면 null ("직접 처리").
  */
 export function pickBest(all: Evaluation[]): Evaluation | null {
   const candidates = all.filter((e) => e.blockedBy === undefined && e.expectedLossCents !== null);
@@ -72,6 +90,6 @@ export function pickBest(all: Evaluation[]): Evaluation | null {
   return [...candidates].sort(
     (a, b) =>
       (a.expectedLossCents as number) - (b.expectedLossCents as number) ||
-      MOVE_ORDER.indexOf(a.move) - MOVE_ORDER.indexOf(b.move),
+      ALL_MOVE_ORDER.indexOf(a.move) - ALL_MOVE_ORDER.indexOf(b.move),
   )[0];
 }

@@ -195,9 +195,10 @@ describe('추천 고르기', () => {
 
   it('동점이면 fight → offer → refund 순서 (fight 5000¢ = refund 5000¢)', () => {
     // (1 − p_win)(4800 + 1500) + 200 = 5000 → p_win = 1 − 4800/6300
+    // B4: 제안·수선(repair, v2.16 B3만) 대상이 아니어서 fight·refund 두 수의 동점만 본다 (T120에서 B3 → B4)
     const pWin = 1 - 4800 / 6300;
-    const params: Params = { ...P, pWin: { ...P.pWin, B3: pWin } };
-    const rec = recommend(board(subtype('B3')), params, R);
+    const params: Params = { ...P, pWin: { ...P.pWin, B4: pWin } };
+    const rec = recommend(board(subtype('B4')), params, R);
     expect(byMove(rec.all, 'fight')?.expectedLossCents).toBe(5000);
     expect(byMove(rec.all, 'refund')?.expectedLossCents).toBe(5000);
     expect(rec.best?.move).toBe('fight');
