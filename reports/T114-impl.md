@@ -66,3 +66,9 @@
 - 수정: 라우트가 `new NextResponse(null, { status: 308, headers: { Location: '/' + request.nextUrl.search } })`로 상대 경로를 낸다. 쿼리는 그대로 넘긴다.
 - 시험: `app-t114.test.ts`에 "Location이 http로 시작하지 않는 상대 경로이고, request.url 호스트가 localhost:10000이어도 그 호스트가 들어가지 않는다" 추가. 기존 308 시험은 상대 Location을 base로 풀어 읽도록 맞췄다.
 - 확인: app-t114 14개 통과, tsc 통과, lint 에러 0 (기존 경고 2개, 무관). 실호출·개발 서버 없음.
+
+## 재시도(병합 후속)
+- 문제: main의 T113 시험 `tests/unit/app-t113.test.ts`가 T114로 지운 `/products` 화면(`ProductsScreen`)을 import해서 tsc·시험이 깨졌다.
+- 수정(`app-t113.test.ts`): `seedProducts`·`ProductsScreen` import, `/products` 렌더와 `class="products"` 검사, 주석·시험 이름의 `/products`를 뺐다. APP_PAGES의 지운 `src/app/(app)/products/page.tsx` 한 줄도 뺐다(없는 파일이라 ENOENT). 위쪽 막대·/listing·/intro 검사와 `langRedirectTarget('/products', …)` 주소 문자열 시험은 화면 파일이 아니라 그대로 둔다.
+- 수정(`app-t081.test.ts`): 허용 목록에서 지운 키 `product.row.values` 한 줄을 뺐다.
+- 확인: tsc 통과, lint 에러 0(기존 경고 2개), app-t113·t114·t081 통과, 인수 테스트 15파일 통과(177 통과·9 건너뜀). 실호출·개발 서버 없음.

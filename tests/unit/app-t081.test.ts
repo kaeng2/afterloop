@@ -230,7 +230,6 @@ describe('T081: 문구 파일', () => {
       'case.view.points',
       'case.view.causeSide',
       'case.view.causeCodes',
-      'product.row.values',
       'today.row.who',
       'case.head.title',
       'case.curve.fromTo',
