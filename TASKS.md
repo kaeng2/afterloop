@@ -161,3 +161,4 @@
 | T113 | 버그: 한국어로 바꾸면 Desk가 죽음 (ko 자리표시자 + React #310) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T113.md` | 13:00 전 필수 |
 | T114 | /products 화면 제거 (308 → /), AG Grid 래퍼·엔진은 남김 | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui-desk`. `tasks/T114.md` | 사람 결정 11:15, 13:00 전 |
 | T115 | /intro 시안 차이 A1–7 + 주소 이름 /demo/… (옛 주소 308) + ?lang 리다이렉트 localhost 버그 | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T115.md` | 사람 결정 11:20, 13:00 전 |
+| T116 | Desk 차이 목록 남은 11개 (재확인 결과) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T116.md` | 사람 결정 11:20 공통 |
