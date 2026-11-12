@@ -32,7 +32,7 @@
 | `#0B0F14` | 1 | L101 <span> |  | 예외 | DECISIONS 11/11 22:55 예외 "/intro·로고: PayPal 로고 없음" — 시안 L101 로고 그림(Dispute/Less 글자·밑줄 그라데이션) 안 색 #0B0F14 ("Dispute" 글자). 지시서 T098 규칙 2 "로고 안 색은 로고 없음 예외". 앱 글자 로고는 T076 `shell.css .shell-wordmark*` (강조색) |
 | `#0B48C4` | 1 | L124 <section> |  | 구현함 | src/app/globals.css `--gradient-week` 끝 칸 → `today.css .weekly`. tests/unit/app-t067 T089 |
 | `#333333` | 1 | L20 .b-black:hover |  | 구현함 | T098b src/app/globals.css `--color-ink-hover` → `reply.css .reply-button:hover:not(:disabled)`, `today.css .tracking-button:hover`, `case-progress.css .cprog-btn:hover` (--cprog-ink-hover). tests/unit/app-t098b.test.ts ③ |
-| `#3F4144` | 25 | L25 .c-n |  | 구현함 | src/app/globals.css `--color-text` — 본문·`.case-meta`·목록 상품·기한, `.desk-chip` 회색 칩 글자, 범례, 구매자 점 `.history-dot-buyer`·`.curve-dot-buyer_message`(T098b 시안 whoCol.buyer). tests/unit/app-t067 T089 |
+| `#3F4144` | 25 | L25 .c-n |  | 구현함 | src/app/globals.css `--color-text` — 본문·`.case-meta`·목록 상품·기한, `.desk-chip` 회색 칩 글자, 범례, 구매자 점 `.history-dot-buyer`·`.curve-dot-buyer`(T105: 곡선·점줄이 같은 whoCol 규칙 `desk-model.ts toneOf` buyer/bad/sys). tests/unit/app-t067 T089 app-t105 |
 | `#60CDFF` | 7 | L26 .ai |  | 구현함 | src/app/globals.css `--color-flash` (flash 시작 색·"+$N just now"·토스트 ✓ 원) + `--gradient-ai` 끝 칸. `case-progress.css --cprog-light` |
 | `#6C7378` | 22 | L56 .stph .sub |  | 구현함 | T098b src/app/globals.css `--color-sub` — Desk css(today·case·reply)의 보조 글을 모두 이 색으로 (`.desk-card-sub`·`.desk-step-sub`·묶음 (N)·힌트·구매자 줄·날짜·Her mood now·lint 빈 글·autoTr·`.choice:hover` 테두리). 시안에 없는 #5a5e66(`--color-muted`)은 Desk 화면에서 안 씀. Today 왼쪽 칸도 시안처럼 흰 바탕(`.today-page`). tests/unit/app-t098b.test.ts ③ |
 | `#99C2FF` | 1 | L775 ~refund |  | 구현함 | src/app/globals.css `--color-bar-refund` → `reply.css .reaction-seg-refund`·범례 (시안 COL.refund) |
@@ -100,7 +100,7 @@
 | `later 3000` | 1 | L638 ~id | toast(txt) { this.setState({ toast: txt }); const id = txt; this.later(() => { if (this.state.toast === id) this.setState({ toast: null }); }, 3000); } | 구현함 | T091 `savings.tsx SavingsProvider.report` setTimeout `toastDurationMs()` (`desk.toast.durationMs` 3000) · `case-progress.tsx hideLater` 3초 = `caseProgress.toast.hideMs` 3000. T098b ②: 움직임 줄이기여도 3초 (전에는 0ms로 바로 사라짐). tests/unit/app-t098b ② |
 | `setInterval 34` | 1 | L652 ~iv | this.iv = setInterval(() => { | 구현함 | T091 `reply-panel.tsx typeOut` (`typeOutTiming()` = `desk.typeOut` 34ms·2글자, `desk-actions.ts typeOutFrames`). 타이핑 중 Send·카드·도구 꺼짐, 움직임 줄이기면 바로 전체 — 시험 `app-t091` 모션 |
 | `setTimeout ms` | 1 | L637 later(fn, ms) | later(fn, ms) { this.tm = (this.tm \|\| []).concat([setTimeout(fn, ms)]); } | 구현함 | `case-progress.tsx later(fn, ms)` — 타이머를 모아 Replay·떠날 때 모두 지운다 (시안 this.tm). prefers-reduced-motion이면 단계 간격만 0ms, 토스트 숨김은 `hideLater` 3초 그대로 (T098b ②) |
-| `transition: all .3s ease` | 1 | L181 <polyline> |  | 구현함 | `case.css .curve-draft`·`.curve-dot-draft` transition all `--motion-curve` (`desk.curve` .3s ease, T090) |
+| `transition: all .3s ease` | 1 | L181 <polyline> |  | 구현함 | `case.css .curve-draft`(점선 polyline)만 transition all `--motion-curve` (`desk.curve` .3s ease). 점·물결 원(`.curve-dot-draft`·`.curve-ping`)은 시안처럼 즉시 이동 (T105) |
 | `transition: background-color .15s` | 1 | L37 .it |  | 구현함 | `today.css .today-item` transition background-color `--motion-hover` (`desk.hover` .15s ease) |
 | `transition: background-color .15s ease` | 1 | L18 .btn |  | 구현함 | `reply.css .reply-button`·`shell.css .desk-button-tint/-outline`·`today.css .tracking-button`(T098b)·`.cprog-btn` transition background-color `--motion-hover` (.15s ease) |
 | `transition: background-color .3s ease` | 1 | L840 ~pointer-events |  | 구현함 | `reply.css .reply-editor-pill` (T090 전환) + T091 50% 이상 `.reply-editor-pill-high` |
@@ -156,7 +156,7 @@
 | `sc-if p.hasCase` | 1 | L112 <sc-if> |  | 구현함 | 상품 칩 빨간 건수 배지 `ProductTile badge` (T076, 엔진 목록 값) |
 | `sc-if p.rec` | 1 | L249 <sc-if> |  | 구현함 | "Best" 알약 = 엔진 `recommend` 최선 수 (`choice-cards.tsx`) |
 | `sc-if resOn` | 1 | L330 <sc-if> |  | 예외 | DECISIONS 22:55 데이터: 결과 상자("5 days · $0 lost", "23 days · 4 messages", "−$82")는 근거 없는 성과 숫자라 없음. 끝은 엔진 actionSavings 토스트 + 카드 flash |
-| `sc-if risk.hasFrom` | 1 | L191 <sc-if> |  | 구현함 | `risk-curve.tsx` "89% → x" (`curveView.fromTo`, 엔진 값, 답장 예측이 있을 때만) |
+| `sc-if risk.hasFrom` | 1 | L191 <sc-if> |  | 구현함 | `risk-curve.tsx` "89% → x" (`curveView.fromTo`, 엔진 값, 답장 예측이 있고 글이 있을 때만. 빈 글 = 무응답이면 숨김 + "if no reply by {date}", T105) |
 | `sc-if s.act` | 1 | L324 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx [Forward to carrier] 대기 줄(시안 act 줄 모양 '!' #FBE7E4) — 판매자가 누를 때까지 멈춤 (DECISIONS 22:55). 시안의 cb "Refund now" 용도는 예외(refundNow 행) |
 | `sc-if s.auto` | 1 | L321 <sc-if> |  | 예외 | DECISIONS 22:55 Send 이후: "Auto" 없음 → [Forward to carrier] 승인 버튼, 배송사 연동·"POST carrier/… 200"·추적 동기화 줄 없음. tests/unit/app-t092.test.ts |
 | `sc-if s.hasP` | 1 | L321 <sc-if> |  | 구현함 | src/app/cases/progress/case-progress.tsx 단계 칩 "Risk N%" = 엔진 scenarioRisk (보낸 답장 줄은 시안처럼 없음) + 머리 Assumption. tests/unit/app-t092.test.ts |

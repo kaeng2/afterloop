@@ -27,6 +27,12 @@ type DraftForecastState = {
   setForecast: (value: ReplyForecast | null) => void;
   trail: readonly number[];
   setTrail: (value: readonly number[]) => void;
+  /**
+   * T105 (시안 NNONE): 답장 칸 글이 비었을 때 "if no reply by {date}"의 날짜. 글이 있으면 `null`.
+   * 이때 `forecast`는 답장 칸이 넣은 엔진의 빈 글(무응답) 예측이다. 글자(문자열)라 같은 값이면 상태가 바뀌지 않는다.
+   */
+  noReplyBy: string | null;
+  setNoReplyBy: (value: string | null) => void;
 };
 
 const NO_TRAIL: readonly number[] = [];
@@ -36,15 +42,21 @@ const DraftForecastContext = createContext<DraftForecastState>({
   setForecast: () => undefined,
   trail: NO_TRAIL,
   setTrail: () => undefined,
+  noReplyBy: null,
+  setNoReplyBy: () => undefined,
 });
 
 export function DraftForecastProvider({ children }: { children: ReactNode }) {
   const [forecast, setForecast] = useState<ReplyForecast | null>(null);
   const [trail, setTrailState] = useState<readonly number[]>(NO_TRAIL);
+  const [noReplyBy, setNoReplyBy] = useState<string | null>(null);
   const setTrail = useCallback((next: readonly number[]) => {
     setTrailState((now) => (sameTrail(now, next) ? now : next));
   }, []);
-  const value = useMemo(() => ({ forecast, setForecast, trail, setTrail }), [forecast, trail, setTrail]);
+  const value = useMemo(
+    () => ({ forecast, setForecast, trail, setTrail, noReplyBy, setNoReplyBy }),
+    [forecast, trail, setTrail, noReplyBy],
+  );
   return <DraftForecastContext.Provider value={value}>{children}</DraftForecastContext.Provider>;
 }
 

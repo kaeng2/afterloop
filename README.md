@@ -16,6 +16,10 @@ Three standalone addresses on the [live demo](https://disputeless.onrender.com):
 
 Public mode never writes to PayPal; sends are simulated. Details: [docs/submission/testing.md](docs/submission/testing.md).
 
+**No login is needed.** To run it against your own PayPal sandbox instead: create a free app at developer.paypal.com, copy `.env.example` to `.env`, fill in `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (and `LLM_API_KEY` for uncached AI), then `npm install && npm run build && npm start`. See [Test credentials](docs/submission/testing.md#test-credentials).
+
+License: [MIT](LICENSE).
+
 ---
 
 ## 개발 안내 (한국어)
