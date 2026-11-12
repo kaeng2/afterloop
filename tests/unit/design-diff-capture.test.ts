@@ -98,6 +98,15 @@ describe('CAPTURE: 투명 감싸개 span (후속 4)', () => {
     expect(keys([E('div', {}, [bare('a'), bare('b')])])).toEqual(['span|a', 'span|b']);
     expect(keys([E('div', {}, [T('Total: '), bare('$5')])])).toEqual(['div|Total:', 'span|$5']);
   });
+  it('후속 5: 부모 display:flex라 안쪽 맨 span이 block으로 blockify돼도 감싸개', () => {
+    const chip = E('span', { class: 'today-pill chip' }, [bare('Not received · Customs hold', { ...BARE, display: 'block' })], { display: 'flex', padding: '2px 9px', 'background-color': 'rgb(236, 238, 240)' });
+    expect(keys([chip])).toEqual(['span|Not received · Customs hold']);
+    const grid = E('span', {}, [bare('2', { ...BARE, display: 'block' })], { display: 'inline-grid', 'background-color': 'red' });
+    expect(keys([grid])).toEqual(['span|2']);
+    expect(capture([chip])[0].styles['background-color']).toBe('rgb(236, 238, 240)');
+    // 부모가 flex/grid가 아니면 block 안쪽 span은 여전히 감싸개가 아니다
+    expect(keys([E('div', {}, [bare('x', { ...BARE, display: 'block' })], { display: 'block' })])).toEqual(['span|x']);
+  });
   it('FIND_TARGET: 버튼>맨 span 글자를 버튼 이름표로 본다', () => {
     expect(find([E('button', {}, [bare('Send reply')])], { role: 'button', text: 'Send reply' }).ok).toBe(true);
   });

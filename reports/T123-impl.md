@@ -89,3 +89,8 @@
 - 감싸개가 아닌 경우(예전처럼 따로 잡음): 안쪽 span에 배경·padding·테두리가 있거나 display가 inline이 아님 · 형제 요소가 있음 · 부모에 다른 글자가 더 있음(`Total: <span>$5</span>`).
 - 시험: `tests/unit/design-diff-capture.test.ts`에 5건 추가 (가짜 DOM: 겉 알약>안쪽 맨 span ↔ 겉 알약>sc-interp가 같은 key `span|for PayPal sellers`로 짝지어지고 겉 배경 rgba(5,55,130,0.08)끼리 비교되어 차이 0 · 배지 `2`와 여러 겹 칩 · 스타일 있는 안쪽 span 4종 · 형제/부분 글자 · FIND_TARGET 버튼). `npx vitest run tests/unit/design-diff` 49/49 통과. tsc는 `.next/types` 생성물 외 오류 0, eslint 오류 0. 개발 서버·브라우저·`.env`는 쓰지 않았다.
 - 남은 것: 실물 재실행(v6 round2)에서 가짜 차이가 줄었는지는 컨트롤 타워/브라우저 쪽에서 확인해야 한다.
+
+## 후속 5 (flex 부모 안 맨 span도 감싸개)
+- 문제: 후속 4의 감싸개 조건이 `display: inline`만 허용해서, 부모가 `display:flex`/`grid`이면 자식 span이 flex item으로 blockify(계산값 `block`)되어 합쳐지지 않았다. 앱 예: `<span class="today-pill chip" style="display:flex;padding:2px 9px;background:#ECEEF0;border-radius:1000px"><span>Not received · Customs hold</span></span>`.
+- 고침 (`page-scripts.ts` `__ddBare`): display는 `inline`이거나, 계산값이 `block`이면서 **부모 display가 flex·inline-flex·grid·inline-grid**일 때(blockify된 flex item) 허용. 나머지 조건은 그대로: 자기 상자 스타일 없음(배경 투명·background-image none·테두리 0·padding 0·margin 0), 부모의 유일한 요소 자식, 부모 보이는 글자 전부, sr-only 아님. 부모가 flex/grid가 아닌데 `block`이거나 `inline-block`이면 예전처럼 감싸개가 아니다.
+- 시험: `tests/unit/design-diff-capture.test.ts`에 1건 추가 (flex 부모+block 맨 span → key `span|Not received · Customs hold`, 겉 배경 rgb(236,238,240) 유지 · inline-grid 부모 · 일반 block 부모는 감싸개 아님). `npx vitest run tests/unit/design-diff` 50/50, tsc(.next 생성물 제외) 오류 0, eslint 오류 0. 개발 서버·브라우저·`.env` 미사용.

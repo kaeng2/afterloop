@@ -60,7 +60,12 @@ function __ddBare(el){
   var sides=['top','right','bottom','left'];
   for(var i=0;i<4;i++){if(!__ddZero(g('border-'+sides[i]+'-width'))) return false;}
   if(!__ddZero(g('padding'))||!__ddZero(g('margin'))) return false;
-  if(String(g('display')||'')!=='inline') return false;
+  var d=String(g('display')||'');
+  if(d!=='inline'){
+    // 부모가 flex/grid면 자식 span은 flex item으로 blockify되어 계산값이 block이다 — 그 경우만 허용
+    var pcs=getComputedStyle(p), pd=String((pcs.getPropertyValue?pcs.getPropertyValue('display'):'')||'');
+    if(!(d==='block'&&/^(inline-)?(flex|grid)$/.test(pd))) return false;
+  }
   if(__ddSrSelf(el)) return false;
   return true;
 }
