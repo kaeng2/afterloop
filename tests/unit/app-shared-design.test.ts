@@ -74,12 +74,17 @@ const contrast = (a: string, b: string) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
+/** T108: 시안 CSS를 통째 복사한 화면 폴더 (값이 시안 그대로라 색·그림자 변수 규칙 밖). 내용은 app-t108-intro 시험이 시안과 맞춰 본다. */
+const isMockupCopy = (file: string) => path.relative(APP, file).startsWith('intro' + path.sep);
+
 const HEX = /(?<![\w&-])#[0-9a-fA-F]{3,8}(?![\w-])/;
 const RGB_FN = /\b(rgba?|hsla?)\s*\(/;
 
 describe('T047 보완 B-1: 색은 변수로만', () => {
   it('src/app의 tsx·css에 변수 정의 자리 밖의 색 값이 없다', () => {
     for (const file of filesUnder(APP, ['.tsx', '.css', '.ts'])) {
+      // T108 (DECISIONS 2026-11-12 09:25): /intro는 시안 CSS·인라인 style 값을 그대로 복사한다 — 색 값이 시안 그대로 있다.
+      if (isMockupCopy(file)) continue;
       const text = stripComments(readFileSync(file, 'utf8'));
       const mockup = mockupCopyOf(file);
       if (mockup !== null) {
@@ -242,7 +247,8 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
         }
         continue;
       }
-      const scene = rel.startsWith('intro/') ? 'i' : rel.startsWith('listing/') ? 'ls' : null;
+      if (isMockupCopy(file)) continue; // T108: /intro는 시안 그림자 값을 그대로 (app-t108-intro 시험)
+      const scene = rel.startsWith('listing/') ? 'ls' : null;
       for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
         const value = match[1].trim();
         const where = `${path.relative(ROOT, file)}: ${match[0]}`;
@@ -252,6 +258,7 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
       }
     }
     for (const file of filesUnder(APP, ['.tsx'])) {
+      if (isMockupCopy(file)) continue; // T108: 시안 인라인 box-shadow (말풍선) 그대로
       expect(/boxShadow/.test(readFileSync(file, 'utf8')), path.relative(ROOT, file)).toBe(false);
     }
   });
@@ -283,8 +290,8 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
 
   it('T098a 시안 그림자: /intro·/listing 그림자 변수 값은 시안 Scene1·Main 파일에 있는 값 그대로다', () => {
     const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/(^|[^\d])0\./g, '$1.');
-    // T109: /listing은 시안 CSS 통째 복사(`@mockup-copy`)로 바뀌어 `--ls-shadow-*` 변수가 없다 — 위 그림자 시험이 시안 값 그대로인지 본다
-    const cases: [string, string, string][] = [['src/app/intro/intro.css', 'docs/design/mockup-v4/scene1/Scene1.dc.html', '--i-shadow-']];
+    // T108·T109: /intro·/listing 모두 시안 CSS 통째 복사로 바뀌어 `--i-shadow-*`·`--ls-shadow-*` 변수가 없다 — 그림자 값은 app-t108-intro 시험과 위 `@mockup-copy` 그림자 시험이 시안 값 그대로인지 본다
+    const cases: [string, string, string][] = [];
     for (const [cssFile, mockFile, prefix] of cases) {
       const css = stripComments(readFileSync(path.join(ROOT, cssFile), 'utf8'));
       const mock = norm(readFileSync(path.join(ROOT, mockFile), 'utf8'));
