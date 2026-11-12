@@ -43,6 +43,7 @@ import { toPercentRounded } from '../../_shared/percent';
 import { useSavings } from '../../today/savings';
 import { prepareEditedAction, sendReplyAction } from '../actions';
 import {
+  aiToggleStep,
   applyChip,
   draftForMove,
   effectRows,
@@ -592,8 +593,10 @@ export function ReplyPanel({
   // 끄면 빈 답장 상태로 (사람 결정 2026-11-12 20:40 2번 "끄면 빈 답장 상태로"): 타이핑을 멈추고 글·검사 결과를 비운다
   function onAi(on: boolean) {
     if (sendState !== 'idle') return;
-    if (on) {
-      if (text.trim() === '' && anchor !== null) typeOut(anchor, bestMove);
+    const step = aiToggleStep(on, text, anchor);
+    if (step.kind === 'none') return;
+    if (step.kind === 'type') {
+      typeOut(step.text, bestMove);
       return;
     }
     if (typer.current !== null) clearInterval(typer.current);

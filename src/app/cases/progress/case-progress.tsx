@@ -154,7 +154,6 @@ function Bubbles({
   state,
   outcome,
   live,
-  language,
   buyerShort,
   sentText,
   sentLocale,

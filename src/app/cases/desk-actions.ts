@@ -45,6 +45,19 @@ export function nextTyped(shown: number, total: number, step: number): number {
   return Math.min(total, shown + step);
 }
 
+/** T122a "✦ AI Respond now" 스위치를 눌렀을 때 답장 칸이 할 일. */
+export type AiToggleStep = { kind: 'type'; text: string } | { kind: 'clear' } | { kind: 'none' };
+
+/**
+ * T122a 시안 v6 L1046 `toggleAi`: 켜면서 글이 비어 있으면 AI 초안 타이핑 (초안이 없으면 할 일 없음, 쓴 글은 그대로 둔다).
+ * 끄면 빈 답장 상태로 (사람 결정 2026-11-12 20:40 2번 "끄면 빈 답장 상태로" — 시안 코드는 글을 남기지만 결정문을 따른다).
+ */
+export function aiToggleStep(on: boolean, text: string, anchor: string | null): AiToggleStep {
+  if (!on) return { kind: 'clear' };
+  if (text.trim() !== '' || anchor === null) return { kind: 'none' };
+  return { kind: 'type', text: anchor };
+}
+
 /** 타이핑 효과의 단계마다 보일 글 (시안 그대로 — 처음은 빈 글, 마지막은 전체). 움직임 줄이기면 전체 한 단계. */
 export function typeOutFrames(text: string, step: number, reduced: boolean): string[] {
   if (reduced || text.length === 0) return [text];
