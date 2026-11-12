@@ -162,7 +162,7 @@ const header = (numeric: boolean) => ({
 // ───────────────────────────── 열 ─────────────────────────────
 
 /** 시안 `pCols` (폭은 `DESK_OV_COLS.products`) */
-function productColumns(t: T): ColDef<OvProductRow>[] {
+export function productColumns(t: T): ColDef<OvProductRow>[] {
   const W = DESK_OV_COLS.products;
   const num = (colId: 'open' | 'reply' | 'prevent' | 'questions', label: string, extra: ColDef<OvProductRow> = {}): ColDef<OvProductRow> => ({
     colId,
@@ -204,7 +204,7 @@ function productColumns(t: T): ColDef<OvProductRow>[] {
 }
 
 /** 시안 `cCols` (폭은 `DESK_OV_COLS.cases`) */
-function caseColumns(t: T): ColDef<OvCaseRow>[] {
+export function caseColumns(t: T): ColDef<OvCaseRow>[] {
   const W = DESK_OV_COLS.cases;
   return [
     {
@@ -346,6 +346,15 @@ function OverviewGrid<Row extends { key?: string; id?: string }>({
 
 // ───────────────────────────── 화면 ─────────────────────────────
 
+/**
+ * Products 행을 눌렀을 때 (시안 `pRows.pick`): 상품 줄 → 그 상품 칩(목록을 거르고 첫 항목), "Several products" 줄 →
+ * 그 줄의 가장 위험한 항목을 연다 (All products 그대로 → "← All products overview").
+ */
+export function productRowAction(row: OvProductRow): { kind: 'sku'; sku: string } | { kind: 'item'; id: string } | null {
+  if (row.sku !== null) return { kind: 'sku', sku: row.sku };
+  return row.top === null ? null : { kind: 'item', id: row.top.id };
+}
+
 const productRowId = (row: OvProductRow) => row.key;
 const caseRowId = (row: OvCaseRow) => row.id;
 
@@ -382,12 +391,13 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
 
   const pickProduct = useCallback(
     (row: OvProductRow) => {
-      if (selection === null) return;
-      if (row.sku !== null) {
-        selection.setSku(row.sku);
-      } else if (row.top !== null) {
-        setLastId(row.top.id);
-        selection.select(row.top.id);
+      const action = productRowAction(row);
+      if (selection === null || action === null) return;
+      if (action.kind === 'sku') {
+        selection.setSku(action.sku);
+      } else {
+        setLastId(action.id);
+        selection.select(action.id);
       }
     },
     [selection],
