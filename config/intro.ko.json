@@ -1,5 +1,5 @@
 {
-  "version": "intro-2026-11-11.v1",
+  "version": "intro-2026-11-12.v2",
   "note": "intro.en.json과 키가 같아야 한다 (단위 테스트가 확인). 값 출처는 intro.en.json의 note.",
   "lang": "ko",
   "mockBand": "데모용 화면 — 실제 PayPal 페이지가 아닙니다",
@@ -7,14 +7,13 @@
   "biz": "비즈니스",
   "mock": "데모용 화면",
   "nav": { "home": "홈", "activity": "활동", "reports": "보고서", "money": "자금", "rc": "분쟁 해결 센터", "label": "메인" },
-  "openCount": "2",
   "bell": "알림",
   "help": "도움말",
   "seller": "Fernwood Knits",
   "sellerInitial": "F",
   "newTag": "NEW",
   "alOpen": "DisputeLess 열기",
-  "coach": "답장이 필요한 건이 2개예요. 한 구매자가 차지백을 언급했어요 — DisputeLess에 대응 계획이 준비돼 있어요.",
+  "coach": "답장이 필요한 건이 {{n}}개예요. 한 구매자가 차지백을 언급했어요 — DisputeLess에 대응 계획이 준비돼 있어요.",
   "hello": "안녕하세요, Fernwood Knits 님",
   "balanceTitle": "잔액",
   "balanceAmount": "$4,218.40",
@@ -32,16 +31,27 @@
     { "initial": "A", "who": "Alex Moore", "what": "결제 받음 · 울 스웨터", "amount": "+$72.00", "hold": false },
     { "initial": "Y", "who": "Yuki Tanaka", "what": "결제 받음 · 니트 가디건", "amount": "+$48.00", "hold": false }
   ],
-  "rcOpen": "2건 진행 중",
+  "rcOpen": "{{n}}건 진행 중",
   "rcSub": "20일 안에 답하지 않으면 구매자에게 유리하게 종료될 수 있어요.",
-  "cases": [
-    { "id": "PP-R-GMS-10197661", "title": "미수령 · $72.00", "sub": "김서연 · 울 스웨터 · PP-R-GMS-10197661", "due": "11/30까지 답장 · 차지백 언급", "urgent": true },
-    { "id": "PP-R-MBJ-10197650", "title": "설명과 다름 · $48.00", "sub": "박지호 · 니트 가디건 · PP-R-MBJ-10197650", "due": "11/29까지 답장", "urgent": false }
-  ],
+  "caseTitle": "{{type}} · {{amount}}",
+  "caseSub": "{{buyer}} · {{product}} · {{id}}",
+  "caseDue": "{{date}}까지 답장",
+  "caseNoDue": "심사 중 · 답장 기한 없음",
+  "caseChargeback": " · 차지백 언급",
+  "caseRepeat": "재접수",
+  "reasons": {
+    "MERCHANDISE_OR_SERVICE_NOT_RECEIVED": "미수령",
+    "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED": "설명과 다름",
+    "other": "분쟁"
+  },
   "respond": "답장",
-  "rcCta": "DisputeLess로 2건 한 번에 처리",
+  "rcCta": "DisputeLess로 {{n}}건 한 번에 처리",
   "salesTitle": "매출 · 최근 14일",
-  "salesSub": "$3,940 · 주문 71건 · 블랙프라이데이까지 17일",
+  "salesSub": "$3,940 · 주문 71건 · 블랙프라이데이까지 {{days}}일",
+  "salesSubOne": "$3,940 · 주문 71건 · 블랙프라이데이까지 1일",
+  "salesSubPast": "$3,940 · 주문 71건",
   "bars": [43, 52, 38, 71, 62, 57, 73, 66, 83, 69, 78, 90, 71, 81],
-  "langLabel": "언어"
+  "langLabel": "언어",
+  "targetDisputeId": "PP-R-GMS-10197661",
+  "fallbackDue": { "PP-R-GMS-10197661": "2026-11-30T00:37:00Z", "PP-R-MBJ-10197650": "2026-11-29T23:45:00Z" }
 }

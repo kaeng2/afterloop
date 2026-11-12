@@ -11,9 +11,12 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
+import { INTRO_SAMPLE } from './intro-sample';
+
 vi.mock('server-only', () => ({}));
 vi.mock('@/app/_server/llm', () => ({ getLlm: () => ({ ok: false }) }));
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ prefetch: () => {} }) }));
 (globalThis as { React?: typeof React }).React = React;
 const { IntroScreen } = await import('@/app/demo/seller-dashboard/intro-screen');
 const { ListingScreenView } = await import('@/app/demo/store/new-product/listing-view');
@@ -31,7 +34,7 @@ const rule = (css: string, sel: string) => {
 const v = (css: string, name: string) => new RegExp(`${name}:\\s*([^;]+);`).exec(css)?.[1].trim().toLowerCase();
 
 describe('T098a Scene 1 /intro', () => {
-  const html = renderToStaticMarkup(React.createElement(IntroScreen));
+  const html = renderToStaticMarkup(React.createElement(IntroScreen, { data: INTRO_SAMPLE }));
 
   // T108: 시안 CSS 통째 복사로 바꿔 규칙 이름이 시안 이름(.tab, .al-icon …)이 됐다. 시안 값 자체는 app-t108-intro 시험이 파일 대조로 본다.
   const SCENE1 = strip(read('src/app/demo/seller-dashboard/scene1.css'));
@@ -51,8 +54,9 @@ describe('T098a Scene 1 /intro', () => {
   });
 
   it('누를 수 있는 것 4개(아이콘·말풍선 버튼·Respond·Handle all)는 모두 Today(서연)로 간다', () => {
-    const links = [...html.matchAll(/<a [^>]*class="([^"]+)"[^>]*href="([^"]+)"/g)].map((m) => [m[1], m[2]]);
-    expect(links.map((l) => l[0]).sort()).toEqual(['al-icon pulse', 'btn', 'rlink', 'rlink', 'btn'].sort());
+    // T115: 탭 5개·See all은 시안처럼 href="#" 껍데기 링크라 뺀다. 사건 줄 3개(서연·지호·마이크) → Respond 3개
+    const links = [...html.matchAll(/<a [^>]*class="([^"]+)"[^>]*href="([^"]+)"/g)].map((m) => [m[1], m[2]]).filter((l) => l[1] !== '#');
+    expect(links.map((l) => l[0]).sort()).toEqual(['al-icon pulse', 'btn', 'rlink', 'rlink', 'rlink', 'btn'].sort());
     for (const [, href] of links) expect(href).toBe('/?item=PP-R-GMS-10197661');
   });
 

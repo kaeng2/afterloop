@@ -169,6 +169,11 @@ export function getPayPalClient(env: PayPalEnvVars = process.env as PayPalEnvVar
   return buildPayPalClient(env, deps ?? liveDeps());
 }
 
+/** 읽기 캐시에 담긴 응답 본문만 꺼낸다 (T115, /demo/seller-dashboard). PayPal을 부르지 않는다. 없으면 undefined. */
+export function peekCachedRead(path: string): unknown {
+  return READ_CACHE.peek(path)?.body;
+}
+
 /** 화면 읽기용 (분쟁 목록·상세, 주문 조회): 프로세스에 하나인 클라이언트 + 요청 사이 90초 캐시. 쓰기는 `getPayPalClient`와 같다. */
 export function getPayPalReadClient(): PayPalAvailability {
   if (typeof window !== 'undefined') {

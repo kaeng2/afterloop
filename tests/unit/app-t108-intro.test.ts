@@ -7,8 +7,11 @@ import path from 'node:path';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { INTRO_SAMPLE } from './intro-sample';
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ prefetch: () => {} }) }));
 (globalThis as { React?: typeof React }).React = React;
 const { IntroScreen } = await import('@/app/demo/seller-dashboard/intro-screen');
 
@@ -17,7 +20,7 @@ const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
 const MOCK = read('docs/design/mockup-v4/scene1/Scene1.dc.html');
 const SCENE1 = read('src/app/demo/seller-dashboard/scene1.css');
 const INTRO = read('src/app/demo/seller-dashboard/intro.css');
-const html = renderToStaticMarkup(React.createElement(IntroScreen));
+const html = renderToStaticMarkup(React.createElement(IntroScreen, { data: INTRO_SAMPLE }));
 
 /** 시안 <style> 블록의 규칙(선택자{본문}) 목록. */
 const mockRules = (() => {

@@ -46,7 +46,7 @@ import { carrierEventsFor, seedBuyers, seedInquiries, seedOrders, seedProducts }
 const calls = vi.hoisted(() => ({ disputes: 0, paypal: 0 }));
 
 vi.mock('server-only', () => ({}));
-vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ prefetch: () => {} }) }));
 vi.mock('next/font/google', () => ({
   Figtree: () => ({ variable: 'font-figtree' }),
   Noto_Sans_KR: () => ({ variable: 'font-noto-kr' }),
@@ -71,6 +71,8 @@ vi.mock('@/app/_server/paypal', () => ({
     calls.paypal += 1;
     return { ok: false, reason: 'not_configured' };
   },
+  // T115: /demo/seller-dashboard 사건 줄은 담긴 캐시만 본다 (PayPal 호출이 아니라 세지 않는다)
+  peekCachedRead: () => undefined,
 }));
 (globalThis as { React?: typeof React }).React = React;
 
