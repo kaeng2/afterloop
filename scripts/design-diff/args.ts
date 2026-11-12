@@ -2,6 +2,7 @@ export interface Args {
   mock?: string;
   entry?: string;
   app?: string;
+  appReady?: string;
   out: string;
   states?: string[];
   widths: number[];
@@ -19,7 +20,7 @@ export interface Args {
 
 const USAGE = `사용법: npx tsx scripts/design-diff/run.ts --mock <시안 폴더> --app <앱 URL> --out <결과 폴더>
   [--states s1,s2] [--widths 1440,1920] [--entry Desk.dc.html] [--states-file states.json]
-  [--exceptions exceptions.json] [--vendor <react UMD 폴더>] [--chrome <실행 파일>] [--channel chrome]
+  [--exceptions exceptions.json] [--app-ready <css selector>] [--vendor <react UMD 폴더>] [--chrome <실행 파일>] [--channel chrome]
   [--max-depth 4] [--max-states 120] [--analyze-only] [--regen] [--headed]`;
 
 export function usage(): string {
@@ -44,6 +45,9 @@ export function parseArgs(argv: string[]): Args {
         break;
       case '--app':
         a.app = need(i++, k);
+        break;
+      case '--app-ready':
+        a.appReady = need(i++, k);
         break;
       case '--out':
         a.out = need(i++, k);

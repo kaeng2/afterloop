@@ -68,7 +68,7 @@ async function main() {
       for (const width of args.widths) {
         const common = { width, settleMs: s.settleMs, selectors, outDir: dir };
         const m = await runSide(browser, { ...common, url: mockUrl, steps: s.mock, side: 'mock' });
-        const a = await runSide(browser, { ...common, url: joinUrl(args.app!, s.appPath), steps: s.app, side: 'app' });
+        const a = await runSide(browser, { ...common, url: joinUrl(args.app!, s.appPath), steps: s.app, side: 'app', readySelector: args.appReady });
         for (const [side, c] of [['mock', m] as const, ['app', a] as const]) {
           if (!c.ok) diffs.push({ state: s.name, width, kind: 'repro', key: `repro|${side}`, prop: side, mock: side === 'mock' ? c.error : '', app: side === 'app' ? c.error : '', selectors: [], exceptions: [] });
         }

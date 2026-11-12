@@ -53,3 +53,12 @@
 ## 컨트롤 타워에 요청할 결정
 - `playwright-core` devDependency 추가 승인 (지시서 허용 목록은 `pixelmatch`·`pngjs`뿐, 그런데 도구 자체가 "Node(playwright-core)"로 지정됨). 승인되면 세 개를 한 번에 설치하면 된다.
 - react@18.3.1 UMD 파일(`react.js`, `react-dom.js`)을 어디서 가져올지: 시안 원본 내보내기의 `vendor/`를 받아 저장소 밖에 두고 `--vendor`로 줄지, 저장소에 넣을지.
+
+## 후속 (앱 로딩 뼈대 대응)
+- 문제: 앱은 처음에 Next `loading.tsx` 뼈대 화면이 보이고 데이터가 오면 본 화면으로 바뀐다. 기존 도구는 `document.fonts.ready` 직후 첫 단계를 찾아 "1번째 단계를 못 찾음 (switch Respond now, 후보 0개)"로 재현에 실패했다.
+- 고침:
+  1. `--app-ready <css selector>` 인자 추가(기본 없음). 앱 페이지를 연 뒤 그 요소가 보일 때까지 기다린다(최대 20초, 못 보이면 `repro` 차이로 "--app-ready 요소가 20초 안에 안 보임"). 시안 쪽에는 적용하지 않는다.
+  2. 각 단계 찾기를 `retryFind`로 감쌌다: 후보가 나올 때까지 0.25초 간격으로 최대 10초 다시 찾는다. `waitMs`는 여전히 클릭 뒤 기다림.
+  3. README에 `--app-ready` 설명과 예(`'[role=switch]'`, `'.zone-work'`) 추가.
+- 수정 파일: `scripts/design-diff/{args,browser,run}.ts`, `README.md`, `tests/unit/design-diff.test.ts`(parseArgs 3줄 + retryFind 3건).
+- 확인: `npx vitest run tests/unit/design-diff.test.ts`, `npx tsc --noEmit`(scripts/·tests/ 오류 0), `npm run lint`(오류 0). 실제 브라우저·개발 서버는 쓰지 않았다(지시) — 실물 재현은 컨트롤 타워/브라우저 쪽에서 `--app-ready`를 주고 확인해 달라.

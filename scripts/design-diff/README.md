@@ -31,6 +31,7 @@ npx tsx scripts/design-diff/run.ts --mock docs/design/mockup-v6 --app http://loc
 | `--mock <dir>` | 시안 폴더. 첫 `*.dc.html`을 연다 (`--entry`로 바꿈) |
 | `--app <url>` | 앱 시작 URL. 상태별 `appPath`가 있으면 그 뒤에 붙인다 |
 | `--out <dir>` | 결과 폴더 |
+| `--app-ready <css>` | (기본 없음) 앱 페이지를 연 뒤 이 요소가 보일 때까지 기다린다(최대 20초). Next `loading.tsx` 뼈대 화면 뒤 본 화면에서 시작하려고 쓴다. 예: `--app-ready '[role=switch]'` 또는 `--app-ready '.zone-work'`. 시안 쪽에는 안 쓴다 |
 | `--states a,b` | 이 상태만 |
 | `--widths 1440,1920` | 폭. 높이는 1440→1000, 1920→1080 |
 | `--states-file` | 상태 파일 (기본 `<out>/states.json`) |
@@ -48,7 +49,7 @@ npx tsx scripts/design-diff/run.ts --mock docs/design/mockup-v6 --app http://loc
    정렬·접기처럼 새 버튼이 안 생기는 클릭은 끝 상태로 두고 더 넓히지 않는다. 앞 단계와 상관없는 클릭의 조합은 만들지 않는다.
    → `states.md`(상태표 + 정적 분석: onClick 바인딩·탐색에서 눌렸는지, setState 키, 타이머 식), `states.json`(사람이 고침), `states.generated.json`(매번 새로).
 2. **재현** (`browser.ts`): 상태마다·폭마다·쪽마다 새 브라우저 컨텍스트(녹화 켬)에서 페이지를 열고 `document.fonts.ready` 뒤
-   같은 순서로 누른다. 요소 찾기 규칙(`page-scripts.ts` `FIND_TARGET`)은 양쪽 같음: `selector`가 있으면 그것,
+   같은 순서로 누른다(앱은 `--app-ready` 요소가 보인 뒤). 단계마다 후보가 나올 때까지 최대 10초(0.25초 간격) 다시 찾고, 그래도 없으면 실패다 — 단계의 `waitMs`는 클릭 뒤 기다림이다. 요소 찾기 규칙(`page-scripts.ts` `FIND_TARGET`)은 양쪽 같음: `selector`가 있으면 그것,
    없으면 역할(`role`) + 이름표(`text`: 자기 글자, 없으면 자손 중 처음 나오는 숫자 아닌 자기 글자) + `nth`. `contains: true`면 부분 일치.
 3. **비교** → `<out>/<state>/`
    - `styles.md`: 보이는 요소를 `역할|이름표`(같은 것이 여럿이면 `#n`)로 짝지어 color, background, border, border-radius, box-shadow,
