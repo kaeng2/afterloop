@@ -247,13 +247,14 @@ describe('T122c-3 Lena #1029 · Yuki #1051 = 데모 항목, 쓰기 0 · Simulate
 
   it('KO: 시드 ko 글 · 버튼 "$24 환불"/"확인"', async () => {
     const { LocaleProvider } = await import('@/app/_shared/locale-context');
-    const ko = html(createElement(LocaleProvider, { locale: 'ko' }, createElement(DemoItemCard, { item: { ...lenaSeed, key: 'lena' } })));
+    const inLocale = (locale: 'en' | 'ko', children: React.ReactNode) => html(createElement(LocaleProvider, { locale, children }));
+    const ko = inLocale('ko', createElement(DemoItemCard, { item: { ...lenaSeed, key: 'lena' } }));
     expect(ko).toContain(`>${lenaSeed.titleKo}</h3>`);
     expect(ko).toContain('>$24 환불</button>');
     expect(ko).toContain('11월 6일');
-    const yk = html(createElement(LocaleProvider, { locale: 'ko' }, createElement(DemoItemCard, { item: { ...yukiSeed, key: 'yuki' } })));
+    const yk = inLocale('ko', createElement(DemoItemCard, { item: { ...yukiSeed, key: 'yuki' } }));
     expect(yk).toContain('>확인</button>');
-    html(createElement(LocaleProvider, { locale: 'en' }, null));
+    inLocale('en', null);
   });
 });
 
