@@ -19,6 +19,7 @@
     "tone": 0.4
   },
   "delayPerDay": 0.45,
+  "noReplyDays": 2,
   "refundSplit": {
     "intercept": -0.4,
     "vague": 0.7,

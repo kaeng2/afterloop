@@ -509,6 +509,7 @@
   "case.curve.risk": "분쟁 위험",
   "case.curve.now": "지금",
   "case.curve.withDraft": "이 답장으로",
+  "case.curve.ifNoReply": "{{date}}까지 무응답 시",
   "case.curve.fromTo": "{{from}} → {{to}}",
   "case.curve.points": "곡선의 점 {{count}}개",
   "case.curve.tick100": "100%",

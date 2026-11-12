@@ -135,7 +135,7 @@ export function CaseView({
         reply === undefined ? null : <div className="case-offer">{reply}</div>
       ) : (
         <>
-          <RiskCurveCard points={desk.curvePoints} />
+          <RiskCurveCard points={desk.curvePoints} tones={desk.history?.rows.map((row) => row.tone) ?? null} />
           {desk.history === null ? null : <CaseHistoryCard history={desk.history} />}
 
           <div className="case-body">
