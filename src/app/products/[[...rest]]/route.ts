@@ -12,7 +12,9 @@ export const dynamic = 'force-dynamic';
 export const REMOVED_ROUTE_STATUS = 308;
 
 export function GET(request: NextRequest) {
-  const target = new URL('/', request.url);
-  target.search = request.nextUrl.search;
-  return NextResponse.redirect(target, REMOVED_ROUTE_STATUS);
+  // 상대 Location: Render 같은 프록시 뒤에서는 request.url 호스트가 내부 주소(localhost:10000)라 절대 주소를 만들면 안 된다.
+  return new NextResponse(null, {
+    status: REMOVED_ROUTE_STATUS,
+    headers: { Location: '/' + request.nextUrl.search },
+  });
 }

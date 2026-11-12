@@ -60,3 +60,9 @@
 
 ## 컨트롤 타워에 요청할 결정
 - `next.config.ts` 편집이 이 레인 권한에서 막혀 있다. 라우트 핸들러로 같은 효과를 냈으니 그대로 두거나, `next.config` redirects로 옮기려면 권한을 풀어 달라 (그때는 `src/app/products/[[...rest]]/route.ts`와 `app-t114` 308 시험 3개를 함께 바꾼다).
+
+## 재시도(후속)
+- 문제: `route.ts`가 `new URL('/', request.url)` 절대 주소로 Location을 만들어, Render 프록시 뒤에서 `https://localhost:10000/`로 나갔다 (11/12 11:20 (2)-6과 같은 버그).
+- 수정: 라우트가 `new NextResponse(null, { status: 308, headers: { Location: '/' + request.nextUrl.search } })`로 상대 경로를 낸다. 쿼리는 그대로 넘긴다.
+- 시험: `app-t114.test.ts`에 "Location이 http로 시작하지 않는 상대 경로이고, request.url 호스트가 localhost:10000이어도 그 호스트가 들어가지 않는다" 추가. 기존 308 시험은 상대 Location을 base로 풀어 읽도록 맞췄다.
+- 확인: app-t114 14개 통과, tsc 통과, lint 에러 0 (기존 경고 2개, 무관). 실호출·개발 서버 없음.

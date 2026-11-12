@@ -43,13 +43,24 @@ describe('T114 /products → / 308', () => {
     const res = go('http://localhost:3000/products');
     expect(REMOVED_ROUTE_STATUS).toBe(308);
     expect(res.status).toBe(308);
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/');
+    expect(new URL(res.headers.get('location')!, 'http://x').pathname).toBe('/');
+  });
+
+  it('Location이 http로 시작하지 않는 상대 경로이고, request.url 호스트가 localhost:10000이어도 그 호스트가 들어가지 않는다', () => {
+    const res = go('https://localhost:10000/products?sku=FK-CD-OAT&lang=ko');
+    const location = res.headers.get('location')!;
+    expect(res.status).toBe(308);
+    expect(location).not.toMatch(/^https?:/);
+    expect(location).not.toContain('localhost');
+    expect(location).not.toContain('10000');
+    expect(location).toBe('/?sku=FK-CD-OAT&lang=ko');
+    expect(go('https://localhost:10000/products').headers.get('location')).toBe('/');
   });
 
   it('/products?… 쿼리도 같은 사이트 /로 308 (쿼리는 그대로 넘긴다)', () => {
     const res = go('http://localhost:3000/products?sku=FK-CD-OAT&lang=ko');
     expect(res.status).toBe(308);
-    const loc = new URL(res.headers.get('location')!);
+    const loc = new URL(res.headers.get('location')!, 'http://localhost:3000');
     expect(loc.origin).toBe('http://localhost:3000');
     expect(loc.pathname).toBe('/');
     expect(loc.searchParams.get('sku')).toBe('FK-CD-OAT');
@@ -60,7 +71,7 @@ describe('T114 /products → / 308', () => {
     expect(existsSync(path.join(ROOT, 'src/app/products/[[...rest]]/route.ts'))).toBe(true);
     const res = go('http://localhost:3000/products/FK-SW-NV');
     expect(res.status).toBe(308);
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/');
+    expect(new URL(res.headers.get('location')!, 'http://x').pathname).toBe('/');
   });
 
   it('화면 파일이 없다: (app)/products 페이지 없음, products 폴더에는 이동 라우트만', () => {
