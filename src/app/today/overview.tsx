@@ -420,7 +420,8 @@ const productRowId = (row: OvProductRow) => row.key;
 const caseRowId = (row: OvCaseRow) => row.id;
 
 /**
- * 요약 카드 하나 (시안 `.ov-k`). 글은 시안 자리표처럼 안쪽 span에 넣는다 (`{{k.label}}`·`{{k.val}}`·`{{k.sub}}`).
+ * 요약 카드 하나 (시안 `.ov-k`). 값·설명은 안쪽 span (`{{k.val}}`·`{{k.sub}}`). 이름은 시안처럼 점 옆 글 그대로
+ * (T125b: 시안 라벨 span이 점+글을 함께 품는다 — gap 8px·카드 폭).
  * `hi` = 시안 `k.hi`(평균이 높음 단계): 점·숫자 빨강. 아니면 `big` 숫자 파랑.
  */
 function Kpi({ tone, label, value, sub, big = false, hi = false }: { tone: string; label: string; value: string; sub: string; big?: boolean; hi?: boolean }) {
@@ -428,7 +429,7 @@ function Kpi({ tone, label, value, sub, big = false, hi = false }: { tone: strin
     <div className="ov-k">
       <span className="ov-k-label">
         <span className={`ov-k-dot ov-k-dot-${hi ? 'reply' : tone}`} />
-        <span>{label}</span>
+        {label}
       </span>
       <b className={`ov-k-val${hi ? ' ov-k-val-hi' : big ? ' ov-k-val-big' : ''}`}>
         <span>{value}</span>
@@ -502,7 +503,7 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
           <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M3 4h18v16H3zM3 10h18M3 15h18M9 4v16M15 4v16" fill="none" className="ag-tag-stroke" strokeWidth="1.8" />
           </svg>
-          <span>{t('today.ov.agTag')}</span>
+          {t('today.ov.agTag')}
         </span>
       </div>
       <div className="ov-kpis">
@@ -527,7 +528,7 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
             <span>{t('today.ov.gridProducts')}</span>
           </b>
           <span className="ov-block-hint">
-            <span>{t('today.ov.productsHint')}</span> · <span>{t('today.ov.hint')}</span>
+            <span>{`${t('today.ov.productsHint')} · ${t('today.ov.hint')}`}</span>
           </span>
         </div>
         {shown ? (
