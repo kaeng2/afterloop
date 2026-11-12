@@ -24,7 +24,6 @@ import {
   curveView,
   featureChips,
   historyView,
-  latinName,
   NO_REPLY_DAYS,
   reactionView,
   readTags,
