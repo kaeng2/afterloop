@@ -127,7 +127,6 @@ describe('T107-2 화면 루트 기본값', () => {
     expect(page).toMatch(/className="dk today-page"/);
     expect(page).toContain("import '@/app/(app)/desk.css';");
     expect(read('src/app/(app)/layout.tsx')).not.toContain('desk.css');
-    expect(read('src/app/(app)/products/page.tsx')).not.toContain('desk.css');
   });
 
   it('desk.css 규칙은 모두 .dk 아래 / body:has(.dk) 아래 / @keyframes / 시안 body{margin:0} / @media 안이다', () => {

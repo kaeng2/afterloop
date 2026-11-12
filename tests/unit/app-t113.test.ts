@@ -3,7 +3,7 @@
  *
  *  1. en·ko 두 문구 파일에서 **모든 키**의 자리표시자 집합이 같다 (`case.reply.editSub`·`case.reaction.moodNext`가 달랐다).
  *  2. 화면 코드의 `t('키', { … })` 호출이 넘기는 이름 = 두 언어 문구의 자리표시자 (정적 검사, 모든 화면).
- *  3. ko로 정적 렌더할 때 예외가 없다: Desk 답장 칸(서연 · 이름 있음/없음) · 예상 반응 상자 · 위쪽 막대 · /products · /listing · /intro.
+ *  3. ko로 정적 렌더할 때 예외가 없다: Desk 답장 칸(서연 · 이름 있음/없음) · 예상 반응 상자 · 위쪽 막대 · /listing · /intro.
  *  4. `(app)` 화면(로딩 경계 Suspense 안)의 `?lang=`은 서버 `redirect()`가 아니라 전체 페이지 이동(`LangRedirect`)이다
  *     (React #310). 경계가 없는 `/listing`·`/intro`만 `applyLangParam`(HTTP 307)을 쓴다.
  *
@@ -21,8 +21,6 @@ import { copyKeys, copyTables, setClientLocale, t } from '@/app/_shared/copy';
 import { langRedirectTarget } from '@/app/_shared/lang-param';
 import { caseReplyFacts } from '@/app/cases/reply-facts';
 import type { BoardState, Cause, FactToken, LlmCaller } from '@/types';
-
-import { seedProducts } from '../../seed/index';
 
 vi.mock('server-only', () => ({}));
 vi.mock('next/navigation', () => ({
@@ -46,7 +44,6 @@ vi.mock('@/app/_server/llm', () => ({ getLlm: () => ({ ok: false, reason: 'not_c
 const { ReplyPanel, ReactionBox } = await import('@/app/cases/reply/reply-panel');
 const { TopBar } = await import('@/app/_shared/top-bar');
 const { LocaleProvider } = await import('@/app/_shared/locale-context');
-const { ProductsScreen } = await import('@/app/products/products-screen');
 const { ListingScreen } = await import('@/app/listing/listing-screen');
 const { IntroScreen } = await import('@/app/intro/intro-screen');
 const { LangRedirect } = await import('@/app/_shared/lang-redirect');
@@ -242,18 +239,8 @@ describe('T113-3 ko 정적 렌더에 예외가 없다', () => {
     expect(unnamed).toContain(t('case.reaction.moodNextUnknown', undefined, 'ko'));
   });
 
-  it('위쪽 막대 · /products · /listing · /intro', () => {
+  it('위쪽 막대 · /listing · /intro', () => {
     expect(() => renderKo(createElement(TopBar, { seller: { initial: 'F', shop: 'Shop' }, dateLine: 'x' }))).not.toThrow();
-    const products = renderKo(
-      createElement(ProductsScreen, {
-        products: seedProducts,
-        selectedSku: seedProducts[0].sku,
-        txLine: null,
-        colorNoteSkus: [seedProducts[0].sku],
-        writeColorNote: async () => null,
-      }),
-    );
-    expect(products).toContain('class="products"');
     expect(() => renderKo(createElement(ListingScreen))).not.toThrow();
     expect(() => renderKo(createElement(IntroScreen))).not.toThrow();
   });
@@ -264,7 +251,6 @@ describe('T113-3 ko 정적 렌더에 예외가 없다', () => {
 describe('T113-4 (app) 화면의 ?lang=은 전체 페이지 이동', () => {
   const APP_PAGES = [
     'src/app/(app)/page.tsx',
-    'src/app/(app)/products/page.tsx',
     'src/app/(app)/cases/[disputeId]/page.tsx',
     'src/app/(app)/preview/styleguide/page.tsx',
   ];
