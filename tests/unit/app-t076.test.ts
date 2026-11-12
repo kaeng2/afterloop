@@ -449,9 +449,9 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
     expect(weekly).toEqual({ openDisputes: 3, keepable: toDollarsRounded(4321), aiDrafts: 7, usesDemoData: true });
     const view = buildToday({ disputes: [seoyeonLoaded()], tracking: null, products: seedProducts, now: new Date(NOW) });
     const markup = html(createElement(TodayList, { view, weekly, selectedId: null, paypalNotice: null }));
-    expect(markup).toContain(`class="weekly-value num">${toDollarsRounded(4321)}<`);
-    expect(markup).toContain('class="weekly-value num">7<');
-    expect(markup).toContain('class="weekly-value num">3<');
+    expect(markup).toContain(`class="weekly-value num"><span>${toDollarsRounded(4321)}<`);
+    expect(markup).toContain('class="weekly-value num"><span>7<');
+    expect(markup).toContain('class="weekly-value num"><span>3<');
     expect(markup).toContain(copyTables.en['badge.demo']);
     expect(markup).toContain(copyTables.en['badge.assumption']);
   });

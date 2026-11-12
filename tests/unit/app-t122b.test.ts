@@ -112,11 +112,11 @@ describe('T122b-4: 목록 줄마다 위험 % 칩 (엔진 값, 단계·색은 설
 
   it('값이 있는 줄만 칩 ("89% · High" + 시안 lvl 색 class + riskTip 제목). 값 없는 줄(Mike·추적·Prevent)·끝낸 줄은 칩 없음', () => {
     const list = html(createElement(TodayGroupsView, { groups: GROUPS, done: {}, selectedId: SEO, risk: RISK }));
-    expect(list).toContain(`<span class="today-risk today-risk-high" title="${t('today.risk.tip')}">89% · High</span>`);
-    expect(list).toMatch(/class="today-risk today-risk-(med|low)"[^>]*>38% · (Medium|Low)</);
+    expect(list).toContain(`<span class="today-risk today-risk-high" title="${t('today.risk.tip')}"><span>89% · High</span></span>`);
+    expect(list).toMatch(/class="today-risk today-risk-(med|low)"[^>]*><span>38% · (Medium|Low)</);
     expect(list.match(/class="today-risk /g)).toHaveLength(2);
     // 같은 줄 안: 구매자 + 칩 (시안 L148)
-    expect(list).toContain('<span class="today-item-subrow"><span class="today-item-sub">Seo-yeon Kim · KR</span><span class="today-risk today-risk-high"');
+    expect(list).toContain('<span class="today-item-subrow"><span class="today-item-sub"><span>Seo-yeon Kim · KR</span></span><span class="today-risk today-risk-high"');
 
     const done = html(createElement(TodayGroupsView, { groups: GROUPS, done: { [SEO]: { simulated: true } }, selectedId: SEO, risk: RISK }));
     expect(done.match(/class="today-risk /g)).toHaveLength(1);

@@ -98,7 +98,7 @@
 .dk .ko{font-family:var(--font-noto-kr),var(--font-figtree),sans-serif}
 /* AI 알약: 시안은 쓰는 곳마다 box-shadow:none (L125·L216·L249·L264…). 그림자는 zone-work 머리(L240·L315·L352)만.
    line-height는 시안처럼 물려받는다 (앱 .ai-pill 1.2 대신) */
-.dk .ai-pill{box-shadow:none;line-height:inherit}
+.dk .ai-pill{box-shadow:none;line-height:inherit;border-radius:1000px}
 .dk .work>.work-head>.ai-pill,.dk .zone-work>.ai-pill{box-shadow:rgba(0,102,245,0.35) 0 2px 8px}
 @media (prefers-reduced-motion:reduce){.dk *,.dk *::before{animation:none !important;transition:none !important}}
 body:has(.dk){background:#FFFFFF}
@@ -127,7 +127,7 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 .dk .ptile .product-icon{width:24px;height:24px}
 .dk .ptile .product-icon path{stroke:#002991;stroke-width:1.6}
 /* L687 badgeSt */
-.dk .ptile .product-tile-badge{position:absolute;right:-6px;top:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:1000px;background:#C4321F;color:#FFFFFF;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;border:2px solid #FFFFFF}
+.dk .ptile .product-tile-badge{position:absolute;right:-6px;top:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:1000px;background:#C4321F;color:#FFFFFF;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;border:2px solid #FFFFFF;line-height:1.5}
 
 /* L119 두 칸: flex-wrap (좁으면 왼쪽 칸 위 · 오른쪽 칸 아래) */
 .dk .today{display:flex;flex-wrap:wrap;align-items:flex-start}
@@ -166,7 +166,9 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 .dk .today-group-title{font-size:15px;font-weight:700;color:#000000;line-height:1.5;letter-spacing:normal}
 .dk .today-group-count{font-weight:700;color:#6C7378}
 .dk .today-group-hint{margin-left:auto;font-size:12px;color:#6C7378}
-.dk .today-items>li+li{border-top:1px solid #F1EFEA}
+/* T124a: 시안 L37-38 — 시안의 .it는 .sech 다음 형제라 `:first-child`가 안 맞아 첫 줄에도 border-top이 있다.
+   앱은 줄마다 <li>로 감싸 .it가 늘 first-child → 모든 .it에 다시 준다 */
+.dk .today-items .it{border-top:1px solid #F1EFEA}
 /* L142–L146 항목 줄 (.it) */
 .dk .ptile.product-tile-sm{width:36px;height:36px}
 .dk .ptile.product-tile-sm .product-icon{width:22px;height:22px}
@@ -185,6 +187,8 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 /* L704 catSt: high = #FBE7E4/#9E2414, 나머지 #ECEEF0/#3F4144 */
 .dk .today-pill-high{background:#FBE7E4;color:#9E2414}
 .dk .today-pill-watch,.dk .today-pill-neutral{background:#ECEEF0;color:#3F4144}
+/* T124a: v6 L852 catSt = 늘 'background:#ECEEF0;color:#3F4144' (목록 줄 범주 칩은 high도 회색) */
+.dk .it .today-pill-high{background:#ECEEF0;color:#3F4144}
 /* L705 sevCol · L708 done */
 .dk .today-dot-high{background:#C4321F}.dk .today-dot-watch{background:#002991}.dk .today-dot-low,.dk .today-dot-neutral{background:#9AA0A6}.dk .today-dot-done{background:#CFD3D8}
 /* L710 secBar */

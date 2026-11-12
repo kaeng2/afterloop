@@ -65,8 +65,13 @@ export function ProductFilterBarView({
               >
                 <ProductTile kind={chip.icon} badge={chip.sku === null ? undefined : open} />
                 <span className="product-filter-text">
-                  <span className="product-filter-name">{chip.name}</span>
-                  <span className="product-filter-sub num">{sub}</span>
+                  {/* T124a: 시안 L135 `<b>{{p.name}}</b>`·`<span>{{p.sub}}</span>` — 글자는 안쪽 span */}
+                  <span className="product-filter-name">
+                    <span>{chip.name}</span>
+                  </span>
+                  <span className="product-filter-sub num">
+                    <span>{sub}</span>
+                  </span>
                 </span>
               </button>
             </li>
@@ -74,7 +79,7 @@ export function ProductFilterBarView({
         })}
       </ul>
       <span className="product-filter-summary num">
-        {t('today.filter.summary', { products: filter.products, units: filter.units, cases: total })}
+        <span>{t('today.filter.summary', { products: filter.products, units: filter.units, cases: total })}</span>
       </span>
     </nav>
   );

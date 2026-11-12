@@ -33,7 +33,8 @@ function Wordmark() {
   const head = name.endsWith(accent) ? name.slice(0, name.length - accent.length) : name;
   return (
     <span className="shell-wordmark" role="img" aria-label={name}>
-      <span aria-hidden="true">{head}</span>
+      {/* T124a: 시안 L123처럼 "Dispute"는 role=img 알약의 글자 그대로 (role=img라 안쪽은 읽히지 않는다) */}
+      {head}
       {name.endsWith(accent) ? (
         <span className="shell-wordmark-accent" aria-hidden="true">
           {accent}
@@ -74,9 +75,16 @@ export function TopBar({
             <Wordmark />
           </Link>
           <span className="shell-divider" aria-hidden="true" />
-          <span className="shell-for">{t('nav.forSellers')}</span>
+          {/* T124a: 시안처럼 글자는 안쪽 span (시안 `{{v.badge}}` = 알약 span 안의 글자 span) */}
+          <span className="shell-for">
+            <span>{t('nav.forSellers')}</span>
+          </span>
         </div>
-        {dateLine === undefined ? null : <span className="shell-date">{dateLine}</span>}
+        {dateLine === undefined ? null : (
+          <span className="shell-date">
+            <span>{dateLine}</span>
+          </span>
+        )}
 
         {/* T090 시안 v4: 로고·꼬리표·날짜는 왼쪽, 탭·서랍·언어·판매자는 오른쪽에 작게 */}
         <div className="shell-actions">
