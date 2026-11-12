@@ -507,7 +507,7 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 .dk .ov-block{display:flex;flex-direction:column;gap:8px}
 .dk .ov-block-head{display:flex;align-items:baseline;gap:8px}
 .dk .ov-block-title{font-size:16px}
-.dk .ov-block-hint{font-size:12px;color:#6C7378}
+.dk .ov-block-hint{font-size:12px;color:#6C7378;line-height:1.5}
 
 /* AG Grid 안쪽을 시안 .ag-h · .ag-hc · .ag-r · .ag-c 값으로 (색은 grid.ts deskGridTheme이 이 변수를 읽는다) */
 .dk .ov-grid{--dk-ag-accent:#002991;--dk-ag-bg:#FFFFFF;--dk-ag-fg:#000000;--dk-ag-muted:#6C7378;--dk-ag-border:#DDE2EB;--dk-ag-head-bg:#F8F9FB;--dk-ag-head-fg:#3F4144;--dk-ag-head-hover:#EEF2F7;--dk-ag-row-border:#EEF0F3;--dk-ag-hover:#F3F7FF}
@@ -517,7 +517,10 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 .dk .ov-grid .ag-header-cell{box-sizing:border-box;display:flex;align-items:center;gap:6px;padding:10px 14px;font-size:12px;font-weight:700;color:#3F4144;border-right:1px solid #EBEEF2;cursor:pointer;white-space:nowrap;text-align:left;min-width:0;line-height:18px}
 .dk .ov-grid .ag-header-cell:last-child,.dk .ov-grid .ag-header-cell.ag-column-last{border-right:0}
 .dk .ov-grid .ag-header-cell:hover{background:#EEF2F7}
-.dk .ov-grid .ag-header-cell.ag-header-cell-sorted-asc,.dk .ov-grid .ag-header-cell.ag-header-cell-sorted-desc{color:#002991}
+/* T125b: 시안 .ag-hc.on. 직접 만든 머리(SortHeader)에는 AG Grid가 sorted 클래스를 안 붙이므로 머리 칸의 aria-sort로 */
+.dk .ov-grid .ag-header-cell[aria-sort="ascending"],.dk .ov-grid .ag-header-cell[aria-sort="descending"]{color:#002991}
+/* T125b: 시안 .ag-ind(11px)는 단추 줄 높이 1.5를 물려받는다 → 16.5px */
+.dk .ov-grid .ag-ind{line-height:1.5}
 .dk .ov-grid .ag-header-cell-comp-wrapper{width:100%;height:100%}
 .dk .ov-grid .ov-hc{display:flex;align-items:center;gap:6px;width:100%;min-width:0}
 .dk .ov-grid .ov-hc.num{justify-content:flex-end}

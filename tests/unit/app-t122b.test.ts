@@ -256,9 +256,10 @@ describe('T122b-5: "All products" 전체 현황 값 (세기만, 엔진 위험 �
     );
     expect(markup).toContain('<section class="today-overview" aria-label="All products">');
     // T124b: 글은 시안 자리표({{…}})처럼 안쪽 span에 든다
-    expect(markup).toMatch(/<span class="ag-tag"><svg[\s\S]*?<\/svg><span>AG Grid<\/span><\/span>/);
+    // T125b: 꼬리표·카드 이름은 시안처럼 아이콘/점 옆 글 그대로 (span이 아이콘+글을 품는다)
+    expect(markup).toMatch(/<span class="ag-tag"><svg[\s\S]*?<\/svg>AG Grid<\/span>/);
     expect(markup.match(/class="ov-k"/g)).toHaveLength(5);
-    expect(markup).toContain('<span>Avg. dispute risk</span>');
+    expect(markup).toMatch(/<span class="ov-k-label"><span class="ov-k-dot ov-k-dot-(reply|avg)"><\/span>Avg. dispute risk<\/span>/);
     const avgExpected = meanRisk(ov.kpis.topRisks);
     expect(avgExpected).not.toBeNull();
     // 시안 k.hi: 평균이 높음 단계면 점·숫자 빨강 (아니면 파랑 big)
@@ -269,7 +270,7 @@ describe('T122b-5: "All products" 전체 현황 값 (세기만, 엔진 위험 �
     expect(markup.match(/class="ag ov-grid"/g)).toHaveLength(2);
     expect(markup).toContain('<div class="ag-f"><span><span>4 rows</span></span><span><span>Sorted by Dispute risk ↓</span></span></div>');
     expect(markup).toContain('<div class="ag-f"><span><span>5 rows</span></span><span><span>Sorted by Dispute risk ↓</span></span></div>');
-    expect(markup).toContain('<span>Open cases = disputes, buyer questions and prevention tasks still open</span> · <span>Click a column to sort · click a row to open</span>');
+    expect(markup).toContain('<span>Open cases = disputes, buyer questions and prevention tasks still open · Click a column to sort · click a row to open</span>');
     expect(markup).toContain('Click a column to sort · click a row to open');
   });
 
