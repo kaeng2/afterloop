@@ -15,7 +15,7 @@
 
 ## 1. Why we built it
 
-Selling globally has become easier. Resolving a cross-border payment dispute has not. Mastercard and Datos Insights forecast worldwide chargebacks to grow from **261 million in 2025 to 324 million in 2028**, a **24% increase**. This is an industry-wide chargeback forecast, not a PayPal-specific statistic. (Source: Mastercard)
+Selling globally has become easier. Resolving a cross-border payment dispute has not. Mastercard forecasts a **24% increase** in worldwide chargebacks, reaching **324 million a year by 2028**. This is an industry-wide chargeback forecast, not a PayPal-specific statistic. ([Source: Mastercard](https://www.mastercard.com/au/en/news-and-trends/Insights/2025/what-s-the-true-cost-of-a-chargeback-in-2025.html))
 
 For independent merchants and small businesses, a single *Item Not Received* complaint can mean a package was never shipped, is stuck in customs, was lost in transit, or was marked delivered without reaching the buyer. Each calls for a different response. Yet merchants often have to decide quickly, across languages, without a dedicated support team—or a clear view of the financial consequences.
 
@@ -80,7 +80,7 @@ Expected cost = Σ[P(outcome) × cost(outcome)]
 
 **Why this approach?** Prioritizing cases by an explainable score helps time-constrained sellers focus first on likely escalation, while retaining enough context to choose a proportionate response. Logistic modeling makes the influence of each response feature inspectable and allows immediate before/after comparisons. Expected cost adds the economic dimension: **the response with the lowest escalation score is not necessarily the least expensive**. The interface therefore places **risk (%) and estimated cost ($)** side by side, giving sellers a basis for a defensible decision rather than a black-box AI verdict.
 
-*Demo reference:* In the customs-delay case (**order #1042, $72, subtype A2**), the illustrative model scores no response at **89%**, a targeted customs-information reply at **8%** with approximately **$15** in expected cost, and an immediate refund at **2%** with approximately **$72** in cost. These are demo-model outputs, not measured real-world success rates.
+*Demo reference:* In the customs-delay case (**order #1042, $72, subtype A2**), the illustrative model scores no response at **91%**, a rushed reply at **95%**, the targeted customs-information reply drafted by AI at **40%** with approximately **$37** in expected cost, and a full refund at approximately **$74** in cost. These are demo-model outputs, not measured real-world success rates.
 
 
 ### ✅  Solution 2 — Turn insights into a better resolution
@@ -95,11 +95,11 @@ DisputeLess uses AI to **interpret the buyer's concern, match it to transaction 
 
 <img width="589" height="576" alt="스크린샷 2026-11-13 오전 1 40 31" src="https://github.com/user-attachments/assets/67c4d93d-1cf7-47a6-81e2-e30db1082dfa" />
 
-> Repeated buyer–seller exchanges have created frustration on both sides, with an **89% dispute risk**. DisputeLess provides an at-a-glance view of the case history, status, and risk level.
+> Repeated buyer–seller exchanges have created frustration on both sides, with a **91% dispute risk**. DisputeLess provides an at-a-glance view of the case history, status, and risk level.
 
 <img width="589" height="500" alt="스크린샷 2026-11-13 오전 1 34 07" src="https://github.com/user-attachments/assets/53fa5e96-3e1c-4c41-b191-9f50af753639" />
 
-> AI Respond now: the reply is drafted in the buyer’s language and checked line by line. Dispute risk drops from 89% to 8%
+> AI Respond now: the reply is drafted in the buyer’s language and checked line by line. Dispute risk drops from 91% to 40%
 
 
 
@@ -140,7 +140,7 @@ The listing rehearsal runs a **500-iteration seeded Monte Carlo simulation**, es
 
 The classification framework covers **16 causes**, while the supplied listing rehearsal models **five** of them quantitatively: **A1, A2, B1, B2, and E1**. The demo uses `mulberry32`, seeded with `4242 + planned units`.
 
-*Demo reference:* A **$89 product with a planned sale of 200 units** moves from **8.99 to 4.14 modeled disputes** and **$747 to $318 in modeled expected loss** after six listing improvements—approximately **57% lower expected loss** under the demo assumptions. These are simulated results, not observed merchant savings.
+*Demo reference:* A **$89 product with a planned sale of 200 units** moves from a **4.5% to a 2.1% chance of a dispute per order** (about **9.0 to 4.1 modeled disputes**) and **$770 to $327 in modeled expected loss** after six listing improvements—approximately **58% lower expected loss** under the demo assumptions. These are simulated results, not observed merchant savings.
 
 ---
 
@@ -158,8 +158,8 @@ The classification framework covers **16 causes**, while the supplied listing re
 | Scene | What judges see | What it demonstrates |
 | --- | --- | --- |
 | **1 · One-click access** | Launch **DisputeLess from the top of a PayPal-style seller dashboard** and enter the dispute workspace | Fits naturally into the merchant's existing workflow; the dashboard shown is a **demo mockup** |
-| **2 · Negotiate & resolve** | Open **#1042 / $72**, review the Korean customs-delay evidence (**A2**), inspect the eight-event buyer–seller history and risk trajectory, compare no response vs. a targeted request vs. refund, edit the AI-supported reply, approve an action, and inspect the result | A concrete link between root cause, **escalation risk (%)**, **expected cost ($)**, multilingual communication, and safe execution |
-| **3 · Prevent & rehearse** | Prepare a new **$89 listing / 200 units**, review the **one-dot-per-sale** dispute map and cause-level exposure, apply **six improvements**, rerun the 500-iteration model, and publish | Potential disputes become intuitive on a **200-dot sales map**, and prevention is financially visible **before selling**: **$747 → $318** expected loss in the demo |
+| **2 · Negotiate & resolve** | Open **#1042 / $72**, review the Korean customs-delay evidence (**A2**), inspect the nine-event buyer–seller history and risk trajectory, compare no response vs. a targeted request vs. refund, edit the AI-supported reply, approve an action, and inspect the result | A concrete link between root cause, **escalation risk (%)**, **expected cost ($)**, multilingual communication, and safe execution |
+| **3 · Prevent & rehearse** | Prepare a new **$89 listing / 200 units**, review the **one-dot-per-sale** dispute map and cause-level exposure, apply **six improvements**, rerun the 500-iteration model, and publish | Potential disputes become intuitive on a **200-dot sales map**, and prevention is financially visible **before selling**: **4.5% → 2.1%** dispute chance and **$770 → $327** expected loss in the demo |
 
 **Core test scenarios:** a shipment delayed by missing Korean customs information; product-description mismatches involving color and size; and avoidable confusion around delivery timing, customs guidance, and returns. The product-listing scene represents an **external online-store admin experience using DisputeLess**, not a native PayPal product-listing screen.
 
@@ -206,18 +206,20 @@ PayPal-style entry point       DisputeLess dispute desk      Store listing rehea
 
 | PayPal integration | API route / capability | Purpose in DisputeLess |
 | --- | --- | --- |
-| **Disputes API** | `GET /v1/customer/disputes`; `GET /v1/customer/disputes/{id}` | Load case state and reason codes as the starting point for diagnosis |
-| **Dispute actions** | Applicable dispute message, offer and evidence operations | Support the seller-approved negotiation and resolution workflow, when available for that case |
-| **Tracking API** | Shipping tracker creation / lookup | Connect delivery events to a case and support evidence-based replies and date checks |
-| **Transaction Search API** | `GET /v1/reporting/transactions` | Put complaints in order and transaction context; support volume-based analysis |
-| **Payments / Refunds API** | `POST /v2/payments/captures/{id}/refund` | Execute an eligible refund **only after seller approval** |
+| **OAuth 2.0** | `POST /v1/oauth2/token` | Server-side access token; credentials never reach the browser |
+| **Orders v2** | `POST /v2/checkout/orders`; `POST /v2/checkout/orders/{id}/capture`; `GET /v2/checkout/orders/{id}` | Create and capture the sandbox demo orders; read order details |
+| **Disputes API** | `GET /v1/customer/disputes`; `GET /v1/customer/disputes/{id}` | Load case state, reason codes and buyer messages as the starting point for diagnosis |
+| **Dispute message** | `POST /v1/customer/disputes/{id}/send-message` | Send the seller-approved reply |
+| **Dispute offer** | `POST /v1/customer/disputes/{id}/make-offer` | Send a seller-approved partial-refund offer |
+| **Order tracking** | `POST /v2/checkout/orders/{id}/track` | Add tracking to an order after seller approval |
+| **Transaction Search API** | `GET /v1/reporting/transactions` | Implemented, not used on screen |
 
-**Integration approach:** server-side OAuth 2.0 credentials, PayPal Sandbox transactions and dispute scenarios for testing, and activity logging of actions and responses. The exact endpoints invoked by the final integrated application should match its network logs; the table above defines their roles in the product, not independently verified calls from the uploaded design exports.
+**Integration approach:** server-side OAuth 2.0 credentials, PayPal Sandbox orders and dispute scenarios for testing, and an activity log of every call. On the public link, writes (send-message, make-offer, tracking) are Simulated; the app never executes a refund.
 
 ### 8.2 AI and other sponsor tools
 
-- **AI model/API:** Classifies buyer messages into operational causes with confidence and evidence; summarizes the case; prepares contextual multilingual replies; and suggests clearer product-listing language. Numeric risk and cost calculations remain outside the LLM.
-- **Additional sponsor tools:** `[SPONSOR_TOOL_NAME]` — `[SPECIFIC_FEATURE_OR_ENDPOINT]` — `[WHY_IT_MATTERS]`. Fill in only technologies actually used by the integrated team; do not claim unverified sponsor usage.
+- **AI model/API:** Claude (`claude-opus-5-5`). Classifies buyer messages into operational causes with confidence and evidence; summarizes the case; prepares contextual multilingual replies; and suggests clearer product-listing language. Numeric risk and cost calculations remain outside the LLM.
+- **Additional sponsor tools:** **AG Grid** — the two tables on the All products screen. **Render** — hosts the live demo.
 - **Safety:** Explicit merchant approval for monetary actions; validation of promises, dates and amounts; server-side secret handling.
 
 ---
@@ -240,18 +242,23 @@ DisputeLess doesn't end when the case is closed. It translates what the merchant
 
 ## 10. Quick start for judges
 
-1. Open `LIVE_DEMO_URL` and use `[JUDGE_LOGIN_OR_ACCESS_METHOD]` (replace these placeholders before publishing).
-2. From the PayPal-style dashboard, launch **DisputeLess** and open **order #1042**.
-3. Inspect the A2 customs-delay case, compare response risk and costs, then review the proposed reply and seller-approval flow. Check the **PayPal Sandbox activity** in the integrated demo.
-4. Open the new-listing rehearsal for **$89 / 200 units**, inspect the **200-dot dispute map**, apply the six improvements, and compare **$747 → $318**.
+Live demo: https://disputeless.onrender.com/demo/seller-dashboard (public mode — real PayPal sandbox reads, cached AI, simulated sends; nothing is written to PayPal).
 
-### Submission details to complete
+**No login is needed.** Open the [seller dashboard](https://disputeless.onrender.com/demo/seller-dashboard) and follow three steps. The first load can take a few seconds while the free server wakes up.
 
-- [ ] Repository URL and verified local setup instructions
-- [ ] Working live demo, video, and Devpost URLs
-- [ ] PayPal Sandbox judge account and test access
-- [ ] AI model name/version and actual sponsor technologies
-- [ ] Team credits and license
+1. **Reply to Seo-yeon.** On [`/demo/seller-dashboard`](https://disputeless.onrender.com/demo/seller-dashboard) (marked "Demo mock — not a real PayPal page"), click **Handle all 3 with DisputeLess**. On the desk, turn on **✦ AI Respond now**. Click **Try a rushed reply** and wait until the typing stops (95%). Click **Use AI draft** and wait about 16 seconds until the typing stops (40%); before that, the forecast shows in-between numbers. Open **Details**, and click **Send**. Watch "What happens next · Simulated" and click **Forward to carrier**.
+2. **See the other cases.** Click the **Knit Cardigan** product chip (opening an item selects its product chip) to open Ji-ho's card: new quality case #1038 (`PP-R-ZOK-10200237`, under PayPal review), "Keeps ≈$34", "How AI handled this". Click **All products** for the overview with two AG Grid tables, then **PayPal activity** (top right) for the call log.
+3. **Check a new listing.** Type [`/demo/store/new-product`](https://disputeless.onrender.com/demo/store/new-product) in the address bar. Click **Publish product** (4.5%), then **See details and fix**. Click all six **Insert** buttons, then **Recalculate** (2.1%). This is a standalone screen.
 
-> **Data integrity note:** All percentages, case costs, and projected reductions above are **outputs from the supplied demo models and assumptions**, not validated predictions or real-world performance claims. The integrated PayPal/AI service is described as the team's completed product; exact production API calls, stack, and sponsor tools must be verified against the integrated repository before submission.
+Public mode makes real sandbox reads. Send, Send offer, Add all, Refund, Looks good and Forward are **Simulated** (zero PayPal writes).
 
+- Numbers marked **Assumption** come from stated assumptions; items marked **Demo data** come from seed data. See the [honesty table](docs/submission/honesty-table.md).
+- Language: **EN | 한국어** at the top right of the seller dashboard and the desk switches screen text only (numbers, buyer messages and AI text stay the same). `/demo/store/new-product` uses the language remembered from the other screens, or add `?lang=ko` (or `?lang=en`) to its address.
+- AI answers for the demo cases are cached. Uncached AI calls on the public link have an hourly cap; when it is reached, the screen says so instead of calling the model.
+- We do not share the PayPal sandbox login, because a shared login could change the demo dispute cases for every other tester. To run DisputeLess against your own sandbox: create a free app at [developer.paypal.com](https://developer.paypal.com) (Sandbox → Apps & Credentials), put its credentials in a local `.env` file as `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`, copy `.env.example` to `.env` for the other names, and run `npm install && npm run build && npm start`.
+
+> **Data integrity note:** All percentages, case costs, and projected reductions above are outputs of assumed demo models, not measured results.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
