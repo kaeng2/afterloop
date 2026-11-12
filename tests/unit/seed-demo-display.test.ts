@@ -45,7 +45,7 @@ describe('T121 표시용 주문 번호', () => {
     expect(by.seoyeon).toMatchObject({ displayNo: '#1042', paypalRef: 'PP-R-GMS-10197661', seedDisputeId: 'D2', orderId: 'O01' });
     expect(by.mike).toMatchObject({ displayNo: '#1047', paypalRef: 'PP-R-FYT-10197651', seedDisputeId: 'D3', orderId: 'O08' });
     // 지호는 새 사건 — T119 뒤 연결. 지금은 연결 없음
-    expect(by.jiho).toMatchObject({ displayNo: '#1038', paypalRef: null, seedDisputeId: null, orderId: null });
+    expect(by.jiho).toMatchObject({ displayNo: '#1038', paypalRef: 'PP-R-ZOK-10200237', seedDisputeId: null, orderId: null });
   });
   it('PP-R 번호는 config/demo-links.json의 실제 번호와 같다', () => {
     const links = JSON.parse(readFileSync(path.join(ROOT, 'config/demo-links.json'), 'utf8')).links as {
