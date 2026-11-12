@@ -941,6 +941,7 @@ export function ReplyPanel({
         buyerShort={buyerShort}
         sentText={shownView.outgoing?.text ?? null}
         sentLocale={base.buyerLocale ?? null}
+        sentEdited={sentSnap !== null && anchor !== null && sentSnap.text !== anchor}
         scenarioInput={scenarioInput}
         outcome={sentOutcome}
         baseForecast={forecast}

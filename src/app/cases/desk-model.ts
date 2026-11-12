@@ -555,7 +555,8 @@ export function reactionView(forecast: ReplyForecast | null, angryTone: boolean 
     parts: [part('wait', forecast.pWait), part('refund', forecast.pRefund), part('chargeback', forecast.pChargeback)],
     cost: toDollarsRounded(forecast.expectedCostCents),
     moodKey: `case.mood.${forecast.moodBand}`,
-    nowMoodKey: angryTone === true ? 'case.mood.angry' : null,
+    // T116 F4-65: 시안 "now: angry" — 소문자 글은 config `case.moodNow.*`
+    nowMoodKey: angryTone === true ? 'case.moodNow.angry' : null,
     chargeback: toPercentRounded(forecast.pChargeback),
     chargebackHigh: riskTone(forecast.pChargeback) === 'high',
     moodBad: forecast.moodBand === 'angry',

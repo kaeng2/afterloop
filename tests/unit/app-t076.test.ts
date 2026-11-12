@@ -370,7 +370,7 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
     ]);
     expect(reaction?.cost).toBe(toDollarsRounded(FAKE_FORECAST.expectedCostCents));
     expect(reaction?.moodKey).toBe('case.mood.okay');
-    expect(reaction?.nowMoodKey).toBe('case.mood.angry');
+    expect(reaction?.nowMoodKey).toBe('case.moodNow.angry');
 
     const markup = html(
       createElement(ReplyPanel, {
@@ -393,7 +393,7 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
     expect(markup).toContain(t('case.reaction.cost', { amount: toDollarsRounded(3680) }));
     expect(markup).toContain(t('case.reaction.title', { name: 'Seo-yeon' }).replace(/'/g, '&#x27;'));
     expect(markup).toContain(`class="reaction-mood-value">${t('case.mood.okay')}<`);
-    expect(markup).toContain(t('case.reaction.moodNow', { mood: t('case.mood.angry') }));
+    expect(markup).toContain(t('case.reaction.moodNow', { mood: t('case.moodNow.angry') }));
     // 입력칸 모서리 "Chargeback 12%"
     expect(markup).toContain(`class="reply-editor-pill num">${t('case.choice.chargeback', { percent: '12%' })}`);
     // T090: 입력칸 모서리 알약 안 Assumption은 뺐다 (Assumption은 반응 막대 쪽 하나만)
@@ -759,10 +759,14 @@ describe('완료 기준 7·8: 화면 코드에 금액·확률 숫자·근거 없
   });
 
   it('"Refund backup"·"refund you in full"·근거 없는 성과(막은 분쟁·$312·14 min)·보낸 뒤 가상 진행 단계가 없다', () => {
+    // T116 F5-3: Send 뒤 바깥 칸의 aria 이름(`case.progress.zone` = "Case progress", 지시서 승인) 한 키만 뺀다.
+    // 보이는 제목·가상 단계 문구로 "Case progress"가 다시 들어오면 여전히 걸린다
+    const withoutZone = (table: Record<string, string>) =>
+      Object.fromEntries(Object.entries(table).filter(([key]) => key !== 'case.progress.zone'));
     const texts = [
       ...filesUnder(APP, ['.ts', '.tsx']).map((file) => strip(readFileSync(file, 'utf8'))),
-      JSON.stringify(copyTables.en),
-      JSON.stringify(copyTables.ko),
+      JSON.stringify(withoutZone(copyTables.en)),
+      JSON.stringify(withoutZone(copyTables.ko)),
     ].join('\n');
     expect(texts).not.toMatch(/refund backup|refund you in full|Disputes prevented|Money kept|First reply time|14 min|Case progress|전액 환불해 드릴게요|환불 약속/i);
     expect(texts).not.toMatch(/Expected delivery/i);
