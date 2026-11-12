@@ -2,7 +2,7 @@
  * 한 장 카드(T122c)에 넣을 값 모으기. **계산하지 않는다** — 엔진 결과(`Recommendation.all`의 기대 손실)와
  * 데이터(분쟁 글·시드)를 골라 표기만 바꾼다 (`toDollarsRounded`). 문구는 `config/copy.*.json`의 `card.*`.
  */
-import type { Evaluation, Recommendation } from '@/types';
+import type { ActionPlan, Evaluation, Recommendation } from '@/types';
 
 import { copyTables, currentLocale, t, type CopyParams, type Locale } from '../_shared/copy';
 import { toDollarsRounded } from '../_shared/money';
@@ -31,6 +31,27 @@ export function languageName(code: string | null): string | null {
   if (code === null) return null;
   const key = `card.langOf.${code}`;
   return copyTables.en[key] === undefined ? null : t(key);
+}
+
+/**
+ * 지호 카드 갈래 (T122c 범위 7). **데이터로만** 고른다:
+ * - 엔진 최선 수가 `repair`이고 계획이 send-message → `'repair'` (20:35 새 품질 사건)
+ * - 계획이 make-offer이고 금액이 있음 → `'offer'` (기존 색상 사례 15% $7.20 — 23:00 대체안)
+ * - 그 밖 → `null` (한 장 카드가 아니다)
+ */
+export function jihoBranch(
+  best: Evaluation['move'] | null,
+  plan: Pick<ActionPlan, 'apiMove' | 'amountCents'> | null,
+): 'repair' | 'offer' | null {
+  if (plan === null) return null;
+  if (best === 'repair' && plan.apiMove === 'send_message') return 'repair';
+  if (plan.apiMove === 'make_offer' && plan.amountCents !== null) return 'offer';
+  return null;
+}
+
+/** 갈래별 "On approval" 호출 이름 (실제 이름만). */
+export function approvalApiKey(branch: 'repair' | 'offer'): string {
+  return branch === 'repair' ? 'card.api.sendMessage' : 'card.api.makeOffer';
 }
 
 /** 엔진이 이 수에 낸 기대 손실 표기 ("$16"). 막혔거나 없으면 `null`. */

@@ -22,7 +22,15 @@ import { toDollarsCents } from '../_shared/money';
 import { toPercentRounded } from '../_shared/percent';
 import { decideFor, routineLine, type TodayRowView } from '../today/model';
 import { OfferWork } from '../today/offer-work';
-import { buyerMessage, languageName, langCode, lossOf, tPick } from '../today/one-card-data';
+import {
+  approvalApiKey,
+  buyerMessage,
+  jihoBranch,
+  languageName,
+  langCode,
+  lossOf,
+  tPick,
+} from '../today/one-card-data';
 import { actionSavingsDisplay } from '../today/savings-values';
 import { WorkDetail } from '../today/work-card';
 import { DeskSelectionProvider } from './view/desk-selection';
@@ -74,7 +82,8 @@ function jihoWork(
   view: CaseViewData,
 ) {
   const plan = reply.base.plan;
-  const best = rec.best?.move ?? null;
+  const branch = jihoBranch(rec.best?.move ?? null, plan);
+  if (branch === null || plan === null) return null;
   const board = reply.base.board ?? null;
   const subtype = board?.cause?.subtype ?? null;
   const code = langCode(reply.base.buyerLocale);
@@ -94,7 +103,7 @@ function jihoWork(
     refund,
   };
 
-  if (best === 'repair' && plan !== null && plan.apiMove === 'send_message') {
+  if (branch === 'repair') {
     // 시드(Demo data): 반품 기간·구매 뒤 주 수 (T121 `jihoPurchase`)
     const days = seedDemoDisplay.jihoPurchase.returnWindowDays;
     const weeks = seedDemoDisplay.jihoPurchase.weeksAgo;
@@ -119,14 +128,15 @@ function jihoWork(
           keep={keep}
           steps={steps}
           message={message}
-          api={t('card.api.sendMessage')}
+          api={t(approvalApiKey(branch))}
           savings={savings}
         />
       </WorkDetail>
     );
   }
 
-  if (plan === null || plan.apiMove !== 'make_offer' || plan.amountCents === null) return null;
+  // branch === 'offer' (기존 색상 사례)
+  if (plan.apiMove !== 'make_offer' || plan.amountCents === null) return null;
   const amount = toDollarsCents(plan.amountCents);
   const keeps = plan.refundType !== 'REFUND_WITH_RETURN';
   const percent = toPercentRounded(reply.offerRate);
@@ -152,7 +162,7 @@ function jihoWork(
         keep={keep}
         steps={steps}
         message={message}
-        api={t('card.api.makeOffer')}
+        api={t(approvalApiKey(branch))}
         savings={savings}
       />
     </WorkDetail>
