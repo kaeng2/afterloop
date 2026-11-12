@@ -178,3 +178,6 @@
 | T122e | v6 표시 데이터 연결 (#1042 등, 기록 8줄, 예방 줄) | ui | 완료 | v2.16 | T121 | — | opus, `lane/ui`. `tasks/T122e.md` | 사람 결정 20:35 ③ |
 | T122f | v6 후속: repair 초안 연결 + Lena·Yuki 카드 연결 | ui | 완료 | v2.16 | T122c | — | opus, `lane/ui-scenes`. `tasks/T122f.md` | T122c 요청 |
 | T122g | 서버 전송 repair 허용 | ui | 완료 | v2.16 | T122f | — | sonnet, `lane/ui-scenes`. `tasks/T122g.md` | T122f 요청 |
+| T124a | v6 자동 비교 2회차: 위쪽·칩·목록·이번 주 | ui | 진행 | v2.16 | — | — | opus, `lane/ui`. `tasks/T124a.md` | 사람 결정 20:45 |
+| T124b | v6 자동 비교 2회차: All products·AG Grid | ui | 진행 | v2.16 | — | — | opus, `lane/ui-desk`. `tasks/T124b.md` | 사람 결정 20:45 |
+| T124c | v6 자동 비교 2회차: 사건 상세·카드 | ui | 진행 | v2.16 | — | — | opus, `lane/ui-scenes`. `tasks/T124c.md` | 사람 결정 20:45 |
