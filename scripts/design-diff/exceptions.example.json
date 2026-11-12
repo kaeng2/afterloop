@@ -1,0 +1,24 @@
+{
+  "exceptions": [
+    {
+      "id": "EX-01",
+      "reason": "예: 앱은 실제 데이터라 숫자 글자가 다르다 (DECISIONS 줄 번호를 적는다)",
+      "match": { "kind": ["missing", "extra"], "text": "/^\\$\\d+/" }
+    },
+    {
+      "id": "EX-02",
+      "reason": "예: Assumption/Demo data 표시는 앱에만 있다 (DECISIONS 11/11 22:55)",
+      "match": { "kind": "extra", "text": "Demo data" }
+    },
+    {
+      "id": "EX-03",
+      "reason": "예: AG Grid 표는 라이브러리 기본 스타일",
+      "match": { "kind": "style", "selector": ".ag-root-wrapper", "prop": ["font-family", "line-height"] }
+    },
+    {
+      "id": "EX-04",
+      "reason": "예: 이 상태는 표가 길어 픽셀이 0.5%를 넘는다 — 원인 칸",
+      "match": { "kind": "pixel", "state": "all-products*", "width": 1440 }
+    }
+  ]
+}
