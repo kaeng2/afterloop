@@ -59,6 +59,12 @@ DisputeLess is a post-purchase copilot for small sellers on PayPal. The demo run
 - A clear line between what AI writes and what code decides, enforced by checks, not by trust.
 - Every PayPal call listed in a drawer, so the real parts can be seen.
 
+## Testing instructions
+
+- **Live demo, no login needed:** https://disputeless.onrender.com — open `/intro` → click **Respond →** to reach the desk `/`, then `/listing` and `/products` by address. Full steps: `docs/submission/testing.md` in the repo. [확인 필요: 저장소 공개 뒤 GitHub 링크로]
+- Public mode: reads are real PayPal sandbox calls; send, offer and add-tracking are **Simulated** (zero PayPal writes). AI answers for the demo cases are cached; uncached AI calls have an hourly cap.
+- We don't share the sandbox login (a shared login could change the demo disputes). To use your own sandbox, create a free app at developer.paypal.com and set `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` in `.env`.
+
 ## What's next for DisputeLess
 
 - A recurrence report: group closed disputes by cause, product and country, and feed them into next month's check.
