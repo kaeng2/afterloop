@@ -163,3 +163,4 @@
 | T115 | /intro 시안 차이 A1–7 + 주소 이름 /demo/… (옛 주소 308) + ?lang 리다이렉트 localhost 버그 | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T115.md` | 사람 결정 11:20, 13:00 전 |
 | T116 | Desk 차이 목록 남은 11개 (재확인 결과) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T116.md` | 사람 결정 11:20 공통 |
 | T117 | 버그: 이름 없는 고친 글 Translate & check → ⟦BUYER_NAME_1⟧ 막힘 | ui | 완료 (재배포 대기) | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T117.md` | 3차 리뷰 ③, 녹화 뒤 재배포 |
+| T118 | 3차 리뷰 작은 것 3개 (알약 가림, 마이크 Demo data 배지, 빈 Respond now 머리) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T118.md` | 사람 "녹화는 신경쓰지 말고 진행" |
