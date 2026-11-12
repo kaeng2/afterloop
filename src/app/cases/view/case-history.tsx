@@ -56,7 +56,8 @@ export function CaseHistoryCard({ history }: { history: HistoryView }) {
           <li key={index} className="history-row">
             <span className="history-date num">{row.date}</span>
             <span className={`history-dot history-dot-${row.tone}`} aria-hidden="true" />
-            <span className="history-text">
+            {/* T125a: 시안 L294 `<div style="display:flex…"><span>{{h.t}}</span>…</div>` — 글 칸은 div */}
+            <div className="history-text">
               <span>{row.text}</span>
               {/* T090 시안: 빨간 "Before DisputeLess · <표시>" 알약 (표시는 실제 기록의 판정만) */}
               {row.flagKeys.map((key) => (
@@ -71,7 +72,7 @@ export function CaseHistoryCard({ history }: { history: HistoryView }) {
                 </span>
               ))}
               {row.demo ? <Badge kind="demo" /> : null}
-            </span>
+            </div>
           </li>
         ))}
       </ol>

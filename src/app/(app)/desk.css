@@ -493,7 +493,7 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 /* PP-R 보조 줄(DATA-01)은 시안에 자리가 없다 — 구매자 줄과 같은 보조 글 크기로 (줄 높이 차이를 줄인다) */
 .dk .today-item-ref{font-size:12px;line-height:18px;color:#6C7378}
 /* 시안 `<b>`는 bold(700). 제목 h2 안 b는 굵기를 그대로 받는다 (bolder → 900 방지) */
-.dk .today-group-title b,.dk .weekly-title b,.dk .desk-card-title b{font-weight:inherit}
+.dk .today-group-title b,.dk .weekly-title b,.dk .desk-card-title b,.dk .desk-step-title b{font-weight:inherit}
 /* v6 L341 "Best" = `.ai` 알약(inline-flex·gap 4px·r1000) + padding 2px 8px */
 .dk .choice-best-tag{display:inline-flex;align-items:center;gap:4px;border-radius:1000px}
 

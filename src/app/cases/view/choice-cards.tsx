@@ -26,7 +26,9 @@ export function ChoiceCards({ choices }: { choices: ChoiceView[] }) {
       </div>
       <div className="desk-step-body stpc">
         <div className="desk-step-head">
-          <h3 className="desk-step-title">{t('case.choice.title')}</h3>
+          <h3 className="desk-step-title">
+            <b>{t('case.choice.title')}</b>
+          </h3>
           <span className="desk-step-sub">{t('case.choice.sub', { count: choices.length })}</span>
           <Badge kind="assumption" />
         </div>
