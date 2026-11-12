@@ -624,11 +624,10 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     now: new Date('2026-11-10T17:00:00.000Z'),
   });
 
-  it('5줄 (T076): Reply needed 2 (서연 · 지호) + Prevent 2 (추적 · 가디건) + Routine 1', () => {
+  it('5줄 (T076 → T122b 시안 v6): Reply needed 3 (서연 · 지호 · Mike) + Prevent 2 (추적 · 가디건). Questions는 질문 항목이 없어 안 보인다', () => {
     expect(view.groups.map((g) => [g.key, g.items.length])).toEqual([
-      ['needsYou', 2],
+      ['needsYou', 3],
       ['prevent', 2],
-      ['routine', 1],
     ]);
     expect(view.count).toBe(5);
   });
@@ -640,7 +639,7 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
 
   it('Routine 항목은 위험 배지 대신 회색 "Skipped" (엔진 판정에서)', () => {
     // T067: 회색 칩 → 회색 상태 알약 + 회색 점 (`status`·`dot`)
-    const mike = view.groups[2].items[0];
+    const mike = view.groups[0].items[2];
     expect(mike.status).toEqual({ key: 'today.skipped', tone: 'neutral' });
     expect(mike.dot).toBe('neutral');
     const markup = html(createElement(TodayList, { view, selectedId: null, paypalNotice: null }));
@@ -648,7 +647,8 @@ describe('Today 목록: 5줄 · Routine은 Skipped · Autopilot 숨김', () => {
     // T076: 알약은 범주, 상태 "Skipped"는 화면 읽기 글자로
     expect(row.slice(0, row.indexOf('</li>'))).toMatch(/<span class="today-sr-only">[^<]*· Skipped<\/span>/);
     expect(row.slice(0, row.indexOf('</li>'))).not.toContain('risk-low');
-    for (const item of view.groups[0].items) expect(item.status.key).not.toBe('today.skipped');
+    // T122b: Mike(맨 뒤)를 뺀 Reply needed 항목은 Skipped가 아니다
+    for (const item of view.groups[0].items.slice(0, -1)) expect(item.status.key).not.toBe('today.skipped');
   });
 
   it('Mike 상태 문장: "3rd \'not received\' claim in 90 days with a delivery record — <제품 이름> won\'t act on this."', () => {

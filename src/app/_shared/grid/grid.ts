@@ -99,6 +99,31 @@ export const DESK_GRID_ROW_HEIGHT = 52;
 export const DESK_GRID_HEADER_HEIGHT = 38;
 
 /**
+ * 열 폭(px) — 시안 그대로. Products `pCols` = minmax(170px,2fr) 104px 112px 84px 92px minmax(132px,1.2fr) minmax(160px,1.5fr),
+ * Cases `cCols` = 132px minmax(150px,1.5fr) minmax(170px,1.5fr) 128px minmax(120px,1.1fr) 120px.
+ * `fr`는 AG Grid `flex`, `minmax(Npx, …)`는 `minWidth`, 고정 폭은 `width`.
+ */
+export const DESK_OV_COLS = {
+  products: {
+    name: { flex: 2, minWidth: 170 },
+    open: { width: 104 },
+    reply: { width: 112 },
+    prevent: { width: 84 },
+    questions: { width: 92 },
+    risk: { flex: 1.2, minWidth: 132 },
+    top: { flex: 1.5, minWidth: 160 },
+  },
+  cases: {
+    risk: { width: 132 },
+    case: { flex: 1.5, minWidth: 150 },
+    type: { flex: 1.5, minWidth: 170 },
+    status: { width: 128 },
+    buyer: { flex: 1.1, minWidth: 120 },
+    due: { width: 120 },
+  },
+} as const satisfies Record<string, Record<string, ColDef>>;
+
+/**
  * 정렬할 수 있는 열 (T122b 시안 `sortHead`): 숫자·위험 열은 처음 누르면 높은 순(↓), 글자 열은 낮은 순(↑).
  * 다시 누르면 반대로 — "정렬 없음"으로 돌아가지 않는다 (시안 `d: -st.d`).
  */

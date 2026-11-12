@@ -246,6 +246,9 @@ describe('T081: 문구 파일', () => {
       'case.progress.refundBuyer.english', // T104: 그 영어 번역 줄
       'case.progress.angryBuyer.original', // T104: cb 분기 손님 답장 원문 (한국어 그대로)
       'case.progress.angryBuyer.english', // T104: 그 영어 번역 줄
+      'today.ov.agTag', // T122b: "AG Grid" 꼬리표 (제품 이름, 시안 DI.ko도 'AG Grid')
+      'today.ov.none', // T122b: 값 없음 기호 "—" (시안 ovNone)
+      'today.risk.chip', // T122b: "{{percent}} · {{level}}" 꼴 (단계 글자는 언어별 키)
     ]);
     const same = copyKeys(copyTables.en).filter((key) => copyTables.en[key] === copyTables.ko[key]);
     expect(same.filter((key) => !allowed.has(key))).toEqual([]);

@@ -128,7 +128,7 @@ export function DetailEmpty({ names }: { names: Readonly<Record<string, string>>
           <path
             d="M3 13l2.6-7.2A1.2 1.2 0 0 1 6.7 5h10.6a1.2 1.2 0 0 1 1.1.8L21 13v5.8a1.2 1.2 0 0 1-1.2 1.2H4.2A1.2 1.2 0 0 1 3 18.8z M3 13h5l1.2 2.6h5.6L16 13h5"
             fill="none"
-            stroke="#6C7378"
+            className="today-empty-stroke"
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"

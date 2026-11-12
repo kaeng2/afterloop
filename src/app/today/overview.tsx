@@ -28,6 +28,7 @@ import type {
 } from 'ag-grid-community';
 
 import {
+  DESK_OV_COLS,
   DESK_GRID_HEADER_HEIGHT,
   DESK_GRID_ROW_HEIGHT,
   GRID_MODULES,
@@ -160,30 +161,30 @@ const header = (numeric: boolean) => ({
 
 // ───────────────────────────── 열 ─────────────────────────────
 
-/** 시안 `pCols` = minmax(170px,2fr) 104px 112px 84px 92px minmax(132px,1.2fr) minmax(160px,1.5fr) */
+/** 시안 `pCols` (폭은 `DESK_OV_COLS.products`) */
 function productColumns(t: T): ColDef<OvProductRow>[] {
-  const num = (colId: keyof OvProductRow, label: string, width: number, extra: ColDef<OvProductRow> = {}): ColDef<OvProductRow> => ({
+  const W = DESK_OV_COLS.products;
+  const num = (colId: 'open' | 'reply' | 'prevent' | 'questions', label: string, extra: ColDef<OvProductRow> = {}): ColDef<OvProductRow> => ({
     colId,
     field: colId,
     headerName: label,
-    width,
+    ...W[colId],
     type: 'rightAligned',
     cellClass: 'ov-cell ov-num',
     ...header(true),
     ...extra,
   });
   return [
-    { colId: 'name', field: 'name', headerName: t('today.ov.col.product'), flex: 2, minWidth: 170, cellClass: 'ov-cell', cellRenderer: ProductCell, ...header(false) },
-    num('open', t('today.ov.col.open'), 104, { cellClass: 'ov-cell ov-num ov-bold' }),
-    num('reply', t('today.ov.kReply'), 112, { cellRenderer: ReplyCountCell }),
-    num('prevent', t('today.ov.kPrevent'), 84),
-    num('questions', t('today.ov.kQuestions'), 92),
+    { colId: 'name', field: 'name', headerName: t('today.ov.col.product'), ...W.name, cellClass: 'ov-cell', cellRenderer: ProductCell, ...header(false) },
+    num('open', t('today.ov.col.open'), { cellClass: 'ov-cell ov-num ov-bold' }),
+    num('reply', t('today.ov.kReply'), { cellRenderer: ReplyCountCell }),
+    num('prevent', t('today.ov.kPrevent')),
+    num('questions', t('today.ov.kQuestions')),
     {
       colId: 'risk',
       field: 'risk',
       headerName: t('today.ov.col.risk'),
-      flex: 1.2,
-      minWidth: 132,
+      ...W.risk,
       cellClass: 'ov-cell',
       cellRenderer: (params: ICellRendererParams<OvProductRow, number | null>) => <RiskCell value={params.value} />,
       comparator: compareRisk,
@@ -194,8 +195,7 @@ function productColumns(t: T): ColDef<OvProductRow>[] {
       colId: 'top',
       headerName: t('today.ov.col.top'),
       valueGetter: (params) => params.data?.top?.head ?? '~',
-      flex: 1.5,
-      minWidth: 160,
+      ...W.top,
       cellClass: 'ov-cell',
       cellRenderer: TopCell,
       ...header(false),
@@ -203,38 +203,39 @@ function productColumns(t: T): ColDef<OvProductRow>[] {
   ];
 }
 
-/** 시안 `cCols` = 132px minmax(150px,1.5fr) minmax(170px,1.5fr) 128px minmax(120px,1.1fr) 120px */
+/** 시안 `cCols` (폭은 `DESK_OV_COLS.cases`) */
 function caseColumns(t: T): ColDef<OvCaseRow>[] {
+  const W = DESK_OV_COLS.cases;
   return [
     {
       colId: 'risk',
       field: 'risk',
       headerName: t('today.ov.col.risk'),
-      width: 132,
+      ...W.risk,
       cellClass: 'ov-cell',
       cellRenderer: (params: ICellRendererParams<OvCaseRow, number | null>) => <RiskCell value={params.value} />,
       comparator: compareRisk,
       initialSort: 'desc',
       ...header(true),
     },
-    { colId: 'case', field: 'head', headerName: t('today.ov.col.case'), flex: 1.5, minWidth: 150, cellClass: 'ov-cell', cellRenderer: CaseCell, ...header(false) },
-    { colId: 'type', field: 'category', headerName: t('today.ov.col.type'), flex: 1.5, minWidth: 170, cellClass: 'ov-cell', cellRenderer: TypeCell, ...header(false) },
+    { colId: 'case', field: 'head', headerName: t('today.ov.col.case'), ...W.case, cellClass: 'ov-cell', cellRenderer: CaseCell, ...header(false) },
+    { colId: 'type', field: 'category', headerName: t('today.ov.col.type'), ...W.type, cellClass: 'ov-cell', cellRenderer: TypeCell, ...header(false) },
     {
       colId: 'status',
       headerName: t('today.ov.col.status'),
       valueGetter: (params) => (params.data === undefined ? 0 : SECTION_ORDER[params.data.section]),
-      width: 128,
+      ...W.status,
       cellClass: 'ov-cell',
       cellRenderer: StatusCell,
       ...header(false),
     },
-    { colId: 'buyer', field: 'who', headerName: t('today.ov.col.buyer'), flex: 1.1, minWidth: 120, cellClass: 'ov-cell ov-plain', ...header(false) },
+    { colId: 'buyer', field: 'who', headerName: t('today.ov.col.buyer'), ...W.buyer, cellClass: 'ov-cell ov-plain', ...header(false) },
     {
       colId: 'due',
       headerName: t('today.ov.col.due'),
       valueGetter: (params) => params.data?.dueMs ?? Number.POSITIVE_INFINITY,
       valueFormatter: (params) => params.data?.due ?? t('today.ov.none'),
-      width: 120,
+      ...W.due,
       cellClass: 'ov-cell ov-plain',
       ...header(false),
     },
@@ -416,7 +417,7 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
         </div>
         <span className="ag-tag">
           <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M3 4h18v16H3zM3 10h18M3 15h18M9 4v16M15 4v16" fill="none" stroke="#3F4144" strokeWidth="1.8" />
+            <path d="M3 4h18v16H3zM3 10h18M3 15h18M9 4v16M15 4v16" fill="none" className="ag-tag-stroke" strokeWidth="1.8" />
           </svg>
           {t('today.ov.agTag')}
         </span>

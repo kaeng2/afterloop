@@ -364,3 +364,101 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 
 /* L251 선택지 카드 숫자 줄: line-height 물려받음(1.5). 앱 .choice-numbers 1.35 → 카드가 2px 낮았다 */
 .dk .choice-numbers{line-height:1.5}
+
+/* ── T122b: 시안 v6 목록 위험 % 칩 · All products 전체 현황 (AG Grid) · 빈 상품 안내 (이 절만 T122b) ── */
+/* v6 <style> L51-70 그대로 (.ov-k · .ag · .ag-h · .ag-hc · .ag-r · .ag-c · .ag-f · .ag-tag). .ag-h/.ag-r/.ag-c는 AG Grid 안쪽 규칙(아래)이 같은 값을 맡는다 */
+.dk .ov-k{flex:1 1 0;min-width:150px;border-radius:16px;border:1px solid #E4E6E9;background:#FFFFFF;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.dk .ag{border:1px solid #DDE2EB;border-radius:12px;overflow:hidden;background:#FFFFFF;font-size:14px}
+.dk .ag-h{display:grid;background:#F8F9FB;border-bottom:1px solid #DDE2EB}
+.dk .ag-hc{display:flex;align-items:center;gap:6px;padding:10px 14px;font:inherit;font-size:12px;font-weight:700;color:#3F4144;background:transparent;border:0;border-right:1px solid #EBEEF2;cursor:pointer;white-space:nowrap;text-align:left;min-width:0}
+.dk .ag-hc:last-child{border-right:0}
+.dk .ag-hc:hover{background:#EEF2F7}
+.dk .ag-hc.on{color:#002991}
+.dk .ag-hc.num{justify-content:flex-end}
+.dk .ag-ind{font-size:11px;color:#002991;width:10px}
+.dk .ag-r{display:grid;align-items:center;width:100%;min-height:52px;padding:0;margin:0;font:inherit;color:inherit;text-align:left;background:#FFFFFF;border:0;border-bottom:1px solid #EEF0F3;cursor:pointer}
+.dk .ag-r:last-child{border-bottom:0}
+.dk .ag-r:hover{background:#F3F7FF}
+.dk .ag-r.hi{background:#FFF7F6}
+.dk .ag-r.hi:hover{background:#FDEFED}
+.dk .ag-r.dn{color:#9AA0A6}
+.dk .ag-c{padding:8px 14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.dk .ag-c.num{justify-content:flex-end;font-variant-numeric:tabular-nums}
+.dk .ag-f{display:flex;justify-content:space-between;gap:12px;padding:8px 14px;font-size:12px;color:#6C7378;background:#F8F9FB;border-top:1px solid #DDE2EB}
+.dk .ag-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:1000px;background:#F1F3F6;color:#3F4144;font-size:12px;font-weight:700;white-space:nowrap}
+
+/* L148 목록 셋째 줄: 구매자(줄어든다) + 오른쪽 위험 % 칩 (시안 mkItem.riskSt · lvl 색) */
+.dk .today-item-subrow{display:flex;align-items:center;gap:8px;min-width:0}
+.dk .today-item-subrow .today-item-sub{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dk .today-risk{flex-shrink:0;align-self:center;padding:2px 8px;border-radius:1000px;font-size:12px;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dk .today-risk-high{background:#FBE7E4;color:#9E2414}
+.dk .today-risk-med{background:#E3F3FF;color:#002991}
+.dk .today-risk-low{background:#ECEEF0;color:#3F4144}
+.dk .it.done .today-risk{display:none}
+
+/* L180-228 전체 현황 */
+.dk .today-overview{display:flex;flex-direction:column;gap:16px}
+.dk .today-overview[hidden]{display:none}
+.dk .ov-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dk .ov-titles{display:flex;flex-direction:column;gap:2px}
+.dk .ov-title{margin:0;font-size:24px;font-weight:900;letter-spacing:-0.4px}
+.dk .ov-sub{font-size:14px;color:#3F4144}
+.dk .ov-kpis{display:flex;gap:10px;flex-wrap:wrap}
+.dk .ov-k-label{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;color:#0B0F14;line-height:1.3}
+.dk .ov-k-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dk .ov-k-dot-open{background:#0B0F14}.dk .ov-k-dot-reply{background:#C4321F}.dk .ov-k-dot-prevent{background:#002991}.dk .ov-k-dot-questions{background:#9AA0A6}.dk .ov-k-dot-avg{background:#0070E0}
+.dk .ov-k-val{font-size:26px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;font-variant-numeric:tabular-nums;color:#0B0F14}
+.dk .ov-k-val-big{color:#002991}
+.dk .ov-k-sub{font-size:13px;color:#6C7378;line-height:1.35}
+.dk .ov-block{display:flex;flex-direction:column;gap:8px}
+.dk .ov-block-head{display:flex;align-items:baseline;gap:8px}
+.dk .ov-block-title{font-size:16px}
+.dk .ov-block-hint{font-size:12px;color:#6C7378}
+
+/* AG Grid 안쪽을 시안 .ag-h · .ag-hc · .ag-r · .ag-c 값으로 (색은 grid.ts deskGridTheme이 이 변수를 읽는다) */
+.dk .ov-grid{--dk-ag-accent:#002991;--dk-ag-bg:#FFFFFF;--dk-ag-fg:#000000;--dk-ag-muted:#6C7378;--dk-ag-border:#DDE2EB;--dk-ag-head-bg:#F8F9FB;--dk-ag-head-fg:#3F4144;--dk-ag-head-hover:#EEF2F7;--dk-ag-row-border:#EEF0F3;--dk-ag-hover:#F3F7FF}
+.dk .ov-grid .ag-header-cell{padding:0}
+.dk .ov-grid .ag-header-cell-comp-wrapper{width:100%;height:100%}
+.dk .ov-grid .ag-hc{width:100%;height:100%}
+.dk .ov-grid .ag-header-cell:last-child .ag-hc{border-right:0}
+.dk .ov-grid .ag-row{cursor:pointer}
+.dk .ov-grid .ag-row-last{border-bottom:0}
+.dk .ov-grid .ov-row-hi{background:#FFF7F6;--ag-row-hover-color:#FDEFED}
+.dk .ov-grid .ov-row-dn{color:#9AA0A6}
+.dk .ov-grid .ov-row-on{background:#F3F7FF;box-shadow:inset 3px 0 0 #0070E0}
+.dk .ov-grid .ov-cell{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dk .ov-grid .ov-num{justify-content:flex-end;font-variant-numeric:tabular-nums}
+.dk .ov-grid .ov-bold{font-weight:700}
+.dk .ov-grid .ov-plain{font-size:13px;color:#3F4144}
+.dk .ov-grid .ov-row-dn .ov-plain{color:inherit}
+.dk .ov-prod{display:flex;align-items:center;gap:8px;min-width:0}
+.dk .ov-prod .ptile{width:32px;height:32px;flex-shrink:0}
+.dk .ov-prod .ptile .product-icon{width:20px;height:20px}
+.dk .ov-two{display:flex;flex-direction:column;align-items:flex-start;gap:0;min-width:0;line-height:1.3}
+.dk .ov-two-main{font-size:14px;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dk .ov-top-main{font-size:13px}
+.dk .ov-case-main{font-size:14px;font-variant-numeric:tabular-nums}
+.dk .ov-two-sub{font-size:12px;color:#6C7378;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dk .ov-reply-pill{display:inline-flex;min-width:24px;justify-content:center;padding:1px 8px;border-radius:1000px;background:#FBE7E4;color:#9E2414;font-weight:900}
+.dk .ov-zero{color:#9AA0A6}
+.dk .ov-bar{display:inline-block;position:relative;width:56px;height:6px;border-radius:3px;background:#E9ECF0;flex-shrink:0;overflow:hidden}
+.dk .ov-bar-fill{position:absolute;left:0;top:0;bottom:0;min-width:2%;border-radius:3px}
+.dk .ov-bar-fill.ov-tone-high{background:#C4321F}.dk .ov-bar-fill.ov-tone-med{background:#0070E0}.dk .ov-bar-fill.ov-tone-low{background:#9AA0A6}
+.dk .ov-risk-txt{font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;color:#0B0F14}
+.dk .ov-risk-high{color:#C4321F}
+.dk .ov-risk-none{color:#9AA0A6}
+.dk .ov-type{background:#ECEEF0;color:#3F4144}
+.dk .ov-status{display:inline-flex;padding:2px 9px;border-radius:1000px;font-size:12px;font-weight:700;white-space:nowrap}
+.dk .ov-status-needsYou{background:#FBE7E4;color:#9E2414}.dk .ov-status-prevent{background:#E3F3FF;color:#002991}.dk .ov-status-routine{background:#ECEEF0;color:#3F4144}.dk .ov-status-done{background:#F1F3F6;color:#9AA0A6}
+.dk .ov-grid-fallback{list-style:none;margin:0;padding:0}
+.dk .ov-fallback-row{display:flex;align-items:center;width:100%;min-height:52px;padding:8px 14px;font:inherit;color:inherit;text-align:left;background:#FFFFFF;border:0;border-bottom:1px solid #EEF0F3;cursor:pointer}
+
+/* L231 "← All products overview" · L234-240 빈 상품 안내 */
+.dk .today-back-all{align-self:flex-start}
+.dk .today-empty-product{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:460px;padding:48px 24px;border:1px dashed #CFD3D8;border-radius:24px;background:#F6F7F9;text-align:center}
+.dk .today-empty-icon{width:72px;height:72px;border-radius:24px;background:#FFFFFF;border:1px solid #E4E6E9;display:inline-flex;align-items:center;justify-content:center}
+.dk .today-empty-title{margin:0;font-size:22px;font-weight:900;letter-spacing:-0.3px;color:#0B0F14}
+.dk .today-empty-sub{margin:0;max-width:420px;font-size:15px;color:#3F4144}
+/* SVG 선 색 (시안 L184 stroke #3F4144 · L236 stroke #6C7378) */
+.dk .ag-tag-stroke{stroke:#3F4144}
+.dk .today-empty-stroke{stroke:#6C7378}
