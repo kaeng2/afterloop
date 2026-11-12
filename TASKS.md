@@ -165,10 +165,10 @@
 | T117 | 버그: 이름 없는 고친 글 Translate & check → ⟦BUYER_NAME_1⟧ 막힘 | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T117.md` | 3차 리뷰 ③, 녹화 뒤 재배포 |
 | T118 | 3차 리뷰 작은 것 3개 (알약 가림, 마이크 Demo data 배지, 빈 Respond now 머리) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T118.md` | 사람 "녹화는 신경쓰지 말고 진행" |
 | T119 | 지호 품질 사례 새 샌드박스 주문 + 승인 링크 | paypal | 완료 (승인 대기) | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T119.md` | 사람 결정 20:35·20:40·20:45 |
-| T120 | 엔진 repair (B3 무료 수선), AC35 | engine | 진행 | v2.16 | — | AC35 | 모델 `claude-opus-5-5`. `tasks/T120.md` | 사람 결정 20:35·20:40·20:45 |
-| T120b | AI 초안 repair | ai | 진행 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T120b.md` | 사람 결정 20:35·20:40·20:45 |
+| T120 | 엔진 repair (B3 무료 수선), AC35 | engine | 완료 | v2.16 | — | AC35 | 모델 `claude-opus-5-5`. `tasks/T120.md` | 사람 결정 20:35·20:40·20:45 |
+| T120b | AI 초안 repair | ai | 완료 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T120b.md` | 사람 결정 20:35·20:40·20:45 |
 | T120c | 화면 컴파일 맞춤 repair | ui | 완료 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T120c.md` | 사람 결정 20:35·20:40·20:45 |
-| T121 | 시드 시안 v6 데이터 | data | 진행 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T121.md` | 사람 결정 20:35·20:40·20:45 |
+| T121 | 시드 시안 v6 데이터 | data | 완료 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T121.md` | 사람 결정 20:35·20:40·20:45 |
 | T123 | 자동 디자인 비교 도구 | ops | 진행 | v2.16 | — | AC35 | 모델 `claude-opus-5-5`. `tasks/T123.md` | 사람 결정 20:35·20:40·20:45 |
 | T122a | v6 처음 상태·AI Respond now 스위치·답장 칸 문구 | ui | 대기 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T122a.md` | 사람 결정 20:40 |
 | T122b | v6 목록 위험 칩·묶음·All products(AG Grid 2개)·상품 칩 | ui | 대기 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui-desk`. `tasks/T122b.md` | 사람 결정 20:40 |
