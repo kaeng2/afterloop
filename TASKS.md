@@ -173,5 +173,6 @@
 | T122a | v6 처음 상태·AI Respond now 스위치·답장 칸 문구 | ui | 완료 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T122a.md` | 사람 결정 20:40 |
 | T122b | v6 목록 위험 칩·묶음·All products(AG Grid 2개)·상품 칩 | ui | 완료 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui-desk`. `tasks/T122b.md` | 사람 결정 20:40 |
 | T122c | v6 지호·Lena·Yuki·추적 한 장 카드 | ui | 대기 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T122c.md` | 사람 결정 20:40 |
-| T120d | 엔진 meanRisk (평균 위험) | engine | 진행 | v2.16 | — | — | sonnet. `tasks/T120d.md` | T122b 요청 |
+| T120d | 엔진 meanRisk (평균 위험) | engine | 완료 | v2.16 | — | — | sonnet. `tasks/T120d.md` | T122b 요청 |
 | T122d | v6 목록 후속 (Questions·데모 연결, riskLevel, 평균 카드) | ui | 진행 | v2.16 | T120d | — | opus, `lane/ui-desk`. `tasks/T122d.md` | T122b 요청 |
+| T122e | v6 표시 데이터 연결 (#1042 등, 기록 8줄, 예방 줄) | ui | 진행 | v2.16 | T121 | — | opus, `lane/ui`. `tasks/T122e.md` | 사람 결정 20:35 ③ |
