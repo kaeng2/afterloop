@@ -183,6 +183,10 @@ export function OfferWork({
       approval={{ label: t('card.apiT'), api }}
       action={
         <>
+          {/* 전송 모드 표시 (Simulated / Live) — 서버가 정한 값 그대로. T124c (v6 L476): 버튼이 줄 오른쪽 끝이게 버튼 왼쪽 */}
+          <span className={view.modeKey === REPLY_KEYS.modeLive ? 'oc-mode offer-work-mode offer-work-mode-live' : 'oc-mode offer-work-mode'}>
+            {t(view.modeKey)}
+          </span>
           <button
             type="button"
             className="btn b-black"
@@ -192,10 +196,6 @@ export function OfferWork({
           >
             {done ? t('card.sent') : sendState === 'sending' ? t('case.send.sending') : t('card.send')}
           </button>
-          {/* 전송 모드 표시 (Simulated / Live) — 서버가 정한 값 그대로 */}
-          <span className={view.modeKey === REPLY_KEYS.modeLive ? 'oc-mode offer-work-mode offer-work-mode-live' : 'oc-mode offer-work-mode'}>
-            {t(view.modeKey)}
-          </span>
         </>
       }
     >

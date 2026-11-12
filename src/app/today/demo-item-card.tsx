@@ -113,10 +113,11 @@ export function DemoItemCard({
         approval={{ label: t('card.apiT'), api }}
         action={
           <>
+            {/* T124c (v6 L476): 버튼은 줄 오른쪽 끝 — Simulated 글자(예외 LAB-03)는 버튼 왼쪽 */}
+            {key === 'lena' ? <span className="oc-mode">{t('card.simulatedNoMoney')}</span> : null}
             <button type="button" className="btn b-black" disabled={done} onClick={run}>
               {done ? doneLabel : ko ? item.actionKo : item.action}
             </button>
-            {key === 'lena' ? <span className="oc-mode">{t('card.simulatedNoMoney')}</span> : null}
           </>
         }
       />
