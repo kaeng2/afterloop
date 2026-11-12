@@ -413,7 +413,7 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
     }
     // /listing: 시안 scene3 값 (남보라 없음 + 토큰과 같은 값)
     // T109 (사람 결정 11/12 09:25): 변수 대신 시안 <style> 값 그대로 (`.ls ` 범위만 붙임)
-    const ls = readFileSync(path.join(APP, 'listing/listing.css'), 'utf8');
+    const ls = readFileSync(path.join(APP, 'demo/store/new-product/listing.css'), 'utf8');
     for (const decl of [
       '.ls .b-ai{background:linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF);color:#FFFFFF}',
       '@keyframes flashA{0%{background:#E3F3FF}100%{background:#FFFFFF}}',

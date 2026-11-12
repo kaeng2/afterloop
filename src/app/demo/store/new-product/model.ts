@@ -18,11 +18,11 @@ import type {
   ListingFixKey,
 } from '@/types';
 
-import { toDollarsRounded } from '../_shared/money';
+import { toDollarsRounded } from '../../../_shared/money';
 import { count1, fill, pct1, pts1, share0, shortDay } from './format';
 
-import listingEn from '../../../config/listing.en.json';
-import listingKo from '../../../config/listing.ko.json';
+import listingEn from '../../../../../config/listing.en.json';
+import listingKo from '../../../../../config/listing.ko.json';
 
 export type ListingCopy = typeof listingEn;
 export type ListingLocale = 'en' | 'ko';

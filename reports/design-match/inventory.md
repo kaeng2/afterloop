@@ -18,7 +18,7 @@
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
 | `#000000` | 23 | L20 .b-black |  | 구현함 | src/app/globals.css `--color-ink`·`--color-heading` #000000 — 주 버튼 `.reply-button`·`.tracking-button`·`.cprog-btn`·[+ Add] `.reply-lint-button`, 제목·목록 글자. tests/unit/app-t098b.test.ts ③ |
-| `#000000A1` | 1 | L27 .nav |  | 예외 | DECISIONS 11/11 22:55 예외 "진입점(탭 없음, /listing·~~/products~~ 주소로만)": (~~/products~~: 11/12 11:15 결정으로 /products 제거 — T114, `/`로 308) 시안 `.nav` 탭 글자색. T096에서 위쪽 막대 탭을 지워 대응하는 요소가 없다 (`src/app/_shared/top-bar.tsx`, 시험 `tests/unit/app-t087-listing.test.ts` T096 진입점) |
+| `#000000A1` | 1 | L27 .nav |  | 예외 | DECISIONS 11/11 22:55 예외 "진입점(탭 없음, /demo/store/new-product·~~/products~~ 주소로만)": (~~/products~~: 11/12 11:15 결정으로 /products 제거 — T114, `/`로 308) 시안 `.nav` 탭 글자색. T096에서 위쪽 막대 탭을 지워 대응하는 요소가 없다 (`src/app/_shared/top-bar.tsx`, 시험 `tests/unit/app-t087-listing.test.ts` T096 진입점) |
 | `#001C64` | 1 | L124 <section> |  | 구현함 | src/app/globals.css `--gradient-week` 첫 칸 → `today.css .weekly` (이번 주 카드). tests/unit/app-t067 T089 토큰 값 |
 | `#002991` | 23 | L25 .c-blue |  | 구현함 | src/app/globals.css `--color-accent-deep` — 상품 아이콘 선 `shell.css .product-icon path`, Prevent 막대, 고른 상품 칩 테두리, "AI read"·"89% → x" 글자, 머리 알약 글자 `.shell-for`, 토스트 ✓ 글자, Watch 점(T098b sevCol med). 보낸 말풍선 `case-progress.css --cprog-navy`. tests/unit/app-t067 T089 |
 | `#003087` | 1 | L101 <stop> |  | 구현함 | T107 (사람 결정 11/12 09:25 시안 CSS 통째 복사): `src/app/(app)/desk.css` 시안 L101 값 그대로 — "Dispute" #0B0F14 · "Less" #0070E0 · 밑줄 linearGradient #003087→#0070E0→#00A8EA (`top-bar.tsx` `#dlg-desk`, Desk에서만 `body:has(.dk)`). 다른 화면 로고는 강조색 그대로. tests/unit/app-t107.test.ts |
@@ -207,42 +207,42 @@
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `#000000` | 15 | L20 .tab.on |  | 구현함 | src/app/intro/intro.css:11 `--i-text` → .intro-tab.on(115) 글자, .intro-coach(232) 바탕, .intro-btn-black(387), .intro-btn-line(394) 글자 |
-| `#002991` | 3 | L20 .tab.on |  | 구현함 | src/app/intro/intro.css:24 `--i-deep` → .intro-tab.on(115) 밑줄·.intro-logo(84) 글자(T098a에서 강조색→시안 값), src/app/intro/intro.css:27 Handle all 그라디언트. 시험 `tests/unit/app-t098a-scenes.test.ts` "L20". 로고 자리 글자 "Seller dashboard"는 예외 /intro |
-| `#0066F5` | 4 | L18 .pp a |  | 구현함 | src/app/intro/intro.css:8 `--color-accent` → .intro-rlink(423, 시안 .pp a), .intro-bar-last(508), 그라디언트 src/app/intro/intro.css:27·28 |
-| `#00A8EA` | 1 | L55 <path> |  | 예외 | DECISIONS 11/11 22:55 예외 "/intro(PayPal 로고 없음)" — 시안 로고 안 색(#00A8EA, 지시서 T098 규칙 2): L55 아이콘 마크 선색. 앱 마크 선은 강조색 (src/app/intro/intro.css:203 .intro-mark-accent) |
-| `#097FF5` | 1 | L27 .al-icon:focus-visible,.btn:focus-visible,.tab:focus-visibl… |  | 구현함 | src/app/intro/intro.css:25 `--i-focus` → src/app/intro/intro.css:413 focus-visible outline 2px solid (T098a에서 강조색→시안 값). 시험 `tests/unit/app-t098a-scenes.test.ts` "L27" |
-| `#0B0F14` | 1 | L26 .al-icon |  | 구현함 | src/app/intro/intro.css:20 `--i-ink` → .intro-al-icon(162) 바탕 |
-| `#333333` | 1 | L23 .b-black:hover |  | 구현함 | src/app/intro/intro.css:26 `--i-black-hover` → .intro-btn-black:hover(391) (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L23" |
-| `#3F4144` | 15 | L19 .tab |  | 구현함 | src/app/intro/intro.css:12 `--i-body` → .intro-tab(103), .intro-ico(150), .intro-small·.intro-label, .intro-chip-mock(484) |
-| `#60CDFF` | 2 | L64 <span> |  | 구현함 | src/app/intro/intro.css:27·28 그라디언트 → .intro-btn-accent(407), .intro-new(262) (T098a: 단색→시안 그라디언트). 시험 `tests/unit/app-t098a-scenes.test.ts` "L62·L64", "L104" |
-| `#9E2414` | 7 | L96 span.chip |  | 구현함 | src/app/intro/intro.css:16 `--i-risk` → .intro-amount-hold(463), .intro-due-urgent(470), .intro-chip-risk(492) |
-| `#C4321F` | 2 | L51 span.chip |  | 구현함 | src/app/intro/intro.css:19 `--i-risk-dot` → .intro-chip-count(488), .intro-al-badge(186) |
-| `#C9D3E0` | 1 | L174 ~i |  | 구현함 | src/app/intro/intro.css:22 `--i-bar` → .intro-bar(503) |
-| `#CFD3D8` | 1 | L24 .b-line |  | 구현함 | src/app/intro/intro.css:21 `--i-line-btn` → .intro-btn-line(394) 테두리 2px |
-| `#E4E6E9` | 2 | L21 .card |  | 구현함 | src/app/intro/intro.css:13 `--i-line` → .intro-card(312) 테두리 1px, .intro-header 아래 선 |
-| `#ECEEF0` | 1 | L44 span.chip |  | 구현함 | src/app/intro/intro.css:15 `--i-chip-bg` → .intro-chip-mock(484), src/app/intro/intro-screen.tsx:75 "Demo mock" 칩 (T098a 추가, 문구 config/intro.*.json `mock`). 시험 `tests/unit/app-t098a-scenes.test.ts` "L44" |
-| `#F1EFEA` | 4 | L32 .row |  | 구현함 | src/app/intro/intro.css:9·14 → 화면 바탕, .intro-row(435) 위 선, .intro-avatar(213) |
-| `#F2B8AF` | 1 | L95 section.card |  | 구현함 | src/app/intro/intro.css:18 `--i-risk-border` → .intro-card-rc(325) 테두리 2px |
-| `#FBE7E4` | 1 | L96 span.chip |  | 구현함 | src/app/intro/intro.css:17 `--i-risk-bg` → .intro-chip-risk(492) |
-| `#FFFFFF` | 15 | L21 .card |  | 구현함 | src/app/intro/intro.css:10 `--i-surface` → 카드·머리·버튼 글자, src/app/intro/intro.css:31 focus 흰 고리 |
-| `linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF)` | 1 | L104 a.btn |  | 구현함 | src/app/intro/intro.css:27 `--i-grad-cta` → .intro-btn-accent(407, gap 10px) (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L104" |
-| `linear-gradient(120deg,#0066F5,#60CDFF)` | 1 | L64 <span> |  | 구현함 | src/app/intro/intro.css:28 `--i-grad-new` → .intro-new(262) (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L62·L64" |
-| `rgba(0,0,0,0.25)` | 1 | L62 div.rise |  | 구현함 | src/app/intro/intro.css:34 `--i-shadow-coach` → .intro-coach(232) box-shadow 0 12px 32px (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L62·L64" |
-| `rgba(0,102,245,.55)` | 1 | L28 ~box-shadow |  | 구현함 | src/app/intro/intro.css:32 `--i-shadow-pulse-from` → @keyframes intro-pulse(178) 0% (T098a: 테두리 확대→시안 box-shadow 고리). 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
-| `rgba(0,102,245,0)` | 1 | L28 100% |  | 구현함 | src/app/intro/intro.css:33 `--i-shadow-pulse-to` (0 0 0 16px) → @keyframes intro-pulse(178) 100%. 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
-| `rgba(0,112,224,0.45)` | 1 | L26 .al-icon |  | 구현함 | src/app/intro/intro.css:30 `--i-shadow-icon` → .intro-al-icon(162) box-shadow 0 4px 14px (T098a 추가 — 로고 밖 아이콘 그림자라 로고 예외 아님). 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
+| `#000000` | 15 | L20 .tab.on |  | 구현함 | src/app/demo/seller-dashboard/intro.css:11 `--i-text` → .intro-tab.on(115) 글자, .intro-coach(232) 바탕, .intro-btn-black(387), .intro-btn-line(394) 글자 |
+| `#002991` | 3 | L20 .tab.on |  | 구현함 | src/app/demo/seller-dashboard/intro.css:24 `--i-deep` → .intro-tab.on(115) 밑줄·.intro-logo(84) 글자(T098a에서 강조색→시안 값), src/app/demo/seller-dashboard/intro.css:27 Handle all 그라디언트. 시험 `tests/unit/app-t098a-scenes.test.ts` "L20". 로고 자리 글자 "Seller dashboard"는 예외 /demo/seller-dashboard |
+| `#0066F5` | 4 | L18 .pp a |  | 구현함 | src/app/demo/seller-dashboard/intro.css:8 `--color-accent` → .intro-rlink(423, 시안 .pp a), .intro-bar-last(508), 그라디언트 src/app/demo/seller-dashboard/intro.css:27·28 |
+| `#00A8EA` | 1 | L55 <path> |  | 예외 | DECISIONS 11/11 22:55 예외 "/demo/seller-dashboard(PayPal 로고 없음)" — 시안 로고 안 색(#00A8EA, 지시서 T098 규칙 2): L55 아이콘 마크 선색. 앱 마크 선은 강조색 (src/app/demo/seller-dashboard/intro.css:203 .intro-mark-accent) |
+| `#097FF5` | 1 | L27 .al-icon:focus-visible,.btn:focus-visible,.tab:focus-visibl… |  | 구현함 | src/app/demo/seller-dashboard/intro.css:25 `--i-focus` → src/app/demo/seller-dashboard/intro.css:413 focus-visible outline 2px solid (T098a에서 강조색→시안 값). 시험 `tests/unit/app-t098a-scenes.test.ts` "L27" |
+| `#0B0F14` | 1 | L26 .al-icon |  | 구현함 | src/app/demo/seller-dashboard/intro.css:20 `--i-ink` → .intro-al-icon(162) 바탕 |
+| `#333333` | 1 | L23 .b-black:hover |  | 구현함 | src/app/demo/seller-dashboard/intro.css:26 `--i-black-hover` → .intro-btn-black:hover(391) (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L23" |
+| `#3F4144` | 15 | L19 .tab |  | 구현함 | src/app/demo/seller-dashboard/intro.css:12 `--i-body` → .intro-tab(103), .intro-ico(150), .intro-small·.intro-label, .intro-chip-mock(484) |
+| `#60CDFF` | 2 | L64 <span> |  | 구현함 | src/app/demo/seller-dashboard/intro.css:27·28 그라디언트 → .intro-btn-accent(407), .intro-new(262) (T098a: 단색→시안 그라디언트). 시험 `tests/unit/app-t098a-scenes.test.ts` "L62·L64", "L104" |
+| `#9E2414` | 7 | L96 span.chip |  | 구현함 | src/app/demo/seller-dashboard/intro.css:16 `--i-risk` → .intro-amount-hold(463), .intro-due-urgent(470), .intro-chip-risk(492) |
+| `#C4321F` | 2 | L51 span.chip |  | 구현함 | src/app/demo/seller-dashboard/intro.css:19 `--i-risk-dot` → .intro-chip-count(488), .intro-al-badge(186) |
+| `#C9D3E0` | 1 | L174 ~i |  | 구현함 | src/app/demo/seller-dashboard/intro.css:22 `--i-bar` → .intro-bar(503) |
+| `#CFD3D8` | 1 | L24 .b-line |  | 구현함 | src/app/demo/seller-dashboard/intro.css:21 `--i-line-btn` → .intro-btn-line(394) 테두리 2px |
+| `#E4E6E9` | 2 | L21 .card |  | 구현함 | src/app/demo/seller-dashboard/intro.css:13 `--i-line` → .intro-card(312) 테두리 1px, .intro-header 아래 선 |
+| `#ECEEF0` | 1 | L44 span.chip |  | 구현함 | src/app/demo/seller-dashboard/intro.css:15 `--i-chip-bg` → .intro-chip-mock(484), src/app/demo/seller-dashboard/intro-screen.tsx:75 "Demo mock" 칩 (T098a 추가, 문구 config/intro.*.json `mock`). 시험 `tests/unit/app-t098a-scenes.test.ts` "L44" |
+| `#F1EFEA` | 4 | L32 .row |  | 구현함 | src/app/demo/seller-dashboard/intro.css:9·14 → 화면 바탕, .intro-row(435) 위 선, .intro-avatar(213) |
+| `#F2B8AF` | 1 | L95 section.card |  | 구현함 | src/app/demo/seller-dashboard/intro.css:18 `--i-risk-border` → .intro-card-rc(325) 테두리 2px |
+| `#FBE7E4` | 1 | L96 span.chip |  | 구현함 | src/app/demo/seller-dashboard/intro.css:17 `--i-risk-bg` → .intro-chip-risk(492) |
+| `#FFFFFF` | 15 | L21 .card |  | 구현함 | src/app/demo/seller-dashboard/intro.css:10 `--i-surface` → 카드·머리·버튼 글자, src/app/demo/seller-dashboard/intro.css:31 focus 흰 고리 |
+| `linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF)` | 1 | L104 a.btn |  | 구현함 | src/app/demo/seller-dashboard/intro.css:27 `--i-grad-cta` → .intro-btn-accent(407, gap 10px) (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L104" |
+| `linear-gradient(120deg,#0066F5,#60CDFF)` | 1 | L64 <span> |  | 구현함 | src/app/demo/seller-dashboard/intro.css:28 `--i-grad-new` → .intro-new(262) (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L62·L64" |
+| `rgba(0,0,0,0.25)` | 1 | L62 div.rise |  | 구현함 | src/app/demo/seller-dashboard/intro.css:34 `--i-shadow-coach` → .intro-coach(232) box-shadow 0 12px 32px (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L62·L64" |
+| `rgba(0,102,245,.55)` | 1 | L28 ~box-shadow |  | 구현함 | src/app/demo/seller-dashboard/intro.css:32 `--i-shadow-pulse-from` → @keyframes intro-pulse(178) 0% (T098a: 테두리 확대→시안 box-shadow 고리). 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
+| `rgba(0,102,245,0)` | 1 | L28 100% |  | 구현함 | src/app/demo/seller-dashboard/intro.css:33 `--i-shadow-pulse-to` (0 0 0 16px) → @keyframes intro-pulse(178) 100%. 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
+| `rgba(0,112,224,0.45)` | 1 | L26 .al-icon |  | 구현함 | src/app/demo/seller-dashboard/intro.css:30 `--i-shadow-icon` → .intro-al-icon(162) box-shadow 0 4px 14px (T098a 추가 — 로고 밖 아이콘 그림자라 로고 예외 아님). 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
 
 ### 2. 모션·타이밍 (hover·focus 포함) (6행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `.al-icon:focus-visible,.btn:focus-visible,.tab:focus-visible,.rlink:focus-visible` | 1 | L27 | box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px | 구현함 | src/app/intro/intro.css:413 (.intro-btn·.intro-tab·.intro-rlink·.intro-al-icon) box-shadow var(--i-shadow-focus)=#FFFFFF 0 0 0 2px + outline 2px solid #097FF5 + offset 2px (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L27" |
-| `.b-black:hover` | 1 | L23 | background:#333333 | 구현함 | src/app/intro/intro.css:391 background #333333 (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L104" |
-| `@keyframes pulse` | 1 | L28 | 0%{box-shadow:0 0 0 0 rgba(0,102,245,.55)}100%{box-shadow:0 0 0 16px rgba(0,102,245,0)} | 구현함 | src/app/intro/intro.css:178 @keyframes intro-pulse 0% box-shadow 0 0 0 0 rgba(0,102,245,.55) → 100% 0 0 0 16px rgba(0,102,245,0) (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
-| `@keyframes rise` | 1 | L30 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} | 구현함 | src/app/intro/intro.css:274 @keyframes intro-rise translateY(8px)·opacity 0 → none·1 |
-| `animation: pulse 1.6s ease-out infinite` | 1 | L29 .pulse |  | 구현함 | src/app/intro/intro.css:175 .intro-pulse (src/app/intro/intro-screen.tsx:95 아이콘), 움직임 줄이기 src/app/intro/intro.css:557에서 끔. 시험 `tests/unit/app-t098a-scenes.test.ts` |
-| `animation: rise .5s ease both .3s` | 1 | L31 .rise |  | 구현함 | src/app/intro/intro.css:232 .intro-coach animation intro-rise 0.5s ease both 0.3s, 움직임 줄이기 src/app/intro/intro.css:557에서 끔 |
+| `.al-icon:focus-visible,.btn:focus-visible,.tab:focus-visible,.rlink:focus-visible` | 1 | L27 | box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px | 구현함 | src/app/demo/seller-dashboard/intro.css:413 (.intro-btn·.intro-tab·.intro-rlink·.intro-al-icon) box-shadow var(--i-shadow-focus)=#FFFFFF 0 0 0 2px + outline 2px solid #097FF5 + offset 2px (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L27" |
+| `.b-black:hover` | 1 | L23 | background:#333333 | 구현함 | src/app/demo/seller-dashboard/intro.css:391 background #333333 (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L104" |
+| `@keyframes pulse` | 1 | L28 | 0%{box-shadow:0 0 0 0 rgba(0,102,245,.55)}100%{box-shadow:0 0 0 16px rgba(0,102,245,0)} | 구현함 | src/app/demo/seller-dashboard/intro.css:178 @keyframes intro-pulse 0% box-shadow 0 0 0 0 rgba(0,102,245,.55) → 100% 0 0 0 16px rgba(0,102,245,0) (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L26·L28·L29" |
+| `@keyframes rise` | 1 | L30 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} | 구현함 | src/app/demo/seller-dashboard/intro.css:274 @keyframes intro-rise translateY(8px)·opacity 0 → none·1 |
+| `animation: pulse 1.6s ease-out infinite` | 1 | L29 .pulse |  | 구현함 | src/app/demo/seller-dashboard/intro.css:175 .intro-pulse (src/app/demo/seller-dashboard/intro-screen.tsx:95 아이콘), 움직임 줄이기 src/app/demo/seller-dashboard/intro.css:557에서 끔. 시험 `tests/unit/app-t098a-scenes.test.ts` |
+| `animation: rise .5s ease both .3s` | 1 | L31 .rise |  | 구현함 | src/app/demo/seller-dashboard/intro.css:232 .intro-coach animation intro-rise 0.5s ease both 0.3s, 움직임 줄이기 src/app/demo/seller-dashboard/intro.css:557에서 끔 |
 
 ### 3. 누를 수 있는 것과 결과 상태 (0행)
 
@@ -250,150 +250,151 @@ _(자동 추출 0행 — 시안의 링크는 onClick이 아니라 href라서 빠
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `href {{deskHref}} a.al-icon` | 1 | L54 a.al-icon | DisputeLess 아이콘 → Desk | 구현함 | src/app/intro/intro-screen.tsx:95 Link → Today 서연(`/?item=PP-R-GMS-10197661`, 앱의 Desk). 맥박 고리 src/app/intro/intro.css:175. 시험 `tests/unit/app-t098a-scenes.test.ts` "누를 수 있는 것 4개", `tests/unit/app-intro.test.ts` |
-| `href {{deskHref}} a.btn (말풍선 Open DisputeLess →)` | 1 | L66 a.btn | 말풍선 버튼 → Desk | 구현함 | src/app/intro/intro-screen.tsx:122 Link → Today 서연 (.intro-btn-white 흰 바탕·38px·14px). 시험 `tests/unit/app-t098a-scenes.test.ts` "누를 수 있는 것 4개" |
-| `href {{deskHref}} a.rlink (Respond →)` | 3 | L101 a.rlink | 사건 줄 Respond → Desk | 구현함 | src/app/intro/intro-screen.tsx:178 Link → Today 서연 (사건마다). 사건 2건은 예외 "데이터(실제 샌드박스 사건, Lena 없음)". 시험 `tests/unit/app-t098a-scenes.test.ts` "누를 수 있는 것 4개" |
-| `href {{deskHref}} a.btn (Handle all N with DisputeLess)` | 1 | L104 a.btn | Handle all → Desk | 구현함 | src/app/intro/intro-screen.tsx:183 Link → Today 서연, 그라디언트 src/app/intro/intro.css:27. 시험 `tests/unit/app-t098a-scenes.test.ts` "L104"·"누를 수 있는 것 4개" |
+| `href {{deskHref}} a.al-icon` | 1 | L54 a.al-icon | DisputeLess 아이콘 → Desk | 구현함 | src/app/demo/seller-dashboard/intro-screen.tsx:95 Link → Today 서연(`/?item=PP-R-GMS-10197661`, 앱의 Desk). 맥박 고리 src/app/demo/seller-dashboard/intro.css:175. 시험 `tests/unit/app-t098a-scenes.test.ts` "누를 수 있는 것 4개", `tests/unit/app-intro.test.ts` |
+| `href {{deskHref}} a.btn (말풍선 Open DisputeLess →)` | 1 | L66 a.btn | 말풍선 버튼 → Desk | 구현함 | src/app/demo/seller-dashboard/intro-screen.tsx:122 Link → Today 서연 (.intro-btn-white 흰 바탕·38px·14px). 시험 `tests/unit/app-t098a-scenes.test.ts` "누를 수 있는 것 4개" |
+| `href {{deskHref}} a.rlink (Respond →)` | 3 | L101 a.rlink | 사건 줄 Respond → Desk | 구현함 | src/app/demo/seller-dashboard/intro-screen.tsx:178 Link → Today 서연 (사건마다). T115: 사건 줄 3개(서연·지호·마이크 PP-R-FYT-10197651) = Desk와 같은 출처(연결 표 → 시드, 기한은 읽기 캐시, `src/app/_server/intro-data.ts`), 건수 3은 사건 줄 수에서. 시험 `tests/unit/app-t098a-scenes.test.ts` "누를 수 있는 것 4개", `tests/unit/app-t115.test.ts` |
+| `href="#" a.tab ×5, a.rlink (See all)` | 6 | L49 a.tab | 껍데기 링크 | 예외 | **껍데기 버튼은 동작 없음 (사람 결정 11/12 11:20)**: 시안처럼 `<a href="#">`, 누르면 preventDefault라 주소에 `#`가 붙지 않는다 (시안은 붙음). 벨·도움말·Transfer money·Request payment = 일반 `<button type="button">`, aria-disabled 없음, cursor pointer(시안 값). T115, 시험 `tests/unit/app-t115.test.ts` |
+| `href {{deskHref}} a.btn (Handle all N with DisputeLess)` | 1 | L104 a.btn | Handle all → Desk | 구현함 | src/app/demo/seller-dashboard/intro-screen.tsx:183 Link → Today 서연, 그라디언트 src/app/demo/seller-dashboard/intro.css:27. 시험 `tests/unit/app-t098a-scenes.test.ts` "L104"·"누를 수 있는 것 4개" |
 
 ### 4. 접힘·펼침 (3행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `rotate(45deg)` | 1 | L63 <span> |  | 구현함 | src/app/intro/intro.css:248 .intro-coach-arrow transform rotate(45deg) (src/app/intro/intro-screen.tsx:116) |
-| `state alOpen` | 4 | L54 a.al-icon |  | 구현함 | 상태가 아니라 문구 키 v.alOpen ("Open DisputeLess"): src/app/intro/intro-screen.tsx:95 아이콘 aria-label, src/app/intro/intro-screen.tsx:122–123 말풍선 버튼. 시험 `tests/unit/app-intro.test.ts` |
-| `state rcOpen` | 3 | L96 ~color |  | 구현함 | 상태가 아니라 문구 키 v.rcOpen 칩: src/app/intro/intro-screen.tsx:168 .intro-chip-risk(#FBE7E4/#9E2414). 건수 "2 open"은 예외 "데이터(실제 샌드박스 사건, Lena 없음)" |
+| `rotate(45deg)` | 1 | L63 <span> |  | 구현함 | src/app/demo/seller-dashboard/intro.css:248 .intro-coach-arrow transform rotate(45deg) (src/app/demo/seller-dashboard/intro-screen.tsx:116) |
+| `state alOpen` | 4 | L54 a.al-icon |  | 구현함 | 상태가 아니라 문구 키 v.alOpen ("Open DisputeLess"): src/app/demo/seller-dashboard/intro-screen.tsx:95 아이콘 aria-label, src/app/demo/seller-dashboard/intro-screen.tsx:122–123 말풍선 버튼. 시험 `tests/unit/app-intro.test.ts` |
+| `state rcOpen` | 3 | L96 ~color |  | 구현함 | 상태가 아니라 문구 키 v.rcOpen 칩: src/app/demo/seller-dashboard/intro-screen.tsx:168 .intro-chip-risk(#FBE7E4/#9E2414). 건수 "2 open"은 예외 "데이터(실제 샌드박스 사건, Lena 없음)" |
 
 ### 5. 조건부 스타일 (1행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `i === SALES.length - 1 ? '#0066F5' : '#C9D3E0'` | 1 | L174 ~i |  | 구현함 | src/app/intro/intro-screen.tsx:193 마지막 막대만 .intro-bar-last(src/app/intro/intro.css:508, #0066F5), 나머지 .intro-bar(src/app/intro/intro.css:503, #C9D3E0) |
+| `i === SALES.length - 1 ? '#0066F5' : '#C9D3E0'` | 1 | L174 ~i |  | 구현함 | src/app/demo/seller-dashboard/intro-screen.tsx:193 마지막 막대만 .intro-bar-last(src/app/demo/seller-dashboard/intro.css:508, #0066F5), 나머지 .intro-bar(src/app/demo/seller-dashboard/intro.css:503, #C9D3E0) |
 
 ## docs/design/mockup-v4/scene3/Main.dc.html
 
-> **T109 (2026-11-12, 사람 결정 09:25 "시안 CSS 통째 복사")**: `src/app/listing/listing.css`를 새로 썼다 — `--ls-*` 변수가 없어지고 시안 `<style>`(L15–L62)이 `.ls ` 범위로 그대로, 인라인 style 값은 `ls-*` class 규칙(줄 주석 = 시안 줄 번호)으로 옮겨졌다. 아래 표의 "구현함" 근거에 적힌 **listing.css 줄 번호·변수 이름은 T109 이전 것**이다. 시안 값 ↔ 앱 요소 대응은 `reports/T109-impl.md` "대응표"가 기준이다. 상태(구현함/예외)는 바뀌지 않았다. 예외 행: `#00A8EA`(마크 선 → #60CDFF 유지), `p.hasDelta` 칩(그리지 않음 유지), 화면 안 계수들(엔진·config 유지).
+> **T109 (2026-11-12, 사람 결정 09:25 "시안 CSS 통째 복사")**: `src/app/demo/store/new-product/listing.css`를 새로 썼다 — `--ls-*` 변수가 없어지고 시안 `<style>`(L15–L62)이 `.ls ` 범위로 그대로, 인라인 style 값은 `ls-*` class 규칙(줄 주석 = 시안 줄 번호)으로 옮겨졌다. 아래 표의 "구현함" 근거에 적힌 **listing.css 줄 번호·변수 이름은 T109 이전 것**이다. 시안 값 ↔ 앱 요소 대응은 `reports/T109-impl.md` "대응표"가 기준이다. 상태(구현함/예외)는 바뀌지 않았다. 예외 행: `#00A8EA`(마크 선 → #60CDFF 유지), `p.hasDelta` 칩(그리지 않음 유지), 화면 안 계수들(엔진·config 유지).
 
 ### 1. 색 토큰 (48행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `#000000` | 7 | L20 .b-black |  | 구현함 | src/app/listing/listing.css:28 `--ls-black` → .ls-b-black(695) (T098a: #0B0F14→시안 #000000), src/app/listing/listing.css:19 `--ls-text` 글자. 시험 `tests/unit/app-t098a-scenes.test.ts` "L20" |
-| `#002991` | 16 | L22 .b-ai |  | 구현함 | src/app/listing/listing.css:8 `--ls-accent-deep` → .ls-b-ai(709)·.ls-ai(544) 그라디언트, .ls-ins(564)·.ls-kicker(1060)·.ls-status(940)·.ls-check-s.on(1003)·.ls-chip-peak(539)·.ls-peak.on(491) 글자, .ls-big.good(776)·.ls-done-prob.good(1410) (T098a 고침), .ls-spg-a(1098) |
-| `#0066F5` | 14 | L22 .b-ai |  | 구현함 | src/app/listing/listing.css:7 `--ls-accent` → .ls-check-ic.on(994), .ls-fix-plus(1313), .ls-fix-s(1326), .ls-bar-fill.down(937), .ls-step.done(1128), .ls-pulse-line(1104), 그라디언트 |
-| `#00A8EA` | 3 | L75 <path> |  | 예외 | DECISIONS 11/11 22:55 예외 "/intro(PayPal 로고 없음)" — 시안 로고 안 색(#00A8EA, 지시서 T098 규칙 2): L75·L117·L167 DisputeLess 마크 선색. 앱 마크 선은 src/app/listing/listing.css:240 .ls-mark-line(#60CDFF) |
-| `#05378214` | 1 | L21 .b-tint |  | 구현함 | src/app/listing/listing.css:30 `--ls-tint` (T098a: rgba 근삿값→시안 8자리 값 그대로) → .ls-b-tint(702). 시험 `tests/unit/app-t098a-scenes.test.ts` "L20" |
-| `#05378227` | 1 | L21 .b-tint:hover |  | 구현함 | src/app/listing/listing.css:31 `--ls-tint-hover` → .ls-b-tint:hover(706). 시험 `tests/unit/app-t098a-scenes.test.ts` "L20" |
-| `#097FF5` | 2 | L38 .btn:focus-visible,.fld:focus-visible,.ins:focus-visible |  | 구현함 | src/app/listing/listing.css:14 `--ls-focus` → .ls :focus-visible(90), .ls-addph:focus-within(421). 시험 `tests/unit/app-t098a-scenes.test.ts` "L38" |
-| `#0A1B3D` | 3 | L46 .addph |  | 구현함 | src/app/listing/listing.css:15 `--ls-navy` → .ls-addph(398) 글자, .ls-addph:hover(417) 테두리, .ls-addic(431) 바탕 |
-| `#0B0F14` | 5 | L30 .tipb |  | 구현함 | src/app/listing/listing.css:26 `--ls-ink` → .ls-tipb(811), .ls-apib b(645), .ls-apib-ic(247) |
-| `#1F3A2E` | 1 | L67 <span> |  | 구현함 | src/app/listing/listing.css:56 `--ls-store` → .ls-store-logo(128). 가게 이름은 예외 "/listing(Fernwood Knits)" → 머리글자 F |
-| `#1F9D55` | 1 | L37 .livedot |  | 구현함 | src/app/listing/listing.css:58 `--ls-live` → .ls-livedot(649) |
-| `#333333` | 1 | L20 .b-black:hover |  | 구현함 | src/app/listing/listing.css:27 `--ls-ink-hover` → .ls-b-black:hover(699) |
-| `#3F4144` | 18 | L29 .tipq |  | 구현함 | src/app/listing/listing.css:20 `--ls-body` → .ls-lab(332), .ls-sub(343), .ls-tipq(796), .ls-snav(207), .ls-an-s(1111), .ls-hero-sub(1219), .ls-loss-how(1346), .ls-done-s/disp/note(1380–1388) |
-| `#60CDFF` | 6 | L22 .b-ai |  | 구현함 | src/app/listing/listing.css:9·10 → .ls-ai(544), .ls-b-ai(709), .ls-prog-fill(963), .ls-done-ic(1364), .ls-spg-b(1101) (T098a 회전 고리 그라디언트 추가) |
-| `#6C7378` | 13 | L67 <span> |  | 구현함 | src/app/listing/listing.css:21 `--ls-muted` → .ls-tiny(347), .ls-crumb(262), .ls-basis-k(1197), .ls-panel .ls-sub(779)·.ls-run-t(1144)·.ls-top-of(1278) (T098a: 시안 글자 크기·색 그대로) |
-| `#7A1A0F` | 1 | L484 ~A1 |  | 구현함 | src/app/listing/listing.css:47 `--ls-t-a1` → 유형 A1 색(858–861) |
-| `#99C2FF` | 1 | L52 .ins |  | 구현함 | src/app/listing/listing.css:39 `--ls-shadow-ins` → .ls-ins(564) box-shadow inset 0 0 0 2px (T098a: border→시안 그림자). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
-| `#9AA0A6` | 5 | L46 .addph |  | 구현함 | src/app/listing/listing.css:51·54 → .ls-addph(398) 점선, .ls-cell.on(1163), .ls-step.todo(1135), .ls-check-ic(980) 글자, 유형 X(882) |
-| `#9E2414` | 2 | L108 span.chip |  | 구현함 | src/app/listing/listing.css:43 `--ls-risk-text` → .ls-chip-gap(535), .ls-status.dirty(953) |
-| `#C4321F` | 5 | L207 <span> |  | 구현함 | src/app/listing/listing.css:42 `--ls-risk` → .ls-big(768), .ls-hero-n(1211), .ls-top-n b(1273), .ls-done-prob(1401), 유형 B2(876) |
-| `#CFD3D8` | 3 | L40 .fld |  | 구현함 | src/app/listing/listing.css:23 `--ls-line-strong` → .ls-fld(462) 테두리, .ls-grab(1053); src/app/listing/listing.css:40 체크 inset 그림자 |
-| `#D9DCE0` | 1 | L508 ~background |  | 구현함 | src/app/listing/listing.css:52 `--ls-dot` → .ls-dot(851) |
-| `#E3E7EC` | 2 | L69 <span> |  | 구현함 | src/app/listing/listing.css:55 `--ls-avatar` → .ls-avatar(176). (L76 "P" 아이콘 바탕은 로고 예외 — 아이콘 없음, `tests/unit/app-t087-listing.test.ts` "PayPal payments") |
-| `#E3F3FF` | 4 | L58 ~background |  | 구현함 | src/app/listing/listing.css:11·13 → @keyframes ls-flashA/B(502·510) 0%, .ls-peak.on(491), .ls-chip-peak(539) |
-| `#E4E6E9` | 16 | L29 .tipq |  | 구현함 | src/app/listing/listing.css:22 `--ls-line` → .ls-card(291), .ls-tipq(796), .ls-prog(957), .ls-spin-track(1089), .ls-basis(1176); src/app/listing/listing.css:38 inset 1px (.ls-snav.on·.ls-ph) |
-| `#E8796B` | 2 | L41 .fld.gap |  | 구현함 | src/app/listing/listing.css:46·48 → .ls-fld-gap(476) 테두리, 유형 A2(864) |
-| `#EEF0F2` | 1 | L523 ~background |  | 구현함 | src/app/listing/listing.css:53 `--ls-cell` → .ls-cell(1153) |
-| `#EEF0F3` | 1 | L33 .snav:hover |  | 구현함 | src/app/listing/listing.css:24 `--ls-hover` → .ls-snav:hover(221) |
-| `#EEF1F5` | 1 | L126 <aside> |  | 구현함 | src/app/listing/listing.css:29 `--ls-panel` → .ls-panel(720) (T098a: #EEF0F3→시안 값). 시험 `tests/unit/app-t098a-scenes.test.ts` "L126" |
-| `#F1EFEA` | 3 | L151 <div> |  | 구현함 | src/app/listing/listing.css:41 `--ls-warm` → .ls-peak(480), .ls-bar(916), .ls-bf(1282) |
-| `#F2B8AF` | 2 | L484 ~B1 |  | 구현함 | src/app/listing/listing.css:49 `--ls-t-b1` → 유형 B1(870), .ls-bar-ghost(930) |
-| `#F3EBDD` | 1 | L67 <span> |  | 구현함 | src/app/listing/listing.css:57 `--ls-store-text` → .ls-store-logo(128) |
-| `#F3F4F6` | 1 | L68 <label> |  | 구현함 | src/app/listing/listing.css:25 `--ls-field-bg` → .ls-search(155) |
-| `#F3F5F9` | 1 | L35 .apib |  | 구현함 | src/app/listing/listing.css:59 `--ls-pill` → .ls-apib(632) |
-| `#F5F9FF` | 4 | L52 .ins |  | 구현함 | src/app/listing/listing.css:12 `--ls-accent-pale` → .ls-ins(564), .ls-status(940), .ls-fix(1304), .ls-done-box(1392) |
-| `#F6F7F9` | 3 | L47 .addph:hover |  | 구현함 | src/app/listing/listing.css:16 `--ls-bg` → 화면 바탕(.ls 6), .ls-addph:hover(417, T098a 추가), .ls-hero(1202) |
-| `#FAFAFB` | 1 | L72 <nav> |  | 구현함 | src/app/listing/listing.css:18 `--ls-side` → .ls-side(194) |
-| `#FBE7E4` | 1 | L108 span.chip |  | 구현함 | src/app/listing/listing.css:44 `--ls-risk-bg` → .ls-chip-gap(535) |
-| `#FFFBFA` | 2 | L41 .fld.gap |  | 구현함 | src/app/listing/listing.css:45 `--ls-risk-field` → .ls-fld-gap(476), .ls-status.dirty(953) |
-| `#FFFFFF` | 24 | L20 .b-black |  | 구현함 | src/app/listing/listing.css:17·63 → .ls-card, .ls-fld(읽기 전용 칸도 흰 바탕 — T098a에서 [readonly] 덧칠 지움), flashA/B 100%(502·510, T098a: transparent→#FFFFFF), src/app/listing/listing.css:33 focus 흰 고리. 시험 `tests/unit/app-t098a-scenes.test.ts` "L58·L59" |
-| `linear-gradient(120deg,#002991 0%,#0066F5 55%,#60CDFF 100%)` | 1 | L43 .ai |  | 구현함 | src/app/listing/listing.css:544 .ls-ai (gap 4px — T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L42" |
-| `linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF)` | 2 | L22 .b-ai |  | 구현함 | src/app/listing/listing.css:709 .ls-b-ai, src/app/listing/listing.css:1364 .ls-done-ic |
-| `linear-gradient(90deg,#002991,#0066F5,#60CDFF)` | 2 | L522 ~background |  | 구현함 | src/app/listing/listing.css:963 .ls-prog-fill (모달 진행·Recalculate 진행 막대 둘 다) |
-| `rgba(0,0,0,0.25)` | 2 | L30 .tipb |  | 구현함 | src/app/listing/listing.css:34 `--ls-shadow-tip` → .ls-tipb(811) 0 8px 24px, src/app/listing/listing.css:35 `--ls-shadow-sheet` → .ls-sheet(1014) 0 -12px 40px (T098a: --shadow-selected→시안 값). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
-| `rgba(0,0,0,0.38)` | 1 | L176 <div> |  | 구현함 | src/app/listing/listing.css:61 `--ls-scrim` → .ls-scrim(1008) |
-| `rgba(10,27,61,0.25)` | 1 | L49 .addic |  | 구현함 | src/app/listing/listing.css:36 `--ls-shadow-addic` → .ls-addic(431) 0 4px 10px (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
-| `rgba(255,255,255,0.85)` | 1 | L50 .phl |  | 구현함 | src/app/listing/listing.css:62 `--ls-ph-label` → .ls-phl(385) |
-| `rgba(31,157,85,.18)` | 1 | L37 .livedot |  | 구현함 | src/app/listing/listing.css:37 `--ls-shadow-live` → .ls-livedot(649) box-shadow 0 0 0 3px (T098a: outline→시안 그림자). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
+| `#000000` | 7 | L20 .b-black |  | 구현함 | src/app/demo/store/new-product/listing.css:28 `--ls-black` → .ls-b-black(695) (T098a: #0B0F14→시안 #000000), src/app/demo/store/new-product/listing.css:19 `--ls-text` 글자. 시험 `tests/unit/app-t098a-scenes.test.ts` "L20" |
+| `#002991` | 16 | L22 .b-ai |  | 구현함 | src/app/demo/store/new-product/listing.css:8 `--ls-accent-deep` → .ls-b-ai(709)·.ls-ai(544) 그라디언트, .ls-ins(564)·.ls-kicker(1060)·.ls-status(940)·.ls-check-s.on(1003)·.ls-chip-peak(539)·.ls-peak.on(491) 글자, .ls-big.good(776)·.ls-done-prob.good(1410) (T098a 고침), .ls-spg-a(1098) |
+| `#0066F5` | 14 | L22 .b-ai |  | 구현함 | src/app/demo/store/new-product/listing.css:7 `--ls-accent` → .ls-check-ic.on(994), .ls-fix-plus(1313), .ls-fix-s(1326), .ls-bar-fill.down(937), .ls-step.done(1128), .ls-pulse-line(1104), 그라디언트 |
+| `#00A8EA` | 3 | L75 <path> |  | 예외 | DECISIONS 11/11 22:55 예외 "/demo/seller-dashboard(PayPal 로고 없음)" — 시안 로고 안 색(#00A8EA, 지시서 T098 규칙 2): L75·L117·L167 DisputeLess 마크 선색. 앱 마크 선은 src/app/demo/store/new-product/listing.css:240 .ls-mark-line(#60CDFF) |
+| `#05378214` | 1 | L21 .b-tint |  | 구현함 | src/app/demo/store/new-product/listing.css:30 `--ls-tint` (T098a: rgba 근삿값→시안 8자리 값 그대로) → .ls-b-tint(702). 시험 `tests/unit/app-t098a-scenes.test.ts` "L20" |
+| `#05378227` | 1 | L21 .b-tint:hover |  | 구현함 | src/app/demo/store/new-product/listing.css:31 `--ls-tint-hover` → .ls-b-tint:hover(706). 시험 `tests/unit/app-t098a-scenes.test.ts` "L20" |
+| `#097FF5` | 2 | L38 .btn:focus-visible,.fld:focus-visible,.ins:focus-visible |  | 구현함 | src/app/demo/store/new-product/listing.css:14 `--ls-focus` → .ls :focus-visible(90), .ls-addph:focus-within(421). 시험 `tests/unit/app-t098a-scenes.test.ts` "L38" |
+| `#0A1B3D` | 3 | L46 .addph |  | 구현함 | src/app/demo/store/new-product/listing.css:15 `--ls-navy` → .ls-addph(398) 글자, .ls-addph:hover(417) 테두리, .ls-addic(431) 바탕 |
+| `#0B0F14` | 5 | L30 .tipb |  | 구현함 | src/app/demo/store/new-product/listing.css:26 `--ls-ink` → .ls-tipb(811), .ls-apib b(645), .ls-apib-ic(247) |
+| `#1F3A2E` | 1 | L67 <span> |  | 구현함 | src/app/demo/store/new-product/listing.css:56 `--ls-store` → .ls-store-logo(128). 가게 이름은 예외 "/demo/store/new-product(Fernwood Knits)" → 머리글자 F |
+| `#1F9D55` | 1 | L37 .livedot |  | 구현함 | src/app/demo/store/new-product/listing.css:58 `--ls-live` → .ls-livedot(649) |
+| `#333333` | 1 | L20 .b-black:hover |  | 구현함 | src/app/demo/store/new-product/listing.css:27 `--ls-ink-hover` → .ls-b-black:hover(699) |
+| `#3F4144` | 18 | L29 .tipq |  | 구현함 | src/app/demo/store/new-product/listing.css:20 `--ls-body` → .ls-lab(332), .ls-sub(343), .ls-tipq(796), .ls-snav(207), .ls-an-s(1111), .ls-hero-sub(1219), .ls-loss-how(1346), .ls-done-s/disp/note(1380–1388) |
+| `#60CDFF` | 6 | L22 .b-ai |  | 구현함 | src/app/demo/store/new-product/listing.css:9·10 → .ls-ai(544), .ls-b-ai(709), .ls-prog-fill(963), .ls-done-ic(1364), .ls-spg-b(1101) (T098a 회전 고리 그라디언트 추가) |
+| `#6C7378` | 13 | L67 <span> |  | 구현함 | src/app/demo/store/new-product/listing.css:21 `--ls-muted` → .ls-tiny(347), .ls-crumb(262), .ls-basis-k(1197), .ls-panel .ls-sub(779)·.ls-run-t(1144)·.ls-top-of(1278) (T098a: 시안 글자 크기·색 그대로) |
+| `#7A1A0F` | 1 | L484 ~A1 |  | 구현함 | src/app/demo/store/new-product/listing.css:47 `--ls-t-a1` → 유형 A1 색(858–861) |
+| `#99C2FF` | 1 | L52 .ins |  | 구현함 | src/app/demo/store/new-product/listing.css:39 `--ls-shadow-ins` → .ls-ins(564) box-shadow inset 0 0 0 2px (T098a: border→시안 그림자). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
+| `#9AA0A6` | 5 | L46 .addph |  | 구현함 | src/app/demo/store/new-product/listing.css:51·54 → .ls-addph(398) 점선, .ls-cell.on(1163), .ls-step.todo(1135), .ls-check-ic(980) 글자, 유형 X(882) |
+| `#9E2414` | 2 | L108 span.chip |  | 구현함 | src/app/demo/store/new-product/listing.css:43 `--ls-risk-text` → .ls-chip-gap(535), .ls-status.dirty(953) |
+| `#C4321F` | 5 | L207 <span> |  | 구현함 | src/app/demo/store/new-product/listing.css:42 `--ls-risk` → .ls-big(768), .ls-hero-n(1211), .ls-top-n b(1273), .ls-done-prob(1401), 유형 B2(876) |
+| `#CFD3D8` | 3 | L40 .fld |  | 구현함 | src/app/demo/store/new-product/listing.css:23 `--ls-line-strong` → .ls-fld(462) 테두리, .ls-grab(1053); src/app/demo/store/new-product/listing.css:40 체크 inset 그림자 |
+| `#D9DCE0` | 1 | L508 ~background |  | 구현함 | src/app/demo/store/new-product/listing.css:52 `--ls-dot` → .ls-dot(851) |
+| `#E3E7EC` | 2 | L69 <span> |  | 구현함 | src/app/demo/store/new-product/listing.css:55 `--ls-avatar` → .ls-avatar(176). (L76 "P" 아이콘 바탕은 로고 예외 — 아이콘 없음, `tests/unit/app-t087-listing.test.ts` "PayPal payments") |
+| `#E3F3FF` | 4 | L58 ~background |  | 구현함 | src/app/demo/store/new-product/listing.css:11·13 → @keyframes ls-flashA/B(502·510) 0%, .ls-peak.on(491), .ls-chip-peak(539) |
+| `#E4E6E9` | 16 | L29 .tipq |  | 구현함 | src/app/demo/store/new-product/listing.css:22 `--ls-line` → .ls-card(291), .ls-tipq(796), .ls-prog(957), .ls-spin-track(1089), .ls-basis(1176); src/app/demo/store/new-product/listing.css:38 inset 1px (.ls-snav.on·.ls-ph) |
+| `#E8796B` | 2 | L41 .fld.gap |  | 구현함 | src/app/demo/store/new-product/listing.css:46·48 → .ls-fld-gap(476) 테두리, 유형 A2(864) |
+| `#EEF0F2` | 1 | L523 ~background |  | 구현함 | src/app/demo/store/new-product/listing.css:53 `--ls-cell` → .ls-cell(1153) |
+| `#EEF0F3` | 1 | L33 .snav:hover |  | 구현함 | src/app/demo/store/new-product/listing.css:24 `--ls-hover` → .ls-snav:hover(221) |
+| `#EEF1F5` | 1 | L126 <aside> |  | 구현함 | src/app/demo/store/new-product/listing.css:29 `--ls-panel` → .ls-panel(720) (T098a: #EEF0F3→시안 값). 시험 `tests/unit/app-t098a-scenes.test.ts` "L126" |
+| `#F1EFEA` | 3 | L151 <div> |  | 구현함 | src/app/demo/store/new-product/listing.css:41 `--ls-warm` → .ls-peak(480), .ls-bar(916), .ls-bf(1282) |
+| `#F2B8AF` | 2 | L484 ~B1 |  | 구현함 | src/app/demo/store/new-product/listing.css:49 `--ls-t-b1` → 유형 B1(870), .ls-bar-ghost(930) |
+| `#F3EBDD` | 1 | L67 <span> |  | 구현함 | src/app/demo/store/new-product/listing.css:57 `--ls-store-text` → .ls-store-logo(128) |
+| `#F3F4F6` | 1 | L68 <label> |  | 구현함 | src/app/demo/store/new-product/listing.css:25 `--ls-field-bg` → .ls-search(155) |
+| `#F3F5F9` | 1 | L35 .apib |  | 구현함 | src/app/demo/store/new-product/listing.css:59 `--ls-pill` → .ls-apib(632) |
+| `#F5F9FF` | 4 | L52 .ins |  | 구현함 | src/app/demo/store/new-product/listing.css:12 `--ls-accent-pale` → .ls-ins(564), .ls-status(940), .ls-fix(1304), .ls-done-box(1392) |
+| `#F6F7F9` | 3 | L47 .addph:hover |  | 구현함 | src/app/demo/store/new-product/listing.css:16 `--ls-bg` → 화면 바탕(.ls 6), .ls-addph:hover(417, T098a 추가), .ls-hero(1202) |
+| `#FAFAFB` | 1 | L72 <nav> |  | 구현함 | src/app/demo/store/new-product/listing.css:18 `--ls-side` → .ls-side(194) |
+| `#FBE7E4` | 1 | L108 span.chip |  | 구현함 | src/app/demo/store/new-product/listing.css:44 `--ls-risk-bg` → .ls-chip-gap(535) |
+| `#FFFBFA` | 2 | L41 .fld.gap |  | 구현함 | src/app/demo/store/new-product/listing.css:45 `--ls-risk-field` → .ls-fld-gap(476), .ls-status.dirty(953) |
+| `#FFFFFF` | 24 | L20 .b-black |  | 구현함 | src/app/demo/store/new-product/listing.css:17·63 → .ls-card, .ls-fld(읽기 전용 칸도 흰 바탕 — T098a에서 [readonly] 덧칠 지움), flashA/B 100%(502·510, T098a: transparent→#FFFFFF), src/app/demo/store/new-product/listing.css:33 focus 흰 고리. 시험 `tests/unit/app-t098a-scenes.test.ts` "L58·L59" |
+| `linear-gradient(120deg,#002991 0%,#0066F5 55%,#60CDFF 100%)` | 1 | L43 .ai |  | 구현함 | src/app/demo/store/new-product/listing.css:544 .ls-ai (gap 4px — T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L42" |
+| `linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF)` | 2 | L22 .b-ai |  | 구현함 | src/app/demo/store/new-product/listing.css:709 .ls-b-ai, src/app/demo/store/new-product/listing.css:1364 .ls-done-ic |
+| `linear-gradient(90deg,#002991,#0066F5,#60CDFF)` | 2 | L522 ~background |  | 구현함 | src/app/demo/store/new-product/listing.css:963 .ls-prog-fill (모달 진행·Recalculate 진행 막대 둘 다) |
+| `rgba(0,0,0,0.25)` | 2 | L30 .tipb |  | 구현함 | src/app/demo/store/new-product/listing.css:34 `--ls-shadow-tip` → .ls-tipb(811) 0 8px 24px, src/app/demo/store/new-product/listing.css:35 `--ls-shadow-sheet` → .ls-sheet(1014) 0 -12px 40px (T098a: --shadow-selected→시안 값). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
+| `rgba(0,0,0,0.38)` | 1 | L176 <div> |  | 구현함 | src/app/demo/store/new-product/listing.css:61 `--ls-scrim` → .ls-scrim(1008) |
+| `rgba(10,27,61,0.25)` | 1 | L49 .addic |  | 구현함 | src/app/demo/store/new-product/listing.css:36 `--ls-shadow-addic` → .ls-addic(431) 0 4px 10px (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
+| `rgba(255,255,255,0.85)` | 1 | L50 .phl |  | 구현함 | src/app/demo/store/new-product/listing.css:62 `--ls-ph-label` → .ls-phl(385) |
+| `rgba(31,157,85,.18)` | 1 | L37 .livedot |  | 구현함 | src/app/demo/store/new-product/listing.css:37 `--ls-shadow-live` → .ls-livedot(649) box-shadow 0 0 0 3px (T098a: outline→시안 그림자). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
 
 ### 2. 모션·타이밍 (hover·focus 포함) (27행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `.addph:focus-within` | 1 | L48 | outline:2px solid #097FF5;outline-offset:2px | 구현함 | src/app/listing/listing.css:421 outline 2px solid #097FF5 offset 2px — src/app/listing/listing-view.tsx:236 label 안 파일 입력 (T098a: aria-disabled span→시안 label+input). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
-| `.addph:hover` | 1 | L47 | border-color:#0A1B3D;background:#F6F7F9 | 구현함 | src/app/listing/listing.css:417 border-color #0A1B3D, background #F6F7F9 (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
-| `.b-black:hover` | 1 | L20 | background:#333333 | 구현함 | src/app/listing/listing.css:699 .ls-b-black:hover:not(:disabled) background #333333 |
-| `.b-tint:hover` | 1 | L21 | background:#05378227 | 구현함 | src/app/listing/listing.css:706 background #05378227 |
-| `.btn:focus-visible,.fld:focus-visible,.ins:focus-visible` | 1 | L38 | box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px | 구현함 | src/app/listing/listing.css:95 box-shadow #FFFFFF 0 0 0 2px (T098a 추가) + src/app/listing/listing.css:90 outline 2px solid #097FF5 offset 2px. 시험 `tests/unit/app-t098a-scenes.test.ts` "L38" |
-| `.snav:hover` | 1 | L33 | background:#EEF0F3 | 구현함 | src/app/listing/listing.css:221 background #EEF0F3 |
-| `.tipw:hover .tipb,.tipw:focus-within .tipb` | 1 | L31 | display:block | 구현함 | src/app/listing/listing.css:829 display:block |
-| `@keyframes flashA` | 1 | L58 | 0%{background:#E3F3FF}100%{background:#FFFFFF} | 구현함 | src/app/listing/listing.css:502 #E3F3FF → #FFFFFF (T098a: 끝 transparent→#FFFFFF). 시험 `tests/unit/app-t098a-scenes.test.ts` "L58·L59" |
-| `@keyframes flashB` | 1 | L59 | 0%{background:#E3F3FF}100%{background:#FFFFFF} | 구현함 | src/app/listing/listing.css:510 #E3F3FF → #FFFFFF (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L58·L59" |
-| `@keyframes pl` | 1 | L27 | 0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:1;transform:scale(1.06)} | 구현함 | src/app/listing/listing.css:664 @keyframes ls-pulse 0%,100% opacity .5·scale(.92) / 50% 1·scale(1.06). `tests/unit/app-t087-listing.test.ts` "시안 모션 값" |
-| `@keyframes rise` | 1 | L56 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} | 구현함 | src/app/listing/listing.css:1040 @keyframes ls-rise |
-| `@keyframes spin` | 1 | L25 | to{transform:rotate(360deg)} | 구현함 | src/app/listing/listing.css:1084 @keyframes ls-spin to rotate(360deg) |
-| `@keyframes up` | 1 | L55 | from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)} | 구현함 | src/app/listing/listing.css:1032 @keyframes ls-up translate(-50%,100%) → (-50%,0) |
-| `animation: flashA 1.2s ease` | 1 | L60 .flA |  | 구현함 | src/app/listing/listing.css:518 .ls-flA (src/app/listing/listing-view.tsx:108, 넣기 뒤 칸 깜빡임) |
-| `animation: flashB 1.2s ease` | 1 | L60 .flB |  | 구현함 | src/app/listing/listing.css:521 .ls-flB (src/app/listing/listing-view.tsx:108) |
-| `animation: pl 1.2s ease-in-out infinite` | 1 | L26 .pulse |  | 구현함 | src/app/listing/listing.css:658 .ls-pulse-ic — src/app/listing/listing-view.tsx:440 점검 모달 회전 고리 가운데 그래프 아이콘(시안 L184 자리). T098a: 예전엔 .ls-livedot에 잘못 붙어 있던 것을 옮김. `tests/unit/app-t087-listing.test.ts` "시안 모션 값", 시험 `tests/unit/app-t098a-scenes.test.ts` "L183·L184" |
-| `animation: rise .4s ease both` | 1 | L57 .rise |  | 구현함 | src/app/listing/listing.css:1050 .ls-rise (src/app/listing/listing-view.tsx:479 결과, src/app/listing/listing-view.tsx:597 완료 카드) |
-| `animation: spin 1.2s linear infinite` | 1 | L24 .spin |  | 구현함 | src/app/listing/listing.css:1080 .ls-spin transform-origin 48px 48px |
-| `animation: up .45s cubic-bezier(.2,1,.3,1)` | 1 | L54 .sheet |  | 구현함 | src/app/listing/listing.css:1014 .ls-sheet animation ls-up 0.45s cubic-bezier(0.2,1,0.3,1) |
-| `setInterval 60` | 1 | L570 ~iv | recalc: () => { if (this.iv) clearInterval(this.iv); let n = 0; this.setState({ rprog: 1 }); this.iv = setInterval(() => { n = Math.min(500, n + 25); this.setS… | 구현함 | config/motion.json scene3.recalc = {intervalMs: 60, step: 25} (T098a: 70→시안 60) → src/app/listing/progress.ts paceFor('recalc'). 값은 config에서 읽는다(예외 "/listing 점검 진행 시간 config"의 기본값 = 시안 값). `tests/unit/app-t087-listing.test.ts` "진행 n은 step 결과 그대로" |
+| `.addph:focus-within` | 1 | L48 | outline:2px solid #097FF5;outline-offset:2px | 구현함 | src/app/demo/store/new-product/listing.css:421 outline 2px solid #097FF5 offset 2px — src/app/demo/store/new-product/listing-view.tsx:236 label 안 파일 입력 (T098a: aria-disabled span→시안 label+input). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
+| `.addph:hover` | 1 | L47 | border-color:#0A1B3D;background:#F6F7F9 | 구현함 | src/app/demo/store/new-product/listing.css:417 border-color #0A1B3D, background #F6F7F9 (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
+| `.b-black:hover` | 1 | L20 | background:#333333 | 구현함 | src/app/demo/store/new-product/listing.css:699 .ls-b-black:hover:not(:disabled) background #333333 |
+| `.b-tint:hover` | 1 | L21 | background:#05378227 | 구현함 | src/app/demo/store/new-product/listing.css:706 background #05378227 |
+| `.btn:focus-visible,.fld:focus-visible,.ins:focus-visible` | 1 | L38 | box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px | 구현함 | src/app/demo/store/new-product/listing.css:95 box-shadow #FFFFFF 0 0 0 2px (T098a 추가) + src/app/demo/store/new-product/listing.css:90 outline 2px solid #097FF5 offset 2px. 시험 `tests/unit/app-t098a-scenes.test.ts` "L38" |
+| `.snav:hover` | 1 | L33 | background:#EEF0F3 | 구현함 | src/app/demo/store/new-product/listing.css:221 background #EEF0F3 |
+| `.tipw:hover .tipb,.tipw:focus-within .tipb` | 1 | L31 | display:block | 구현함 | src/app/demo/store/new-product/listing.css:829 display:block |
+| `@keyframes flashA` | 1 | L58 | 0%{background:#E3F3FF}100%{background:#FFFFFF} | 구현함 | src/app/demo/store/new-product/listing.css:502 #E3F3FF → #FFFFFF (T098a: 끝 transparent→#FFFFFF). 시험 `tests/unit/app-t098a-scenes.test.ts` "L58·L59" |
+| `@keyframes flashB` | 1 | L59 | 0%{background:#E3F3FF}100%{background:#FFFFFF} | 구현함 | src/app/demo/store/new-product/listing.css:510 #E3F3FF → #FFFFFF (T098a 고침). 시험 `tests/unit/app-t098a-scenes.test.ts` "L58·L59" |
+| `@keyframes pl` | 1 | L27 | 0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:1;transform:scale(1.06)} | 구현함 | src/app/demo/store/new-product/listing.css:664 @keyframes ls-pulse 0%,100% opacity .5·scale(.92) / 50% 1·scale(1.06). `tests/unit/app-t087-listing.test.ts` "시안 모션 값" |
+| `@keyframes rise` | 1 | L56 | from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} | 구현함 | src/app/demo/store/new-product/listing.css:1040 @keyframes ls-rise |
+| `@keyframes spin` | 1 | L25 | to{transform:rotate(360deg)} | 구현함 | src/app/demo/store/new-product/listing.css:1084 @keyframes ls-spin to rotate(360deg) |
+| `@keyframes up` | 1 | L55 | from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)} | 구현함 | src/app/demo/store/new-product/listing.css:1032 @keyframes ls-up translate(-50%,100%) → (-50%,0) |
+| `animation: flashA 1.2s ease` | 1 | L60 .flA |  | 구현함 | src/app/demo/store/new-product/listing.css:518 .ls-flA (src/app/demo/store/new-product/listing-view.tsx:108, 넣기 뒤 칸 깜빡임) |
+| `animation: flashB 1.2s ease` | 1 | L60 .flB |  | 구현함 | src/app/demo/store/new-product/listing.css:521 .ls-flB (src/app/demo/store/new-product/listing-view.tsx:108) |
+| `animation: pl 1.2s ease-in-out infinite` | 1 | L26 .pulse |  | 구현함 | src/app/demo/store/new-product/listing.css:658 .ls-pulse-ic — src/app/demo/store/new-product/listing-view.tsx:440 점검 모달 회전 고리 가운데 그래프 아이콘(시안 L184 자리). T098a: 예전엔 .ls-livedot에 잘못 붙어 있던 것을 옮김. `tests/unit/app-t087-listing.test.ts` "시안 모션 값", 시험 `tests/unit/app-t098a-scenes.test.ts` "L183·L184" |
+| `animation: rise .4s ease both` | 1 | L57 .rise |  | 구현함 | src/app/demo/store/new-product/listing.css:1050 .ls-rise (src/app/demo/store/new-product/listing-view.tsx:479 결과, src/app/demo/store/new-product/listing-view.tsx:597 완료 카드) |
+| `animation: spin 1.2s linear infinite` | 1 | L24 .spin |  | 구현함 | src/app/demo/store/new-product/listing.css:1080 .ls-spin transform-origin 48px 48px |
+| `animation: up .45s cubic-bezier(.2,1,.3,1)` | 1 | L54 .sheet |  | 구현함 | src/app/demo/store/new-product/listing.css:1014 .ls-sheet animation ls-up 0.45s cubic-bezier(0.2,1,0.3,1) |
+| `setInterval 60` | 1 | L570 ~iv | recalc: () => { if (this.iv) clearInterval(this.iv); let n = 0; this.setState({ rprog: 1 }); this.iv = setInterval(() => { n = Math.min(500, n + 25); this.setS… | 구현함 | config/motion.json scene3.recalc = {intervalMs: 60, step: 25} (T098a: 70→시안 60) → src/app/demo/store/new-product/progress.ts paceFor('recalc'). 값은 config에서 읽는다(예외 "/demo/store/new-product 점검 진행 시간 config"의 기본값 = 시안 값). `tests/unit/app-t087-listing.test.ts` "진행 n은 step 결과 그대로" |
 | `setInterval 70` | 1 | L465 ~iv | this.iv = setInterval(() => { n = Math.min(500, n + 5); this.setState({ prog: n }); if (n >= 500) { clearInterval(this.iv); this.iv = null; onDone(); } }, 70); | 구현함 | config/motion.json scene3.check = {intervalMs: 70, step: 5} → progress.ts paceFor('check'). `tests/unit/app-t087-listing.test.ts` "진행 n은 step 결과 그대로" |
-| `transition: background-color .15s ease` | 1 | L18 .btn |  | 구현함 | src/app/listing/listing.css:676 .ls-btn transition background-color 0.15s ease |
-| `transition: background-color .3s ease,transform .3s ease` | 1 | L523 ~border-radius |  | 구현함 | src/app/listing/listing.css:1153 .ls-cell (scale .7 → 1, src/app/listing/listing-view.tsx:460) |
-| `transition: background-color .4s ease` | 1 | L508 ~border-radius |  | 구현함 | src/app/listing/listing.css:851 .ls-dot transition background-color 0.4s ease |
-| `transition: border-color .15s,background-color .15s` | 1 | L46 .addph |  | 구현함 | src/app/listing/listing.css:398 .ls-addph (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
-| `transition: width .07s linear` | 1 | L522 ~background |  | 구현함 | src/app/listing/listing.css:963 .ls-prog-fill. `tests/unit/app-t087-listing.test.ts` "시안 모션 값" |
-| `transition: width .5s ease` | 1 | L543 ~border-radius |  | 구현함 | src/app/listing/listing.css:934 .ls-bar-fill |
+| `transition: background-color .15s ease` | 1 | L18 .btn |  | 구현함 | src/app/demo/store/new-product/listing.css:676 .ls-btn transition background-color 0.15s ease |
+| `transition: background-color .3s ease,transform .3s ease` | 1 | L523 ~border-radius |  | 구현함 | src/app/demo/store/new-product/listing.css:1153 .ls-cell (scale .7 → 1, src/app/demo/store/new-product/listing-view.tsx:460) |
+| `transition: background-color .4s ease` | 1 | L508 ~border-radius |  | 구현함 | src/app/demo/store/new-product/listing.css:851 .ls-dot transition background-color 0.4s ease |
+| `transition: border-color .15s,background-color .15s` | 1 | L46 .addph |  | 구현함 | src/app/demo/store/new-product/listing.css:398 .ls-addph (T098a 추가). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
+| `transition: width .07s linear` | 1 | L522 ~background |  | 구현함 | src/app/demo/store/new-product/listing.css:963 .ls-prog-fill. `tests/unit/app-t087-listing.test.ts` "시안 모션 값" |
+| `transition: width .5s ease` | 1 | L543 ~border-radius |  | 구현함 | src/app/demo/store/new-product/listing.css:934 .ls-bar-fill |
 
 ### 3. 누를 수 있는 것과 결과 상태 (13행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `onChange addPhoto` | 1 | L93 <input> | setState: userPhotos | 구현함 | src/app/listing/listing-view.tsx:236–246 파일 입력 → handlers.addPhoto → src/app/listing/listing-screen.tsx userPhotos(blob URL, 서버로 보내지 않음, 계산과 무관) → src/app/listing/listing-view.tsx:230 "Your photo" 사진 칸 (T098a 추가, 문구 config/listing.*.json `yours`). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
-| `onChange on.from` | 1 | L102 input.fld | setState: f · 호출: setField | 구현함 | src/app/listing/listing-view.tsx:274 edit('from') → reducer. `tests/unit/app-t087-listing.test.ts` 흐름 시험 |
-| `onChange on.title` | 1 | L97 input.fld | setState: f · 호출: setField | 구현함 | src/app/listing/listing-view.tsx:260 edit('title') |
-| `onChange on.to` | 1 | L103 input.fld | setState: f · 호출: setField | 구현함 | src/app/listing/listing-view.tsx:278 edit('to') |
-| `onChange x.on` | 1 | L109 textarea.{{x.cls}} | setState: f · 호출: setField | 구현함 | src/app/listing/listing-view.tsx:122 textarea edit(칸) → 결과판 "Changed — recalculate". `tests/unit/app-t087-listing.test.ts` 흐름 시험 |
-| `onClick backEdit` | 1 | L268 button.btn | setState: calcF, calcPeak, screen | 구현함 | src/app/listing/listing-view.tsx:613 → reducer backEdit (상세로). `tests/unit/app-t087-listing.test.ts` 흐름 시험 |
-| `onClick i.run` | 1 | L111 button.ins | setState: f, fl, flash, prog · 호출: insert | 구현함 | src/app/listing/listing-view.tsx:127 insert(fix) → reducer insert (칸 깜빡임 flA/flB). 넣는 글은 AI 고칠 문구(정직성 ⑤: 영어, 숫자 [__]). `tests/unit/app-t087-listing.test.ts` "AI 넣기(ok인 칸만)" |
-| `onClick publish` | 1 | L119 button.btn | setState: basePeak, f, fl, flash, prog, screen · 호출: run | 구현함 | src/app/listing/listing-view.tsx:301 → 점검 모달 + 진행 (progress.ts). `tests/unit/app-t087-listing.test.ts` |
-| `onClick publishAnyway` | 1 | L248 button.btn | setState: published, screen | 구현함 | src/app/listing/listing-view.tsx:578 → 완료 카드. `tests/unit/app-t087-listing.test.ts` |
-| `onClick publishFinal` | 1 | L167 button.btn | setState: published, screen | 구현함 | src/app/listing/listing-view.tsx:404 → 완료 카드. `tests/unit/app-t087-listing.test.ts` |
-| `onClick recalc` | 1 | L158 button.btn | setState: calcF, calcPeak, rprog · 호출: feats, peak | 구현함 | src/app/listing/listing-view.tsx:380 → recalc 진행 (config 60ms·+25). `tests/unit/app-t087-listing.test.ts` |
-| `onClick restart` | 1 | L268 button.btn | setState: (함수형 setState) · 호출: fresh | 구현함 | src/app/listing/listing-view.tsx:616 → 처음 상태. `tests/unit/app-t087-listing.test.ts` |
-| `onClick toDetail` | 1 | L249 button.btn | setState: calcF, calcPeak, rprog, screen | 구현함 | src/app/listing/listing-view.tsx:581 → 상세 (입력칸 + 결과판). `tests/unit/app-t087-listing.test.ts` |
+| `onChange addPhoto` | 1 | L93 <input> | setState: userPhotos | 구현함 | src/app/demo/store/new-product/listing-view.tsx:236–246 파일 입력 → handlers.addPhoto → src/app/demo/store/new-product/listing-screen.tsx userPhotos(blob URL, 서버로 보내지 않음, 계산과 무관) → src/app/demo/store/new-product/listing-view.tsx:230 "Your photo" 사진 칸 (T098a 추가, 문구 config/listing.*.json `yours`). 시험 `tests/unit/app-t098a-scenes.test.ts` "L93" |
+| `onChange on.from` | 1 | L102 input.fld | setState: f · 호출: setField | 구현함 | src/app/demo/store/new-product/listing-view.tsx:274 edit('from') → reducer. `tests/unit/app-t087-listing.test.ts` 흐름 시험 |
+| `onChange on.title` | 1 | L97 input.fld | setState: f · 호출: setField | 구현함 | src/app/demo/store/new-product/listing-view.tsx:260 edit('title') |
+| `onChange on.to` | 1 | L103 input.fld | setState: f · 호출: setField | 구현함 | src/app/demo/store/new-product/listing-view.tsx:278 edit('to') |
+| `onChange x.on` | 1 | L109 textarea.{{x.cls}} | setState: f · 호출: setField | 구현함 | src/app/demo/store/new-product/listing-view.tsx:122 textarea edit(칸) → 결과판 "Changed — recalculate". `tests/unit/app-t087-listing.test.ts` 흐름 시험 |
+| `onClick backEdit` | 1 | L268 button.btn | setState: calcF, calcPeak, screen | 구현함 | src/app/demo/store/new-product/listing-view.tsx:613 → reducer backEdit (상세로). `tests/unit/app-t087-listing.test.ts` 흐름 시험 |
+| `onClick i.run` | 1 | L111 button.ins | setState: f, fl, flash, prog · 호출: insert | 구현함 | src/app/demo/store/new-product/listing-view.tsx:127 insert(fix) → reducer insert (칸 깜빡임 flA/flB). 넣는 글은 AI 고칠 문구(정직성 ⑤: 영어, 숫자 [__]). `tests/unit/app-t087-listing.test.ts` "AI 넣기(ok인 칸만)" |
+| `onClick publish` | 1 | L119 button.btn | setState: basePeak, f, fl, flash, prog, screen · 호출: run | 구현함 | src/app/demo/store/new-product/listing-view.tsx:301 → 점검 모달 + 진행 (progress.ts). `tests/unit/app-t087-listing.test.ts` |
+| `onClick publishAnyway` | 1 | L248 button.btn | setState: published, screen | 구현함 | src/app/demo/store/new-product/listing-view.tsx:578 → 완료 카드. `tests/unit/app-t087-listing.test.ts` |
+| `onClick publishFinal` | 1 | L167 button.btn | setState: published, screen | 구현함 | src/app/demo/store/new-product/listing-view.tsx:404 → 완료 카드. `tests/unit/app-t087-listing.test.ts` |
+| `onClick recalc` | 1 | L158 button.btn | setState: calcF, calcPeak, rprog · 호출: feats, peak | 구현함 | src/app/demo/store/new-product/listing-view.tsx:380 → recalc 진행 (config 60ms·+25). `tests/unit/app-t087-listing.test.ts` |
+| `onClick restart` | 1 | L268 button.btn | setState: (함수형 setState) · 호출: fresh | 구현함 | src/app/demo/store/new-product/listing-view.tsx:616 → 처음 상태. `tests/unit/app-t087-listing.test.ts` |
+| `onClick toDetail` | 1 | L249 button.btn | setState: calcF, calcPeak, rprog, screen | 구현함 | src/app/demo/store/new-product/listing-view.tsx:581 → 상세 (입력칸 + 결과판). `tests/unit/app-t087-listing.test.ts` |
 
 ### 4. 접힘·펼침 (14행)
 
 | 값 | 횟수 | 첫 자리 | 내용 | 상태 | 근거 |
 |---|---|---|---|---|---|
-| `rotate(360deg)` | 1 | L25 ~transform |  | 구현함 | src/app/listing/listing.css:1084 @keyframes ls-spin |
-| `sc-if b.hasChip` | 1 | L202 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:486 기준 칸 "Includes Black Friday week" 칩 (.ls-chip-peak) |
-| `sc-if isDetail` | 2 | L86 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:213 상세 머리글, src/app/listing/listing-view.tsx:637 상세 배치(.ls-layout-detail) + 결과판(model panel = screen 'detail') |
-| `sc-if isDone` | 1 | L257 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx Done (model done = screen 'done'), src/app/listing/listing-view.tsx:597 완료 카드 |
-| `sc-if isEdit` | 1 | L115 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:295 screen 'edit'·'sheet'일 때 Save draft·Publish 줄 |
-| `sc-if isSheet` | 1 | L175 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:419–420 점검 모달 (model sheet = screen 'sheet') |
-| `sc-if p.hasDelta` | 1 | L132 <sc-if> |  | 예외 | DECISIONS 11/11 22:55 예외 "데이터(엔진 숫자)": 시안 "−x pts" 칩(L132·L538)은 화면 코드가 두 확률을 빼서 만든다. 숫자 계산은 src/engine에서만(CLAUDE.md 공통 규칙)이고 엔진 결과에 그 차이 값이 없어 칩을 그리지 않는다 — 대신 "Before x%"(src/app/listing/listing-view.tsx:340)와 좋아진 확률 색 #002991(src/app/listing/listing.css:776). 보고서 "컨트롤 타워에 요청할 결정" 1 |
-| `sc-if p.running` | 1 | L160 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:384 Recalculate 진행 막대 |
-| `sc-if sh.peak` | 1 | L228 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:534 Black Friday 배송 안내 (문구는 정직성 ③ 숫자 없음) |
-| `sc-if sh.ready` | 1 | L198 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:426 kind 'ready' 결과 (.ls-rise) |
-| `sc-if sh.running` | 1 | L180 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:426 kind 'running' 진행 (회전 고리·단계·칸·막대) |
-| `sc-if showEditor` | 1 | L82 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:637 screen ≠ 'done'일 때 편집기 |
-| `sc-if x.hasGap` | 1 | L108 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:111 "Missing: …" 칩 + src/app/listing/listing-view.tsx:119 .ls-fld-gap (src/app/listing/listing.css:476) |
-| `sc-if x.hasIns` | 1 | L110 <sc-if> |  | 구현함 | src/app/listing/listing-view.tsx:124 상세에서 빠진 칸마다 넣기 버튼 — AI 고칠 문구가 준비된 것만(src/app/listing/model.ts inserts, 정직성 ⑤). `tests/unit/app-t087-listing.test.ts` "AI 넣기(ok인 칸만)" |
+| `rotate(360deg)` | 1 | L25 ~transform |  | 구현함 | src/app/demo/store/new-product/listing.css:1084 @keyframes ls-spin |
+| `sc-if b.hasChip` | 1 | L202 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:486 기준 칸 "Includes Black Friday week" 칩 (.ls-chip-peak) |
+| `sc-if isDetail` | 2 | L86 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:213 상세 머리글, src/app/demo/store/new-product/listing-view.tsx:637 상세 배치(.ls-layout-detail) + 결과판(model panel = screen 'detail') |
+| `sc-if isDone` | 1 | L257 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx Done (model done = screen 'done'), src/app/demo/store/new-product/listing-view.tsx:597 완료 카드 |
+| `sc-if isEdit` | 1 | L115 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:295 screen 'edit'·'sheet'일 때 Save draft·Publish 줄 |
+| `sc-if isSheet` | 1 | L175 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:419–420 점검 모달 (model sheet = screen 'sheet') |
+| `sc-if p.hasDelta` | 1 | L132 <sc-if> |  | 예외 | DECISIONS 11/11 22:55 예외 "데이터(엔진 숫자)": 시안 "−x pts" 칩(L132·L538)은 화면 코드가 두 확률을 빼서 만든다. 숫자 계산은 src/engine에서만(CLAUDE.md 공통 규칙)이고 엔진 결과에 그 차이 값이 없어 칩을 그리지 않는다 — 대신 "Before x%"(src/app/demo/store/new-product/listing-view.tsx:340)와 좋아진 확률 색 #002991(src/app/demo/store/new-product/listing.css:776). 보고서 "컨트롤 타워에 요청할 결정" 1 |
+| `sc-if p.running` | 1 | L160 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:384 Recalculate 진행 막대 |
+| `sc-if sh.peak` | 1 | L228 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:534 Black Friday 배송 안내 (문구는 정직성 ③ 숫자 없음) |
+| `sc-if sh.ready` | 1 | L198 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:426 kind 'ready' 결과 (.ls-rise) |
+| `sc-if sh.running` | 1 | L180 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:426 kind 'running' 진행 (회전 고리·단계·칸·막대) |
+| `sc-if showEditor` | 1 | L82 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:637 screen ≠ 'done'일 때 편집기 |
+| `sc-if x.hasGap` | 1 | L108 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:111 "Missing: …" 칩 + src/app/demo/store/new-product/listing-view.tsx:119 .ls-fld-gap (src/app/demo/store/new-product/listing.css:476) |
+| `sc-if x.hasIns` | 1 | L110 <sc-if> |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:124 상세에서 빠진 칸마다 넣기 버튼 — AI 고칠 문구가 준비된 것만(src/app/demo/store/new-product/model.ts inserts, 정직성 ⑤). `tests/unit/app-t087-listing.test.ts` "AI 넣기(ok인 칸만)" |
 
 ### 5. 조건부 스타일 (17행)
 
@@ -401,18 +402,18 @@ _(자동 추출 0행 — 시안의 링크는 onClick이 아니라 href라서 빠
 |---|---|---|---|---|---|
 | `B1: x.color ? 0.45 : 0.3` | 1 | L419 ~B1 |  | 예외 | DECISIONS 11/11 22:55 예외 "데이터(엔진 숫자)": 시안 화면 코드 안 계산 계수(이길 확률). 앱 계수는 src/engine/listing.ts + config/listing-model.json에서만 (화면은 옮기기만) |
 | `LANG === 'ko' ? '%p' : ' pts'` | 1 | L538 ~LANG |  | 예외 | DECISIONS 11/11 22:55 예외 "데이터(엔진 숫자)": "−x pts" 확률 차이 칩(p.hasDelta)의 단위 — 칩과 같은 이유로 없음. 고칠 점 줄의 같은 단위는 구현함(config/listing.*.json probCut "chance −{{x}} pts"/"%p") |
-| `at[i] ? TC[at[i]] : (gap \|\| '#D9DCE0')` | 1 | L508 ~background |  | 구현함 | src/app/listing/listing-view.tsx:81 .ls-dot + 유형 색(src/app/listing/listing.css:858–885), 빈 점 #D9DCE0(src/app/listing/listing.css:851) |
-| `cur.cntK[k] < base.cntK[k] - 0.02 ? '#0066F5' : TC[k]` | 1 | L543 ~background |  | 구현함 | src/app/listing/listing-view.tsx:372 .ls-bar-fill.down(src/app/listing/listing.css:937 #0066F5) / 유형 색 — 내려갔는지는 model.ts types.down(엔진 결과 비교) |
-| `cur.disputes < base.disputes - 0.05 ? '#002991' : '#C4321F'` | 1 | L537 ~color |  | 구현함 | src/app/listing/listing-view.tsx:333 .ls-big.good(src/app/listing/listing.css:776, T098a: #0066F5→시안 #002991) / .ls-big(#C4321F). 시험 `tests/unit/app-t098a-scenes.test.ts` "L126" |
-| `dirty ? '#9E2414' : '#002991'` | 1 | L545 ~color |  | 구현함 | src/app/listing/listing-view.tsx:378 .ls-status.dirty(src/app/listing/listing.css:953) / .ls-status(src/app/listing/listing.css:940) |
-| `i / N * 500 < s.prog ? 'background:#9AA0A6;transform:scale(1)' : 'background:#EEF0F2;transform:scale(.7)'` | 1 | L523 ~transition |  | 구현함 | src/app/listing/listing-view.tsx:460 .ls-cell.on(src/app/listing/listing.css:1163) / .ls-cell(src/app/listing/listing.css:1153) |
-| `i < step ? '#0066F5' : i === step ? '#000000' : '#9AA0A6'` | 2 | L521 ~color |  | 구현함 | src/app/listing/listing-view.tsx:450 .ls-step.done/now/todo(src/app/listing/listing.css:1128–1135, 굵기 now만 700). 1~3단계는 엔진이 만들 때 끝내 done (model.ts:341) |
-| `i ? 'border-left:1px solid #E4E6E9' : ''` | 1 | L518 ~padding |  | 구현함 | src/app/listing/listing.css:1190 .ls-basis-cell + .ls-basis-cell border-left 1px |
-| `improved ? '#002991' : '#C4321F'` | 1 | L555 ~color |  | 구현함 | .ls-done-prob.good(src/app/listing/listing.css:1410, T098a: #0066F5→#002991) / .ls-done-prob(src/app/listing/listing.css:1401). 시험 `tests/unit/app-t098a-scenes.test.ts` "L126" |
-| `layoutSt: isDetail ? 'display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:24px;align-items:start;max-width:1320px;margin:0 auto;padding:18px 32px 48px'` | 1 | L564 ~layoutSt |  | 구현함 | src/app/listing/listing.css:285 .ls-layout-detail / src/app/listing/listing.css:277 .ls-layout (960px 한 줄) |
-| `peak ? 'background:#E3F3FF;color:#002991' : 'background:#F1EFEA;color:#3F4144'` | 1 | L561 ~white-space |  | 구현함 | .ls-peak.on(src/app/listing/listing.css:491) / .ls-peak(src/app/listing/listing.css:480) |
-| `showGap ? ' gap' : ''` | 1 | L495 ~cls |  | 구현함 | src/app/listing/listing-view.tsx:119 .ls-fld-gap(src/app/listing/listing.css:476) |
-| `statusBg: dirty ? '#FFFBFA' : '#F5F9FF'` | 1 | L544 ~statusBg |  | 구현함 | .ls-status.dirty(src/app/listing/listing.css:953) / .ls-status(src/app/listing/listing.css:940) |
+| `at[i] ? TC[at[i]] : (gap \|\| '#D9DCE0')` | 1 | L508 ~background |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:81 .ls-dot + 유형 색(src/app/demo/store/new-product/listing.css:858–885), 빈 점 #D9DCE0(src/app/demo/store/new-product/listing.css:851) |
+| `cur.cntK[k] < base.cntK[k] - 0.02 ? '#0066F5' : TC[k]` | 1 | L543 ~background |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:372 .ls-bar-fill.down(src/app/demo/store/new-product/listing.css:937 #0066F5) / 유형 색 — 내려갔는지는 model.ts types.down(엔진 결과 비교) |
+| `cur.disputes < base.disputes - 0.05 ? '#002991' : '#C4321F'` | 1 | L537 ~color |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:333 .ls-big.good(src/app/demo/store/new-product/listing.css:776, T098a: #0066F5→시안 #002991) / .ls-big(#C4321F). 시험 `tests/unit/app-t098a-scenes.test.ts` "L126" |
+| `dirty ? '#9E2414' : '#002991'` | 1 | L545 ~color |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:378 .ls-status.dirty(src/app/demo/store/new-product/listing.css:953) / .ls-status(src/app/demo/store/new-product/listing.css:940) |
+| `i / N * 500 < s.prog ? 'background:#9AA0A6;transform:scale(1)' : 'background:#EEF0F2;transform:scale(.7)'` | 1 | L523 ~transition |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:460 .ls-cell.on(src/app/demo/store/new-product/listing.css:1163) / .ls-cell(src/app/demo/store/new-product/listing.css:1153) |
+| `i < step ? '#0066F5' : i === step ? '#000000' : '#9AA0A6'` | 2 | L521 ~color |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:450 .ls-step.done/now/todo(src/app/demo/store/new-product/listing.css:1128–1135, 굵기 now만 700). 1~3단계는 엔진이 만들 때 끝내 done (model.ts:341) |
+| `i ? 'border-left:1px solid #E4E6E9' : ''` | 1 | L518 ~padding |  | 구현함 | src/app/demo/store/new-product/listing.css:1190 .ls-basis-cell + .ls-basis-cell border-left 1px |
+| `improved ? '#002991' : '#C4321F'` | 1 | L555 ~color |  | 구현함 | .ls-done-prob.good(src/app/demo/store/new-product/listing.css:1410, T098a: #0066F5→#002991) / .ls-done-prob(src/app/demo/store/new-product/listing.css:1401). 시험 `tests/unit/app-t098a-scenes.test.ts` "L126" |
+| `layoutSt: isDetail ? 'display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:24px;align-items:start;max-width:1320px;margin:0 auto;padding:18px 32px 48px'` | 1 | L564 ~layoutSt |  | 구현함 | src/app/demo/store/new-product/listing.css:285 .ls-layout-detail / src/app/demo/store/new-product/listing.css:277 .ls-layout (960px 한 줄) |
+| `peak ? 'background:#E3F3FF;color:#002991' : 'background:#F1EFEA;color:#3F4144'` | 1 | L561 ~white-space |  | 구현함 | .ls-peak.on(src/app/demo/store/new-product/listing.css:491) / .ls-peak(src/app/demo/store/new-product/listing.css:480) |
+| `showGap ? ' gap' : ''` | 1 | L495 ~cls |  | 구현함 | src/app/demo/store/new-product/listing-view.tsx:119 .ls-fld-gap(src/app/demo/store/new-product/listing.css:476) |
+| `statusBg: dirty ? '#FFFBFA' : '#F5F9FF'` | 1 | L544 ~statusBg |  | 구현함 | .ls-status.dirty(src/app/demo/store/new-product/listing.css:953) / .ls-status(src/app/demo/store/new-product/listing.css:940) |
 | `x.color ? 0.45 : 1` | 1 | L417 ~B1 |  | 예외 | DECISIONS 11/11 22:55 예외 "데이터(엔진 숫자)": 시안 화면 코드 안 발생 배수. 앱은 src/engine/listing.ts listingRates + config/listing-model.json |
-| `x[k] ? '#002991' : '#0066F5'` | 1 | L550 ~color |  | 구현함 | .ls-check-s.on(src/app/listing/listing.css:1003) / .ls-check-s(src/app/listing/listing.css:999) |
-| `x[k] ? 'background:#0066F5;color:#FFFFFF' : 'background:#FFFFFF;color:#9AA0A6;box-shadow:inset 0 0 0 2px #CFD3D8'` | 1 | L549 ~flex-shrink |  | 구현함 | .ls-check-ic.on(src/app/listing/listing.css:994) / .ls-check-ic(src/app/listing/listing.css:980, T098a: border→시안 inset 그림자 src/app/listing/listing.css:40). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |
+| `x[k] ? '#002991' : '#0066F5'` | 1 | L550 ~color |  | 구현함 | .ls-check-s.on(src/app/demo/store/new-product/listing.css:1003) / .ls-check-s(src/app/demo/store/new-product/listing.css:999) |
+| `x[k] ? 'background:#0066F5;color:#FFFFFF' : 'background:#FFFFFF;color:#9AA0A6;box-shadow:inset 0 0 0 2px #CFD3D8'` | 1 | L549 ~flex-shrink |  | 구현함 | .ls-check-ic.on(src/app/demo/store/new-product/listing.css:994) / .ls-check-ic(src/app/demo/store/new-product/listing.css:980, T098a: border→시안 inset 그림자 src/app/demo/store/new-product/listing.css:40). 시험 `tests/unit/app-t098a-scenes.test.ts` "시안 그림자" |

@@ -5,7 +5,7 @@
  * 다 끝나면 `sim.result()`(= `checkListing` 같은 입력 결과)와 `listingFixGains`를 묶어 돌려준다.
  * 움직임 줄이기(`prefers-reduced-motion`)이면 기다리지 않고 바로 끝까지 계산해 결과를 준다.
  */
-import motion from '../../../config/motion.json';
+import motion from '../../../../../config/motion.json';
 import { createListingSim, listingFixGains } from '@/engine/listing';
 import type { ListingCheckInput } from '@/types';
 

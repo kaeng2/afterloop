@@ -8,7 +8,7 @@
  * - "Add photo"는 시안처럼 동작한다 (T098a): 고른 사진을 이 브라우저에서만 "Your photo"로 보여 준다. 올리지 않고 계산과 무관.
  * - 숫자 옆 "≈ Assumption", 고칠 문구 옆 "AI suggests" (예외 — 사람 결정 11/12 "Keep as is").
  */
-import { AiSuggestsBadge, AssumptionBadge } from '../_shared/badges';
+import { AiSuggestsBadge, AssumptionBadge } from '../../../_shared/badges';
 import type { FieldView, FormKey, ListingView } from './model';
 import { TYPE_TONE } from './model';
 import type { ListingDisputeType, ListingFixKey } from '@/types';

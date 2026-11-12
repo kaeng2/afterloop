@@ -34,12 +34,12 @@ const llmSpy = vi.fn();
 vi.mock('@/app/_server/llm', () => ({ getLlm: () => ({ ok: true, llm: (req: unknown) => llmSpy(req) }) }));
 
 (globalThis as { React?: typeof React }).React = React;
-const { ListingScreenView } = await import('@/app/listing/listing-view');
-const { buildView, initialState, makeReducer, toCheckInput } = await import('@/app/listing/model');
-const { runListingCheck, paceFor } = await import('@/app/listing/progress');
+const { ListingScreenView } = await import('@/app/demo/store/new-product/listing-view');
+const { buildView, initialState, makeReducer, toCheckInput } = await import('@/app/demo/store/new-product/model');
+const { runListingCheck, paceFor } = await import('@/app/demo/store/new-product/progress');
 const { default: MOTION } = await import('../../config/motion.json');
-const { pct1, pts1 } = await import('@/app/listing/format');
-const { listingFixesFor } = await import('@/app/listing/fixes');
+const { pct1, pts1 } = await import('@/app/demo/store/new-product/format');
+const { listingFixesFor } = await import('@/app/demo/store/new-product/fixes');
 const { POST } = await import('@/app/api/listing-check/route');
 type ListingState = ReturnType<typeof initialState>;
 type ListingAction = Parameters<ReturnType<typeof makeReducer>>[1];
@@ -352,14 +352,14 @@ describe('T087 흐름 (Publish → 진행 → 결과 → 고치기 → Recalcula
 });
 
 describe('T087 진행 표시: setInterval·가짜 카운터 없음 (정적 검사)', () => {
-  const files = readdirSync(path.join(ROOT, 'src/app/listing')).map((f) => `src/app/listing/${f}`);
+  const files = readdirSync(path.join(ROOT, 'src/app/demo/store/new-product')).map((f) => `src/app/demo/store/new-product/${f}`);
   it('타이머는 progress.ts에서만, 진행은 sim.step(설정 step)이 돌려준 값, 속도는 config/motion.json에서 읽는다', () => {
     for (const file of files) {
       if (file.endsWith('progress.ts')) continue;
       const text = strip(read(file));
       expect(/setInterval|setTimeout/.test(text), file).toBe(false);
     }
-    const progress = strip(read('src/app/listing/progress.ts'));
+    const progress = strip(read('src/app/demo/store/new-product/progress.ts'));
     expect(progress).toMatch(/setInterval/);
     expect(progress).toMatch(/sim\.step\(pace\.step\)/);
     expect(progress).toMatch(/config\/motion\.json/);
@@ -385,7 +385,7 @@ describe('T087 진행 표시: setInterval·가짜 카운터 없음 (정적 검�
   });
 
   it('시안 모션 값: 진행 막대 width .07s linear, pulse = opacity .5↔1 + scale .92↔1.06 (1.2s), reduced-motion이면 끔', () => {
-    const css = read('src/app/listing/listing.css');
+    const css = read('src/app/demo/store/new-product/listing.css');
     // T109: 시안 값 그대로 (L522 시트 진행 막대 progSt에만 transition, L547 패널 막대는 없음)
     const fill = css.match(/\.ls-run \.ls-prog-fill\s*\{[^}]*\}/)?.[0] ?? '';
     expect(fill).toMatch(/transition:\s*width\s+0?\.07s\s+linear/);
@@ -398,7 +398,7 @@ describe('T087 진행 표시: setInterval·가짜 카운터 없음 (정적 검�
   });
 
   it('진행 숫자는 progress 액션(= step 반환값)으로만 바뀐다', () => {
-    const model = strip(read('src/app/listing/model.ts'));
+    const model = strip(read('src/app/demo/store/new-product/model.ts'));
     expect(model.match(/done: action\.done/g)).toHaveLength(1);
     expect(model).not.toMatch(/done\s*\+\s*\d|done\s*\+=|done\+\+/);
   });
@@ -449,7 +449,7 @@ describe('T087 /listing: Today 읽기·PayPal 조회 0회', () => {
   it('page를 그려도 Today·PayPal 가짜 모듈이 불리지 않는다', async () => {
     todaySpy.mockClear();
     paypalSpy.mockClear();
-    const { default: ListingPage } = await import('@/app/listing/page');
+    const { default: ListingPage } = await import('@/app/demo/store/new-product/page');
     const el = await ListingPage({ searchParams: Promise.resolve({}) });
     const html = renderToStaticMarkup(el);
     expect(html).toContain('Fernwood Knits');
@@ -460,8 +460,8 @@ describe('T087 /listing: Today 읽기·PayPal 조회 0회', () => {
 
   it('route group (app) 밖이고, 화면 파일이 Today·PayPal을 import하지 않는다', () => {
     expect(readdirSync(path.join(ROOT, 'src/app')).includes('listing')).toBe(true);
-    for (const f of readdirSync(path.join(ROOT, 'src/app/listing'))) {
-      const text = strip(read(`src/app/listing/${f}`));
+    for (const f of readdirSync(path.join(ROOT, 'src/app/demo/store/new-product'))) {
+      const text = strip(read(`src/app/demo/store/new-product/${f}`));
       expect(/_server\/(today|paypal|disputes)|@\/paypal|\(app\)/.test(text), f).toBe(false);
     }
   });
@@ -469,7 +469,7 @@ describe('T087 /listing: Today 읽기·PayPal 조회 0회', () => {
   it('서버 액션은 draftListingFixes를 한 번 부른다 (getLlm 호출기, 캐시·횟수 제한 그대로)', async () => {
     llmSpy.mockReset();
     llmSpy.mockResolvedValue(AI_JSON);
-    const { draftListingFixesAction } = await import('@/app/listing/actions');
+    const { draftListingFixesAction } = await import('@/app/demo/store/new-product/actions');
     const out = await draftListingFixesAction({ productTitle: 'Ribbed Wool Crewneck, Ivory', productDescription: BASE.fields.desc });
     expect(llmSpy).toHaveBeenCalledTimes(1);
     expect(out?.size.ok).toBe(true);
@@ -481,7 +481,7 @@ describe('T087 /listing: Today 읽기·PayPal 조회 0회', () => {
 
 describe('T087 색·문구 정직성', () => {
   const screenFiles = [
-    ...readdirSync(path.join(ROOT, 'src/app/listing')).map((f) => `src/app/listing/${f}`),
+    ...readdirSync(path.join(ROOT, 'src/app/demo/store/new-product')).map((f) => `src/app/demo/store/new-product/${f}`),
     'src/app/api/listing-check/route.ts',
   ];
   it('화면 코드·css에 남보라(T089 이전 강조색)가 없고, 색은 시안 scene3 파랑을 쓴다', () => {
@@ -491,7 +491,7 @@ describe('T087 색·문구 정직성', () => {
         expect(text, file).not.toContain(violet);
       }
     }
-    const css = read('src/app/listing/listing.css').toLowerCase();
+    const css = read('src/app/demo/store/new-product/listing.css').toLowerCase();
     for (const v of ['#0066f5', '#002991', '#60cdff']) expect(css).toContain(v);
   });
 
@@ -569,14 +569,14 @@ describe('T096 진입점', () => {
   });
 
   it('Desk(Today)·/intro 코드에 /listing·/products 로 가는 링크가 없다', () => {
-    for (const rel of ['src/app/today/today-list.tsx', 'src/app/intro/intro-screen.tsx', 'src/app/listing/listing-view.tsx']) {
+    for (const rel of ['src/app/today/today-list.tsx', 'src/app/demo/seller-dashboard/intro-screen.tsx', 'src/app/demo/store/new-product/listing-view.tsx']) {
       const src = readFileSync(path.join(ROOT, rel), 'utf8');
       expect(src, rel).not.toMatch(/href=["'{`][^>]*\/(listing|products)/);
     }
   });
 
   it('/listing "DisputeLess" 메뉴는 button, 이동·핸들러 없음, aria-disabled', () => {
-    const src = readFileSync(path.join(ROOT, 'src/app/listing/listing-view.tsx'), 'utf8');
+    const src = readFileSync(path.join(ROOT, 'src/app/demo/store/new-product/listing-view.tsx'), 'utf8');
     const at = src.indexOf('{n.disputeless}');
     const block = src.slice(src.lastIndexOf('<button', at), at);
     expect(block).toContain('type="button"');

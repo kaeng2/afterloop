@@ -11,13 +11,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 (globalThis as { React?: typeof React }).React = React;
-const { ListingScreenView } = await import('@/app/listing/listing-view');
-const { buildView, initialState } = await import('@/app/listing/model');
+const { ListingScreenView } = await import('@/app/demo/store/new-product/listing-view');
+const { buildView, initialState } = await import('@/app/demo/store/new-product/model');
 
 const ROOT = path.resolve(__dirname, '../..');
 const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
 const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '');
-const RAW = read('src/app/listing/listing.css');
+const RAW = read('src/app/demo/store/new-product/listing.css');
 const CSS = strip(RAW);
 const MOCK = read('docs/design/mockup-v4/scene3/Main.dc.html');
 
@@ -96,9 +96,9 @@ describe('T109 /listing 시안 CSS 통째 복사', () => {
         expect(/^(\.ls(\s|\{|:|\.|$)|\.ls[:{]|\.ls-[a-z0-9-]+|body:has\(\.ls\))/.test(sel), `범위 밖 선택자: ${sel}`).toBe(true);
       }
     }
-    const importers = ['src/app/listing/listing-screen.tsx', 'src/app/listing/page.tsx', 'src/app/listing/listing-view.tsx']
+    const importers = ['src/app/demo/store/new-product/listing-screen.tsx', 'src/app/demo/store/new-product/page.tsx', 'src/app/demo/store/new-product/listing-view.tsx']
       .filter((f) => read(f).includes("'./listing.css'"));
-    expect(importers).toEqual(['src/app/listing/listing-screen.tsx']);
+    expect(importers).toEqual(['src/app/demo/store/new-product/listing-screen.tsx']);
   });
 
   it('화면은 시안 class 이름을 쓴다 (btn·b-black·b-tint·card·fld·lab·ph·addph·addic·phl·snav·apib·livedot)', () => {
@@ -107,6 +107,6 @@ describe('T109 /listing 시안 CSS 통째 복사', () => {
       expect(html, cls).toContain(`class="${cls}"`);
     }
     // 화면 코드에 색·그림자 값을 쓰지 않는다 (값은 listing.css에만)
-    expect(read('src/app/listing/listing-view.tsx')).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(|style=\{\{[^}]*(color|background)/);
+    expect(read('src/app/demo/store/new-product/listing-view.tsx')).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(|style=\{\{[^}]*(color|background)/);
   });
 });

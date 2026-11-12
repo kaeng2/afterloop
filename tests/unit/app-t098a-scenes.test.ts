@@ -11,19 +11,22 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
+import { INTRO_SAMPLE } from './intro-sample';
+
 vi.mock('server-only', () => ({}));
 vi.mock('@/app/_server/llm', () => ({ getLlm: () => ({ ok: false }) }));
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ prefetch: () => {} }) }));
 (globalThis as { React?: typeof React }).React = React;
-const { IntroScreen } = await import('@/app/intro/intro-screen');
-const { ListingScreenView } = await import('@/app/listing/listing-view');
-const { buildView, initialState, makeReducer } = await import('@/app/listing/model');
+const { IntroScreen } = await import('@/app/demo/seller-dashboard/intro-screen');
+const { ListingScreenView } = await import('@/app/demo/store/new-product/listing-view');
+const { buildView, initialState, makeReducer } = await import('@/app/demo/store/new-product/model');
 
 const ROOT = path.resolve(__dirname, '../..');
 const read = (file: string) => readFileSync(path.join(ROOT, file), 'utf8');
 const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '');
-const INTRO = strip(read('src/app/intro/intro.css'));
-const LS = strip(read('src/app/listing/listing.css'));
+const INTRO = strip(read('src/app/demo/seller-dashboard/intro.css'));
+const LS = strip(read('src/app/demo/store/new-product/listing.css'));
 const rule = (css: string, sel: string) => {
   const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`(^|\\n)${esc}\\s*\\{([^}]*)\\}`).exec(css)?.[2] ?? '';
@@ -31,10 +34,10 @@ const rule = (css: string, sel: string) => {
 const v = (css: string, name: string) => new RegExp(`${name}:\\s*([^;]+);`).exec(css)?.[1].trim().toLowerCase();
 
 describe('T098a Scene 1 /intro', () => {
-  const html = renderToStaticMarkup(React.createElement(IntroScreen));
+  const html = renderToStaticMarkup(React.createElement(IntroScreen, { data: INTRO_SAMPLE }));
 
   // T108: 시안 CSS 통째 복사로 바꿔 규칙 이름이 시안 이름(.tab, .al-icon …)이 됐다. 시안 값 자체는 app-t108-intro 시험이 파일 대조로 본다.
-  const SCENE1 = strip(read('src/app/intro/scene1.css'));
+  const SCENE1 = strip(read('src/app/demo/seller-dashboard/scene1.css'));
 
   it('L20·L23·L26·L27·L29 시안 규칙이 scene1.css에 그대로 있다 (밑줄 #002991, hover #333333, 아이콘 그림자, 포커스 고리, pulse)', () => {
     expect(SCENE1).toMatch(/\.tab\.on\{color:#000000;border-bottom-color:#002991\}/);
@@ -51,8 +54,9 @@ describe('T098a Scene 1 /intro', () => {
   });
 
   it('누를 수 있는 것 4개(아이콘·말풍선 버튼·Respond·Handle all)는 모두 Today(서연)로 간다', () => {
-    const links = [...html.matchAll(/<a [^>]*class="([^"]+)"[^>]*href="([^"]+)"/g)].map((m) => [m[1], m[2]]);
-    expect(links.map((l) => l[0]).sort()).toEqual(['al-icon pulse', 'btn', 'rlink', 'rlink', 'btn'].sort());
+    // T115: 탭 5개·See all은 시안처럼 href="#" 껍데기 링크라 뺀다. 사건 줄 3개(서연·지호·마이크) → Respond 3개
+    const links = [...html.matchAll(/<a [^>]*class="([^"]+)"[^>]*href="([^"]+)"/g)].map((m) => [m[1], m[2]]).filter((l) => l[1] !== '#');
+    expect(links.map((l) => l[0]).sort()).toEqual(['al-icon pulse', 'btn', 'rlink', 'rlink', 'rlink', 'btn'].sort());
     for (const [, href] of links) expect(href).toBe('/?item=PP-R-GMS-10197661');
   });
 
@@ -122,7 +126,7 @@ describe('T098a Scene 3 /listing', () => {
     expect(ls('.ls .addph')).toMatch(/transition:border-color \.15s,background-color \.15s/);
     expect(ls('.ls .addph:hover')).toBe('border-color:#0A1B3D;background:#F6F7F9');
     expect(ls('.ls .addph:focus-within')).toBe('outline:2px solid #097FF5;outline-offset:2px');
-    expect(read('src/app/listing/listing-screen.tsx')).toMatch(/URL\.createObjectURL\(file\)/);
+    expect(read('src/app/demo/store/new-product/listing-screen.tsx')).toMatch(/URL\.createObjectURL\(file\)/);
   });
 
   it('L73 왼쪽 메뉴 6개는 선 아이콘 + 글자, "PayPal payments"는 아이콘 없음(로고 예외)', () => {

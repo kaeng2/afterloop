@@ -75,7 +75,7 @@ const contrast = (a: string, b: string) => {
 };
 
 /** T108: 시안 CSS를 통째 복사한 화면 폴더 (값이 시안 그대로라 색·그림자 변수 규칙 밖). 내용은 app-t108-intro 시험이 시안과 맞춰 본다. */
-const isMockupCopy = (file: string) => path.relative(APP, file).startsWith('intro' + path.sep);
+const isMockupCopy = (file: string) => path.relative(APP, file).startsWith(path.join('demo', 'seller-dashboard') + path.sep); // T115: /intro → /demo/seller-dashboard
 
 const HEX = /(?<![\w&-])#[0-9a-fA-F]{3,8}(?![\w-])/;
 const RGB_FN = /\b(rgba?|hsla?)\s*\(/;
@@ -254,7 +254,7 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
         continue;
       }
       if (isMockupCopy(file)) continue; // T108: /intro는 시안 그림자 값을 그대로 (app-t108-intro 시험)
-      const scene = rel.startsWith('listing/') ? 'ls' : null;
+      const scene = rel.startsWith('demo/store/new-product/') ? 'ls' : null;
       for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
         const value = match[1].trim();
         const where = `${path.relative(ROOT, file)}: ${match[0]}`;

@@ -71,6 +71,8 @@ export type ReadCache = {
   clear: () => void;
   /** 시험용: 지금 담긴 키와 값. */
   snapshot: () => { key: string; value: Response }[];
+  /** 담긴 값만 꺼낸다 (T115). **읽기를 시작하지 않는다** — 없거나 10분이 지났으면 undefined. */
+  peek: (path: string) => Response | undefined;
 };
 
 export function createReadCache(opts: { now?: () => number; ttlMs?: number; staleMaxMs?: number } = {}): ReadCache {
@@ -150,5 +152,10 @@ export function createReadCache(opts: { now?: () => number; ttlMs?: number; stal
     invalidate,
     clear,
     snapshot: () => [...entries.entries()].map(([key, entry]) => ({ key, value: copyOf(entry.value) })),
+    peek: (path) => {
+      const hit = entries.get(path);
+      if (hit === undefined || now() - hit.storedAt >= staleMaxMs) return undefined;
+      return copyOf(hit.value);
+    },
   };
 }
