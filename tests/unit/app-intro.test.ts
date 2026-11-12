@@ -46,7 +46,7 @@ describe('T078 /intro', () => {
 
   it('"Demo mock — not a real PayPal page" 띠가 있고, 로고 자리 글자는 Seller dashboard다', () => {
     expect(html).toContain('Demo mock — not a real PayPal page');
-    expect(html).toContain('<span class="intro-logo">Seller dashboard</span>');
+    expect(html).toMatch(/<span class="intro-logo" style="[^"]*">Seller dashboard<\/span>/);
     expect(introKo.mockBand).toContain('PayPal');
     expect(introEn.brand).toBe('Seller dashboard');
   });

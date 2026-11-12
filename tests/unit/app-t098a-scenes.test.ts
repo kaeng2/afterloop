@@ -33,67 +33,31 @@ const v = (css: string, name: string) => new RegExp(`${name}:\\s*([^;]+);`).exec
 describe('T098a Scene 1 /intro', () => {
   const html = renderToStaticMarkup(React.createElement(IntroScreen));
 
-  it('L20 활성 탭 밑줄과 로고 자리 글자색은 #002991 (강조색 #0066F5가 아님)', () => {
-    expect(v(INTRO, '--i-deep')).toBe('#002991');
-    expect(rule(INTRO, '.intro-tab.on')).toMatch(/border-bottom-color:\s*var\(--i-deep\)/);
-    expect(rule(INTRO, '.intro-logo')).toMatch(/color:\s*var\(--i-deep\)/);
-  });
+  // T108: 시안 CSS 통째 복사로 바꿔 규칙 이름이 시안 이름(.tab, .al-icon …)이 됐다. 시안 값 자체는 app-t108-intro 시험이 파일 대조로 본다.
+  const SCENE1 = strip(read('src/app/intro/scene1.css'));
 
-  it('L27 focus-visible = 흰 고리 box-shadow #FFFFFF 0 0 0 2px + outline 2px solid #097FF5 (offset 2px)', () => {
-    expect(v(INTRO, '--i-focus')).toBe('#097ff5');
-    expect(v(INTRO, '--i-shadow-focus')).toBe('#ffffff 0 0 0 2px');
-    const focus = /\.intro \.intro-btn:focus-visible[^{]*\{([^}]*)\}/.exec(INTRO)?.[1] ?? '';
-    expect(focus).toMatch(/box-shadow:\s*var\(--i-shadow-focus\)/);
-    expect(focus).toMatch(/outline:\s*2px solid var\(--i-focus\)/);
-    expect(focus).toMatch(/outline-offset:\s*2px/);
-  });
-
-  it('L26·L28·L29 아이콘: 그림자 rgba(0,112,224,.45) 0 4px 14px, pulse는 box-shadow 0→16px 고리 1.6s ease-out infinite', () => {
-    expect(v(INTRO, '--i-shadow-icon')).toBe('rgba(0, 112, 224, 0.45) 0 4px 14px');
-    expect(rule(INTRO, '.intro-al-icon')).toMatch(/box-shadow:\s*var\(--i-shadow-icon\)/);
-    expect(rule(INTRO, '.intro-pulse')).toMatch(/animation:\s*intro-pulse 1\.6s ease-out infinite/);
-    const kf = /@keyframes intro-pulse\s*\{([\s\S]*?)\n\}/.exec(INTRO)?.[1] ?? '';
-    expect(kf).toMatch(/0%\s*\{\s*box-shadow:\s*var\(--i-shadow-pulse-from\)/);
-    expect(kf).toMatch(/100%\s*\{\s*box-shadow:\s*var\(--i-shadow-pulse-to\)/);
-    expect(v(INTRO, '--i-shadow-pulse-from')).toBe('0 0 0 0 rgba(0, 102, 245, 0.55)');
-    expect(v(INTRO, '--i-shadow-pulse-to')).toBe('0 0 0 16px rgba(0, 102, 245, 0)');
-    expect(html).toMatch(/class="intro-al-icon intro-pulse"/);
-    expect(INTRO).not.toMatch(/intro-al-icon::after/);
-  });
-
-  it('L62·L64 말풍선: 그림자 rgba(0,0,0,.25) 0 12px 32px, NEW 꼬리표 그라디언트 #0066F5→#60CDFF', () => {
-    expect(v(INTRO, '--i-shadow-coach')).toBe('rgba(0, 0, 0, 0.25) 0 12px 32px');
-    expect(rule(INTRO, '.intro-coach')).toMatch(/box-shadow:\s*var\(--i-shadow-coach\)/);
-    expect(v(INTRO, '--i-grad-new')).toBe('linear-gradient(120deg, #0066f5, #60cdff)');
-    expect(rule(INTRO, '.intro-new')).toMatch(/background:\s*var\(--i-grad-new\)/);
-  });
-
-  it('L104 Handle all 버튼 그라디언트 120deg #002991, #0066F5 60%, #60CDFF · gap 10px, L23 검정 버튼 hover #333333', () => {
-    expect(v(INTRO, '--i-grad-cta')).toBe('linear-gradient(120deg, #002991, #0066f5 60%, #60cdff)');
-    expect(rule(INTRO, '.intro-btn-accent')).toMatch(/background:\s*var\(--i-grad-cta\)/);
-    expect(rule(INTRO, '.intro-btn-accent')).toMatch(/gap:\s*10px/);
-    expect(rule(INTRO, '.intro-btn')).toMatch(/gap:\s*8px/);
-    expect(rule(INTRO, '.intro-btn')).toMatch(/white-space:\s*nowrap/);
-    expect(v(INTRO, '--i-black-hover')).toBe('#333333');
-    expect(rule(INTRO, '.intro-btn-black:hover')).toMatch(/background:\s*var\(--i-black-hover\)/);
+  it('L20·L23·L26·L27·L29 시안 규칙이 scene1.css에 그대로 있다 (밑줄 #002991, hover #333333, 아이콘 그림자, 포커스 고리, pulse)', () => {
+    expect(SCENE1).toMatch(/\.tab\.on\{color:#000000;border-bottom-color:#002991\}/);
+    expect(SCENE1).toMatch(/\.b-black:hover\{background:#333333\}/);
+    expect(SCENE1).toMatch(/box-shadow:rgba\(0,112,224,0\.45\) 0 4px 14px/);
+    expect(SCENE1).toMatch(/box-shadow:#FFFFFF 0 0 0 2px;outline:2px solid #097FF5;outline-offset:2px/);
+    expect(SCENE1).toMatch(/\.pulse\{animation:pulse 1\.6s ease-out infinite\}/);
+    expect(SCENE1).toMatch(/@keyframes pulse\{0%\{box-shadow:0 0 0 0 rgba\(0,102,245,\.55\)\}100%\{box-shadow:0 0 0 16px rgba\(0,102,245,0\)\}\}/);
+    expect(html).toMatch(/class="al-icon pulse"/);
   });
 
   it('L44 "Demo mock" 칩 (#ECEEF0 바탕, #3F4144 글자)이 가게 종류 옆에 있다', () => {
-    expect(html).toContain('<span class="intro-chip intro-chip-mock">Demo mock</span>');
-    expect(rule(INTRO, '.intro-chip-mock')).toMatch(/background:\s*var\(--i-chip-bg\)/);
-    expect(v(INTRO, '--i-chip-bg')).toBe('#eceef0');
+    expect(html).toMatch(/<span class="chip" style="[^"]*background:#ECEEF0;color:#3F4144[^"]*">Demo mock<\/span>/);
   });
 
   it('누를 수 있는 것 4개(아이콘·말풍선 버튼·Respond·Handle all)는 모두 Today(서연)로 간다', () => {
     const links = [...html.matchAll(/<a [^>]*class="([^"]+)"[^>]*href="([^"]+)"/g)].map((m) => [m[1], m[2]]);
-    expect(links.map((l) => l[0]).sort()).toEqual(
-      ['intro-al-icon intro-pulse', 'intro-btn intro-btn-white', 'intro-rlink', 'intro-rlink', 'intro-btn intro-btn-accent'].sort(),
-    );
+    expect(links.map((l) => l[0]).sort()).toEqual(['al-icon pulse', 'btn', 'rlink', 'rlink', 'btn'].sort());
     for (const [, href] of links) expect(href).toBe('/?item=PP-R-GMS-10197661');
   });
 
   it('움직임 줄이기: pulse·말풍선 rise를 끈다', () => {
-    expect(INTRO).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.intro-pulse,\s*\.intro-coach\s*\{\s*animation:\s*none/);
+    expect(INTRO).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.intro \.pulse,\s*\.intro \.rise\s*\{\s*animation:\s*none/);
   });
 });
 
