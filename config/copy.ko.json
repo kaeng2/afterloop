@@ -246,6 +246,7 @@
   "case.reply.fact.CUSTOMS_STATUS": "통관 상태",
   "case.reply.fact.BUYER_NAME": "구매자 이름",
   "case.reply.fact.SELLER_NAME": "내 서명",
+  "case.reply.fact.DAYS": "수선 기간",
   "case.reply.check.nameHonorific": "구매자 이름 옆에 호칭을 덧붙이지 않음",
   "case.reply.addedInTranslation": "번역이 초안에 없던 약속을 더했습니다. 새로고침해서 다시 번역하거나 초안을 고치세요. 확인으로는 풀리지 않습니다.",
   "case.reply.outsidePolicy": "정책 밖 약속 — 보내기 전에 하나씩 확인하세요",
