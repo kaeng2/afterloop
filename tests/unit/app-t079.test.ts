@@ -445,7 +445,7 @@ describe('이번 주 카드: 엔진 weeklySummary + AI 캐시 초안 수, Demo d
     const hidden = weeklyView(1, missing?.summary ?? null, true, { aiDraftsCounted: missing?.aiDraftsCounted });
     expect(hidden.aiDrafts).toBeNull();
     expect(hidden.keepable).not.toBeNull();
-    const markup = html(createElement(WeeklyCard, { weekly: hidden, storeLine: 'x' }));
+    const markup = html(createElement(WeeklyCard, { weekly: hidden }));
     expect(markup).not.toContain(t('today.weekly.drafts'));
     expect(markup).toContain(t('today.weekly.keepable'));
     // 지킬 수 있는 돈 옆 Assumption 배지
@@ -454,7 +454,7 @@ describe('이번 주 카드: 엔진 weeklySummary + AI 캐시 초안 수, Demo d
 
   it('Demo data 배지: 채운 꼴(fill)은 그대로, 보라 카드 위에서는 반투명 바탕 + 밝은 테두리 (흰 상자 아님)', () => {
     const view = weeklyView(1, null, true);
-    const markup = html(createElement(WeeklyCard, { weekly: view, storeLine: 'x' }));
+    const markup = html(createElement(WeeklyCard, { weekly: view }));
     expect(markup).toMatch(/class="badge badge-border-fill"/);
     const css = read('src/app/today/today.css');
     const rule = css.match(/\.weekly \.badge-border-fill\s*\{([^}]*)\}/)?.[1] ?? '';

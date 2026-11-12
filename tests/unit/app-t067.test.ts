@@ -185,7 +185,8 @@ describe('T067 추적 등록 (가짜 호출기)', () => {
     expect(server).toMatch(/import 'server-only'/);
     const page = readFileSync(path.join(APP, '(app)/page.tsx'), 'utf8');
     // T091: "+$N just now" 값(엔진 trackingSavings 표기)을 함께 넘긴다. 등록은 같은 서버 액션
-    expect(page).toMatch(/<TrackingDetail\s+tracking=\{view\.tracking\}\s+register=\{addTrackingAction\}\s+savings=\{trackingSavingsDisplay\(view\.tracking\)\}\s+\/>/);
+    // T106: 상세 머리(목록 줄)를 함께 넘긴다 (`row`)
+    expect(page).toMatch(/<TrackingDetail\s+tracking=\{view\.tracking\}\s+register=\{addTrackingAction\}\s+savings=\{trackingSavingsDisplay\(view\.tracking\)\}\s+row=\{item\.row\}\s+\/>/);
   });
 });
 
@@ -397,8 +398,9 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
     };
     const cases: [string, string, string][] = [
       ['today/today.css', '.today-group-prevent .today-group-bar', 'background: var(--color-accent-deep)'],
-      ['today/today.css', ".product-filter-chip[aria-current='true']", 'border-color: var(--color-accent-deep)'],
-      ['today/today.css', ".product-filter-chip[aria-current='true']", 'background: var(--color-accent-pale)'],
+      // T106: 칩은 `<button aria-pressed>` (시안 L111)
+      ['today/today.css', ".product-filter-chip[aria-pressed='true']", 'border-color: var(--color-accent-deep)'],
+      ['today/today.css', ".product-filter-chip[aria-pressed='true']", 'background: var(--color-accent-pale)'],
       ['_shared/shell.css', '.shell-for', 'color: var(--color-accent-deep)'],
       ['_shared/shell.css', '.product-icon path', 'stroke: var(--color-accent-deep)'],
       ['cases/view/case.css', '.curve-fromto', 'color: var(--color-accent-deep)'],

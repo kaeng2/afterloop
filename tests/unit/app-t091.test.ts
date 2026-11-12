@@ -398,9 +398,9 @@ describe('만들 것 6 · 완료 기준 5: "+$N just now" = 엔진 값', () => {
 // ───────────────────────────── 7. 상품 칩 필터 · 머리글 ─────────────────────────────
 
 describe('만들 것 7: 상품 칩 필터 · 머리글 sticky', () => {
-  it('상품 칩 줄은 위쪽 막대 아래에 붙는다 (위쪽 막대는 이미 sticky)', () => {
+  it('T106 (F1-16): 상품 칩 줄은 붙지 않는다 (시안 L109 정적). 위쪽 막대만 sticky', () => {
     const css = read('src/app/today/today.css');
-    expect(css).toMatch(/\.product-filter \{\s*position: sticky;/);
+    expect(css).not.toMatch(/\.product-filter \{[^}]*position: sticky;/);
     expect(read('src/app/_shared/shell.css')).toMatch(/\.shell-bar \{\s*position: sticky;\s*top: 0;/);
   });
 });

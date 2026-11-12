@@ -148,7 +148,8 @@ describe('목록 그리기 (TodayGroupsView)', () => {
     expect(done).toContain('class="today-item today-item-done"');
     expect(done).toContain('today-dot today-dot-done');
     expect(done).toMatch(/class="today-item today-item-done" aria-current="true"|aria-current="true"[^>]*today-item-done/);
-    expect(done).toContain(`href="/?item=${D2}"`);
+    // T106: 항목은 링크가 아니라 화면 안 상태를 바꾸는 버튼 (눌러서 다시 볼 수 있는 것은 그대로)
+    expect(done).toContain(`data-item="${D2}"`);
     // 상태 글은 엔진 값 그대로 (화면 읽기용)
     expect(done).toContain(t('badge.riskHigh'));
     expect(done).not.toContain('today-item-simulated');

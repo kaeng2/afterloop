@@ -16,8 +16,12 @@ import { recommend } from '@/engine/recommend';
 import { reasonCopyKey } from '../_shared/availability';
 import { t } from '../_shared/copy';
 import { pickBoard, type LoadedDispute } from '../_shared/dispute-view';
-import { decideFor, routineLine } from '../today/model';
+import { toDollarsCents } from '../_shared/money';
+import { toPercentRounded } from '../_shared/percent';
+import { decideFor, routineLine, type TodayRowView } from '../today/model';
+import { OfferWork } from '../today/offer-work';
 import { actionSavingsDisplay } from '../today/savings-values';
+import { WorkDetail } from '../today/work-card';
 import { DeskSelectionProvider } from './view/desk-selection';
 import { buildCaseDesk, historyView, type CaseDesk } from './desk-model';
 import { loadMoveForecasts, loadRiskCurve, replyTranslated, type ForecastAnchor } from './forecast-source';
@@ -48,7 +52,46 @@ function headerDesk(view: CaseViewData, loaded: LoadedDispute, now: string): Cas
   });
 }
 
-export async function CaseDetail({ disputeId }: { disputeId: string }) {
+/**
+ * T106 (F1-55 · F1-56): 제안이 먼저인 분쟁(지호) = 시안의 짧은 zone-work 카드. 전체 사건 데스크(곡선·기록·답장 칸)는
+ * 그리지 않는다. 관문은 그대로 (`OfferWork` → `canSendOffer` → 서버 액션 `sendReplyAction`). 제목 금액은 엔진 계획의
+ * `amountCents`를 한 가지 표기(`toDollarsCents`)로 — 제목·확인 창이 같은 글자다.
+ */
+function offerWork(
+  reply: NonNullable<Awaited<ReturnType<typeof loadReply>>>,
+  row: TodayRowView | null,
+  savings: string | null,
+) {
+  const plan = reply.base.plan;
+  if (plan === null || plan.apiMove !== 'make_offer' || plan.amountCents === null) return null;
+  const amount = toDollarsCents(plan.amountCents);
+  const keeps = plan.refundType !== 'REFUND_WITH_RETURN';
+  const title = t(keeps ? 'case.offer.title.keep' : 'case.offer.title.return', {
+    percent: toPercentRounded(reply.offerRate),
+    amount,
+  });
+  const language = reply.languageKey === null ? t('case.send.languageUnknown') : t(reply.languageKey);
+  const readsLabel =
+    reply.buyerShort === null
+      ? t('case.reply.buyerReadsUnknown', { language })
+      : t('case.reply.sheSees', { name: reply.buyerShort, language });
+  return (
+    <WorkDetail row={row} className="offer-detail">
+      <OfferWork
+        disputeId={reply.disputeId}
+        base={reply.base}
+        replyId={reply.replyId}
+        title={title}
+        body={t('case.offer.line', { language })}
+        amount={amount}
+        readsLabel={readsLabel}
+        savings={savings}
+      />
+    </WorkDetail>
+  );
+}
+
+export async function CaseDetail({ disputeId, row = null }: { disputeId: string; row?: TodayRowView | null }) {
   const now = new Date().toISOString();
   // 먼저 AI 없이 읽는다 (Routine이면 여기서 끝난다). PayPal 읽기는 요청 안에서 한 번이다
   const light = await loadCase(disputeId, { draft: false });
@@ -67,7 +110,7 @@ export async function CaseDetail({ disputeId }: { disputeId: string }) {
   const routine = routineLine(board, decideFor(board));
   if (routine !== null) {
     const routineView = buildCaseView(light.input);
-    return <RoutineDetail view={routineView} desk={headerDesk(routineView, light.loaded, now)} line={routine} />;
+    return <RoutineDetail view={routineView} desk={headerDesk(routineView, light.loaded, now)} line={routine} row={row} />;
   }
 
   const loaded = await loadCase(disputeId);
@@ -75,6 +118,12 @@ export async function CaseDetail({ disputeId }: { disputeId: string }) {
 
   const caseView = buildCaseView(loaded.input);
   const reply = await loadReply(disputeId);
+
+  // T106: 지호(제안이 먼저) → 짧은 zone-work 카드만. 곡선·사건 기록 예측을 만들지 않는다
+  if (caseView.messageSend.blocked && reply !== null) {
+    const work = offerWork(reply, row, actionSavingsDisplay(board, recommend(board).best?.move ?? null));
+    if (work !== null) return work;
+  }
 
   // 예측 (어댑터 → 엔진). 곡선·선택지·답장 칸이 **같은 기준 상황**(같은 보정)을 쓴다. 쓸 수 없으면 null → 칸이 숨는다
   const delayDays = unansweredDays(loaded.events, now);

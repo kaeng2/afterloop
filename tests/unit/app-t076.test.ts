@@ -38,6 +38,7 @@ import { CaseView } from '@/app/cases/view/case-view';
 import { RiskCurveCard } from '@/app/cases/view/risk-curve';
 import { CaseHistoryCard } from '@/app/cases/view/case-history';
 import { buildToday, weeklyView, type TrackingSummary } from '@/app/today/model';
+import { casesOf } from '@/app/today/screen-model';
 import { ProductFilterBar, TodayList } from '@/app/today/today-list';
 import { forecastReply } from '@/engine/forecast';
 import { recommend } from '@/engine/recommend';
@@ -723,8 +724,10 @@ describe('완료 기준 6: 목록 — Lena·Yuki·통관부호 없음, HEY·GAH 
     expect(filtered.count).toBe(view.count); // 위쪽 막대 Today (N)은 거르개와 상관없이 전체
     expect(buildToday({ disputes, tracking, products: seedProducts, now: new Date(NOW), sku: 'NOPE' }).filter.selectedSku).toBeNull();
 
-    const bar = html(createElement(ProductFilterBar, { view: filtered }));
-    expect(bar.match(/aria-current="true"/g)).toHaveLength(1);
+    // T106: 칩은 `<button aria-pressed>` (시안 L111). 상자 밖에서는 서버가 고른 SKU를 그대로 보인다
+    const bar = html(createElement(ProductFilterBar, { filter: filtered.filter, cases: casesOf(view.groups) }));
+    expect(bar.match(/aria-pressed="true"/g)).toHaveLength(1);
+    expect(bar).toContain(filtered.filter.summary);
     expect(bar).toContain('Knit Cardigan');
   });
 });

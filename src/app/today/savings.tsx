@@ -7,7 +7,7 @@
  *   `trackingSavings`, 서버가 계산해 표기까지 끝낸 글자)을 `report`로 넘긴다. 이 파일은 더하거나 계산하지 않는다 —
  *   마지막 액션의 N 하나만 보인다.
  * - 서버 데이터는 바꾸지 않는다 (화면 상태만. 새로고침하면 원래 값 — 시안과 같다).
- * - N이 없으면(0 또는 계산할 수 없음) 아무것도 하지 않는다 (시안 `if (save)`).
+ * - N이 없으면(0 또는 계산할 수 없음) 칸은 그대로 두고 금액 없는 완료 알림만 띄운다 (T106, 시안 L820 `toast(od.done)`).
  * - 알림(toast)은 `config/motion.json` `desk.toast.durationMs` 뒤에 사라진다.
  * - T102: 같은 순간에 그 항목을 "이 화면에서 끝낸 항목"(`done`)에 넣는다 (`markDone`). 왼쪽 목록이 이 표를 읽어
  *   맨 아래 "Done today" 묶음으로 옮긴다 (`done-groups.ts`). 이것도 화면 상태만 — 새로고침하면 원래대로.
@@ -31,6 +31,11 @@ type SavingsState = {
 };
 
 const NO_DONE: DoneMap = {};
+
+/** 완료 알림 글. 금액이 있으면 "Dashboard updated · +$N kept", 없으면 금액 없는 "Dashboard updated" (T106 F1-63). */
+export function toastText(amount: string | null, t: (key: string, params?: Record<string, string | number>) => string): string {
+  return amount === null || amount === '' ? t('today.weekly.toastDone') : t('today.weekly.toast', { amount });
+}
 
 const SavingsContext = createContext<SavingsState>({
   bump: null,
@@ -61,10 +66,9 @@ export function SavingsProvider({ children }: { children?: ReactNode }) {
 
   const report = useCallback(
     (amount: string | null) => {
-      if (amount === null || amount === '') return;
-      setBump((now) => ({ amount, n: (now?.n ?? 0) + 1 }));
-      const text = t('today.weekly.toast', { amount });
-      setToast(text);
+      // T106 (F1-63, 시안 L820): 저장 금액이 없어도(0·계산 불가) 완료 알림은 띄운다 — 금액 없는 문구, 칸은 그대로
+      if (amount !== null && amount !== '') setBump((now) => ({ amount, n: (now?.n ?? 0) + 1 }));
+      setToast(toastText(amount, t));
       if (timer.current !== null) clearTimeout(timer.current);
       timer.current = setTimeout(() => setToast(null), toastDurationMs());
     },
