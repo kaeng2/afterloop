@@ -33,7 +33,8 @@ function Wordmark() {
   const head = name.endsWith(accent) ? name.slice(0, name.length - accent.length) : name;
   return (
     <span className="shell-wordmark" role="img" aria-label={name}>
-      <span aria-hidden="true">{head}</span>
+      {/* T124a: 시안 L123처럼 "Dispute"는 role=img 알약의 글자 그대로 (role=img라 안쪽은 읽히지 않는다) */}
+      {head}
       {name.endsWith(accent) ? (
         <span className="shell-wordmark-accent" aria-hidden="true">
           {accent}
