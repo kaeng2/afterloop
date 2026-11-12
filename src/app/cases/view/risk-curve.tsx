@@ -14,7 +14,7 @@ import type { RiskPoint } from '@/types';
 import { Badge } from '../../_shared/badges';
 import { useT } from '../../_shared/locale-context';
 import { pingStartRadius } from '../../_shared/motion';
-import { CURVE_BOX, curveView, type CurveView } from '../desk-model';
+import { CURVE_BOX, curveView, type CurveView, type HistoryTone } from '../desk-model';
 import { useDraftForecast } from './draft-forecast';
 
 /** 50% 눈금의 높이 (그림 자리 값: 위 100% ~ 아래 0%의 가운데). */
@@ -24,7 +24,8 @@ const tickAt = (y: number): CSSProperties => ({ '--tick-at': y / CURVE_BOX.heigh
 
 /**
  * 곡선 그림 (T090 시안 v4): 100%·50% 눈금 글자, 끝점 둘레 연한 물결 원(`curve-ping`, 1.4s 반복 — 움직임 줄이기면 멈춤),
- * 점선·끝점은 값이 바뀌면 부드럽게 옮긴다 (`--motion-curve`). 좌표는 `curveView` 값 그대로.
+ * 점선 polyline만 시안 값 `transition: all .3s`(--motion-curve)를 갖고, 점·물결 원은 시안처럼 즉시 옮긴다 (T105 —
+ * 미끄러지면 0.3초 동안 점이 점선 끝에서 떨어져 보였다). 좌표는 `curveView` 값 그대로.
  */
 export function RiskCurveGraphic({ curve }: { curve: CurveView }) {
   const t = useT();
@@ -51,8 +52,9 @@ export function RiskCurveGraphic({ curve }: { curve: CurveView }) {
         {live === null ? null : (
           <polyline className={curve.sent ? 'curve-draft curve-draft-sent' : 'curve-draft'} points={live} />
         )}
+        {/* T105: 점 색 = 사건 기록 점줄과 같은 규칙 (시안 whoCol, `dot.tone`) */}
         {curve.dots.map((dot, index) => (
-          <circle key={index} className={`curve-dot curve-dot-${dot.kind}`} cx={dot.x} cy={dot.y} r="4.5" />
+          <circle key={index} className={`curve-dot curve-dot-${dot.tone}`} cx={dot.x} cy={dot.y} r="4.5" />
         ))}
         {curve.draft === null ? null : <circle className="curve-dot-draft" cx={curve.draft.x} cy={curve.draft.y} r="5" />}
         {curve.steps.map((point, index) => (
@@ -72,10 +74,17 @@ export function RiskCurveGraphic({ curve }: { curve: CurveView }) {
   );
 }
 
-export function RiskCurveCard({ points }: { points: RiskPoint[] | null }) {
+export function RiskCurveCard({
+  points,
+  tones = null,
+}: {
+  points: RiskPoint[] | null;
+  /** 사건마다 색 (사건 기록 줄의 `tone` 그대로 — 곡선·점줄이 같은 색). */
+  tones?: readonly HistoryTone[] | null;
+}) {
   const t = useT();
-  const { forecast, trail } = useDraftForecast();
-  const curve = curveView(points, forecast?.pChargeback ?? null, trail);
+  const { forecast, trail, noReplyBy } = useDraftForecast();
+  const curve = curveView(points, forecast?.pChargeback ?? null, trail, { tones, noReplyBy });
   if (curve === null) return null;
   return (
     <section className="curve-card" aria-labelledby="curve-title">
@@ -92,7 +101,7 @@ export function RiskCurveCard({ points }: { points: RiskPoint[] | null }) {
         <span data-tone={curve.headlineTone} className="curve-headline num">
           {curve.headline}
         </span>
-        <span className="curve-side-sub">{t(curve.headlineKey)}</span>
+        <span className="curve-side-sub">{t(curve.headlineKey, curve.headlineVars)}</span>
         {curve.fromTo === null ? null : <span className="curve-fromto num">{curve.fromTo}</span>}
         <Badge kind="assumption" />
       </div>

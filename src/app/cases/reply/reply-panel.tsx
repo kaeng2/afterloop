@@ -56,7 +56,14 @@ import {
   type EffectRowView,
   type MoveDrafts,
 } from '../desk-actions';
-import { featureChips, reactionView, type FeatureChipView, type ReactionView } from '../desk-model';
+import {
+  featureChips,
+  NO_REPLY_DAYS,
+  noReplyByLabel,
+  reactionView,
+  type FeatureChipView,
+  type ReactionView,
+} from '../desk-model';
 import {
   detectReplyFeaturesClient,
   forecastReplyClient,
@@ -478,7 +485,7 @@ export function ReplyPanel({
   const [editRun, setEditRun] = useState<{ text: string; result: EditedPrepareOutcome | 'translating' } | null>(null);
   const inFlight = useRef(false);
   const { setSent } = useSent();
-  const { setForecast } = useDraftForecast();
+  const { setForecast, setNoReplyBy } = useDraftForecast();
   const { report, markDone, unmarkDone } = useSavings();
   const desk = useDeskSelection();
 
@@ -631,6 +638,8 @@ export function ReplyPanel({
     if (!refundPath || anchor === null) return text;
     return refundMoveText(anchor, detector(refundNote, { translated })?.hits.refundNow) ?? text;
   }, [refundPath, anchor, text, detector, refundNote, translated]);
+  // T105 (시안 NNONE = nForecast({}, 2, true)): 글이 비면 무응답 예측 — 엔진 빈 글 예측 + 늦은 날 수 noReplyDays(config)
+  const emptyDraft = forecastText.trim() === '' && NO_REPLY_DAYS !== null;
   const forecast: ReplyForecast | null = useMemo(() => {
     if (forecastBase === null || anchor === null || board === null || view.offer !== null) return null;
     return forecaster({
@@ -638,13 +647,15 @@ export function ReplyPanel({
       anchorText: anchor,
       board,
       signals: forecastBase.signals,
-      delayDays: forecastBase.delayDays,
+      delayDays: forecastBase.delayDays + (emptyDraft ? (NO_REPLY_DAYS ?? 0) : 0),
       translated,
     });
-  }, [forecaster, forecastBase, anchor, board, forecastText, view.offer, translated]);
+  }, [forecaster, forecastBase, anchor, board, forecastText, view.offer, translated, emptyDraft]);
   useEffect(() => {
     setForecast(forecast);
-  }, [forecast, setForecast]);
+    // 곡선 아래 글 "if no reply by {date}"의 날짜 (오늘 + noReplyDays). 글이 있으면 null → 지금처럼
+    setNoReplyBy(emptyDraft && forecast !== null ? noReplyByLabel(new Date().toISOString(), NO_REPLY_DAYS ?? 0) : null);
+  }, [forecast, setForecast, emptyDraft, setNoReplyBy]);
   const detected = detectedNow;
   const chips = useMemo(() => featureChips(detected), [detected]);
   // T091: 칩마다 효과 (엔진 replyFeatureEffects). 넣을 문장 = config/reply-snippets.json (자리표시자는 영어 초안과 같은 채움)

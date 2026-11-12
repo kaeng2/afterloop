@@ -509,6 +509,7 @@
   "case.curve.risk": "Dispute risk",
   "case.curve.now": "now",
   "case.curve.withDraft": "with your draft",
+  "case.curve.ifNoReply": "if no reply by {{date}}",
   "case.curve.fromTo": "{{from}} → {{to}}",
   "case.curve.points": "{{count}} points on the curve",
   "case.curve.tick100": "100%",

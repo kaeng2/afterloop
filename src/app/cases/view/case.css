@@ -206,7 +206,6 @@
   stroke-width: 2;
   opacity: var(--motion-ping-from-opacity);
   animation: motion-ping var(--motion-ping-duration) var(--motion-ping-easing) infinite;
-  transition: cx var(--motion-curve), cy var(--motion-curve);
 }
 
 .curve-grid {
@@ -246,33 +245,30 @@
   stroke-dasharray: none;
 }
 
+/* T105 시안 whoCol (M:740): 사건 기록 점줄(.history-dot-*)과 같은 규칙 — buyer #3F4144 · bad #C4321F · sys #9AA0A6 */
 .curve-dot {
-  fill: var(--color-dot-high);
+  fill: var(--color-dot-neutral);
   stroke: var(--color-surface);
   stroke-width: 2;
 }
 
-.curve-dot-order_paid,
-.curve-dot-shipped,
-.curve-dot-carrier_event,
-.curve-dot-dispute_opened {
-  fill: var(--color-dot-neutral);
-}
-
-.curve-dot-seller_reply {
-  fill: var(--color-heading);
-}
-
-/* T098b 시안 whoCol.buyer #3F4144 (구매자 메시지 점) */
-.curve-dot-buyer_message {
+.curve-dot-buyer {
   fill: var(--color-text);
 }
 
+.curve-dot-bad {
+  fill: var(--color-dot-high);
+}
+
+.curve-dot-sys {
+  fill: var(--color-dot-neutral);
+}
+
+/* T105 (시안 M:181): 점·물결 원은 transition 없이 즉시 옮긴다 (점선 polyline만 transition) */
 .curve-dot-draft {
   fill: var(--color-accent);
   stroke: var(--color-surface);
   stroke-width: 2;
-  transition: all var(--motion-curve);
 }
 
 .curve-side {
@@ -363,7 +359,7 @@
   border-radius: 50%;
 }
 
-/* 시안 whoCol.buyer #3F4144 */
+/* 시안 whoCol (T105: 곡선 점 .curve-dot-*와 같은 규칙) — buyer #3F4144 · bad #C4321F · sys #9AA0A6 */
 .history-dot-buyer {
   background: var(--color-text);
 }
@@ -372,8 +368,8 @@
   background: var(--color-dot-high);
 }
 
-.history-dot-seller {
-  background: var(--color-accent);
+.history-dot-sys {
+  background: var(--color-dot-neutral);
 }
 
 .history-list {
