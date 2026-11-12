@@ -1,0 +1,95 @@
+{
+ "meta": {
+  "screen": "scene1",
+  "width": 1920,
+  "viewport": {
+   "width": 1920,
+   "height": 1080
+  },
+  "mockUrl": "/scene1/Scene1.dc.html",
+  "appUrl": "http://localhost:3111/intro",
+  "threshold": 40,
+  "cell": 16,
+  "mockSize": [
+   1920,
+   1080
+  ],
+  "appSize": [
+   1920,
+   1080
+  ],
+  "canvas": [
+   1920,
+   1080
+  ],
+  "diffPixels": 8901,
+  "diffPct": 0.43,
+  "regionCount": 4
+ },
+ "regions": [
+  {
+   "x": 288,
+   "y": 31,
+   "w": 580,
+   "h": 41,
+   "pixels": 4446,
+   "id": 1,
+   "app": {
+    "el": "button.tab",
+    "text": "Reports"
+   },
+   "mock": {
+    "el": "span.sc-interp",
+    "text": "Money"
+   }
+  },
+  {
+   "x": 32,
+   "y": 28,
+   "w": 237,
+   "h": 21,
+   "pixels": 2152,
+   "id": 2,
+   "app": {
+    "el": "span.intro-logo",
+    "text": "Seller dashboard"
+   },
+   "mock": {
+    "el": "span.sc-interp",
+    "text": "Business"
+   }
+  },
+  {
+   "x": 1471,
+   "y": 16,
+   "w": 108,
+   "h": 40,
+   "pixels": 2056,
+   "id": 3,
+   "app": {
+    "el": "button",
+    "text": "한국어"
+   },
+   "mock": {
+    "el": "header",
+    "text": "PayPal Business Demo mock Home Activity Reports Money Resolution Center 2 2 F Fernwood Knits NEW DisputeLess 2 cases need a reply. One buyer mentioned a chargeback — DisputeLess…"
+   }
+  },
+  {
+   "x": 1562,
+   "y": 173,
+   "w": 34,
+   "h": 38,
+   "pixels": 246,
+   "id": 4,
+   "app": {
+    "el": "a.btn",
+    "text": "Open DisputeLess →"
+   },
+   "mock": {
+    "el": "a.btn",
+    "text": "Open DisputeLess →"
+   }
+  }
+ ]
+}
