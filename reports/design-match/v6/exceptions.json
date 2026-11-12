@@ -1,0 +1,654 @@
+{
+  "exceptions": [
+    {
+      "id": "TOP-01",
+      "reason": "DECISIONS 2026-11-11 22:55 진입점 \"탭 없음 … 오른쪽 작게\" + 2026-11-11 22:45 ① \"오른쪽에 공개 데모 표시·PayPal activity·EN/KO·판매자를 작게\". 시안 v6 위쪽 막대에는 이 컨트롤이 없다. — 공개 데모 표시 한 줄.",
+      "match": {
+        "kind": "extra",
+        "selector": ".shell-mode-note"
+      }
+    },
+    {
+      "id": "TOP-02",
+      "reason": "DECISIONS 2026-11-11 22:55 진입점 \"탭 없음 … 오른쪽 작게\" + 2026-11-11 22:45 ① \"오른쪽에 공개 데모 표시·PayPal activity·EN/KO·판매자를 작게\". 시안 v6 위쪽 막대에는 이 컨트롤이 없다. — [PayPal activity] 버튼과 호출 수 숫자.",
+      "match": {
+        "kind": "extra",
+        "selector": ".shell-activity"
+      }
+    },
+    {
+      "id": "TOP-03",
+      "reason": "DECISIONS 2026-11-11 22:55 진입점 \"탭 없음 … 오른쪽 작게\" + 2026-11-11 22:45 ① \"오른쪽에 공개 데모 표시·PayPal activity·EN/KO·판매자를 작게\". 시안 v6 위쪽 막대에는 이 컨트롤이 없다. — EN · 한국어 전환(2026-11-11 21:25 \"위쪽 막대 오른쪽 EN | 한국어 버튼\").",
+      "match": {
+        "kind": "extra",
+        "selector": ".lang-switch"
+      }
+    },
+    {
+      "id": "TOP-04",
+      "reason": "DECISIONS 2026-11-11 22:55 진입점 \"탭 없음 … 오른쪽 작게\" + 2026-11-11 22:45 ① \"오른쪽에 공개 데모 표시·PayPal activity·EN/KO·판매자를 작게\". 시안 v6 위쪽 막대에는 이 컨트롤이 없다. — 판매자 칩(머리글자 + 가게 이름).",
+      "match": {
+        "kind": "extra",
+        "selector": ".shell-seller"
+      }
+    },
+    {
+      "id": "DATA-01",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(… 실제 시드·샌드박스 사건 번호 …)\" + 2026-11-12 20:35 ③ \"표시용 주문 번호 #1042 서연·#1038 지호·#1047 마이크(PP-R-… 보조 줄)\". 시안에는 PP-R 보조 줄 자리가 없다.",
+      "match": {
+        "kind": "extra",
+        "text": "/^PP-R-[A-Z]{3}-\\d{8}( ·|$)/"
+      }
+    },
+    {
+      "id": "DATA-02",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(… 마감일 …)\" + 2026-11-12 20:35 ④ \"서연 실제 메시지·번호·기한\". 응답 기한은 PayPal seller_response_due 값(서연 Nov 30은 사본에 넣음; 새 지호 품질 분쟁 기한은 사본을 만들 때 몰랐다).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^Reply by Nov \\d{1,2}$/"
+      }
+    },
+    {
+      "id": "DATA-03",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(… 마감일 …)\" — 마이크(PP-R-FYT-10197651)는 PayPal 심사 단계라 응답 기한이 없다. 시안 bm Nov 15 대신 앱은 기한 없음 문구.",
+      "match": {
+        "kind": "extra",
+        "text": "/^(Under review · no reply due|No response deadline)$/"
+      }
+    },
+    {
+      "id": "DATA-04",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(… 마감일·기록 …)\" + 2026-11-12 11:20 ④ \"'Black Friday in N days'는 Desk와 같은 날짜 함수\". 오늘 날짜에 따라 바뀌는 글(날짜 줄·무응답 기준일·Open N days·기록 N days). 사본은 2026-11-12(ET) 실행 기준으로 맞췄다 — 다른 날 실행하면 이 줄로 설명된다.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^(\\w{3}, Nov \\d{1,2} · Black Friday in \\d+ days|if no reply by Nov \\d{1,2}|8 events · \\d+ days|\\$72 · Seo-yeon Kim · Korea · reads Korean · Open \\d+ days?)$/"
+      }
+    },
+    {
+      "id": "ENG-01",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. — 맨글자 위험 %(큰 위험 숫자, 답장 칸 rTo, 반응 막대 범례, AG Grid 위험 칸, 평균 카드).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "role": "",
+        "text": "/^\\d{1,3}%$/"
+      }
+    },
+    {
+      "id": "ENG-02",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. — 곡선 칸 \"N% → M%\"(앱 80% → 엔진 초안 값).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^\\d{1,3}% → \\d{1,3}%$/"
+      }
+    },
+    {
+      "id": "ENG-03",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. — \"Chargeback N%\"(선택지 카드·답장 칸 알약).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^Chargeback \\d{1,3}%$/"
+      }
+    },
+    {
+      "id": "ENG-04",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. — 기대 비용(\"· cost ~$N\", \"Expected cost $N\").",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^(· cost ~|cost ~|Expected cost )\\$\\d+$/"
+      }
+    },
+    {
+      "id": "ENG-05",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. — 칩 효과 %p(\"+8 pts\" 등, 엔진 replyFeatureEffects).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^[+−-]?\\d+ pts$/"
+      }
+    },
+    {
+      "id": "ENG-06",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. + 2026-11-12 20:40 \"'Refund backup' 칩 없음\" — 칩 개수 요약(\"N to fix · N missing · N good\")은 엔진 특징 목록(backup·noRefund 없음, lang 있음)으로 센다.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^\\d+ (to fix|missing|good)$/"
+      }
+    },
+    {
+      "id": "ENG-07",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. — 손님 기분 낱말(엔진 mood 값의 구간).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "role": "",
+        "text": "/^(Calm|Okay|Annoyed|Angry)$/"
+      }
+    },
+    {
+      "id": "ENG-08",
+      "reason": "DECISIONS 2026-11-12 20:40 4 \"목록 줄마다 위험 % 칩('89% · High', 색 시안 규칙, 값 엔진)\" + DECISIONS 2026-11-11 22:55 \"데이터(엔진 숫자)\". 엔진 값이 없는 데모·예방·질문 항목(Lena·Yuki·추적·통관번호)은 칩을 그리지 않고(지어내지 않음), 지호·마이크 값은 엔진 값이다(사본은 서연 91%만 앎).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^\\d{1,3}% · (High|Medium|Low)$/"
+      }
+    },
+    {
+      "id": "ENG-09",
+      "reason": "DECISIONS 2026-11-12 20:40 7 \"'Keeps ≈$N'\"(엔진 actionSavings) + 20:35 계약 \"Keeps 3358¢ ≈$34 — 시안 $41과 다름\". 지호는 사본에 $34를 넣었고 Lena·추적·통관번호·마이크의 시안 save(8·120·72·35)는 엔진 값이 아니다.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^Keeps ≈\\$\\d+$/"
+      }
+    },
+    {
+      "id": "ENG-10",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자 …)\" + 2026-11-12 20:40 \"숫자는 실제 목록·엔진\". 시안 숫자는 시안 안의 임시 모델(NW·NBASE·N_*)이 만들고, 앱은 엔진(config/reply-model.json 보정, 수수료 $15)이 만든다. 사본에 넣을 수 있는 엔진 값(서연 무응답 91%, 곡선 마지막 80%, 지호 Keeps $34, 토스트 +$37)은 넣었고, 시안 로직이 계산하는 값은 로직을 바꾸지 않아 남는다. — 평균 위험 카드 보조줄 \"Riskiest case · N products\"의 N(엔진 값이 있는 상품 수).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^Riskiest case · \\d+ products$/"
+      }
+    },
+    {
+      "id": "ENG-11",
+      "reason": "DECISIONS 2026-11-12 13:10 \"F1-36 '+$N just now'는 마지막 금액만\" + DECISIONS 2026-11-11 22:55 \"데이터(엔진 숫자)\". 토스트 금액은 엔진 절감액(서연 +$37·지호 +$34는 사본에 넣음, 다른 항목 시안 금액은 근거 없음).",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^Dashboard updated · \\+\\$\\d+ kept$/"
+      }
+    },
+    {
+      "id": "ENG-12",
+      "reason": "DECISIONS 2026-11-11 22:55 Send 이후 + 2026-11-11 22:20 C \"단계별 위험 %는 엔진 + Assumption\". Send 뒤 단계 위험 칩.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "state": "respond-now*send*",
+        "text": "/^Risk \\d{1,3}%$/"
+      }
+    },
+    {
+      "id": "ENG-13",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"데이터(엔진 숫자)\" + 2026-11-11 22:20 B \"선택지 카드 누르면 수 바꾸고 다시 계산(환불 = 'Refund done' Simulated, 막힌 수 회색)\". 앱 선택지 3개는 엔진 recommend의 수(답장·부분 환불(정책상 막힘)·전액 환불)라 시안의 답장 전략 3개와 제목·설명이 다르다.",
+      "match": {
+        "kind": "missing",
+        "text": "/^(Ask for her customs ID|Customs releases it 1–2 days after she replies\\.|Ask the carrier to check|The carrier can’t release it\\. Customs needs her ID\\.|Refund now|Ends it today\\. You lose \\$72\\.)$/"
+      }
+    },
+    {
+      "id": "ENG-14",
+      "reason": "ENG-13과 같은 근거 (DECISIONS 2026-11-11 22:55 데이터(엔진) + 2026-11-11 22:20 B \"막힌 수 회색\") — 앱 쪽 엔진 수 카드 글.",
+      "match": {
+        "kind": "extra",
+        "text": "/^(Reply with the facts|Explain what happened and ask for what's needed\\.|Offer a partial refund|The buyer keeps the item and gets part of the money back\\.|Not offered for this case type \\(your policy\\)|Refund in full|Ends it now\\. You lose the order\\.)$/"
+      }
+    },
+    {
+      "id": "ENG-15",
+      "reason": "DECISIONS 2026-11-11 22:55 \"데이터 / 안전장치 … 검사 실패 시 Send 막고 Details 펼침\" + 2026-11-11 22:15 ③ \"'PayPal data only'는 Details 첫 줄로\". Details 안의 PayPal 데이터만 계산·검사 3개·역번역은 앱에만 있다.",
+      "match": {
+        "kind": "extra",
+        "text": "/^(PayPal data only: .+|The options above use carrier records \\(demo data\\)\\..*|Checks before sending|Back-translation to English|(✓ )?(Facts match|No new promises|No dates or amounts typed in directly|No extra title next to the buyer's name)|Follow-up date.*|passed|failed)$/"
+      }
+    },
+    {
+      "id": "WEEK-01",
+      "reason": "DECISIONS 2026-11-11 22:55 \"근거 없는 성과 숫자 4·$312·14분 금지\" + 2026-11-12 20:35 ④ \"성과 숫자 금지\" + 20:40 \"성과 숫자 엔진·실제만\". 이번 주 카드는 계산 가능한 숫자(열린 분쟁 수·지킬 수 있는 돈·AI 초안 수)만 — 시안 값은 사본에도 그대로 두었다. — 시안 카드 칸(막은 분쟁·지킨 금액·첫 답장 시간과 그 숫자·보조줄).",
+      "match": {
+        "kind": "missing",
+        "selector": "aside > section:first-of-type",
+        "text": "/^(What AI handled for you|Disputes prevented|Money kept|First reply time|\\d+ min|was 2 days|this week|refunds & chargebacks avoided|in 4 languages|\\+\\d+ just now|\\+\\$\\d+ just now|\\d+|\\$\\d+)$/"
+      }
+    },
+    {
+      "id": "WEEK-02",
+      "reason": "DECISIONS 2026-11-11 22:55 \"근거 없는 성과 숫자 4·$312·14분 금지\" + 2026-11-12 20:35 ④ \"성과 숫자 금지\" + 20:40 \"성과 숫자 엔진·실제만\". 이번 주 카드는 계산 가능한 숫자(열린 분쟁 수·지킬 수 있는 돈·AI 초안 수)만 — 시안 값은 사본에도 그대로 두었다. — 앱 카드 글.",
+      "match": {
+        "kind": "extra",
+        "text": "/^(What's on your desk|Open disputes|real PayPal sandbox cases|Money you can keep|vs refunding every case|checked by code before sending|Nothing goes to PayPal without your approval\\.)$/"
+      }
+    },
+    {
+      "id": "WEEK-03",
+      "reason": "DECISIONS 2026-11-11 22:55 \"근거 없는 성과 숫자 4·$312·14분 금지\" + 2026-11-12 20:35 ④ \"성과 숫자 금지\" + 20:40 \"성과 숫자 엔진·실제만\". 이번 주 카드는 계산 가능한 숫자(열린 분쟁 수·지킬 수 있는 돈·AI 초안 수)만 — 시안 값은 사본에도 그대로 두었다. — 앱 카드 숫자 칸·방금 바뀐 금액.",
+      "match": {
+        "kind": "extra",
+        "selector": ".weekly-value"
+      }
+    },
+    {
+      "id": "WEEK-04",
+      "reason": "DECISIONS 2026-11-11 22:55 \"근거 없는 성과 숫자 4·$312·14분 금지\" + 2026-11-12 20:35 ④ \"성과 숫자 금지\" + 20:40 \"성과 숫자 엔진·실제만\". 이번 주 카드는 계산 가능한 숫자(열린 분쟁 수·지킬 수 있는 돈·AI 초안 수)만 — 시안 값은 사본에도 그대로 두었다. — 앱 카드 '+$N just now'(13:10 F1-36 마지막 금액만).",
+      "match": {
+        "kind": "extra",
+        "selector": ".weekly-bump"
+      }
+    },
+    {
+      "id": "PROM-01",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"약속(Refund backup·Expected delivery·환불 약속 없음)\" + 2026-11-12 20:40 \"서연 AI 초안에 'Expected delivery'·'refund in full' 없음·'Refund backup' 칩 없음\". — 'Refund backup' 칩·빠짐 줄·그 문장.",
+      "match": {
+        "kind": "missing",
+        "text": "/^(✓ Refund backup|Refund backup|Missing: Refund backup|If it hasn’t arrived by then, I’ll refund you in full\\.)$/"
+      }
+    },
+    {
+      "id": "PROM-02",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"약속(Refund backup·Expected delivery·환불 약속 없음)\" + 2026-11-12 20:40 \"서연 AI 초안에 'Expected delivery'·'refund in full' 없음·'Refund backup' 칩 없음\". 시안 초안 문장 대신 앱의 AI 초안(캐시, 이름 자리표시자 채움). 초안 글·한국어 번역·보낸 말풍선이 그 글로 시작한다.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^(Sorry for the wait, Seo-yeon\\. Your sweater is at Korean customs|Hello Seo-yeon,|서연 님, 기다리게 해서 죄송해요\\. 스웨터는|안녕하세요,? ?서연 님)/"
+      }
+    },
+    {
+      "id": "PROM-03",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"약속(Refund backup·Expected delivery·환불 약속 없음)\" + 2026-11-12 20:40 \"서연 AI 초안에 'Expected delivery'·'refund in full' 없음·'Refund backup' 칩 없음\". — Details의 시안 초안 문장 인용(“…”).",
+      "match": {
+        "kind": "missing",
+        "text": "/^“(Expected delivery: Nov 17\\.|If it hasn’t arrived by then, I’ll refund you in full\\.|Your sweater is at Korean customs, waiting for your customs ID\\.|Reply with your customs ID \\(PCCC\\) and customs will release it\\.|Sorry for the wait, Seo-yeon\\.)”$/"
+      }
+    },
+    {
+      "id": "PROM-04",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"약속(Refund backup·Expected delivery·환불 약속 없음)\" + 2026-11-12 20:40 \"서연 AI 초안에 'Expected delivery'·'refund in full' 없음·'Refund backup' 칩 없음\". — Details의 앱 AI 초안 문장 인용(“…”).",
+      "match": {
+        "kind": "extra",
+        "text": "/^“(Hello Seo-yeon,|I am very sorry for the long wait|Your sweater has shipped|Could you please send me your personal customs clearance code|I will (pass it to the carrier|also check the status directly with the carrier))/"
+      }
+    },
+    {
+      "id": "PROM-05",
+      "reason": "DECISIONS 2026-11-12 13:10 \"F4-40 '✓ Buyer's language' 칩은 남긴다 (예외)\".",
+      "match": {
+        "kind": "extra",
+        "text": "/^(✓ )?Buyer's language$/"
+      }
+    },
+    {
+      "id": "PROM-06",
+      "reason": "DECISIONS 2026-11-12 13:10 \"F4-20·59·63(이름 규칙 문구)은 예외로 인정\" + 2026-11-12 \"Use buyer's name … 대명사 없음\". 시안 her → 앱 Seo-yeon.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^(Edit freely — (her|Seo-yeon's) reaction updates as you type|(Her|Seo-yeon's) likely reaction|(Her|Seo-yeon's) mood next( ·)?)$/"
+      }
+    },
+    {
+      "id": "KEEP-01",
+      "reason": "DECISIONS 2026-11-12 \"서연 메시지의 '카드사에 이의제기' 빨간 밑줄 강조는 남긴다 ('Keep it')\" (v2.10 ① \"영어 밑줄 'dispute with my card company'까지\"). — 밑줄 표시 자체.",
+      "match": {
+        "kind": "extra",
+        "selector": "mark",
+        "text": "/^(카드사에 이의제기|dispute with my card company)$/"
+      }
+    },
+    {
+      "id": "KEEP-02",
+      "reason": "DECISIONS 2026-11-12 \"서연 메시지의 '카드사에 이의제기' 빨간 밑줄 강조는 남긴다 ('Keep it')\" (v2.10 ① \"영어 밑줄 'dispute with my card company'까지\"). — 밑줄이 글을 나눠 말풍선·번역 줄의 자기 글자가 시안과 달라진다.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^(벌써 3주째인데 아직도 안 왔어요|· It's already been three weeks and it still hasn't arrived)/"
+      }
+    },
+    {
+      "id": "SEND-01",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"Send 이후(제목 'What happens next · Simulated', Auto 대신 [Forward to carrier], 'POST carrier/… 200' 없음, 통관번호 가림)\" + 2026-11-12 20:40 \"예외 유지 … Send 이후\". — 시안 칸 제목·부제.",
+      "match": {
+        "kind": "missing",
+        "state": "respond-now*send*",
+        "text": "/^(Case progress|Live · updates as things happen)$/"
+      }
+    },
+    {
+      "id": "SEND-02",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"Send 이후(제목 'What happens next · Simulated', Auto 대신 [Forward to carrier], 'POST carrier/… 200' 없음, 통관번호 가림)\" + 2026-11-12 20:40 \"예외 유지 … Send 이후\". — 앱 칸 제목·부제.",
+      "match": {
+        "kind": "extra",
+        "state": "respond-now*send*",
+        "text": "/^(What happens next · Simulated|Expected steps after your reply — not real events)$/"
+      }
+    },
+    {
+      "id": "SEND-03",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"Send 이후(제목 'What happens next · Simulated', Auto 대신 [Forward to carrier], 'POST carrier/… 200' 없음, 통관번호 가림)\" + 2026-11-12 20:40 \"예외 유지 … Send 이후\". — 'Auto' 칩과 자동 단계 아이콘 'A'.",
+      "match": {
+        "kind": "missing",
+        "state": "respond-now*send*",
+        "text": "/^(Auto|A)$/"
+      }
+    },
+    {
+      "id": "SEND-04",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"Send 이후(제목 'What happens next · Simulated', Auto 대신 [Forward to carrier], 'POST carrier/… 200' 없음, 통관번호 가림)\" + 2026-11-12 20:40 \"예외 유지 … Send 이후\". — 자동 단계·POST 줄·배송 완료 단계(앱 시나리오에 없음).",
+      "match": {
+        "kind": "missing",
+        "state": "respond-now*send*",
+        "text": "/^(DisputeLess forwarded the ID to the carrier|POST carrier\\/customs-clearance · 200|Out for delivery · tracking synced to PayPal|POST \\/v1\\/shipping\\/trackers · 200|Delivered · case closed|She marked it received|Carrier scan: cleared, Incheon|Refund processed · \\$72|POST \\/v2\\/payments\\/captures\\/…\\/refund · 201|Refunded \\$72 · chargeback avoided)$/"
+      }
+    },
+    {
+      "id": "SEND-05",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"Send 이후(제목 'What happens next · Simulated', Auto 대신 [Forward to carrier], 'POST carrier/… 200' 없음, 통관번호 가림)\" + 2026-11-12 20:40 \"예외 유지 … Send 이후\". — [Forward to carrier] 승인 단계.",
+      "match": {
+        "kind": "extra",
+        "state": "respond-now*send*",
+        "text": "/^(Forward the customs ID to the carrier|Needs your approval\\. No carrier is connected, so this step is simulated\\.|Forward to carrier|Customs ID forwarded to the carrier|You approved · nothing was sent to a carrier|Expected next step once customs has the ID)$/"
+      }
+    },
+    {
+      "id": "SEND-06",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"Send 이후(제목 'What happens next · Simulated', Auto 대신 [Forward to carrier], 'POST carrier/… 200' 없음, 통관번호 가림)\" + 2026-11-12 20:40 \"예외 유지 … Send 이후\". — 통관번호 가림(P123456789012 → P•••••••9012)과 그에 맞춘 손님 답장 단계 제목.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "state": "respond-now*send*",
+        "text": "/(P123456789012|P•••••••9012|^Seo-yeon sent her customs ID$|^Seo-yeon replied with the customs ID$)/"
+      }
+    },
+    {
+      "id": "SEND-07",
+      "reason": "DECISIONS 2026-11-12 13:10 \"F5-8 Send 뒤 단계 시각 줄은 빼고 예외 (Simulated라 근거 있는 시각 없음)\" — 단계·말풍선 시각.",
+      "match": {
+        "kind": "missing",
+        "state": "respond-now*send*",
+        "text": "/^(Nov 10 · \\d{2}:\\d{2}|Nov 1[0-5]|Next)$/"
+      }
+    },
+    {
+      "id": "SEND-08",
+      "reason": "DECISIONS 2026-11-11 22:55 예외 \"Send 이후(제목 'What happens next · Simulated', Auto 대신 [Forward to carrier], 'POST carrier/… 200' 없음, 통관번호 가림)\" + 2026-11-12 20:40 \"예외 유지 … Send 이후\". + DECISIONS 2026-11-11 22:55 안전장치 \"Simulated send\" + 약속 \"Refund backup 없음\" — 첫 단계 보조글·보낸 말풍선 보조글.",
+      "match": {
+        "kind": "missing",
+        "state": "respond-now*send*",
+        "text": "/^(Customs ID request \\+ Nov 17 date \\+ refund backup|Sent · (translated|auto-translated) · Nov 10 14:02)$/"
+      }
+    },
+    {
+      "id": "SEND-09",
+      "reason": "SEND-08과 같은 근거: DECISIONS 2026-11-11 22:55 Send 이후 + 안전장치 \"Simulated send\" — 앱 쪽 보조글.",
+      "match": {
+        "kind": "extra",
+        "state": "respond-now*send*",
+        "text": "/^(Simulated send — nothing went to PayPal|PayPal sandbox · PP-R-[A-Z]{3}-\\d{8}|Sent in Korean( · Simulated)?)$/"
+      }
+    },
+    {
+      "id": "SEND-10",
+      "reason": "DECISIONS 2026-11-11 22:55 \"근거 없는 성과 숫자 … 금지\" + Send 이후 — 시안 결과 상자(Resolved in 5 days · $0 lost 등)는 앱에 없다.",
+      "match": {
+        "kind": "missing",
+        "state": "respond-now*send*",
+        "text": "/^(Resolved in 5 days · \\$0 lost|Closed today · \\$72 refunded|Chargeback likely|Before DisputeLess|With DisputeLess|23 days · 4 messages · risk rose to 89%|1 reply · 2 auto steps · chargeback avoided \\(−\\$82\\)|1 reply · chargeback avoided · \\$72 refunded|Risk 93% — try a better reply)$/"
+      }
+    },
+    {
+      "id": "SEND-11",
+      "reason": "DECISIONS 2026-11-11 22:55 안전장치 \"쓰기 0회, 승인 버튼\" + 약속 \"환불 약속 없음\" — 시안의 바로 환불 단계·버튼.",
+      "match": {
+        "kind": "missing",
+        "state": "respond-now*send*",
+        "text": "/^(Refund \\$72 now|Refunded ✓|AI: refund now \\(\\$72\\) costs less than losing the chargeback \\(\\$82\\)|Or replay and try a better reply|Reply sent|No date, no next step|Refund note sent in Korean|\\$72 refunded to PayPal)$/"
+      }
+    },
+    {
+      "id": "SEND-12",
+      "reason": "SEND-11과 같은 근거: DECISIONS 2026-11-11 22:55 안전장치 \"쓰기 0회, 승인 버튼\" — 앱의 승인 단계(환불은 승인 버튼 + Simulated, 실제 환불 없음).",
+      "match": {
+        "kind": "extra",
+        "state": "respond-now*send*",
+        "text": "/^(Consider a full refund before it becomes a chargeback|Refund the order in full|Needs your approval — this demo makes no refund and sends nothing to PayPal\\..*|The forecast for this reply ends in a refund\\..*|Approve refund|Refund approved|You approved · no refund was made, nothing was sent to PayPal)$/"
+      }
+    },
+    {
+      "id": "LAB-01",
+      "reason": "DECISIONS 2026-11-11 22:55 안전장치 \"'Simulated send', Assumption·Demo data 최소\" + 2026-11-12 20:40 \"Assumption·Demo data·Simulated 유지\". — Assumption·Demo data 배지 글.",
+      "match": {
+        "kind": "extra",
+        "selector": ".badge",
+        "text": "/^(Assumption|Demo data)$/"
+      }
+    },
+    {
+      "id": "LAB-02",
+      "reason": "DECISIONS 2026-11-11 22:55 안전장치 \"'Simulated send', Assumption·Demo data 최소\" + 2026-11-12 20:40 \"Assumption·Demo data·Simulated 유지\". — 배지 기호.",
+      "match": {
+        "kind": "extra",
+        "selector": ".badge-glyph"
+      }
+    },
+    {
+      "id": "LAB-03",
+      "reason": "DECISIONS 2026-11-11 22:55 안전장치 \"'Simulated send', Assumption·Demo data 최소\" + 2026-11-12 20:40 \"Assumption·Demo data·Simulated 유지\". + 2026-11-12 20:35 ③ \"Lena [Refund $24] 승인 버튼 + Simulated … Yuki [Looks good] Simulated\" — Simulated 표시 글.",
+      "match": {
+        "kind": "extra",
+        "text": "/^(Simulated|Simulated · nothing was sent|Simulated · not sent|Simulated · nothing was sent to PayPal|Not sent \\(simulated\\)|Simulated send — nothing goes to PayPal|Refund is simulated in this demo — nothing is sent|Refund done · Simulated)$/"
+      }
+    },
+    {
+      "id": "LAB-04",
+      "reason": "DECISIONS 2026-11-12 \"'Done today' 묶음 … 묶음 안이 모두 Simulated면 제목 'Done today · Simulated'\".",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "text": "/^Done today( · Simulated)?$/"
+      }
+    },
+    {
+      "id": "V6-E7a",
+      "reason": "DECISIONS 2026-11-12 \"시안 v6 차이 목록의 충돌 3개\" ① \"스위치를 끄면 답장을 비우고 무응답 예측으로 (시안 v6 코드와 다름 — 예외 V6-E7)\" — 끈 뒤 시안은 초안·'with your draft'·'N% → M%'가 남고 앱은 빈 답장·'if no reply by'.",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "state": "respond-now*__respond-now",
+        "text": "/^(with your draft|if no reply by Nov \\d{1,2}|\\d{1,3}% → \\d{1,3}%|\\d{1,3}%|Chargeback \\d{1,3}%|Expected cost \\$\\d+)$/"
+      }
+    },
+    {
+      "id": "V6-E7b",
+      "reason": "DECISIONS 2026-11-12 \"시안 v6 차이 목록의 충돌 3개\" ① (V6-E7) — 끈 뒤 빈 답장이라 단순 카드 [Send]가 꺼진다(시안은 켜짐).",
+      "match": {
+        "kind": "style",
+        "state": "respond-now*__respond-now",
+        "role": "button",
+        "text": "/^Send$/",
+        "prop": [
+          "background-color",
+          "color",
+          "opacity",
+          "cursor"
+        ]
+      }
+    },
+    {
+      "id": "V6-E7c",
+      "reason": "DECISIONS 2026-11-12 \"시안 v6 차이 목록의 충돌 3개\" ① (V6-E7) — 끈 뒤 상태 전체 그림이 다르다(초안·위험·곡선 점).",
+      "match": {
+        "kind": "pixel",
+        "state": "respond-now*__respond-now"
+      }
+    },
+    {
+      "id": "V6-C42a",
+      "reason": "DECISIONS 2026-11-12 \"시안 v6 차이 목록의 충돌 3개\" ② \"Yuki 카드 'Auto-sent · Nov 10' → [Looks good] 승인 버튼 + 'Simulated · not sent' (Auto 없음 예외, V6-C42)\".",
+      "match": {
+        "kind": [
+          "missing",
+          "extra"
+        ],
+        "state": "*1051*",
+        "text": "/^(Already sent|Auto-sent · Nov 10, 09:12|On approval|Sent to the buyer \\(Japanese\\)|What the buyer will receive \\(Japanese\\)|Answered in Japanese automatically, because low-risk questions are auto-answered\\. Please check it\\.)$/"
+      }
+    },
+    {
+      "id": "V6-C42b",
+      "reason": "DECISIONS 2026-11-12 \"시안 v6 차이 목록의 충돌 3개\" ② (V6-C42) — 보내지 않았으므로 Yuki 답 상자가 '보낸' 남색(#002991·흰 글자)이 아니라 보내기 전 색.",
+      "match": {
+        "kind": "style",
+        "state": "*1051*",
+        "text": "/^(お問い合わせありがとうございます|Translated|· Thanks for asking\\.)/",
+        "prop": [
+          "color",
+          "background-color",
+          "border-top",
+          "border-right",
+          "border-bottom",
+          "border-left"
+        ]
+      }
+    },
+    {
+      "id": "V6-B26",
+      "reason": "DECISIONS 2026-11-12 \"시안 v6 차이 목록의 충돌 3개\" ③ \"AG Grid 표 강조는 둘 다: 시안의 위험 45% 이상 .hi + 고른 행 강조\" — 고른 행 배경.",
+      "match": {
+        "kind": "style",
+        "state": "all-products*",
+        "selector": ".ag-row-selected",
+        "prop": "background-color"
+      }
+    },
+    {
+      "id": "LENA-01",
+      "reason": "DECISIONS 2026-11-12 20:35 ③ \"Lena [Refund $24] 승인 버튼 + Simulated(실제 환불 호출 없음)\" — 누른 뒤 시안의 'Refunded ✓'·'보낸' 표시 대신 Simulated.",
+      "match": {
+        "kind": "missing",
+        "state": "*refund-24",
+        "text": "/^(Refunded ✓|Sent to the buyer \\(German\\))$/"
+      }
+    },
+    {
+      "id": "AG-01",
+      "reason": "DECISIONS 2026-11-12 20:40 5 \"AG Grid 표 2개 'Products'·'Cases by risk' … 공용 AG Grid 래퍼\" + \"스폰서상 = AG Grid\". 시안은 div/button 표, 앱은 AG Grid 라이브러리 DOM. — 칸 요소(role gridcell).",
+      "match": {
+        "kind": "extra",
+        "selector": ".ag-root-wrapper",
+        "role": "gridcell"
+      }
+    },
+    {
+      "id": "AG-02",
+      "reason": "DECISIONS 2026-11-12 20:40 5 \"AG Grid 표 2개 'Products'·'Cases by risk' … 공용 AG Grid 래퍼\" + \"스폰서상 = AG Grid\". 시안은 div/button 표, 앱은 AG Grid 라이브러리 DOM. — 행 묶음 요소(role rowgroup).",
+      "match": {
+        "kind": "extra",
+        "selector": ".ag-root-wrapper",
+        "role": "rowgroup"
+      }
+    },
+    {
+      "id": "AG-03",
+      "reason": "DECISIONS 2026-11-12 20:40 5 \"AG Grid 표 2개 'Products'·'Cases by risk' … 공용 AG Grid 래퍼\" + \"스폰서상 = AG Grid\". 시안은 div/button 표, 앱은 AG Grid 라이브러리 DOM. — 표시용 요소(role presentation).",
+      "match": {
+        "kind": "extra",
+        "selector": ".ag-root-wrapper",
+        "role": "presentation"
+      }
+    },
+    {
+      "id": "CURVE-01",
+      "reason": "DECISIONS 2026-11-12 10:55 \"예외 목록에 '시안 SVG 늘림 버그 수정 = 의도적 개선'으로 적는다\" — viewBox = 실제 px 폭, preserveAspectRatio none 안 씀, non-scaling-stroke. 곡선이 보이는 서연 상태의 픽셀 차이(점·선 두께·점선 간격). 도구가 픽셀 차이를 영역별로 나누지 못해 상태 단위로 건다.",
+      "match": {
+        "kind": "pixel",
+        "state": "initial"
+      }
+    },
+    {
+      "id": "CURVE-02",
+      "reason": "DECISIONS 2026-11-12 10:55 \"예외 목록에 '시안 SVG 늘림 버그 수정 = 의도적 개선'으로 적는다\" — viewBox = 실제 px 폭, preserveAspectRatio none 안 씀, non-scaling-stroke. 곡선이 보이는 서연 상태의 픽셀 차이(점·선 두께·점선 간격). 도구가 픽셀 차이를 영역별로 나누지 못해 상태 단위로 건다.",
+      "match": {
+        "kind": "pixel",
+        "state": "show-history"
+      }
+    },
+    {
+      "id": "CURVE-03",
+      "reason": "DECISIONS 2026-11-12 10:55 \"예외 목록에 '시안 SVG 늘림 버그 수정 = 의도적 개선'으로 적는다\" — viewBox = 실제 px 폭, preserveAspectRatio none 안 씀, non-scaling-stroke. 곡선이 보이는 서연 상태의 픽셀 차이(점·선 두께·점선 간격). 도구가 픽셀 차이를 영역별로 나누지 못해 상태 단위로 건다.",
+      "match": {
+        "kind": "pixel",
+        "state": "respond-now*"
+      }
+    },
+    {
+      "id": "CURVE-04",
+      "reason": "DECISIONS 2026-11-12 10:55 \"예외 목록에 '시안 SVG 늘림 버그 수정 = 의도적 개선'으로 적는다\" — viewBox = 실제 px 폭, preserveAspectRatio none 안 씀, non-scaling-stroke. 곡선이 보이는 서연 상태의 픽셀 차이(점·선 두께·점선 간격). 도구가 픽셀 차이를 영역별로 나누지 못해 상태 단위로 건다.",
+      "match": {
+        "kind": "pixel",
+        "state": "all-products__1042"
+      }
+    },
+    {
+      "id": "FONT-01",
+      "reason": "DECISIONS 2026-11-12 20:45 0 \"글꼴 로딩 뒤\" 비교 + 11:20 ⑥ \"루트 font-family Figtree, 'Noto Sans KR' 순서\". 같은 Figtree를 앱은 next/font(자체 호스팅 별칭 '__Figtree_…')로, 시안 사본은 Google Fonts로 불러 계산된 첫 글꼴 이름만 다르다. 글자 크기·굵기·줄 간격은 이 줄로 설명되지 않는다.",
+      "match": {
+        "kind": "style",
+        "prop": "font-family"
+      }
+    },
+    {
+      "id": "REPRO-01",
+      "reason": "ENG-13과 같은 근거 (DECISIONS 2026-11-11 22:55 데이터(엔진) + 2026-11-11 22:20 B \"막힌 수 회색\") — 앱에는 시안의 'Ask the carrier to check' 선택지가 없다(엔진 수: 답장·부분 환불(막힘)·전액 환불). 이 클릭으로 시작하는 상태는 앱에서 재현되지 않는다.",
+      "match": {
+        "kind": "repro",
+        "state": "respond-now__ask-the-carrier-to-check*"
+      }
+    },
+    {
+      "id": "REPRO-02",
+      "reason": "DECISIONS 2026-11-12 \"칩으로 고친 답장도 보낼 수 있게 ('Yes, allow edited send')\" — 고친 글은 translateReply(실시간 AI 번역 + 역번역 + 검사)를 지나 sendable일 때만 Send. 급한 답장은 고친 글이라 Translate & check(실제 AI) 없이는 Send가 꺼져 있어, AI를 부르지 않는 비교에서는 Send 뒤 상태가 재현되지 않는다.",
+      "match": {
+        "kind": "repro",
+        "state": "respond-now__try-a-rushed-reply__send*"
+      }
+    }
+  ]
+}
