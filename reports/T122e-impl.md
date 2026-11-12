@@ -54,3 +54,30 @@
 ## 컨트롤 타워에 요청할 결정
 - 지호 #1038 연결: 시드 `orderLabels.jiho.paypalRef`(T119 뒤)만 채우면 화면은 바로 따라온다. 코드 변경은 필요 없다.
 - 목록 줄의 Demo data 배지를 줄마다 달지, 머리글에만 달지 정해 주세요. 지금은 정직 규칙을 따라 줄마다 단다.
+
+## 병합 (2026-11-12, main → lane/ui, 커밋 e0e7cc1)
+main(T122d·T122f·T122g)을 lane/ui(T122e)에 병합. 충돌 7개를 **양쪽 기능을 모두 살려** 풀었다.
+
+| 파일 | 푼 방법 |
+|---|---|
+| `src/app/(app)/page.tsx` | `Pane`: T122e의 Prevent 분기(통관번호 표시 줄 = `WorkDetail` 머리 + `today.prevent.noAction`, 실제 대상 없음) 뒤에 T122f의 `demoItemFor(item.id)` → `DemoItemCard` 분기를 둔다. 그 뒤 `CaseDetail` |
+| `src/app/cases/case-detail.tsx` | import 합침(`CaseEvent, Recommendation`, `currentLocale, t`, `displayLabelFor, seoyeonHistoryRows`). T122e `caseHistory`(서연 8줄)와 main의 `jihoWork`(T122c repair/offer 두 갈래) 주석·함수를 둘 다 둔다 |
+| `src/app/today/model.ts` | import 합침(`currentLocale` + `displayLabelFor, preventRowLabel`). 본문은 자동 병합 그대로 |
+| `tests/unit/app-today.test.ts` | 묶음 = Reply needed [서연·지호·Lena·Mike] / Prevent [추적·customs-id·가디건] / Questions [Yuki]. 항목 수 8 (추적 없음 7, 분쟁 0건 4 = lena·customs-id·가디건·yuki, 데모 항목도 없음 2) |
+| `tests/unit/app-t061.test.ts` | 8줄: needsYou 4 · prevent 3 · routine 1 |
+| `tests/unit/app-t076.test.ts` | 묶음은 위와 같다 + 힌트 3개. #10xx = #1029·#1042·#1047·#1051, "Customs ID missing" 있음, 데모 항목 lena·yuki 확인 유지. Mike 줄 위치 2 → 3 (Lena가 앞) |
+| `tests/unit/app-t091.test.ts` | T122e의 v6 typeOut(32ms·1글자) 시험을 남기고, main 쪽 step 2 함수 확인 2줄을 덧붙였다 (v4 시안 34ms 원문 확인은 v6 기준이라 뺐다) |
+
+충돌 밖에서 고친 것 1건: `tests/unit/app-t122d.test.ts`가 `page.tsx`에 `item.kind === 'demo') return null`을 기대했는데, T122f가 그 줄을 `demoItemFor` → `DemoItemCard`로 바꿨다 (`reports/T122f-impl.md` "병합 충돌 예상"이 그렇게 하라고 적어 둠). 기대값을 T122f 동작(`demoItemFor(item.id)` 다음 `DemoItemCard`)으로 바꿨다. 인수 테스트가 아니라 단위 테스트다.
+
+판단 근거: 통관번호 예방 줄은 DECISIONS v2.16 20:35 ③("3 orders · Customs ID missing")과 T122e 지시서 4번에 있다. main 쪽 T122d 시험의 "Customs ID 없음"은 T122e 전에 쓴 것이라 T122e 쪽을 따랐다. 통관부호 *문의* 항목이 없다는 시험(`/customs code/`)은 그대로 둔다.
+
+### 검사
+| 검사 | 결과 |
+|---|---|
+| npx tsc --noEmit | 0 오류 |
+| npm run lint | 0 오류, 경고 5 (이 병합과 상관없는 `app-t098a-scenes`, `repair` 시험 파일. 원래 있던 경고) |
+| npx vitest run tests/unit | 2749 통과 / 1 실패 = storefront "결정론 100회" (전체 실행 때 시간 흔들림. 따로 돌리면 31/31 통과) |
+| npm run test:acceptance | 16 파일, 182 통과 · 9 건너뜀 · 0 실패 |
+
+실제 AI·PayPal 호출, 개발 서버, `.env` 읽기는 하지 않았다.
