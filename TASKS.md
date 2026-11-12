@@ -169,7 +169,9 @@
 | T120b | AI 초안 repair | ai | 완료 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T120b.md` | 사람 결정 20:35·20:40·20:45 |
 | T120c | 화면 컴파일 맞춤 repair | ui | 완료 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T120c.md` | 사람 결정 20:35·20:40·20:45 |
 | T121 | 시드 시안 v6 데이터 | data | 완료 | v2.16 | — | AC35 | 모델 `claude-sonnet-5-5`. `tasks/T121.md` | 사람 결정 20:35·20:40·20:45 |
-| T123 | 자동 디자인 비교 도구 | ops | 진행 | v2.16 | — | AC35 | 모델 `claude-opus-5-5`. `tasks/T123.md` | 사람 결정 20:35·20:40·20:45 |
-| T122a | v6 처음 상태·AI Respond now 스위치·답장 칸 문구 | ui | 대기 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T122a.md` | 사람 결정 20:40 |
-| T122b | v6 목록 위험 칩·묶음·All products(AG Grid 2개)·상품 칩 | ui | 대기 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui-desk`. `tasks/T122b.md` | 사람 결정 20:40 |
+| T123 | 자동 디자인 비교 도구 | ops | 완료 | v2.16 | — | AC35 | 모델 `claude-opus-5-5`. `tasks/T123.md` | 사람 결정 20:35·20:40·20:45 |
+| T122a | v6 처음 상태·AI Respond now 스위치·답장 칸 문구 | ui | 완료 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T122a.md` | 사람 결정 20:40 |
+| T122b | v6 목록 위험 칩·묶음·All products(AG Grid 2개)·상품 칩 | ui | 완료 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui-desk`. `tasks/T122b.md` | 사람 결정 20:40 |
 | T122c | v6 지호·Lena·Yuki·추적 한 장 카드 | ui | 대기 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T122c.md` | 사람 결정 20:40 |
+| T120d | 엔진 meanRisk (평균 위험) | engine | 진행 | v2.16 | — | — | sonnet. `tasks/T120d.md` | T122b 요청 |
+| T122d | v6 목록 후속 (Questions·데모 연결, riskLevel, 평균 카드) | ui | 진행 | v2.16 | T120d | — | opus, `lane/ui-desk`. `tasks/T122d.md` | T122b 요청 |
