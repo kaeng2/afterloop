@@ -25,6 +25,7 @@ import { CaseHistoryCard } from './case-history';
 import { ChoiceCards } from './choice-cards';
 import { Conversation } from './conversation';
 import { RiskCurveCard } from './risk-curve';
+import { WorkZone } from './work-zone';
 
 import './case.css';
 
@@ -148,7 +149,8 @@ export function CaseView({
             />
           </div>
 
-          <section className="work zone-work" aria-labelledby="work-title">
+          {/* T116 F5-3: Send 뒤 랜드마크 이름 "Case progress" (시안 L312). 보이는 제목은 그대로 */}
+          <WorkZone titleId="work-title">
             <div className="work-head">
               <AiPill />
               <h2 className="desk-card-title" id="work-title">
@@ -160,7 +162,7 @@ export function CaseView({
             {/* 선택지 카드가 없으면(엔진 추천 없이 그릴 때) 요약 한 줄만 */}
             {desk.choices.length === 0 ? summaryNode : null}
             {reply === undefined ? null : <div className="case-body-reply">{reply}</div>}
-          </section>
+          </WorkZone>
         </>
       )}
     </div>

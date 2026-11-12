@@ -33,20 +33,35 @@ export function TrackingRegister({
   doneId?: string | null;
 }) {
   const t = useT();
-  const { report, markDone } = useSavings();
+  const { report, markDone, unmarkDone } = useSavings();
   const [outcome, setOutcome] = useState<TrackingOutcome | null>(initial);
   const [pending, startTransition] = useTransition();
+  /** T116 F1-45: 누르는 즉시 "Added ✓"·Done today (시안 동기 setState). 서버 결과가 실패면 되돌린다. */
+  const [optimistic, setOptimistic] = useState(false);
   const finished = outcome !== null && countsAsDone(outcome.kind);
+  const shownDone = finished || optimistic;
 
   const onClick = () => {
-    if (pending || finished) return;
+    if (pending || shownDone) return;
+    setOptimistic(true);
+    // 결과를 모르는 동안은 Simulated로 둔다 (실제로 넣었다고 먼저 말하지 않는다). 실제 등록이면 아래에서 고친다
+    if (doneId !== null) markDone(doneId, { simulated: true });
     startTransition(async () => {
-      const next = await action();
+      let next: TrackingOutcome;
+      try {
+        next = await action();
+      } catch {
+        next = { kind: 'error', line: t('today.tracking.reason.failed'), rows: [] };
+      }
       setOutcome(next);
+      setOptimistic(false);
       if (countsAsDone(next.kind)) {
         report(savings);
         // T102: dry run(simulated)은 Simulated로 표시한다 (실제로 넣지 않은 것을 끝난 것처럼 말하지 않는다)
         if (doneId !== null) markDone(doneId, { simulated: next.kind === 'simulated' });
+      } else if (doneId !== null) {
+        // 실패·일부 실패·없음: Done today에서 되돌리고 결과 줄(실패 글)을 보인다 — 실패를 성공처럼 남기지 않는다
+        unmarkDone(doneId);
       }
     });
   };
@@ -54,8 +69,8 @@ export function TrackingRegister({
   return (
     <div className="tracking-register">
       {/* T106 (F1-59): 끝나면(가짜 포함) 꺼진 채 "Added ✓" — 다시 누를 수 없다. Simulated 결과 줄은 아래에 그대로 */}
-      <button type="button" className="tracking-button" onClick={onClick} disabled={pending || finished}>
-        {pending ? t('today.tracking.adding') : finished ? t('today.tracking.addedDone') : label}
+      <button type="button" className="tracking-button" onClick={onClick} disabled={pending || shownDone}>
+        {shownDone ? t('today.tracking.addedDone') : pending ? t('today.tracking.adding') : label}
       </button>
       {outcome === null ? null : (
         <div className={`tracking-result tracking-result-${outcome.kind}`} role="status">

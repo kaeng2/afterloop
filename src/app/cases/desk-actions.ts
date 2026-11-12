@@ -134,9 +134,25 @@ export function effectRows(effects: readonly ReplyFeatureEffect[] | null, refund
 }
 
 /** 칩 버튼 → 새 글 (Add = 글 끝에 그 문장, Remove = 그 문장 삭제). 엔진이 %p를 구할 때와 같은 함수다. */
-export function applyChip(text: string, row: Pick<EffectRowView, 'action' | 'sentence'>): string {
+export function applyChip(
+  text: string,
+  row: Pick<EffectRowView, 'action' | 'sentence'> & { key?: ReplyFeatureKey },
+  hitsOf?: (text: string) => Partial<Record<ReplyFeatureKey, string>> | null,
+): string {
   if (row.sentence === null || row.action === null) return text;
-  return row.action === 'add' ? appendSentence(text, row.sentence) : removeSentence(text, row.sentence);
+  if (row.action === 'add') return appendSentence(text, row.sentence);
+  let out = removeSentence(text, row.sentence);
+  // T116 F4-46: 시안처럼 그 규칙에 걸리는 문장을 **모두** 뺀다. 엔진 `removeSentence`(하나)를 반복하고,
+  // 다음 문장은 같은 엔진 규칙(특징 판정의 hit)으로만 찾는다. 새 규칙을 만들지 않는다. 글이 줄지 않으면 멈춘다
+  if (row.key === undefined || hitsOf === undefined) return out;
+  for (let guard = 0; guard < 50; guard += 1) {
+    const next = hitsOf(out)?.[row.key];
+    if (typeof next !== 'string' || next === '') break;
+    const cut = removeSentence(out, next);
+    if (cut === out) break;
+    out = cut;
+  }
+  return out;
 }
 
 /** 걸린 문장 줄임 (시안 `cut`: 40자 넘으면 39자 + …, 따옴표). 글자 표기만. */

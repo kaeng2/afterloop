@@ -41,6 +41,11 @@ export type CaseHistoryInput = {
   openedAt: string | null;
   /** AI 어조 판정 (`EscalationSignals.angryTone`). */
   angryTone: boolean | null;
+  /**
+   * T116 F3-36: 샌드박스 구매자 글의 영어 (대화 칸이 보여 주는 "Translated" 글과 같은 값). 원문 → 영어.
+   * 없거나 `null`이면 원문 그대로 (지금처럼). 화면용 사건 기록에만 넘긴다 — AI 요약·위험 곡선 입력은 그대로.
+   */
+  englishOf?: (original: string) => string | null;
 };
 
 const MS_PER_DAY = 86_400_000;
@@ -107,7 +112,7 @@ export function buildCaseEvents(input: CaseHistoryInput): CaseEvent[] {
     ...input.buyerMessages.map((message) => ({
       at: message.at,
       source: 'sandbox' as const,
-      english: message.text,
+      english: input.englishOf?.(message.text) ?? message.text,
       original: message.text,
     })),
   ];
@@ -154,6 +159,7 @@ export function buildCaseEvents(input: CaseHistoryInput): CaseEvent[] {
 export function caseEventsFor(
   loaded: Pick<LoadedDispute, 'buyer' | 'carrierEvents' | 'boardReal' | 'demoFields' | 'signals' | 'timeline' | 'trackingUnknown'>,
   inquiries: readonly { date: string; buyerId: string; original: string; english: string }[],
+  englishOf?: (original: string) => string | null,
 ): CaseEvent[] {
   const buyerId = loaded.buyer?.id ?? null;
   const own =
@@ -169,7 +175,22 @@ export function caseEventsFor(
     sellerReplies: loaded.timeline?.sellerReplies ?? [],
     openedAt: loaded.timeline?.openedAt ?? null,
     angryTone: loaded.signals?.angryTone ?? null,
+    ...(englishOf === undefined ? {} : { englishOf }),
   });
+}
+
+/**
+ * T116 F3-36: 대화 글(`caseMessages` 결과)에서 원문 → 영어 찾기. 대화 칸이 보여 주는 번역과 같은 값만 쓴다
+ * (새로 번역하지 않는다). 영어가 없으면 `null`.
+ */
+export function englishLookup(
+  messages: readonly { original: string; english: string | null }[],
+): (original: string) => string | null {
+  return (original) => {
+    const hit = messages.find((message) => message.english !== null && sameText(message.original, original));
+    const english = hit?.english?.trim() ?? '';
+    return english === '' ? null : english;
+  };
 }
 
 /** 두 시각 사이 달력 날 수 (UTC 날짜 기준, 0 이상). 읽을 수 없으면 `null`. */

@@ -26,7 +26,8 @@ import { pickBoard, type LoadedDispute } from '../../_shared/dispute-view';
 import { loadDemoDisputesForRequest } from '../../_server/disputes';
 import { getLlm } from '../../_server/llm';
 import { loadHistorySummary } from '../history-summary-source';
-import { caseEventsFor } from '../history';
+import { currentLocale } from '../../_shared/copy';
+import { caseEventsFor, englishLookup } from '../history';
 import { caseMessages, type CaseViewInput } from '../model';
 import { buyerLocaleOf, caseReplyFacts } from '../reply-facts';
 
@@ -42,6 +43,8 @@ export type CaseLoad =
       llm: Availability;
       /** 사건 기록 (T076). 실제 데이터에서만 (`caseEventsFor`). */
       events: CaseEvent[];
+      /** T116 F3-36: 사건 기록 카드에 보일 줄 (EN 화면이면 구매자 글이 번역 글). 숫자 계산에는 쓰지 않는다. */
+      eventsShown: CaseEvent[];
       /**
        * 사건 기록 AI 요약 (T076 자리, T077 함수). 어댑터(`history-summary-source.ts`)가 `null`이면 줄을 숨긴다.
        * AI 초안을 만드는 같은 길에서만 부른다 (`options.draft`가 거짓이면 부르지 않는다 — LLM 호출 0회).
@@ -145,5 +148,9 @@ export async function loadCase(disputeId: string, options: { draft?: boolean } =
       : await loadHistorySummary(events, { buyerId: loaded.buyer?.id ?? null, buyerName: loaded.buyer?.name ?? null });
 
   // 초안이 없으면 (키 없음·호출 실패·출력 거부 모두) 화면은 "AI unavailable — showing rules only"
-  return { kind: 'ok', loaded, input, draft, llm: draft.ok ? { ok: true } : { ok: false }, events, historySummary };
+  // T116 F3-36: 화면용 사건 기록 — EN 화면이면 구매자 글 줄을 대화 칸과 같은 번역 글로 (원문은 Buyer messages 구역에).
+  // AI 요약·위험 곡선·늦은 날 수는 위 `events` 그대로 (글이 바뀌면 요약 캐시·예측 입력이 흔들린다)
+  const eventsShown = currentLocale() === 'ko' ? events : caseEventsFor(loaded, seedInquiries, englishLookup(input.messages));
+
+  return { kind: 'ok', loaded, input, draft, llm: draft.ok ? { ok: true } : { ok: false }, events, eventsShown, historySummary };
 }

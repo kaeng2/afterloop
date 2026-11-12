@@ -43,11 +43,12 @@ export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
         </span>
       </div>
       <div className="weekly-grid">
-        <div className="weekly-cell">
+        {/* T116 F1-35: 시안 L695-700 앞 3칸(Open·Money·Replies) 모두 끝에 한 번 깜빡인다. "+$N"은 Money 칸만 */}
+        <WeeklyBumpCell className="weekly-cell" showAmount={false}>
           <span className="weekly-label">{t('today.weekly.open')}</span>
           <span className="weekly-value num">{weekly.openDisputes}</span>
           <span className="weekly-note">{t('today.weekly.openNote')}</span>
-        </div>
+        </WeeklyBumpCell>
         {weekly.keepable === null ? null : (
           // T091: 액션이 끝나면 "+$N just now" (엔진 actionSavings·trackingSavings 값, 화면 상태만)
           <WeeklyBumpCell className="weekly-cell">
@@ -59,11 +60,11 @@ export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
           </WeeklyBumpCell>
         )}
         {weekly.aiDrafts === null ? null : (
-          <div className="weekly-cell">
+          <WeeklyBumpCell className="weekly-cell" showAmount={false}>
             <span className="weekly-label">{t('today.weekly.drafts')}</span>
             <span className="weekly-value num">{weekly.aiDrafts}</span>
             <span className="weekly-note">{t('today.weekly.draftsNote')}</span>
-          </div>
+          </WeeklyBumpCell>
         )}
         {weekly.keepable === null ? (
           <WeeklyBumpCell className="weekly-cell weekly-fact">

@@ -62,6 +62,8 @@ export type CaseProgressProps = {
   /** 보낸 글 (구매자 언어 전송본). */
   sentText: string | null;
   sentLocale: string | null;
+  /** T116 F5-19: 보낸 글이 AI 초안을 고친 글인가 ("Auto-translated to Korean"). 기본 거짓. */
+  sentEdited?: boolean;
   /** 엔진 `scenarioRisk` 입력 (보낸 글 = input.text). 없으면 위험 % 없음. */
   scenarioInput: ScenarioInput | null;
   /** T104: 보낸 답장의 예측으로 고른 분기 (`scenarioOutcome`). 없으면 ok. */
@@ -156,6 +158,7 @@ function Bubbles({
   buyerShort,
   sentText,
   sentLocale,
+  sentEdited,
   style,
 }: {
   state: ProgressState;
@@ -165,6 +168,7 @@ function Bubbles({
   buyerShort: string | null;
   sentText: string | null;
   sentLocale: string | null;
+  sentEdited: boolean;
   style: CSSProperties;
 }) {
   const t = useT();
@@ -178,7 +182,8 @@ function Bubbles({
               {sentText}
             </p>
             <p className="cprog-bubble-sub">
-              {t('case.progress.sentBubble', { language })}
+              {/* T116 F5-19: 고친 글(Translate & check 뒤)이면 시안 v.sentAuto, 아니면 v.sentKo */}
+              {t(sentEdited ? 'case.progress.sentAutoBubble' : 'case.progress.sentBubble', { language })}
               {live ? null : ` · ${t('case.progress.simulated')}`}
             </p>
           </div>
@@ -196,11 +201,9 @@ function Bubbles({
         <li className="cprog-bubble-wrap" style={style} data-source="simulated" data-outcome={outcome}>
           <div className="cprog-bubble cprog-bubble-sim">
             <span className="cprog-bubble-tag">{t('case.progress.simReply')}</span>
-            <p className="cprog-bubble-text" lang="ko">
+            {/* T116 F5-21: 시안처럼 아래 번역 줄 없이 태그 "Simulated reply"만. 영어 뜻은 title에 */}
+            <p className="cprog-bubble-text" lang="ko" title={reply.english}>
               {reply.original}
-            </p>
-            <p className="cprog-bubble-sub">
-              {t('case.view.translated')} · <span lang="en">{reply.english}</span> · {t('case.progress.simulated')}
             </p>
           </div>
           <div className="case-read">
@@ -228,6 +231,7 @@ export function CaseProgress({
   buyerShort,
   sentText,
   sentLocale,
+  sentEdited = false,
   scenarioInput,
   outcome = 'ok',
   baseForecast,
@@ -334,6 +338,7 @@ export function CaseProgress({
       buyerShort={buyerShort}
       sentText={sentText}
       sentLocale={sentLocale}
+      sentEdited={sentEdited}
       style={vars}
     />
   );
@@ -359,7 +364,8 @@ export function CaseProgress({
       {threadNode}
       <ol className="cprog-steps">
         {rows.map((row) => (
-          <Step key={`${row.step}-${row.pending ? 'pending' : 'done'}`} row={row} onApprove={approve} />
+          // T116 F5-24: key에 pending/done을 넣지 않는다 — 대기 줄이 완료 줄로 바뀔 때 다시 rise하지 않게
+          <Step key={row.step} row={row} onApprove={approve} />
         ))}
       </ol>
       {progressRunning(state, outcome) ? (

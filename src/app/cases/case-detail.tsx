@@ -145,7 +145,8 @@ export async function CaseDetail({ disputeId, row = null }: { disputeId: string;
     openDays: openedAt === null ? null : daysBetween(openedAt, now),
     recommendation: recommend(board),
     moveForecasts,
-    history: historyView(loaded.events, historySpanDays(loaded.events, now), loaded.historySummary),
+    // T116 F3-36: 줄 글은 화면용(`eventsShown`, EN이면 번역 글). 개수·날 수는 같은 사건이라 그대로
+    history: historyView(loaded.eventsShown, historySpanDays(loaded.events, now), loaded.historySummary),
     curvePoints,
     band: caseView.risk?.band ?? null,
   });

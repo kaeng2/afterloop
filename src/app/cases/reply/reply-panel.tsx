@@ -96,6 +96,7 @@ import {
   type EditStatus,
   type EditedPrepareOutcome,
 } from '../reply-model';
+import { editAdditions } from '../edited-reply';
 import { CaseProgress } from '../progress/case-progress';
 import type { ScenarioInput } from '../progress/progress-client';
 import { scenarioOutcome, type ScenarioOutcome } from '../progress/progress-model';
@@ -688,6 +689,13 @@ export function ReplyPanel({
     return effectRows(list, detected?.features.refundNow === true);
   }, [effectsFn, forecast, forecastBase, anchor, board, view.offer, text, translated, snippets, detected]);
   const empty = text.trim() === '';
+  // T116 F4-67: 입력할 때마다 "새 약속" 경고 — 서버(`send.ts` → `withEditChecks`)가 쓰는 같은 검사 `editAdditions`를
+  // AI 초안(화면 글) → 지금 글로 돌린다. 검사 결과를 옮기기만 하고, 보내기 관문은 그대로 서버 검사가 정한다
+  const newPromise = useMemo(() => {
+    if (!edited || anchor === null || empty) return false;
+    const added = editAdditions(anchor, text, draftFacts ?? []);
+    return added.promises.length > 0 || added.commitments.length > 0;
+  }, [edited, anchor, empty, text, draftFacts]);
   const reaction = reactionView(forecast, forecastBase?.signals.angryTone ?? null);
   // T103: Send 뒤 칸의 엔진 입력은 렌더마다 같은 객체여야 한다. 새 객체면 그 칸이 점(scenarioRisk)을 다시 내고
   // 곡선 상자(`setTrail`)를 갱신 → 이 칸이 다시 그려짐 → 또 새 객체 … 로 끝없이 돌아 목록 링크 이동이 막혔다
@@ -705,7 +713,7 @@ export function ReplyPanel({
 
   function onChip(row: EffectRowView) {
     if (typing) return;
-    setText((now) => applyChip(now, row));
+    setText((now) => applyChip(now, row, (value) => detector(value, { translated })?.hits ?? null));
     desk.setPath('custom');
   }
 
@@ -941,6 +949,7 @@ export function ReplyPanel({
         buyerShort={buyerShort}
         sentText={shownView.outgoing?.text ?? null}
         sentLocale={base.buyerLocale ?? null}
+        sentEdited={sentSnap !== null && anchor !== null && sentSnap.text !== anchor}
         scenarioInput={scenarioInput}
         outcome={sentOutcome}
         baseForecast={forecast}
@@ -1129,6 +1138,12 @@ export function ReplyPanel({
         {/* T090: 검사 줄은 Details 안으로. 맨 아래는 "Simulated send" 작은 글씨 + [Send] */}
         <div className="reply-foot">
           <div className="reply-actions">
+            {/* T116 F4-67: 시안 warnTxt (맨 아래 왼쪽 빨간 글). 판정 = 서버 검사와 같은 `editAdditions` (새 규칙 없음) */}
+            {newPromise ? (
+              <p className="reply-warn" role="status">
+                {t('case.reply.warnPromise')}
+              </p>
+            ) : null}
             {modeLine}
             <div className="reply-send">
               {/* T100: 고친 글은 먼저 서버에서 번역·검사 (보내지 않는다). 검사 전일 때만 보인다 */}

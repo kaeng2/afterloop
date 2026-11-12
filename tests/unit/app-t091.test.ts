@@ -355,7 +355,8 @@ describe('만들 것 5 · 완료 기준 4: 지호 Send offer · Add all N은 기
     expect(markup).toContain(t('today.tracking.actTitle', { count: 2 }));
     expect(markup).toContain('>Add all 2</button>');
     const register = strip(read('src/app/today/tracking-register.tsx'));
-    expect(register).toMatch(/const next = await action\(\);/);
+    // T116: 던지면 실패 결과로 받는다 (낙관적 표시를 되돌리려고)
+    expect(register).toMatch(/next = await action\(\);/);
     expect(register).not.toMatch(/fetch\(|api-m\.sandbox/);
     // "+$N"은 끝난 결과(가짜 포함)만
     expect(countsAsDone('simulated')).toBe(true);
