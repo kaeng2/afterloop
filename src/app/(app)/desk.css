@@ -364,3 +364,56 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 
 /* L251 선택지 카드 숫자 줄: line-height 물려받음(1.5). 앱 .choice-numbers 1.35 → 카드가 2px 낮았다 */
 .dk .choice-numbers{line-height:1.5}
+
+/* ── T122c 한 장 카드 (시안 v6 L443–L478 `isOther`, 차이 목록 V6-B45 ~ V6-B52). 값은 시안 인라인 style 그대로 ── */
+/* L444–L448 구매자 대화 (`.zone-buyer`는 1부 L43) + v6 L50 `.zone-buyer .chip/.c-n/.c-bad` */
+.dk .oc-buyer .chip{box-shadow:inset 0 0 0 1px #CFD3D8}.dk .oc-buyer .c-n{background:#FFFFFF;color:#3F4144}.dk .oc-buyer .c-bad{background:#FFFFFF;color:#9E2414;box-shadow:inset 0 0 0 1px #F2B8AF}
+.dk .oc-buyer-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.dk .oc-buyer-title{font-size:16px;font-weight:700}
+.dk .oc-sub{font-size:12px;color:#6C7378}
+.dk .oc-bub{align-self:flex-start}
+.dk .oc-bub-orig{font-size:15px}
+.dk .oc-bub-tr{font-size:13px;color:#3F4144;margin-top:4px}
+.dk .oc-tr-lab{color:#0070E0}
+.dk .oc-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding-left:4px}
+.dk .oc-airead{font-size:11px;font-weight:900;color:#002991}
+/* L451–L454 윗줄 */
+.dk .oc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dk .oc-top-text{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dk .oc-top-text>.ai-pill{align-self:flex-start;box-shadow:rgba(0,102,245,0.35) 0 2px 8px}
+.dk .oc-title{margin:0;font-size:20px;font-weight:700;line-height:inherit;color:#000000}
+.dk .oc-body{font-size:15px;color:#3F4144}
+.dk .oc-keep{flex-shrink:0;padding:6px 12px;border-radius:1000px;background:#E3F3FF;color:#002991;font-size:13px;font-weight:900}
+/* L455–L460 How AI handled this */
+.dk .oc-steps{display:flex;flex-direction:column;gap:10px}
+.dk .oc-steps-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.dk .oc-steps-title{font-size:16px;font-weight:700}
+.dk .oc-step-list{display:contents;list-style:none;margin:0;padding:0}
+.dk .oc-step{display:flex;gap:12px;align-items:flex-start}
+.dk .oc-step-n{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#0A1B3D;color:#FFFFFF;font-size:12px;font-weight:900;display:inline-flex;align-items:center;justify-content:center}
+.dk .oc-step-t{font-size:14px;line-height:1.5;padding-top:2px}
+/* L461–L466 표 (v6 L52–L66 `.ag`·`.ag-h`·`.ag-hc`·`.ag-r`·`.ag-c`, 머리·행 cursor default, 행 44px · 셀 13px) */
+.dk .oc-ag{border:1px solid #DDE2EB;border-radius:12px;overflow:hidden;background:#FFFFFF;font-size:14px}
+.dk .oc-ag-h{display:grid;background:#F8F9FB;border-bottom:1px solid #DDE2EB}
+.dk .oc-ag-hc{display:flex;align-items:center;gap:6px;padding:10px 14px;font-size:12px;font-weight:700;color:#3F4144;background:transparent;border:0;border-right:1px solid #EBEEF2;cursor:default;white-space:nowrap;text-align:left;min-width:0}
+.dk .oc-ag-hc:last-child{border-right:0}
+.dk .oc-ag-r{display:grid;align-items:center;width:100%;min-height:44px;padding:0;margin:0;color:inherit;text-align:left;background:#FFFFFF;border:0;border-bottom:1px solid #EEF0F3;cursor:default}
+.dk .oc-ag-r:last-child{border-bottom:0}
+.dk .oc-ag-c{padding:8px 14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:8px;font-size:13px}
+/* L467–L473 보낼 메시지 (`draftSt`·`trLabSt`) */
+.dk .oc-draft{display:flex;flex-direction:column;gap:8px}
+.dk .oc-draft-title{font-size:14px;color:#3F4144}
+.dk .oc-draft-box{border-radius:18px;padding:14px 16px;background:#F3F7FF;border:1px solid #CFE0FA}
+.dk .oc-draft-box-sent{background:#002991;color:#FFFFFF;border:0}
+.dk .oc-draft-orig{font-size:15px;line-height:1.6}
+.dk .oc-draft-orig:lang(ko),.dk .oc-bub-orig:lang(ko){font-family:var(--font-noto-kr),var(--font-figtree),sans-serif}
+.dk .oc-draft-tr{font-size:13px;line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid rgba(127,140,170,0.35);opacity:.86}
+.dk .oc-draft-tr-lab{color:#0070E0}
+.dk .oc-draft-box-sent .oc-draft-tr-lab{color:#9FD8FF}
+/* L474–L476 On approval 줄 */
+.dk .oc-approve{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:4px;border-top:1px solid #E4E6E9}
+.dk .oc-approve-lab{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#3F4144;padding-top:12px}
+.dk .oc-api{font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:3px 8px;border-radius:8px;background:#F1F3F6;color:#0B0F14}
+.dk .oc-approve-act{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:12px}
+/* 전송 모드 (Simulated, 예외 DECISIONS 20:40) — 버튼 옆 작게 */
+.dk .oc-mode{font-size:12px;color:#6C7378}
