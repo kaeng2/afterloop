@@ -74,7 +74,8 @@ export const loadCaseDraft = cache(async (disputeId: string): Promise<ReplyDraft
 
   const board = pickBoard(loaded);
   const best = recommend(board).best;
-  if (board.cause === undefined || best === null) return unavailable;
+  // 무료 수선 수는 AI 초안 경로에 아직 없다 (T120b 전) → 초안 없음
+  if (board.cause === undefined || best === null || best.move === 'repair') return unavailable;
 
   // 사실값 = 날짜 + 이름 토큰 (초안은 영어 꼴). 이름 값은 AI에 가지 않는다 — 토큰 이름·뜻만 간다 (T056)
   const buyerLocale = buyerLocaleOf(loaded.buyer) ?? 'en';

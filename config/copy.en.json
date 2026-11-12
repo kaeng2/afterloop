@@ -155,6 +155,7 @@
   "case.view.action.refund": "Full refund",
   "case.view.action.fight": "Reply",
   "case.view.action.offer": "Offer",
+  "case.view.action.repair": "Offer a free repair",
   "case.view.action.none": "Handle manually",
   "case.view.arrow": "changes to",
   "case.view.previous": "Previous value",

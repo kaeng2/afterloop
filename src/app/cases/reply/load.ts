@@ -96,7 +96,8 @@ export const loadReply = cache(async (disputeId: string): Promise<ReplyLoad | nu
     facts = [];
   }
   const draftSource = resolveDraftSource();
-  const move = best?.move ?? null;
+  // 'repair'는 AI 초안 경로에 넘기지 않는다 (T120b 전) → 초안 없음
+  const move = best?.move === 'repair' ? null : (best?.move ?? null);
 
   let draft: ReplyDraft = UNAVAILABLE;
   let translation: ReplyTranslation | null = null;
