@@ -15,6 +15,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { copyTables, t } from '@/app/_shared/copy';
 import { riskTone } from '@/app/_shared/motion';
+import { meanRisk } from '@/engine/mean-risk';
+import { riskChipParts as chipParts } from '@/app/today/risk-values';
 import { loadRiskLevel, riskLevelOf, riskLevelTone } from '@/app/today/risk-level';
 import type { ProductFilterView, TodayGroup, TodayGroupKey, TodayItem } from '@/app/today/model';
 import { MULTI_KEY, buildOverview, compareRisk, type OvCaseRow, type OvProductRow } from '@/app/today/overview-model';
@@ -245,7 +247,9 @@ describe('T122b-5: "All products" 전체 현황 값 (세기만, 엔진 위험 �
     expect(markup).toMatch(/<span class="ag-tag"><svg[\s\S]*?<\/svg>AG Grid<\/span>/);
     expect(markup.match(/class="ov-k"/g)).toHaveLength(5);
     expect(markup).toContain('Avg. dispute risk');
-    expect(markup).toMatch(/class="ov-k-val ov-k-val-big">—</);
+    const avgExpected = meanRisk(ov.kpis.topRisks);
+    expect(avgExpected).not.toBeNull();
+    expect(markup).toContain(`class="ov-k-val ov-k-val-big">${chipParts(avgExpected as number).percent}<`);
     expect(markup).toContain('Riskiest case · 3 products');
     expect(markup.match(/class="ag ov-grid"/g)).toHaveLength(2);
     expect(markup).toContain('<div class="ag-f"><span>4 rows</span><span>Sorted by Dispute risk ↓</span></div>');

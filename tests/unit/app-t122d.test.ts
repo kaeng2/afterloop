@@ -47,12 +47,13 @@ describe('T122d-1: 위험 단계 = config desk.riskLevel (목록 칩 · All prod
   });
 });
 
-describe('T122d-2: "Avg. dispute risk" = 엔진 meanRisk 자리 (T120d 병합 전 "—")', () => {
+describe('T122d-2: "Avg. dispute risk" = 엔진 meanRisk 자리 (T120d)', () => {
   it('화면은 상품 줄마다 최고 위험 목록만 넘기고 평균을 내지 않는다', () => {
     const view = buildToday({ disputes: [], tracking: null, products: seedProducts, now: NOW });
     const ov = buildOverview({ groups: view.groups, filter: view.filter, done: {}, risk: { lena: 0.4 }, severalName: 'S' });
     expect(ov.kpis.topRisks).toEqual([0.4]);
-    expect(dashboardMeanRisk([0.4, 0.2])).toBeNull();
+    expect(dashboardMeanRisk([0.4, 0.2])).toBeCloseTo(0.3, 10);
+    expect(dashboardMeanRisk([])).toBeNull();
     const overview = read('src/app/today/overview.tsx');
     expect(overview).toMatch(/dashboardMeanRisk\(kpis\.topRisks\)/);
     expect(overview).not.toMatch(/\.reduce\(/);

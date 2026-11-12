@@ -49,3 +49,14 @@
 
 ## 컨트롤 타워에 요청할 결정
 - 없음 (위 두 연결은 병합 작업).
+
+## 재시도(후속)
+T120d 엔진 `meanRisk`가 이 브랜치에 들어와서 자리 함수를 교체했다.
+- `src/app/today/mean-risk.ts`: `import { meanRisk } from '@/engine/mean-risk'; export const dashboardMeanRisk: MeanRiskFn = meanRisk;` (평균은 엔진만 낸다).
+- `tests/unit/app-t122d.test.ts`: `dashboardMeanRisk([0.4, 0.2])` 기대 null → 0.3, 빈 목록 null.
+- `tests/unit/app-t122b.test.ts`: Avg 카드 기대 "—" → 엔진 평균(`meanRisk(topRisks)`)의 `toPercentRounded` 값.
+- `tests/unit/app-t122c.test.ts` 250행: lint 오류(`react/no-children-prop`) 1건을 children 인수로 고침 (기존 오류, 동작 동일).
+
+검증: `npx vitest run tests/unit/app-t122*` 62/62, `npx tsc --noEmit` 0 오류, `npm run lint` 0 오류(경고 5, 기존).
+이제 Avg 카드는 "—"가 아니라 엔진 평균을 보인다 (값이 하나도 없을 때만 "—").
+실제 AI·PayPal 호출, 개발 서버, `.env` 읽기 없음.
