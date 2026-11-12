@@ -189,7 +189,8 @@ describe('8. F5-3 Send 뒤 랜드마크 이름 "Case progress"', () => {
 
   it('보낸 뒤: aria-label = case.progress.zone, 보이는 제목 문구는 그대로', () => {
     const code = strip(read('src/app/cases/view/work-zone.tsx'));
-    expect(code).toMatch(/sent \? \(\s*<section className="work zone-work" aria-label=\{t\('case\.progress\.zone'\)\}>/);
+    expect(code).toMatch(/aria-label=\{sent \? t\('case\.progress\.zone'\) : undefined\}/);
+    expect(code).toMatch(/aria-labelledby=\{sent \? undefined : titleId\}/);
     expect(copyTables.en['case.progress.zone']).toBe('Case progress');
     expect(copyTables.en['case.progress.title']).toBe('What happens next · Simulated');
     expect(strip(read('src/app/cases/view/case-view.tsx'))).toMatch(/<WorkZone\s+titleId="work-title"/);
