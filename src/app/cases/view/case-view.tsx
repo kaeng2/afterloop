@@ -16,7 +16,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { AiPill, Badge } from '../../_shared/badges';
+import { Badge } from '../../_shared/badges';
 import { t } from '../../_shared/copy';
 import { ProductTile } from '../../_shared/product-icon';
 import { deskFromView, type CaseDesk } from '../desk-model';
@@ -62,9 +62,8 @@ export function CaseHeader({ view, desk: deskInput }: { view: CaseViewData; desk
             <h2 className="case-title num" title={header.statusCode === '' ? undefined : header.statusCode}>
               {desk.title}
             </h2>
-            {desk.category === null ? null : (
-              <span className={`desk-chip ${desk.categoryTone === 'high' ? 'desk-chip-bad' : ''}`}>{desk.category}</span>
-            )}
+            {/* T122a 시안 v6 L249: 제목 옆 분류 칩은 늘 회색 `c-n` (v4의 high = 빨강 규칙 삭제) */}
+            {desk.category === null ? null : <span className="desk-chip">{desk.category}</span>}
           </div>
           <p className="case-meta num">
             {desk.meta.join(' · ')}
@@ -149,22 +148,18 @@ export function CaseView({
             />
           </div>
 
-          {/* T116 F5-3: Send 뒤 랜드마크 이름 "Case progress" (시안 L312). T118 ③: 머리는 Send 전에만 */}
+          {/* T116 F5-3: Send 뒤 랜드마크 이름 "Case progress" (시안 L312). T118 ③: 머리는 Send 전에만.
+              T122a 시안 v6: 머리 = "Your reply" + "✦ AI Respond now" 스위치. 선택지 카드는 스위치를 켰을 때만 (같은 자리) */}
           <WorkZone
             titleId="work-title"
-            head={
-              <div className="work-head">
-                <AiPill />
-                <h2 className="desk-card-title" id="work-title">
-                  {t('case.work.title')}
-                </h2>
-                <span className="desk-card-sub">{t('case.work.sub')}</span>
-              </div>
+            ai={
+              <>
+                <ChoiceCards choices={desk.choices} />
+                {/* 선택지 카드가 없으면(엔진 추천 없이 그릴 때) 요약 한 줄만 */}
+                {desk.choices.length === 0 ? summaryNode : null}
+              </>
             }
           >
-            <ChoiceCards choices={desk.choices} />
-            {/* 선택지 카드가 없으면(엔진 추천 없이 그릴 때) 요약 한 줄만 */}
-            {desk.choices.length === 0 ? summaryNode : null}
             {reply === undefined ? null : <div className="case-body-reply">{reply}</div>}
           </WorkZone>
         </>

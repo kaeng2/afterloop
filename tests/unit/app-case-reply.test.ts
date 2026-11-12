@@ -348,7 +348,8 @@ describe('답장 칸 그리기', () => {
     expect(html).toContain('November 17');
     expect(html).toContain('11월 17일');
     expect(html).not.toMatch(/⟦|⟧/);
-    expect(html).toContain('Send in Korean');
+    // T122a 시안 v6: [Send] (언어 이름 없음)
+    expect(html).toMatch(/class="reply-button"[^>]*>Send<\/button>/);
     expect(html).toContain('Simulated send');
     // T090: "Code decides" 배지는 그리지 않는다. 검사 줄은 Details 안 (통과면 접혀 있다)
     expect(html).not.toContain(copyTables.en['badge.codeDecides']);

@@ -253,6 +253,9 @@ describe('T081: 문구 파일', () => {
       'card.lena.draft', // T122c: 구매자가 받을 글 (독일어 그대로, Demo data)
       'card.yuki.msg', // T122c: 구매자 원문 (일본어 그대로, Demo data)
       'card.yuki.draft', // T122c: 구매자가 받을 글 (일본어 그대로, Demo data)
+      'today.ov.agTag', // T122b: "AG Grid" 꼬리표 (제품 이름, 시안 DI.ko도 'AG Grid')
+      'today.ov.none', // T122b: 값 없음 기호 "—" (시안 ovNone)
+      'today.risk.chip', // T122b: "{{percent}} · {{level}}" 꼴 (단계 글자는 언어별 키)
     ]);
     const same = copyKeys(copyTables.en).filter((key) => copyTables.en[key] === copyTables.ko[key]);
     expect(same.filter((key) => !allowed.has(key))).toEqual([]);

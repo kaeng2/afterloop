@@ -211,17 +211,17 @@ describe('T060 날짜 줄', () => {
 // ───────────────────────────── 목록 ─────────────────────────────
 
 describe('T060 Today 목록 (데이터에서 만든다)', () => {
-  it('T076: Reply needed = 서연 · 지호, Prevent = 추적(2) · 가디건, Routine = Mike', () => {
+  it('T076 → T122b 시안 v6: Reply needed = 서연 · 지호 · Mike(맨 뒤), Prevent = 추적(2) · 가디건 (Questions는 질문 항목이 없어 없음)', () => {
     const view = today();
-    expect(view.groups.map((group) => group.key)).toEqual(['needsYou', 'prevent', 'routine']);
-    expect(view.groups.map((group) => group.title)).toEqual(['Reply needed', 'Prevent', 'Routine']);
+    expect(view.groups.map((group) => group.key)).toEqual(['needsYou', 'prevent']);
+    expect(view.groups.map((group) => group.title)).toEqual(['Reply needed', 'Prevent']);
 
-    const [needsYou, prevent, routine] = view.groups;
-    expect(needsYou.items.map((item) => item.id)).toEqual([D2, D1]);
-    expect(needsYou.items.map((item) => item.name)).toEqual(['Seo-yeon', 'Ji-ho']);
+    const [needsYou, prevent] = view.groups;
+    expect(needsYou.items.map((item) => item.id)).toEqual([D2, D1, D3]);
+    expect(needsYou.items.map((item) => item.name)).toEqual(['Seo-yeon', 'Ji-ho', 'Mike Morgan']);
     expect(prevent.items.map((item) => item.id)).toEqual([TRACKING_ITEM_ID, 'FK-CD-OAT']);
     expect(prevent.items.map((item) => item.name)).toEqual(['2 orders without tracking', 'Knit Cardigan, Oat']);
-    expect(routine.items.map((item) => item.name)).toEqual(['Mike Morgan']);
+    expect(t('today.group.routine')).toBe('Questions');
   });
 
   it('유형 짧은 이름 · 아래 줄 · 위험 배지', () => {
@@ -235,7 +235,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     expect(jiho.label).toBe('color case');
     expect(jiho.sub).toBe('offer waiting for your approval');
 
-    const mike = today().groups[2].items[0];
+    const mike = today().groups[0].items[2];
     expect(mike.label).toBe('3rd claim');
     expect(mike.sub).toBe('skipped · suspected abuse');
   });
@@ -258,7 +258,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     );
     const view = buildToday({ disputes, tracking: TRACKING, products: seedProducts, now: NOW });
     // 지호 3+2+1 = 6 > 서연 3+2 = 5 → 지호가 먼저 (추적 항목은 T076부터 Prevent 묶음)
-    expect(view.groups[0].items.map((item) => item.id)).toEqual([D1, D2]);
+    expect(view.groups[0].items.map((item) => item.id)).toEqual([D1, D2, D3]);
   });
 
   it('Today (N)의 N = 목록에 보이는 항목 수', () => {
@@ -279,7 +279,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
   it('추적 조회 실패(null) → 추적 항목을 숨긴다', () => {
     const view = today(null);
     expect(items(view).some((item) => item.kind === 'tracking')).toBe(false);
-    expect(view.groups[0].items.map((item) => item.id)).toEqual([D2, D1]);
+    expect(view.groups[0].items.map((item) => item.id)).toEqual([D2, D1, D3]);
     expect(view.count).toBe(4);
   });
 
@@ -377,8 +377,10 @@ describe('T060 가게 전체 한 줄 · Prevent (엔진 결과)', () => {
 
 describe('T067 목록 점과 상태 알약 (보기용 데이터)', () => {
   it('서연 High · 추적 Watch · 지호 Waiting approval · 가디건 Prevent · Mike Skipped', () => {
-    const [needsYou, prevent, routine] = today().groups;
-    const [seoyeon, jiho] = needsYou.items;
+    const [needsYou, prevent] = today().groups;
+    const [seoyeon, jiho, mike] = needsYou.items;
+    // T122b 시안 v6: Mike는 Reply needed 맨 뒤 (상태 알약·점은 엔진 판정 그대로 Skipped·회색)
+    const routine = { items: [mike] };
     const [tracking, cardigan] = prevent.items;
     const statusText = (item: { status: { key: string } }) => t(item.status.key);
 

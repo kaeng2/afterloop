@@ -41,6 +41,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.29",
+    "pixelmatch": "^8.0.0",
+    "playwright-core": "^1.65.0",
+    "pngjs": "^7.0.0",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^3.2.7"

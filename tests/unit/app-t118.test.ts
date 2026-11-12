@@ -77,14 +77,16 @@ describe('2. Mike 주장 줄에 Demo data 배지', () => {
 });
 
 describe('3. Send 뒤 빈 "Respond now" 머리 숨김', () => {
-  const head = createElement('div', { className: 'work-head' }, createElement('h2', { id: 'work-title' }, 'Respond now'));
-  const render = () => renderToStaticMarkup(createElement(WorkZone, { titleId: 'work-title', head }, 'x'));
+  // T122a: 머리는 WorkZone이 그린다 ("Your reply" + 부제 + "✦ AI Respond now" 스위치). 공급자 없음 = 켜짐
+  const render = () => renderToStaticMarkup(createElement(WorkZone, { titleId: 'work-title' }, 'x'));
 
   it('보내기 전: 머리가 나온다', () => {
     sentFlag.value = false;
-    expect(render()).toBe(
-      '<section class="work zone-work" aria-labelledby="work-title"><div class="work-head"><h2 id="work-title">Respond now</h2></div>x</section>',
-    );
+    const markup = render();
+    expect(markup).toMatch(new RegExp(`^<section class="work zone-work" aria-label="${t('case.work.title')}"><div class="work-head">`));
+    expect(markup).toContain(`<h2 class="desk-card-title" id="work-title">${t('case.reply.title')}</h2>`);
+    expect(markup).toContain('role="switch" aria-checked="true"');
+    expect(markup).toMatch(/<\/div>x<\/section>$/);
   });
 
   it('보낸 뒤: 머리 없이 "Case progress" 칸만', () => {
@@ -96,12 +98,15 @@ describe('3. Send 뒤 빈 "Respond now" 머리 숨김', () => {
   it('두 상태 모두 children이 같은 자리 (section 하나, head 자리는 null로 유지) → Send 때 다시 마운트되지 않음', () => {
     const code = strip(read('src/app/cases/view/work-zone.tsx'));
     expect(code.match(/<section\b/g)).toHaveLength(1);
-    expect(code).toMatch(/\{sent \? null : head\}\s*\{children\}/);
+    // T122a: 머리 자리 → 선택지 카드 자리(꺼짐이면 null) → children. 스위치를 바꿔도 children 자리는 그대로
+    expect(code).toMatch(/\{aiOn \? ai : null\}\s*\{children\}/);
+    expect(code).toMatch(/\{sent \? null : \(/);
     expect(code).not.toMatch(/return sent \?/);
+    expect(code).not.toMatch(/return aiOn \?/);
   });
 
-  it('Desk 화면이 머리를 head로 넘긴다 (children 안에 두지 않음)', () => {
+  it('Desk 화면이 선택지 카드를 ai 자리로 넘긴다 (답장 칸은 children)', () => {
     const view = strip(read('src/app/cases/view/case-view.tsx'));
-    expect(view).toMatch(/<WorkZone\s+titleId="work-title"\s+head=\{\s*<div className="work-head">/);
+    expect(view).toMatch(/<WorkZone\s+titleId="work-title"\s+ai=\{/);
   });
 });
