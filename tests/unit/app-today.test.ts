@@ -531,7 +531,8 @@ describe('T060 추적 항목 조회 (GET만)', () => {
     const html = renderToStaticMarkup(createElement(TrackingDetail, { tracking: TRACKING }));
     expect(html).toContain('2 orders shipped 3+ days ago have no tracking in PayPal.');
     expect(html).toContain('In dispute — excluded');
-    expect(html.match(/tracking-row-excluded/g)?.length).toBe(1);
+    // T122c: 표는 한 장 카드 `.ag` 틀 — 분쟁 걸린 주문은 회색 줄(`oc-ag-r-dn`)
+    expect(html.match(/oc-ag-r oc-ag-r-dn/g)?.length).toBe(1);
     expect(html).not.toMatch(/<button/);
   });
 });

@@ -217,10 +217,12 @@ describe('T067 추적 상세 화면', () => {
 
   it('회색 줄(O02·O13 "In dispute — excluded")도 같은 4열 격자를 쓴다', () => {
     const markup = html(createElement(TrackingDetail, { tracking: TRACKING, register }));
-    const rows = [...markup.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)].map((m) => m[1]);
+    // T122c: 표는 한 장 카드 `.ag` 틀 (role=row). 모든 줄이 같은 열 격자(style)를 쓴다
+    const rows = [...markup.matchAll(/<div[^>]*role="row" style="([^"]*)"[^>]*>([\s\S]*?)<\/div>/g)];
     expect(rows).toHaveLength(5); // 머리 1 + 보통 2 + 회색 2
-    for (const row of rows) expect(row.match(/<t[hd][ >]/g)?.length).toBe(4);
-    expect(markup.match(/tracking-row tracking-row-excluded/g)?.length).toBe(2);
+    expect(new Set(rows.map((m) => m[1])).size).toBe(1);
+    for (const row of rows) expect(row[2].match(/role="(columnheader|gridcell)"/g)?.length).toBe(3);
+    expect(markup.match(/oc-ag-r oc-ag-r-dn/g)?.length).toBe(2);
     expect(markup.match(/In dispute — excluded/g)?.length).toBe(2);
   });
 
