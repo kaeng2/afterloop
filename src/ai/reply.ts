@@ -240,6 +240,8 @@ const ALLOWED_SLOTS: Readonly<Record<ReplyMove, readonly string[]>> = {
   fight: ['disputeAmount'],
   offer: ['offerAmount', 'disputeAmount'],
   refund: ['refundAmount', 'disputeAmount'],
+  // 수선은 돈이 움직이지 않는다 (SPEC v2.16). 금액 자리표시자를 쓰지 않는다
+  repair: [],
 };
 
 /**
@@ -254,6 +256,9 @@ const ALLOWED_COMMITMENTS: Readonly<Record<ReplyMove, readonly CommitmentCategor
   fight: [],
   offer: ['refund'],
   refund: ['refund'],
+  // 수선 초안은 돈이 드는 약속을 하나도 허용하지 않는다. "free repair"와 "왕복 배송비는 손님 부담"은
+  // 낱말 목록에 걸리지 않는 꼴로만 쓴다 (프롬프트가 못 박고, 시험이 지킨다)
+  repair: [],
 };
 
 /**

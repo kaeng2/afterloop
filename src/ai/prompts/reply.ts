@@ -39,12 +39,12 @@ import {
   maskTruncatedPccc,
   sanitizeUntrusted,
 } from '@/ai/prompts/classify';
-import type { FactLocale } from '@/ai/tokens';
+import type { FactLocale, TokenKind } from '@/ai/tokens';
 import { FOLLOW_UP_DATE_TOKEN } from '@/engine/followup';
 import type { Cause, FactToken, ReplyDraftPolicy } from '@/types';
 
 /** 답장의 목적. 엔진이 추천한 수를 답장 쪽 낱말로 옮긴 것이다 (T042 지시서). */
-export type ReplyMove = 'fight' | 'offer' | 'refund';
+export type ReplyMove = 'fight' | 'offer' | 'refund' | 'repair';
 
 /** 구매자 언어의 영어 이름. 프롬프트에만 쓴다 (화면 문구는 `config/copy.*.json`). */
 const LOCALE_NAMES: Readonly<Record<FactLocale, string>> = {
@@ -97,7 +97,7 @@ export function localeName(locale: FactLocale): string {
  * 종류별 기본 뜻 한 줄 (T053). `factMeanings`에 뜻이 없고 답장 후 확인 기한 토큰도 아닐 때 쓴다.
  * "코드가 채운다"를 못 박아서 모델이 값을 지어내거나 뜻을 넓혀 읽지 않게 한다.
  */
-const DEFAULT_FACT_MEANINGS: Readonly<Record<FactToken['kind'], string>> = {
+const DEFAULT_FACT_MEANINGS: Readonly<Record<TokenKind, string>> = {
   DATE: 'a date filled in by code. Use it only as the date the sentence around it says, and invent no other meaning.',
   AMOUNT: 'an amount filled in by code',
   TRACKING: 'a tracking number filled in by code',
@@ -105,6 +105,8 @@ const DEFAULT_FACT_MEANINGS: Readonly<Record<FactToken['kind'], string>> = {
   // 이름 토큰 (T056, SPEC v2.9 3장). 값(이름)은 모델에 가지 않는다 — 뜻만 간다
   BUYER_NAME: "the buyer's name, already including the right honorific for the language. Use it in the greeting. Do not add honorifics.",
   SELLER_NAME: "the seller's signature. Use it once to sign off at the end.",
+  // v2.16 수선 기간 (T120b). 값(일수)은 모델에 가지 않는다
+  DAYS: 'how long a repair takes, counted from the day the buyer receives the item, already including the unit. Use it only for the repair time. Never write a number of days yourself.',
 };
 
 /** 뜻 한 줄의 길이 상한. 설정·입력에서 오는 글이라 `<facts>`의 한 줄이 글 한 편이 되지 않게 묶는다. */
@@ -118,7 +120,7 @@ const MEANING_MAX_CHARS = 240;
  */
 function factMeaning(fact: FactToken, policy: ReplyDraftPolicy, meanings?: Record<string, string>): string {
   if (fact.token === FOLLOW_UP_DATE_TOKEN) return policy.followUpDateMeaning;
-  return meanings?.[fact.token] ?? DEFAULT_FACT_MEANINGS[fact.kind];
+  return meanings?.[fact.token] ?? DEFAULT_FACT_MEANINGS[fact.kind as TokenKind];
 }
 
 /**
@@ -277,6 +279,7 @@ The move is the purpose of the reply:
 - fight: explain what actually happened, ask for exactly what you need from the buyer, and say when you will come back with news, using the date token if one is listed. Any next step must come from <allowed_commitments>. Do not offer or mention any amount of money.
 - offer: offer a partial refund to settle now. Write the amount only as {{offerAmount}}. The buyer accepts the offer in PayPal, not by replying to you. Say that if they accept the offer in PayPal, the partial refund is sent right away and the case is closed. The sentence looks like this: "If you accept the offer in PayPal, the partial refund of {{offerAmount}} is sent right away and this case is closed." Never ask the buyer to accept by reply or message: no "reply to accept", no "reply to this message if you accept", no "let me know if you accept".
 - refund: tell the buyer the full refund is on its way. Write the amount only as {{refundAmount}} if an amount is needed at all.
+- repair: the item is past the return window, so offer a free repair instead. In this order: (1) show you understand the problem and say sorry it happened, (2) say that a return is not possible because the return period has passed (write no number of days and no date; say only "the return period has passed"), (3) say that if the buyer covers the round-trip shipping, you will repair the item for free (write "free repair"; never write "at no cost", "free of charge" or "free shipping", and never say you will pay for any shipping), (4) say the repair takes about ⟦DAYS_1⟧ from the day the buyer receives the item - use that token only if <facts> lists it, and leave the sentence out if it does not. Write no amount of money at all, no placeholder either. Never mention a refund, a replacement, an exchange, a discount or compensation, not even as a fallback ("if the repair fails ...").
 
 ${COMMITMENT_RULES}
 
