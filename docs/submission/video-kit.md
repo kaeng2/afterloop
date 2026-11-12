@@ -57,7 +57,7 @@ PRD v3와 DECISIONS 11/11 20:40 이후 결정 기준. **장면 1 = /demo/seller-
 | 장면 | 하는 일 | 화면 글자 | 비고 |
 |---|---|---|---|
 | A. 급한 답장을 칩으로 고치기 | [Try a rushed reply] → "+ Add" 3번 → "Remove" 2번 → 95% → **40%**, "5 good" → [Translate & check] → "Checked — this is what will be sent" → [Send in Korean] | 진행은 7번과 같은 "Seo-yeon replied with the customs ID" 흐름 | Translate & check는 실시간 AI 번역 1회 (약 7초, 공개 링크 시간당 한도를 쓴다). 3차 리뷰 버그 ①(⟦SELLER_NAME_1⟧로 막힘)은 11/12 로컬 빌드에서 **재현되지 않았다** (통과, Send 켜짐) |
-| B. 급한 답장을 그대로 보내면 (차지백 갈래) — **찍을 수 없다. 이번 녹화에서 쓰지 않는다** | **지금 빌드(f2a9fb3)에서는 [Translate & check]에서 "✕ Facts match failed ⟦BUYER_NAME_1⟧"로 막혀 Send가 꺼진다** (3차-b 리뷰 버그 ①). ⟦BUYER_NAME_1⟧ 수정(T117)은 녹화가 끝난 뒤 배포한다. 아래 동작은 그 배포 뒤의 예정: [Try a rushed reply] → [Translate & check] → [Send in Korean] | "Reply sent in Korean · Simulated · **Risk 95%**" → "**Seo-yeon replied angrily**" “답이 이게 다예요? 카드사에 이의제기할게요.” → "Consider a full refund before it becomes a chargeback" **[Approve refund]** → "Refund approved · You approved · no refund was made, nothing was sent to PayPal" | 보낸 답장의 예측(ok / refund / cb)에 따라 갈래가 나뉜다 (DECISIONS 11/12 09:30). refund 갈래("Refund the order in full")는 이번에 화면으로 만들어 보지 못했다 [확인 필요] |
+| B. 급한 답장을 그대로 보내면 (차지백 갈래) | [Try a rushed reply] → [Translate & check] (실시간 AI 번역 1회, 약 7~20초) → [Send in Korean] | "What happens next · Simulated" → "Reply sent in Korean · Simulated · **Risk 95%**" → "**Seo-yeon replied angrily**" “답이 이게 다예요? 카드사에 이의제기할게요.” → "Consider a full refund before it becomes a chargeback" **[Approve refund]** (Simulated, 쓰기 0) | **배포 1429b98(11/12)에서 확인함** — T117로 ⟦BUYER_NAME_1⟧ 막힘을 고쳤다. 공개 링크에서만 찍는다 (녹화 모드의 서연 건에서는 하지 않는다). 공개 링크 AI 시간당 한도를 쓴다 |
 | C. 지호 카드 | 왼쪽 Reply needed의 "PP-R-MBJ-10197650 · Knit Cardigan" → "**Offer 15% back ($7.20), the buyer keeps it**" → [Send offer] → "Offer sent ✓ · Simulated · nothing was sent", 이번 주 카드 "+$30 just now" | 버튼 글자는 "Send offer" (금액 없음) | 녹화 모드에서 실제 제안(make-offer)은 **한 번만** 보낼 수 있다 (사람 규칙: 서연·지호 실제 전송은 녹화 때 한 번만, 제안은 보내기만 하고 수락하지 않는다). 연습은 공개 링크에서만 |
 
 ## 3. 숫자 대조표 (화면 글자 ↔ 나온 곳)
@@ -152,6 +152,6 @@ AI Insert를 누르면 Sizes·Shipping·Returns 칸에 `[__]` 빈칸이 들어�
 - ~~[한국어] 버튼을 Desk에서 누르면 화면이 깨진다~~ → T113으로 고침 (11/12). 한국어 화면도 찍을 수 있다.
 - 녹화 모드 화면 글자 (5절 목록) — 코드로만 확인 [확인 필요]
 - refund 갈래 진행 화면 [확인 필요]
-- 2-1 장면 B(급한 답장 그대로 Send → 차지백 갈래)는 지금 빌드에서 ⟦BUYER_NAME_1⟧ 검사 실패로 Send가 꺼진다 (3차-b 리뷰 버그 ①). T117 수정은 녹화 뒤 배포하므로 **이번 녹화에서는 찍지 않는다**.
+- ~~2-1 장면 B ⟦BUYER_NAME_1⟧ 막힘~~ → T117로 고침, 배포 1429b98에서 확인 (11/12). 장면 B를 찍을 수 있다.
 - 추적 두 번째 등록 시 화면 글자 [확인 필요]
 - 이번 주 카드 $68은 보낸 뒤에도 그대로이고 "+$N just now"만 붙는다 (3차 리뷰 ⑤). 영상에서 $68을 말로 읽지 않는다.
