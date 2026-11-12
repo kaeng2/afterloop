@@ -80,9 +80,14 @@ const isMockupCopy = (file: string) => path.relative(APP, file).startsWith('intr
 const HEX = /(?<![\w&-])#[0-9a-fA-F]{3,8}(?![\w-])/;
 const RGB_FN = /\b(rgba?|hsla?)\s*\(/;
 
+// T107 (사람 결정 2026-11-12 09:25 "시안 CSS 통째 복사 — 토큰으로 옮기지 않는다"): 시안 <style>·인라인 값을 그대로 복사한
+// 화면 전용 css는 색·그림자 변수 규칙(T047 B-1·B-3)에서 뺀다. 대신 값이 시안 파일에 있는지는 `app-t107.test.ts`가 본다.
+const MOCKUP_COPIES = new Set(['(app)/desk.css']);
+
 describe('T047 보완 B-1: 색은 변수로만', () => {
   it('src/app의 tsx·css에 변수 정의 자리 밖의 색 값이 없다', () => {
     for (const file of filesUnder(APP, ['.tsx', '.css', '.ts'])) {
+      if (MOCKUP_COPIES.has(path.relative(APP, file))) continue;
       // T108 (DECISIONS 2026-11-12 09:25): /intro는 시안 CSS·인라인 style 값을 그대로 복사한다 — 색 값이 시안 그대로 있다.
       if (isMockupCopy(file)) continue;
       const text = stripComments(readFileSync(file, 'utf8'));
@@ -236,6 +241,7 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
       // T098a (DECISIONS 11/11 22:55 "기준은 시안 파일 자체 — 그림자 포함"): /intro·/listing은 시안 그림자를
       // 그 화면 css의 `--i-shadow-*`/`--ls-shadow-*` 변수로만 쓴다 (값은 아래 "T098a 시안 그림자" 시험이 본다).
       const rel = path.relative(APP, file);
+      if (MOCKUP_COPIES.has(rel)) continue; // T107: Desk 시안 복사 CSS (app-t107 시험)
       const mockup = mockupCopyOf(file);
       if (mockup !== null) {
         // T109: 시안 복사 CSS — 그림자 값은 모두 시안 파일에 있는 값이다 (none 포함)

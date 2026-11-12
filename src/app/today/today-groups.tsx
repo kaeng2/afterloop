@@ -33,7 +33,7 @@ function ItemRow({ row: listRow, selected, onSelect }: { row: ListRow; selected:
       {/* T106 (F1-47, 시안 L141 `<button>`): 화면 안 상태로 바로 고른다 (서버 왕복 없음, 키보드로 고를 수 있다) */}
       <button
         type="button"
-        className={done ? 'today-item today-item-done' : 'today-item'}
+        className={`today-item it${selected ? ' on' : ''}${done ? ' today-item-done done' : ''}`}
         aria-current={selected ? 'true' : undefined}
         data-item={item.id}
         onClick={() => onSelect(item.id)}
@@ -46,7 +46,7 @@ function ItemRow({ row: listRow, selected, onSelect }: { row: ListRow; selected:
           </span>
           <span className="today-item-tags">
             {row.category === null ? null : (
-              <span className={`today-pill today-pill-${row.categoryTone}`}>{row.category}</span>
+              <span className={`today-pill chip today-pill-${row.categoryTone}`}>{row.category}</span>
             )}
             {row.due === null ? null : <span className="today-item-due num">{row.due}</span>}
             {simulatedLabel ? <span className="today-item-simulated">{t('case.progress.simulated')}</span> : null}
@@ -66,8 +66,8 @@ function GroupCard({ group, selectedId, onSelect }: { group: ListGroup; selected
   const t = useT();
   const title = group.titleKey === null ? group.title : t(group.titleKey);
   return (
-    <section className={`today-group today-group-${group.key}`} aria-labelledby={`today-group-${group.key}`}>
-      <div className="today-group-head">
+    <section className={`today-group sec today-group-${group.key}`} aria-labelledby={`today-group-${group.key}`}>
+      <div className="today-group-head sech">
         <span className="today-group-bar" aria-hidden="true" />
         <h2 className="today-group-title" id={`today-group-${group.key}`}>
           {title} <span className="today-group-count num">({group.rows.length})</span>

@@ -205,8 +205,12 @@ function Bubbles({
           </div>
           <div className="case-read">
             <span className="case-read-label">{t('case.read.label')}</span>
-            {reply.tags.map((tag) => (
-              <span key={tag.key} className={tag.bad ? 'desk-chip desk-chip-bad' : 'desk-chip'}>
+            {/* T107 시안 L768: 차분한 답장의 첫 태그("Sent customs ID")는 `.chip.c-blue`, 나머지는 `.c-n` */}
+            {reply.tags.map((tag, index) => (
+              <span
+                key={tag.key}
+                className={tag.bad ? 'desk-chip desk-chip-bad' : index === 0 ? 'desk-chip desk-chip-blue' : 'desk-chip'}
+              >
                 {t(tag.key)}
               </span>
             ))}
@@ -365,7 +369,7 @@ export function CaseProgress({
         </p>
       ) : null}
       <div className="cprog-foot">
-        <button type="button" className="desk-button-tint" onClick={replay}>
+        <button type="button" className="desk-button-tint btn b-tint b-sm" onClick={replay}>
           {t('case.progress.replay')}
         </button>
       </div>

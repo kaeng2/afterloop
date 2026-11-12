@@ -140,14 +140,15 @@ describe('목록 그리기 (TodayGroupsView)', () => {
   it('모두 simulated: "Done today · Simulated" 제목, 개수, 힌트 없음, 흐린 줄·회색 점, 고른 줄은 그대로', () => {
     const markup = html({ [D2]: { simulated: true } });
     expect(t('today.group.doneSimulated')).toBe('Done today · Simulated');
-    const at = markup.indexOf('today-group today-group-done');
+    const at = markup.indexOf('today-group sec today-group-done');
     expect(at).toBeGreaterThan(markup.indexOf('today-group-routine'));
     const done = markup.slice(at);
     expect(done).toContain(`Done today · Simulated <span class="today-group-count num">(1)</span>`);
     expect(done).not.toContain('today-group-hint');
-    expect(done).toContain('class="today-item today-item-done"');
+    // T107: 시안 클래스 `.it`·`.on`·`.done`이 앱 클래스 뒤에 붙는다
+    expect(done).toMatch(/class="today-item it( on)? today-item-done done"/);
     expect(done).toContain('today-dot today-dot-done');
-    expect(done).toMatch(/class="today-item today-item-done" aria-current="true"|aria-current="true"[^>]*today-item-done/);
+    expect(done).toMatch(/class="today-item it on today-item-done done" aria-current="true"/);
     // T106: 항목은 링크가 아니라 화면 안 상태를 바꾸는 버튼 (눌러서 다시 볼 수 있는 것은 그대로)
     expect(done).toContain(`data-item="${D2}"`);
     // 상태 글은 엔진 값 그대로 (화면 읽기용)
@@ -157,7 +158,7 @@ describe('목록 그리기 (TodayGroupsView)', () => {
 
   it('섞임: "Done today" 제목 + simulated 줄에만 작은 Simulated', () => {
     const markup = html({ [D2]: { simulated: true }, tracking: { simulated: false } });
-    const done = markup.slice(markup.indexOf('today-group today-group-done'));
+    const done = markup.slice(markup.indexOf('today-group sec today-group-done'));
     expect(done).toContain(`Done today <span class="today-group-count num">(2)</span>`);
     expect(done.match(/today-item-simulated/g)?.length).toBe(1);
     expect(done).toContain(`<span class="today-item-simulated">${t('case.progress.simulated')}</span>`);

@@ -38,7 +38,7 @@ export function CaseHistoryCard({ history }: { history: HistoryView }) {
         </span>
         <button
           type="button"
-          className="desk-button-outline"
+          className="desk-button-outline hbtn"
           aria-expanded={open}
           aria-controls={listId}
           onClick={() => setOpen((value) => !value)}

@@ -95,11 +95,11 @@ describe('T106-1 (F1-18 · F1-19 · F1-47): 항목·칩 클릭은 서버 요청 
 
   it('항목은 <button>, 칩은 <button aria-pressed> (키보드로 고를 수 있다)', () => {
     const list = html(createElement(TodayGroupsView, { groups: GROUPS, done: {}, selectedId: JIHO }));
-    expect(list).toContain(`<button type="button" class="today-item" aria-current="true" data-item="${JIHO}"`);
+    expect(list).toContain(`<button type="button" class="today-item it on" aria-current="true" data-item="${JIHO}"`);
     expect(list.match(/aria-current="true"/g)).toHaveLength(1);
     expect(list).not.toContain('href=');
     const bar = html(createElement(ProductFilterBarView, { filter: FILTER, cases: casesOf(GROUPS), done: {}, selectedSku: 'FK-CD-OAT' }));
-    expect(bar.match(/<button type="button" class="product-filter-chip"/g)).toHaveLength(3);
+    expect(bar.match(/<button type="button" class="product-filter-chip pf( on)?"/g)).toHaveLength(3);
     expect(bar.match(/aria-pressed="true"/g)).toHaveLength(1);
     expect(bar).toMatch(/aria-pressed="true" data-sku="FK-CD-OAT"/);
     expect(bar).not.toContain('href=');
@@ -117,9 +117,9 @@ describe('T106-1 (F1-18 · F1-19 · F1-47): 항목·칩 클릭은 서버 요청 
       ),
     );
     // 거른 목록: 서연(스웨터)은 빠지고 지호·추적·Mike
-    expect(markup).not.toMatch(new RegExp(`class="today-item"[^>]*data-item="${SEO}"`));
-    expect(markup).toContain(`class="today-item" data-item="${JIHO}"`);
-    expect(markup).toContain(`class="today-item" data-item="${MIKE}"`);
+    expect(markup).not.toMatch(new RegExp(`class="today-item it[^"]*"[^>]*data-item="${SEO}"`));
+    expect(markup).toContain(`class="today-item it" data-item="${JIHO}"`);
+    expect(markup).toContain(`class="today-item it" data-item="${MIKE}"`);
     // 거르개로 목록에서 빠져도 고른 상세는 그대로 보인다 (시안 L688)
     expect(markup).toMatch(new RegExp(`data-item="${SEO}">SEO-DETAIL`));
     expect(markup).toMatch(new RegExp(`data-item="${JIHO}" hidden="">JIHO-DETAIL`));
@@ -169,7 +169,7 @@ describe('T106-2 (F1-55 · F1-56 · F1-58): 지호·추적 상세 = 시안 zone-
         row,
       }),
     );
-    expect(markup).toMatch(/class="work-head"><span class="product-tile product-tile-lg"/);
+    expect(markup).toMatch(/class="work-head"><span class="product-tile ptile product-tile-lg"/);
     expect(markup).toContain('class="work-head-title num"');
     expect(markup).toContain('class="today-pill today-pill-high">Not received</span>');
     expect(markup).toContain('class="work-head-who">Ji-ho Park · KR</span>');

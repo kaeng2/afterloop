@@ -58,7 +58,7 @@ export function ProductFilterBarView({
             <li key={chip.sku ?? 'all'}>
               <button
                 type="button"
-                className="product-filter-chip"
+                className={selectedSku === chip.sku ? 'product-filter-chip pf on' : 'product-filter-chip pf'}
                 aria-pressed={selectedSku === chip.sku}
                 data-sku={chip.sku ?? ''}
                 onClick={() => onPick?.(chip.sku)}
