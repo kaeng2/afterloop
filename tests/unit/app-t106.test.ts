@@ -159,8 +159,9 @@ const TRACKING: TrackingSummary = {
   excluded: [{ key: 'O02', buyerName: 'Ji-ho', productName: 'Knit Cardigan, Oat' }],
 };
 
-describe('T106-2 (F1-55 · F1-56 · F1-58): 지호·추적 상세 = 시안 zone-work 카드 틀', () => {
-  it('추적: 머리(52px 타일·제목·범주 칩·who) + zone-work(AI 알약·제목·설명·[Add all N]) + 주문 표는 접힘 안 (데이터 그대로)', () => {
+// T122c: 아래 T106-2 시험은 시안 v6 한 장 카드 틀(`one-card.tsx`)로 바뀐 구조를 본다 (자세한 시험은 app-t122c.test.ts)
+describe('T106-2 → T122c: 지호·추적·Prevent·Mike 상세 = 시안 v6 한 장 카드 틀', () => {
+  it('추적: 머리(52px 타일·제목·범주 칩·who) + 한 장 카드(AI 알약·제목·설명·단계·주문 표·On approval·[Add all N])', () => {
     const row = GROUPS[1].items[0].row;
     const markup = html(
       createElement(TrackingDetail, {
@@ -173,17 +174,18 @@ describe('T106-2 (F1-55 · F1-56 · F1-58): 지호·추적 상세 = 시안 zone-
     expect(markup).toContain('class="work-head-title num"');
     expect(markup).toContain('class="today-pill today-pill-high">Not received</span>');
     expect(markup).toContain('class="work-head-who">Ji-ho Park · KR</span>');
-    expect(markup).toMatch(/<section class="zone-work" aria-labelledby="tracking-title"><span class="ai-pill"/);
+    expect(markup).toMatch(/<section class="zone-work oc" aria-labelledby="tracking-title"><div class="oc-top"><div class="oc-top-text"><span class="ai-pill"/);
     expect(markup).toContain(`id="tracking-title">${t('today.tracking.actTitle', { count: 2 })}</h3>`);
-    expect(markup).toContain(`class="zone-work-body">${t('today.tracking.detail', { count: 2 })}</div>`);
+    expect(markup).toContain(`class="oc-body">${t('today.tracking.detail', { count: 2 })}</div>`);
     expect(markup).toContain(`>${t('today.tracking.addMany', { count: 2 })}</button>`);
-    // 표는 지우지 않는다 — 카드 아래 접힘
-    expect(markup).toMatch(/<\/section><details class="tracking-orders"><summary[^>]*>Orders \(3\)<\/summary><table class="tracking-table">/);
+    // 주문 표 = 카드 안 `.ag` 틀 (지우지 않는다). 분쟁 걸린 주문은 "In dispute — excluded"
+    expect(markup).toContain('class="oc-ag" role="grid"');
     for (const key of ['O05', 'O07', 'O02']) expect(markup).toContain(key);
     expect(markup).toContain(t('today.tracking.excluded'));
+    expect(markup).toContain(t('card.api.track', { count: 2 }));
   });
 
-  it('CSS: zone-work 시안 값 (r24 · padding 22/22/20 · gap 18 · 그림자 변수 · 위 4px 그라데이션), 머리 24px 900, 제목 20px, 설명 15px', () => {
+  it('CSS: zone-work 시안 값 (r24 · padding 22/22/20 · gap 18 · 그림자 변수 · 위 4px 그라데이션), 머리 24px 900', () => {
     const css = read('src/app/today/today.css');
     const rule = (sel: string) => css.match(new RegExp(`\\n${sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`))?.[1] ?? '';
     expect(rule('.zone-work')).toMatch(/padding: 22px 22px 20px;/);
@@ -192,11 +194,12 @@ describe('T106-2 (F1-55 · F1-56 · F1-58): 지호·추적 상세 = 시안 zone-
     expect(rule('.zone-work')).toMatch(/box-shadow: var\(--shadow-work\);/);
     expect(rule('.zone-work::before')).toMatch(/height: 4px;[\s\S]*background: var\(--gradient-ai-line\);/);
     expect(rule('.work-head-title')).toMatch(/font-size: 1\.5em;\s*font-weight: 900;/);
-    expect(rule('.zone-work-title')).toMatch(/font-size: 1\.25em;/);
-    expect(rule('.zone-work-body')).toMatch(/font-size: 0\.9375em;\s*color: var\(--color-text\);/);
+    const desk = read('src/app/(app)/desk.css');
+    expect(desk).toContain('.dk .oc-title{margin:0;font-size:20px;font-weight:700;');
+    expect(desk).toContain('.dk .oc-body{font-size:15px;color:#3F4144}');
   });
 
-  it('지호: 제안 카드 = zone-work + AI 알약 + 엔진 금액 제목 + [Send offer] (관문 = canSendOffer, 보내기 = sendReplyAction offer)', () => {
+  it('지호(제안 갈래): 한 장 카드 + AI 알약 + 엔진 금액 제목 + [Send] (관문 = canSendOffer, 보내기 = sendReplyAction kind)', () => {
     const markup = html(
       createElement(OfferWork, {
         disputeId: JIHO,
@@ -215,30 +218,31 @@ describe('T106-2 (F1-55 · F1-56 · F1-58): 지호·추적 상세 = 시안 zone-
         title: 'Offer 15% back ($7.20), the buyer keeps it',
         body: 'Lowest expected loss for this case.',
         amount: '$7.20',
-        readsLabel: 'Ji-ho will see (Korean)',
+        languageName: 'Korean',
+        api: t('card.api.makeOffer'),
       }),
     );
-    expect(markup).toMatch(/<section class="zone-work offer-work" aria-labelledby="offer-work-title-PP-R-MBJ-10197650"><span class="ai-pill"/);
+    expect(markup).toMatch(/<section class="zone-work oc offer-work" aria-labelledby="offer-work-title-PP-R-MBJ-10197650"><div class="oc-top"><div class="oc-top-text"><span class="ai-pill"/);
     expect(markup).toContain('>Offer 15% back ($7.20), the buyer keeps it</h3>');
     // 버튼 글자에 금액을 따로 쓰지 않는다 (3차 리뷰: 버튼 "$7" vs 본문 "$7.20")
-    expect(markup).toMatch(/<button type="button" class="tracking-button" disabled=""[^>]*>Send offer<\/button>/);
-    expect(markup).not.toMatch(/Send offer · \$/);
+    expect(markup).toMatch(/<button type="button" class="btn b-black" disabled=""[^>]*>Send<\/button>/);
+    expect(markup).not.toMatch(/Send · \$/);
     // Simulated 표시 (서버가 정한 전송 모드 그대로)
     expect(markup).toContain(t('case.send.mode.simulated'));
-    // 옛 "Escalation risk · Score" 줄 없음
+    expect(markup).toContain(`<code class="oc-api">${t('card.api.makeOffer')}</code>`);
     expect(markup).not.toContain('reply-risk-after');
     expect(markup).not.toContain(t('case.reply.riskAfter'));
 
     const code = strip(read('src/app/today/offer-work.tsx'));
     expect(code).toMatch(/canSendOffer\(view\)/);
-    expect(code).toMatch(/action\(\{ disputeId, kind: 'offer', replyId, confirmedCommitments: confirmed \}\)/);
+    expect(code).toMatch(/action\(\{ disputeId, kind, replyId, confirmedCommitments: confirmed \}\)/);
     expect(code).toMatch(/action = sendReplyAction/);
     expect(code).toMatch(/view\.mode === 'live' && !window\.confirm\(/);
-    // 끝나면 꺼진 채 "Offer sent ✓"
     expect(code).toMatch(/disabled=\{!gate\.ok \|\| sendState === 'sending' \|\| sent\}/);
-    // T116 F1-45: 누르는 즉시(낙관적) "Offer sent ✓" — 결과가 실패면 되돌린다
-    expect(code).toMatch(/sent \|\| optimistic \? t\('today\.offer\.sent'\)/);
-    expect(copyTables.en['today.offer.sent']).toBe('Offer sent ✓');
+    // T116 F1-45: 누르는 즉시(낙관적) "Sent ✓" — 결과가 실패면 되돌린다
+    expect(code).toMatch(/const done = sent \|\| optimistic;/);
+    expect(code).toMatch(/done \? t\('card\.sent'\)/);
+    expect(copyTables.en['card.sent']).toBe('Sent ✓');
   });
 
   it('Prevent·Routine(Mike)도 같은 틀 — 코드·엔진 값이라 AI 알약 없음, 버튼 없음', async () => {
@@ -250,25 +254,23 @@ describe('T106-2 (F1-55 · F1-56 · F1-58): 지호·추적 상세 = 시안 zone-
       }),
     );
     expect(markup).toMatch(/class="work-head"/);
-    expect(markup).toMatch(/<section class="zone-work" aria-labelledby="prevent-title"><div class="zone-work-text">/);
+    expect(markup).toMatch(/<section class="zone-work oc" aria-labelledby="prevent-title"><div class="oc-top"><div class="oc-top-text"><h3/);
     expect(markup).not.toContain('ai-pill');
     expect(markup).not.toMatch(/<(button|a|form)\b/);
     const routine = strip(read('src/app/cases/routine-detail.tsx'));
-    expect(routine).toMatch(/<WorkCard[^>]*ai=\{false\}/);
-    expect(routine).not.toMatch(/<button|ReplyPanel|loadReply/);
+    expect(routine).toMatch(/<OneCard[\s\S]*?ai=\{false\}/);
+    expect(routine).not.toMatch(/<button|ReplyPanel|loadReply|approval=/);
   });
 
-  it('case-detail: 지호 분기만 바꾼다 (제안이 먼저 + make_offer 계획 → OfferWork. 곡선·데스크는 그리지 않는다)', () => {
+  it('case-detail: 지호 분기만 바꾼다 (repair 또는 제안이 먼저 → OfferWork 한 장 카드. 곡선·데스크는 그리지 않는다)', () => {
     const code = strip(read('src/app/cases/case-detail.tsx'));
-    expect(code).toMatch(/if \(caseView\.messageSend\.blocked && reply !== null\) \{[\s\S]*offerWork\(reply, row,/);
+    expect(code).toMatch(/if \(reply !== null && \(rec\.best\?\.move === 'repair' \|\| caseView\.messageSend\.blocked\)\) \{[\s\S]*jihoWork\(reply, row,/);
     expect(code).toMatch(/plan\.apiMove !== 'make_offer'/);
     expect(code).toMatch(/const amount = toDollarsCents\(plan\.amountCents\)/);
     // 지호 분기는 예측·곡선을 만들기 전에 돌아간다
-    expect(code.indexOf('offerWork(reply, row,')).toBeLessThan(code.indexOf('loadRiskCurve('));
+    expect(code.indexOf('jihoWork(reply, row,')).toBeLessThan(code.indexOf('loadRiskCurve('));
   });
 });
-
-// ───────────────────────────── 3·4·5. Added ✓ · 0원 알림 · 배지 ─────────────────────────────
 
 describe('T106-3 (F1-59): 추적 버튼은 끝나면 꺼진 채 "Added ✓"', () => {
   it('끝난 결과(added·simulated)면 꺼짐 + Added ✓, Simulated 결과 줄은 그대로', async () => {

@@ -47,7 +47,8 @@ export type OneCardDraft = {
   badge?: ReactNode;
 };
 
-export type OneCardRows = { head: string[]; columns: string; rows: string[][] };
+/** 표. `muted` 줄 = 회색(시안 `.ag-r.dn`, 예: 분쟁이 걸려 빠진 주문) — 같은 열 격자를 쓴다. */
+export type OneCardRows = { head: string[]; columns: string; rows: { cells: string[]; muted?: boolean }[] };
 
 export type OneCardApproval = {
   /** "On approval" / "Already sent". */
@@ -167,8 +168,13 @@ export function OneCard({
               ))}
             </div>
             {rows.rows.map((row, index) => (
-              <div key={`${index}-${row[0] ?? ''}`} className="oc-ag-r" role="row" style={{ gridTemplateColumns: rows.columns }}>
-                {row.map((cell, cellIndex) => (
+              <div
+                key={`${index}-${row.cells[0] ?? ''}`}
+                className={row.muted === true ? 'oc-ag-r oc-ag-r-dn' : 'oc-ag-r'}
+                role="row"
+                style={{ gridTemplateColumns: rows.columns }}
+              >
+                {row.cells.map((cell, cellIndex) => (
                   <span key={cellIndex} className="oc-ag-c num" role="gridcell">
                     {cell}
                   </span>

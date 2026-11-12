@@ -417,3 +417,4 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 .dk .oc-approve-act{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:12px}
 /* 전송 모드 (Simulated, 예외 DECISIONS 20:40) — 버튼 옆 작게 */
 .dk .oc-mode{font-size:12px;color:#6C7378}
+.dk .oc-ag-r-dn{color:#9AA0A6}

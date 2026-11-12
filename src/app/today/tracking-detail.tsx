@@ -44,16 +44,14 @@ export function TrackingDetail({
           head: [t('today.tracking.order'), t('today.tracking.buyer'), t('today.tracking.product')],
           columns: COLUMNS,
           rows: [
-            ...tracking.untracked.map((order) => [
-              order.key,
-              order.buyerName ?? t('today.buyerUnknown'),
-              order.productName ?? t('common.noValue'),
-            ]),
-            ...tracking.excluded.map((order) => [
-              order.key,
-              order.buyerName ?? t('today.buyerUnknown'),
-              t('today.tracking.excluded'),
-            ]),
+            ...tracking.untracked.map((order) => ({
+              cells: [order.key, order.buyerName ?? t('today.buyerUnknown'), order.productName ?? t('common.noValue')],
+            })),
+            // 분쟁이 걸린 주문: 회색 줄, 같은 격자 (수에도 버튼 대상에도 들지 않는다)
+            ...tracking.excluded.map((order) => ({
+              cells: [order.key, order.buyerName ?? t('today.buyerUnknown'), t('today.tracking.excluded')],
+              muted: true,
+            })),
           ],
         };
   return (

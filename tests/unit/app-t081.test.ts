@@ -246,6 +246,13 @@ describe('T081: 문구 파일', () => {
       'case.progress.refundBuyer.english', // T104: 그 영어 번역 줄
       'case.progress.angryBuyer.original', // T104: cb 분기 손님 답장 원문 (한국어 그대로)
       'case.progress.angryBuyer.english', // T104: 그 영어 번역 줄
+      'card.api.sendMessage', // T122c: 실제 PayPal 호출 이름 (두 언어 같은 글)
+      'card.api.makeOffer', // T122c: 실제 PayPal 호출 이름
+      'card.api.refund', // T122c: PayPal 환불 호출 이름 (Lena, Simulated)
+      'card.lena.msg', // T122c: 구매자 원문 (독일어 그대로, Demo data)
+      'card.lena.draft', // T122c: 구매자가 받을 글 (독일어 그대로, Demo data)
+      'card.yuki.msg', // T122c: 구매자 원문 (일본어 그대로, Demo data)
+      'card.yuki.draft', // T122c: 구매자가 받을 글 (일본어 그대로, Demo data)
     ]);
     const same = copyKeys(copyTables.en).filter((key) => copyTables.en[key] === copyTables.ko[key]);
     expect(same.filter((key) => !allowed.has(key))).toEqual([]);
