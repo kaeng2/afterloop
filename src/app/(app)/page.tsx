@@ -59,6 +59,10 @@ function Pane({ item, view, selected }: { item: TodayItem; view: TodayView; sele
     );
   }
   if (item.kind === 'prevent') return item.prevent === undefined ? null : <PreventCard detail={item.prevent} row={item.row} />;
+  // T122d: 데모 항목(Lena·Yuki, Demo data)은 PayPal 사건이 아니다 — 사례 읽기(CaseDetail)를 부르지 않는다.
+  // 상세 카드는 T122c(`demo-item-card.tsx` `DemoItemCard`)가 만든다. 병합 때 여기를
+  //   `item.demo === undefined ? null : <DemoItemCard item={item.demo} row={item.row} doneId={item.id} />`로 잇는다.
+  if (item.kind === 'demo') return null;
   const detail = <CaseDetail key={item.id} disputeId={item.id} row={item.row} />;
   return selected ? (
     detail
