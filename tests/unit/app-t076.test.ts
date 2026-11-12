@@ -609,7 +609,8 @@ describe('완료 기준 5: 입력칸 글이 초안과 다르면 [Send]가 꺼지
     expect(editGate(ok, 'same', 'same')).toEqual({ ...ok, translate: false });
     expect(editGate(blocked, 'same', 'same')).toEqual({ ...blocked, translate: false });
     expect(editGate(ok, 'edited', 'same')).toEqual({ ok: false, reasonKey: EDITED_KEY, translate: true });
-    expect(editGate(ok, '', 'same')).toEqual({ ok: false, reasonKey: EDITED_KEY, translate: false }); // 빈 글은 번역하지 않는다
+    // 빈 글은 번역하지 않는다. T104 F4-69: 시안처럼 이유 글 없이 꺼진다
+    expect(editGate(ok, '', 'same')).toEqual({ ok: false, reasonKey: null, translate: false });
     expect(editGate(ok, 'anything', null)).toEqual({ ...ok, translate: false }); // 초안이 없으면(입력칸 없음) 관문 그대로
     expect(t(EDITED_KEY)).toBe('Edited — translate and check it before sending');
   });

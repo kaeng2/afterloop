@@ -291,7 +291,8 @@ describe('만들 것 2 · 완료 기준 2: Missing + Add / ! Remove', () => {
       const at = markup.indexOf(`data-chip="${effect.key}"`);
       expect(at, effect.key).toBeGreaterThan(-1);
       const line = markup.slice(at, markup.indexOf('</div>', at));
-      expect(line).toContain(t('case.reply.pts', { value: ppText(effect.deltaPp) }));
+      // T104 F4-47: bad 줄은 시안 부호 ("이 문장이 위험을 올린다" = +N) — 엔진 deltaPp의 부호만 뒤집은 값
+      expect(line).toContain(t('case.reply.pts', { value: ppText(effect.kind === 'bad' ? -effect.deltaPp : effect.deltaPp) }));
       expect(line).toContain(effect.kind === 'bad' ? t('case.reply.remove') : t('case.reply.add'));
       if (effect.kind === 'missing') expect(line).toContain(t('case.reply.missing', { label: t(`case.feature.${effect.key}`) }));
     }
@@ -365,7 +366,9 @@ describe('만들 것 5 · 완료 기준 4: 지호 Send offer · Add all N은 기
   it('답장·제안 보내기 경로·관문 무변경 (replyId만, 관문 파일 손대지 않음)', () => {
     const panelSrc = strip(read('src/app/cases/reply/reply-panel.tsx'));
     expect(panelSrc).toMatch(/sendReplyAction\(\{ disputeId, kind, replyId: sendId, confirmedCommitments: confirmed \}\)/); // T100: 번호만
-    expect(panelSrc).toMatch(/if \(next\.ok\) report\(savings\);/);
+    // T104 F5-25: "+$N"은 T091 상자(report) 그대로 — 제안은 성공 순간, 메시지는 Send 뒤 칸 마지막 단계 때
+    expect(panelSrc).toMatch(/function completeAction\(simulated: boolean, amount: string \| null\) \{\s*report\(amount\);/);
+    expect(panelSrc).toMatch(/if \(next\.ok && kind === 'offer'\) completeAction\(next\.mode === 'simulated', savings\);/);
     // 글을 바꾸면(카드·칩) Send는 번역·검사 전까지 꺼진다 (T100)
     expect(editGate({ ok: true, reasonKey: null }, 'changed', 'anchor').ok).toBe(false);
     expect(editGate({ ok: true, reasonKey: null }, 'anchor', 'anchor').ok).toBe(true);
