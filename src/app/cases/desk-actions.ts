@@ -79,7 +79,7 @@ export type EffectRowView = {
   labelKey: string;
   /** good·bad: 걸린 문장, missing: 넣을 문장. */
   sentence: string | null;
-  /** 엔진 `deltaPp`를 정수로 반올림한 표기 ("−12", "+3", "0"). */
+  /** 엔진 `deltaPp`를 정수로 반올림한 표기 ("−12", "+3", "0"). bad 줄은 시안 부호 (`shownDeltaPp`). */
   pp: string;
   /** 누르면 하는 일. good은 없음. */
   action: 'add' | 'remove' | null;
@@ -95,6 +95,17 @@ export function ppText(deltaPp: number): string {
 }
 
 /**
+ * 칩 줄에 보일 %p (T104 F4-47, 시안 `eff(k, present)`). 시안 부호 규칙 = "이 문장이 위험을 얼마나 바꾸나":
+ *  - good: p(지금) − p(그 문장 없음) → 음수 (엔진 `deltaPp`와 같은 정의)
+ *  - missing: p(넣은 글) − p(지금) → 음수 (엔진과 같은 정의)
+ *  - bad: p(지금) − p(그 문장 뺀 글) → **양수** "+N pts" (엔진 `deltaPp` = p(뺀 글) − p(지금)의 부호만 뒤집는다)
+ * 엔진 정의는 그대로 두고 표시 부호만 바꾼다 (계산 아님).
+ */
+export function shownDeltaPp(effect: Pick<ReplyFeatureEffect, 'kind' | 'deltaPp'>): number {
+  return effect.kind === 'bad' ? -effect.deltaPp : effect.deltaPp;
+}
+
+/**
  * 엔진 효과 → 칩 줄. 순서 (시안 `lints`): 나쁜 것 → 빠진 것(효과 큰 것부터, 시안 `sort((a,b)=>a.e-b.e)`) → 좋은 것.
  * 환불 완료 글(`refundNow`)이면 빠진 것을 내지 않는다 (시안 `if (!f.refundNow)`).
  */
@@ -105,7 +116,7 @@ export function effectRows(effects: readonly ReplyFeatureEffect[] | null, refund
     kind: effect.kind,
     labelKey: `case.feature.${effect.key}`,
     sentence: effect.sentence,
-    pp: ppText(effect.deltaPp),
+    pp: ppText(shownDeltaPp(effect)),
     action: effect.kind === 'missing' ? 'add' : effect.kind === 'bad' && effect.sentence !== null ? 'remove' : null,
   });
   const missing = refundNow

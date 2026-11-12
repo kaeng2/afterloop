@@ -597,11 +597,26 @@ export function editGate(
 ): EditedGate {
   if (opts.refund === true) return { ok: false, reasonKey: EDIT_KEYS.refundSimulated, translate: false };
   if (anchor === null || text === anchor) return { ...gate, translate: false };
+  // T104 F4-69: 빈 글은 시안처럼 이유 글 없이 꺼진다 ("Edited — translate…"는 고친 글에만)
+  if (text.trim() === '') return { ok: false, reasonKey: null, translate: false };
   const status = opts.status ?? { state: 'idle' };
   if (status.state === 'translating') return { ok: false, reasonKey: EDIT_KEYS.translating, translate: false };
   if (status.state === 'failed') return { ok: false, reasonKey: status.reasonKey, translate: false };
   if (status.state === 'ready') return { ...status.gate, translate: false };
   return { ok: false, reasonKey: EDITED_KEY, translate: text.trim() !== '' };
+}
+
+/**
+ * T104 F4-52: Details에 보일 역번역. 고치지 않은 글 = 원래 초안의 역번역. 고친 글 = 그 글을 서버가 번역·검사한 결과
+ * (`editedView`)의 역번역, 아직 없으면 `null`(줄을 숨긴다) — 원래 초안의 역번역을 고친 글 아래 보이지 않는다.
+ */
+export function detailsBackTranslation(
+  edited: boolean,
+  view: Pick<ReplyView, 'backTranslationEn'>,
+  editedView: Pick<ReplyView, 'backTranslationEn'> | null,
+): string | null {
+  if (!edited) return view.backTranslationEn;
+  return editedView?.backTranslationEn ?? null;
 }
 
 /** 두 버튼이 함께 쓰는 글 검사 + 전송 상태. 순서: 초안 → 전송본 → 번역이 더한 약속 → 토큰 → 이름 → 약속 확인 → 상태. */

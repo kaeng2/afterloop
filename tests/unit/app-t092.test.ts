@@ -84,8 +84,6 @@ function render(state: State, over: Record<string, unknown> = {}): string {
       sentText: OUTGOING,
       sentLocale: 'ko',
       scenarioInput: INPUT,
-      board: SEOYEON,
-      move: 'fight',
       baseForecast: BASE,
       onReplay: () => undefined,
       initial: state,

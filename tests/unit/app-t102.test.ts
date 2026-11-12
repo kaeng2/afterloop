@@ -176,7 +176,14 @@ describe('켜는 곳 (성공할 때만)', () => {
     const src = strip(read('src/app/cases/reply/reply-panel.tsx'));
     const calls = src.match(/\bmarkDone\(/g) ?? [];
     expect(calls.length).toBe(1);
-    expect(src).toMatch(/if \(next\.ok\) markDone\(disputeId, \{ simulated: next\.mode === 'simulated' \}\);/);
+    // T104 F5-29: 한 곳(completeAction)에서만. 제안은 성공(next.ok) 순간, 메시지는 Send 뒤 칸 마지막 단계(onFinish) 때.
+    // 둘 다 성공한 보내기 뒤에만 오고, simulated = 그 보내기의 mode
+    expect(src).toMatch(/function completeAction\(simulated: boolean, amount: string \| null\) \{\s*report\(amount\);\s*markDone\(disputeId, \{ simulated \}\);/);
+    expect(src).toMatch(/if \(next\.ok && kind === 'offer'\) completeAction\(next\.mode === 'simulated', savings\);/);
+    expect(src).toMatch(/onFinish=\{\(out\) => \{\s*completeAction\(outcome\.mode === 'simulated'/);
+    // onFinish는 성공한 보내기 뒤 칸에만 있다
+    const progress = src.slice(src.indexOf("if (sendState === 'done' && outcome !== null && outcome.ok)"));
+    expect(progress.indexOf('<CaseProgress')).toBeGreaterThan(-1);
     // 실패·확인 취소 경로(return 앞)에는 없다
     const cancel = src.slice(src.indexOf("if (view.mode === 'live' && !window.confirm"), src.indexOf('let next: SendOutcome'));
     expect(cancel).not.toContain('markDone');
