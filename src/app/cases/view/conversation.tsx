@@ -78,7 +78,11 @@ function Bubble({
   markTitle: string;
   tags: ReadTag[];
 }) {
-  const date = <span className="num">{message.date === null ? t('case.view.dateUnknown') : shortDate(message.date)}</span>;
+  // T125a (v6 L313-314): 시안은 `<div class=ko>원문</div>` · `<div><b>Translated</b> · 영어 · 날짜</div>` — 날짜·번역은 줄의 맨 글자.
+  // 강조(mark)가 있는 글만 조각을 나눠 그린다 (KEEP-01/02).
+  const date = message.date === null ? t('case.view.dateUnknown') : shortDate(message.date);
+  const english = message.english;
+  const englishPlain = english !== null && !english.some((segment) => segment.mark);
   const demo = bubbleIsDemo(message) ? <Badge kind="demo" /> : null;
   // 원문이 영어면(또는 번역이 원문과 같으면) 번역을 두지 않는다 — 같은 글이 두 번 나오지 않게 (T068 재시도 2번)
   // T107 (시안 DI.ko msgs en:''): 한국어 화면에서 한국어 원문이면 영어 번역 줄 없이 날짜만
@@ -87,33 +91,34 @@ function Bubble({
   return (
     <li className="case-bubble-wrap">
       <div className="case-bubble">
-        <p className="case-bubble-original" lang={message.originalIsEnglish ? 'en' : (locale ?? undefined)}>
+        <div className="case-bubble-original" lang={message.originalIsEnglish ? 'en' : (locale ?? undefined)}>
           <Segments segments={message.original} markTitle={markTitle} />
-        </p>
+        </div>
         {noEnglishLine ? (
-          <p className="case-bubble-sub">
+          <div className="case-bubble-sub">
             {date}
             {demo}
-          </p>
-        ) : message.english === null ? (
-          <p className="case-bubble-sub">
-            <span>{t('case.view.englishUnavailable')}</span>
-            {' · '}
-            {date}
+          </div>
+        ) : english === null ? (
+          <div className="case-bubble-sub">
+            {`${t('case.view.englishUnavailable')} · ${date}`}
             {demo}
-          </p>
+          </div>
         ) : (
-          <p className="case-bubble-sub">
-            {/* T122a 시안 v6 L314: "Translated"는 굵은 파랑 (#0070E0) 따로 */}
+          <div className="case-bubble-sub" lang="en">
+            {/* T122a 시안 v6 L314: "Translated"는 굵은 파랑 (#0070E0) 따로 (화면 언어 글자) */}
             <b className="case-bubble-tr">{t('case.view.translated')}</b>
-            {' · '}
-            <span lang="en">
-              <Segments segments={message.english} markTitle={markTitle} />
-            </span>
-            {' · '}
-            {date}
+            {englishPlain ? (
+              ` · ${english.map((segment) => segment.text).join('')} · ${date}`
+            ) : (
+              <>
+                {' · '}
+                <Segments segments={english} markTitle={markTitle} />
+                {` · ${date}`}
+              </>
+            )}
             {demo}
-          </p>
+          </div>
         )}
       </div>
       <ReadTags tags={tags} />
@@ -147,7 +152,7 @@ export function Conversation({
     <section className="case-conversation zone-buyer" aria-labelledby="case-conversation">
       <div className="desk-card-head">
         <h2 className="desk-card-title" id="case-conversation">
-          {t('case.view.conversation')}
+          <b>{t('case.view.conversation')}</b>
         </h2>
         <span className="desk-card-sub">
           {languageKey === null || locale === 'en'

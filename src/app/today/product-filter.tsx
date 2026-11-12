@@ -66,9 +66,10 @@ export function ProductFilterBarView({
                 <ProductTile kind={chip.icon} badge={chip.sku === null ? undefined : open} />
                 <span className="product-filter-text">
                   {/* T124a: 시안 L135 `<b>{{p.name}}</b>`·`<span>{{p.sub}}</span>` — 글자는 안쪽 span */}
-                  <span className="product-filter-name">
+                  {/* T125a: round5 도구는 안쪽 span을 감싸개로 접는다 → 글자 주인은 겉 요소. 시안처럼 겉을 b로 */}
+                  <b className="product-filter-name">
                     <span>{chip.name}</span>
-                  </span>
+                  </b>
                   <span className="product-filter-sub num">
                     <span>{sub}</span>
                   </span>

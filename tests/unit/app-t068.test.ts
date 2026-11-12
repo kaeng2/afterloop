@@ -545,7 +545,7 @@ describe('재시도 2번: 원문이 영어면 번역 줄 없음 (영어가 두 �
     const markup = html(createElement(CaseView, { view, llmOk: true }));
     const thread = markup.slice(markup.indexOf('class="case-thread"'), markup.indexOf('</ol>'));
     expect(thread.split(JIHO_EN).length - 1).toBe(1);
-    expect(thread).toContain('<p class="case-bubble-original" lang="en">');
+    expect(thread).toContain('<div class="case-bubble-original" lang="en">');
     expect(thread).not.toContain(copyTables.en['case.view.englishUnavailable']);
     expect(thread).not.toContain(copyTables.en['case.view.translated']);
     expect(thread).not.toContain('class="ai-pill"');
@@ -565,13 +565,14 @@ describe('재시도 2번: 원문이 영어면 번역 줄 없음 (영어가 두 �
 describe('재시도 1번: 1920×1080 한 화면 (세로 자리 줄이기)', () => {
   it('T090: "Buyer messages" 제목 줄(시안 v4) + 말풍선 아래 한 줄 "Translated · 영어 · 날짜"', async () => {
     const markup = await fullMarkup();
-    expect(markup).toMatch(/<h2 class="desk-card-title" id="case-conversation">Buyer messages<\/h2>/);
+    expect(markup).toMatch(/<h2 class="desk-card-title" id="case-conversation"><b>Buyer messages<\/b><\/h2>/);
     const start = markup.indexOf('class="case-bubble"');
     const bubble = markup.slice(start, markup.indexOf('</li>', start));
     const sub = bubble.slice(bubble.indexOf('class="case-bubble-sub"'));
     // T122a 시안 v6 L314: "Translated"는 굵은 파랑 <b>
-    expect(sub).toContain(`<b class="case-bubble-tr">${copyTables.en['case.view.translated']}</b> · <span lang="en">`);
-    expect(sub.split('</p>')[0]).toMatch(/ · <span class="num">[^<]+<\/span>/);
+    // T125a 시안 v6 L314: 번역·날짜는 줄의 맨 글자 (`<div><b>Translated</b> · 영어 · 날짜</div>`)
+    expect(sub).toContain(`<b class="case-bubble-tr">${copyTables.en['case.view.translated']}</b> · `);
+    expect(sub.split('</div>')[0].replace(/<[^>]+>/g, '')).toMatch(/ · .+ · [^·]+$/);
     expect(markup).not.toContain('<p class="case-bubble-meta"');
     const css = read('src/app/cases/view/case.css');
     expect(css.match(/\.case-sr-only\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/clip-path/);

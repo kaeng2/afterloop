@@ -128,7 +128,7 @@ export function RiskCurveCard({
     <section className="curve-card" aria-labelledby="curve-title">
       <div className="curve-main">
         <h2 className="desk-card-title" id="curve-title">
-          {t('case.curve.title')}
+          <b>{t('case.curve.title')}</b>
         </h2>
         <RiskCurveGraphic curve={curve} plotRef={plotRef} />
         <p className="case-sr-only">{t('case.curve.points', { count: curve.dots.length })}</p>

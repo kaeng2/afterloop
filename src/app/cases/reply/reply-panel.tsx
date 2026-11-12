@@ -190,7 +190,7 @@ export function FeatureChips({ chips, toggle }: { chips: FeatureChipView[]; togg
   const good = chips.filter((chip) => chip.good).length;
   return (
     <div className="reply-tray-chips">
-      <span className="reply-tray-title">{t('case.reply.asYouType')}</span>
+      <b className="reply-tray-title">{t('case.reply.asYouType')}</b>
       {chips.length === 0 ? null : <span className="reply-tray-sum num">{t('case.reply.goodCount', { count: good })}</span>}
       <ul className="reply-chip-list">
         {chips.map((chip) => (
@@ -252,7 +252,8 @@ export function LintTray({
         <svg className="reply-tray-icon" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M4 6h16M4 12h10M4 18h7" />
         </svg>
-        <span className="reply-tray-title">{t('case.reply.asYouType')}</span>
+        {/* T125a: 시안 `<b>As you type</b>` */}
+        <b className="reply-tray-title">{t('case.reply.asYouType')}</b>
         {summary.map((item) => (
           <span key={item.key} className="reply-tray-sum num">
             {t(item.key, { count: item.count })}

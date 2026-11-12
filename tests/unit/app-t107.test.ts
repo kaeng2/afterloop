@@ -100,7 +100,7 @@ describe('T107-3 한국어 화면 말풍선 (시안 DI.ko msgs: 번역 없이 �
       const markup = render();
       expect(markup).not.toContain('Tracking has not changed in a week.');
       expect(markup).not.toContain(t('case.view.translated', undefined, 'ko'));
-      expect(markup).toMatch(/<p class="case-bubble-sub"><span class="num">[^<]+<\/span><\/p>/);
+      expect(markup).toMatch(/<div class="case-bubble-sub">[^<]+<\/div>/);
     } finally {
       setLocaleResolver(() => 'en');
     }
