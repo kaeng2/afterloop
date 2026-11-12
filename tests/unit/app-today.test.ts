@@ -305,7 +305,7 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     expect(selectItem(view, undefined)?.kind).not.toBe('prevent');
   });
 
-  it('주소: 분쟁은 /?item=, 추적은 /?item=tracking, Prevent는 /products?sku=', () => {
+  it('주소: 분쟁은 /?item=, 추적은 /?item=tracking, Prevent도 /?item= (T114: /products 없음)', () => {
     const view = today();
     const byId = Object.fromEntries(items(view).map((item) => [item.id, item.href]));
     expect(byId[D2]).toBe(`/?item=${D2}`);
@@ -610,7 +610,6 @@ describe('T060 옛 주소와 정적 검사', () => {
     'src/app/(app)/page.tsx',
     'src/app/layout.tsx',
     'src/app/(app)/layout.tsx',
-    'src/app/(app)/products/page.tsx',
     'src/app/cases/case-detail.tsx',
     ...filesUnder(path.join(ROOT, 'src/app/today')).map((f) => path.relative(ROOT, f)),
     'src/app/_server/today.ts',
@@ -651,7 +650,7 @@ describe('T060 옛 주소와 정적 검사', () => {
   });
 
   it('새 css는 변수 색만 쓰고 그림자(--shadow-* 변수 밖)·100vw·360px 넘는 고정 폭이 없다', () => {
-    for (const file of ['src/app/_shared/shell.css', 'src/app/today/today.css', 'src/app/products/products.css']) {
+    for (const file of ['src/app/_shared/shell.css', 'src/app/today/today.css']) {
       // T067: 그림자는 변수로만 → T098b(22:55 결정): 시안 그림자 목록의 `--shadow-*` 변수 (값 검사는 app-shared-design B-3)
       const css = strip(readFileSync(path.join(ROOT, file), 'utf8')).replace(/box-shadow:\s*var\(--shadow-[a-z-]+\);/g, '');
       expect(css, file).not.toMatch(/box-shadow|100vw|#[0-9a-fA-F]{3,8}\b|rgba?\(/);

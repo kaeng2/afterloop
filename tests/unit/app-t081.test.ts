@@ -195,7 +195,6 @@ describe('T081: 언어는 계산·전송에 영향이 없다 (정적 검사)', (
     expect(read('src/app/cases/actions.ts')).toMatch(/export async function sendReplyAction\(form: unknown\)/);
     expect(read('src/app/today/actions.ts')).toMatch(/export async function addTrackingAction\(\)/);
     expect(read('src/app/_shared/activity-actions.ts')).toMatch(/export async function loadActivityView\(\)/);
-    expect(read('src/app/products/actions.ts')).toMatch(/export async function writeColorNoteAction\(sku: string\)/);
     expect(strip(read('src/app/cases/actions.ts'))).not.toMatch(/SendFormSchema[\s\S]{0,400}lang/i);
   });
 

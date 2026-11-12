@@ -10,7 +10,7 @@
  *
  * **계산하지 않는다** — 모든 글자·숫자는 `buildToday`·`weeklyView`(엔진 결과를 옮긴 값)에서 온다. 항목은 버튼이라서
  * 키보드로 고를 수 있고(T106, 화면 안 상태), 고른 항목에는 `aria-current`가 붙는다.
- * T106 (F1-33): 카드 아래 "Stock left could cost …" 링크 줄은 없다 (시안에 없음. /products는 주소로만).
+ * T106 (F1-33): 카드 아래 "Stock left could cost …" 링크 줄은 없다 (시안에 없음. /products 화면은 T114로 지웠다).
  */
 import { AiPill, Badge } from '../_shared/badges';
 import { t } from '../_shared/copy';

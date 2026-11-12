@@ -229,7 +229,7 @@ describe('T047 → T060 탭', () => {
     expect(isActive('/inbox', '/')).toBe(false);
     expect(isActive('/inbox', '/inbox')).toBe(true);
     expect(isActive('/orders', '/inbox')).toBe(false);
-    expect(isActive('/products/FK-SW-NV', '/products')).toBe(true);
-    expect(isActive('/productsxyz', '/products')).toBe(false);
+    expect(isActive('/cases/PP-D-1', '/cases')).toBe(true);
+    expect(isActive('/casesxyz', '/cases')).toBe(false);
   });
 });

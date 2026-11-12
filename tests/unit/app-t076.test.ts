@@ -768,13 +768,9 @@ describe('완료 기준 7·8: 화면 코드에 금액·확률 숫자·근거 없
     expect(texts).not.toMatch(/Expected delivery/i);
   });
 
-  it('2차 리뷰 ⑤: 서랍 Close 한 줄, AG Grid 상품 이름은 낱말 단위로 꺾고 줄 간격 좁게', () => {
+  it('2차 리뷰 ⑤: 서랍 Close 한 줄 (T114: AG Grid 상품 이름 규칙은 /products와 함께 지웠다)', () => {
     const shell = read('src/app/_shared/shell.css');
     expect(shell.match(/\.drawer-close\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/white-space:\s*nowrap/);
-    const products = read('src/app/products/products.css');
-    const name = products.match(/\.products-grid \.products-grid-name\s*\{([^}]*)\}/)?.[1] ?? '';
-    expect(name).toMatch(/line-height:\s*1\.3/);
-    expect(name).toMatch(/word-break:\s*keep-all/);
   });
 
   it('출처 배지 5종이 남아 있다 (Demo data · Assumption · AI suggests · Code decides · cached)', () => {
