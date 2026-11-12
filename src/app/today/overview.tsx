@@ -18,6 +18,7 @@ import { AgGridReact } from 'ag-grid-react';
 import type {
   CellKeyDownEvent,
   ColDef,
+  ColumnHeaderClickedEvent,
   GetRowIdParams,
   ICellRendererParams,
   IHeaderParams,
@@ -63,7 +64,11 @@ type T = ReturnType<typeof useT>;
 function RiskCell({ value }: { value: number | null | undefined }) {
   const t = useT();
   if (value === null || value === undefined) {
-    return <b className="ov-risk-txt ov-risk-none">{t('today.ov.none')}</b>;
+    return (
+      <b className="ov-risk-txt ov-risk-none">
+        <span>{t('today.ov.none')}</span>
+      </b>
+    );
   }
   const { percent, level } = riskChipParts(value);
   return (
@@ -71,7 +76,9 @@ function RiskCell({ value }: { value: number | null | undefined }) {
       <span className="ov-bar" aria-hidden="true">
         <span className={`ov-bar-fill ov-tone-${level}`} style={{ width: percent }} />
       </span>
-      <b className={`ov-risk-txt ov-risk-${level}`}>{percent}</b>
+      <b className={`ov-risk-txt ov-risk-${level}`}>
+        <span>{percent}</span>
+      </b>
     </>
   );
 }
@@ -87,15 +94,29 @@ function ProductCell({ data }: ICellRendererParams<OvProductRow>) {
     <span className="ov-prod">
       <ProductTile kind={data.icon} />
       <span className="ov-two">
-        <b className="ov-two-main">{data.name}</b>
-        <span className="ov-two-sub">{data.units === null ? t('today.ov.prevOnly') : t('today.ov.units', { units: data.units })}</span>
+        <b className="ov-two-main">
+          <span>{data.name}</span>
+        </b>
+        <span className="ov-two-sub">
+          <span>{data.units === null ? t('today.ov.prevOnly') : t('today.ov.units', { units: data.units })}</span>
+        </span>
       </span>
     </span>
   );
 }
 
 function ReplyCountCell({ value }: ICellRendererParams<OvProductRow, number>) {
-  return <span className={value ? 'ov-reply-pill' : 'ov-zero'}>{value ?? 0}</span>;
+  return (
+    <span className={value ? 'ov-reply-pill' : 'ov-zero'}>
+      <span>{value ?? 0}</span>
+    </span>
+  );
+}
+
+/** 숫자·글자 셀: 시안 `{{r.prevent}}`·`{{r.who}}` 자리표(안쪽 span). `bold`면 시안 `<b>{{r.open}}</b>`. */
+function TextCell({ value, valueFormatted, bold }: ICellRendererParams & { bold?: boolean }) {
+  const text = <span>{String(valueFormatted ?? value ?? '')}</span>;
+  return bold === true ? <b>{text}</b> : text;
 }
 
 function TopCell({ data }: ICellRendererParams<OvProductRow>) {
@@ -103,8 +124,12 @@ function TopCell({ data }: ICellRendererParams<OvProductRow>) {
   if (data === undefined) return null;
   return (
     <span className="ov-two">
-      <b className="ov-top-main">{data.top === null ? t('today.ov.none') : topHead(t, data.top)}</b>
-      <span className="ov-two-sub">{data.top === null ? t('today.ov.noneSub') : (data.top.category ?? '')}</span>
+      <b className="ov-top-main">
+        <span>{data.top === null ? t('today.ov.none') : topHead(t, data.top)}</span>
+      </b>
+      <span className="ov-two-sub">
+        <span>{data.top === null ? t('today.ov.noneSub') : (data.top.category ?? '')}</span>
+      </span>
     </span>
   );
 }
@@ -114,51 +139,75 @@ function CaseCell({ data }: ICellRendererParams<OvCaseRow>) {
   if (data === undefined) return null;
   return (
     <span className="ov-two">
-      <b className="ov-case-main">{data.head}</b>
-      <span className="ov-two-sub">{data.product ?? t('today.row.severalProducts')}</span>
+      <b className="ov-case-main">
+        <span>{data.head}</span>
+      </b>
+      <span className="ov-two-sub">
+        <span>{data.product ?? t('today.row.severalProducts')}</span>
+      </span>
     </span>
   );
 }
 
 function TypeCell({ value }: ICellRendererParams<OvCaseRow, string | null>) {
-  return value === null || value === undefined ? null : <span className="chip ov-type">{value}</span>;
+  return value === null || value === undefined ? null : (
+    <span className="chip ov-type">
+      <span>{value}</span>
+    </span>
+  );
 }
 
 function StatusCell({ data }: ICellRendererParams<OvCaseRow>) {
   const t = useT();
   if (data === undefined) return null;
-  return <span className={`ov-status ov-status-${data.section}`}>{t(SECTION_TITLE_KEY[data.section])}</span>;
+  return (
+    <span className={`ov-status ov-status-${data.section}`}>
+      <span>{t(SECTION_TITLE_KEY[data.section])}</span>
+    </span>
+  );
 }
 
 // ───────────────────────────── 머리 ─────────────────────────────
 
-/** 시안 `.ag-hc` 단추: 이름 + ↓/↑ (고른 열은 파랑). 누르면 AG Grid 정렬을 한 단계 넘긴다. */
-function SortHeader(props: IHeaderParams & { numeric?: boolean }) {
-  const { column, progressSort, displayName, numeric } = props;
+/**
+ * 시안 `.ag-hc` 머리 안쪽: 이름 + ↓/↑ (T124b). 시안 단추(`role=columnheader`)의 모양(padding·테두리·글자·파랑)은 AG Grid
+ * 머리 칸(`.ag-header-cell`, 같은 역할)이 `desk.css`에서 맡는다 — 머리 칸 안에 단추를 또 두지 않는다.
+ * 정렬: 마우스는 표의 `onColumnHeaderClicked`(머리 칸 전체), 키보드 Enter는 AG Grid 머리 칸 기본 동작.
+ */
+function SortHeader(props: IHeaderParams & { right?: boolean }) {
+  const { column, displayName, right } = props;
   const [sort, setSort] = useState<SortDirection | undefined>(column.getSort());
   useEffect(() => {
     const update = () => setSort(column.getSort());
     column.addEventListener('sortChanged', update);
     return () => column.removeEventListener('sortChanged', update);
   }, [column]);
-  const on = sort === 'asc' || sort === 'desc';
   return (
-    <button
-      type="button"
-      className={`ag-hc${numeric === true ? ' num' : ''}${on ? ' on' : ''}`}
-      onClick={() => progressSort(false)}
-    >
-      {displayName}
-      <span className="ag-ind">{sort === 'desc' ? '↓' : sort === 'asc' ? '↑' : ''}</span>
-    </button>
+    <span className={`ov-hc${right === true ? ' num' : ''}`}>
+      <span>{displayName}</span>
+      <span className="ag-ind">
+        <span>{sort === 'desc' ? '↓' : sort === 'asc' ? '↑' : ''}</span>
+      </span>
+    </span>
   );
 }
 
-const header = (numeric: boolean) => ({
+/**
+ * 머리 설정. `right` = 시안 `.ag-hc.num`(오른쪽 맞춤), `numericSort` = 처음 누르면 높은 순(시안 `c.num || c.k === 'risk'`).
+ * 위험 열은 시안처럼 왼쪽 맞춤 + 높은 순.
+ */
+const header = (right: boolean, numericSort: boolean = right) => ({
   headerComponent: SortHeader,
-  headerComponentParams: { numeric },
-  ...sortableCol(numeric),
+  headerComponentParams: { right },
+  ...sortableCol(numericSort),
 });
+
+/** 머리 칸을 누르면 정렬 한 단계 (시안 `sortHead.pick`: 같은 열이면 반대로, 다른 열이면 그 열의 첫 방향). */
+export function nextSort(current: SortDirection | undefined, order: readonly unknown[] | undefined): 'asc' | 'desc' {
+  const list = (order ?? ['asc', 'desc']).filter((dir): dir is 'asc' | 'desc' => dir === 'asc' || dir === 'desc');
+  if (current !== 'asc' && current !== 'desc') return list[0] ?? 'asc';
+  return current === 'asc' ? 'desc' : 'asc';
+}
 
 // ───────────────────────────── 열 ─────────────────────────────
 
@@ -177,10 +226,10 @@ export function productColumns(t: T): ColDef<OvProductRow>[] {
   });
   return [
     { colId: 'name', field: 'name', headerName: t('today.ov.col.product'), ...W.name, cellClass: 'ov-cell', cellRenderer: ProductCell, ...header(false) },
-    num('open', t('today.ov.col.open'), { cellClass: 'ov-cell ov-num ov-bold' }),
+    num('open', t('today.ov.col.open'), { cellRenderer: TextCell, cellRendererParams: { bold: true } }),
     num('reply', t('today.ov.kReply'), { cellRenderer: ReplyCountCell }),
-    num('prevent', t('today.ov.kPrevent')),
-    num('questions', t('today.ov.kQuestions')),
+    num('prevent', t('today.ov.kPrevent'), { cellRenderer: TextCell }),
+    num('questions', t('today.ov.kQuestions'), { cellRenderer: TextCell }),
     {
       colId: 'risk',
       field: 'risk',
@@ -190,7 +239,7 @@ export function productColumns(t: T): ColDef<OvProductRow>[] {
       cellRenderer: (params: ICellRendererParams<OvProductRow, number | null>) => <RiskCell value={params.value} />,
       comparator: compareRisk,
       initialSort: 'desc',
-      ...header(true),
+      ...header(false, true),
     },
     {
       colId: 'top',
@@ -217,7 +266,7 @@ export function caseColumns(t: T): ColDef<OvCaseRow>[] {
       cellRenderer: (params: ICellRendererParams<OvCaseRow, number | null>) => <RiskCell value={params.value} />,
       comparator: compareRisk,
       initialSort: 'desc',
-      ...header(true),
+      ...header(false, true),
     },
     { colId: 'case', field: 'head', headerName: t('today.ov.col.case'), ...W.case, cellClass: 'ov-cell', cellRenderer: CaseCell, ...header(false) },
     { colId: 'type', field: 'category', headerName: t('today.ov.col.type'), ...W.type, cellClass: 'ov-cell', cellRenderer: TypeCell, ...header(false) },
@@ -230,7 +279,7 @@ export function caseColumns(t: T): ColDef<OvCaseRow>[] {
       cellRenderer: StatusCell,
       ...header(false),
     },
-    { colId: 'buyer', field: 'who', headerName: t('today.ov.col.buyer'), ...W.buyer, cellClass: 'ov-cell ov-plain', ...header(false) },
+    { colId: 'buyer', field: 'who', headerName: t('today.ov.col.buyer'), ...W.buyer, cellClass: 'ov-cell ov-plain', cellRenderer: TextCell, ...header(false) },
     {
       colId: 'due',
       headerName: t('today.ov.col.due'),
@@ -238,6 +287,7 @@ export function caseColumns(t: T): ColDef<OvCaseRow>[] {
       valueFormatter: (params) => params.data?.due ?? t('today.ov.none'),
       ...W.due,
       cellClass: 'ov-cell ov-plain',
+      cellRenderer: TextCell,
       ...header(false),
     },
   ];
@@ -290,11 +340,15 @@ function OverviewGrid<Row extends { key?: string; id?: string }>({
   const sortedName = sort === null ? null : columns.find((column) => column.colId === sort.colId)?.headerName ?? null;
   const footer = (
     <div className="ag-f">
-      <span>{t('today.ov.rows', { count: rows.length })}</span>
       <span>
-        {sort === null || sortedName === null
-          ? ''
-          : t(sort.dir === 'desc' ? 'today.ov.sortedDesc' : 'today.ov.sortedAsc', { column: sortedName })}
+        <span>{t('today.ov.rows', { count: rows.length })}</span>
+      </span>
+      <span>
+        <span>
+          {sort === null || sortedName === null
+            ? ''
+            : t(sort.dir === 'desc' ? 'today.ov.sortedDesc' : 'today.ov.sortedAsc', { column: sortedName })}
+        </span>
       </span>
     </div>
   );
@@ -313,6 +367,12 @@ function OverviewGrid<Row extends { key?: string; id?: string }>({
             if (sort !== null) {
               event.api.applyColumnState({ state: [{ colId: sort.colId, sort: sort.dir }], defaultState: { sort: null } });
             }
+          }}
+          onColumnHeaderClicked={(event: ColumnHeaderClickedEvent<Row>) => {
+            const column = event.column;
+            if (!('getSort' in column) || column.getColDef().sortable !== true) return;
+            const dir = nextSort(column.getSort(), column.getColDef().sortingOrder ?? undefined);
+            event.api.applyColumnState({ state: [{ colId: column.getColId(), sort: dir }], defaultState: { sort: null } });
           }}
           onRowClicked={(event: RowClickedEvent<Row>) => {
             if (event.data !== undefined) onPick(event.data);
@@ -359,16 +419,23 @@ export function productRowAction(row: OvProductRow): { kind: 'sku'; sku: string 
 const productRowId = (row: OvProductRow) => row.key;
 const caseRowId = (row: OvCaseRow) => row.id;
 
-/** 요약 카드 하나 (시안 `.ov-k`). */
-function Kpi({ tone, label, value, sub, big = false }: { tone: string; label: string; value: string; sub: string; big?: boolean }) {
+/**
+ * 요약 카드 하나 (시안 `.ov-k`). 글은 시안 자리표처럼 안쪽 span에 넣는다 (`{{k.label}}`·`{{k.val}}`·`{{k.sub}}`).
+ * `hi` = 시안 `k.hi`(평균이 높음 단계): 점·숫자 빨강. 아니면 `big` 숫자 파랑.
+ */
+function Kpi({ tone, label, value, sub, big = false, hi = false }: { tone: string; label: string; value: string; sub: string; big?: boolean; hi?: boolean }) {
   return (
     <div className="ov-k">
       <span className="ov-k-label">
-        <span className={`ov-k-dot ov-k-dot-${tone}`} />
-        {label}
+        <span className={`ov-k-dot ov-k-dot-${hi ? 'reply' : tone}`} />
+        <span>{label}</span>
       </span>
-      <b className={`ov-k-val${big ? ' ov-k-val-big' : ''}`}>{value}</b>
-      <span className="ov-k-sub">{sub}</span>
+      <b className={`ov-k-val${hi ? ' ov-k-val-hi' : big ? ' ov-k-val-big' : ''}`}>
+        <span>{value}</span>
+      </b>
+      <span className="ov-k-sub">
+        <span>{sub}</span>
+      </span>
     </div>
   );
 }
@@ -424,14 +491,18 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
     <section className="today-overview" hidden={!shown} aria-label={t('today.ov.title')}>
       <div className="ov-head">
         <div className="ov-titles">
-          <h2 className="ov-title">{t('today.ov.title')}</h2>
-          <span className="ov-sub">{t('today.ov.sub')}</span>
+          <h2 className="ov-title">
+            <span>{t('today.ov.title')}</span>
+          </h2>
+          <span className="ov-sub">
+            <span>{t('today.ov.sub')}</span>
+          </span>
         </div>
         <span className="ag-tag">
           <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M3 4h18v16H3zM3 10h18M3 15h18M9 4v16M15 4v16" fill="none" className="ag-tag-stroke" strokeWidth="1.8" />
           </svg>
-          {t('today.ov.agTag')}
+          <span>{t('today.ov.agTag')}</span>
         </span>
       </div>
       <div className="ov-kpis">
@@ -440,14 +511,23 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
         <Kpi tone="prevent" label={t('today.ov.kPrevent')} value={String(kpis.prevent)} sub={t('today.groupHint.prevent')} />
         <Kpi tone="questions" label={t('today.ov.kQuestions')} value={String(kpis.questions)} sub={t('today.groupHint.routine')} />
         {/* T122d: 평균은 엔진 `meanRisk`(T120d) 자리 — 상품 줄마다 최고 위험 목록을 넘긴다. 값이 없으면 "—" */}
-        <Kpi tone="avg" label={t('today.ov.kAvg')} value={avg === null ? t('today.ov.none') : riskChipParts(avg).percent} sub={t('today.ov.kAvgSub', { count: kpis.topRows })} big />
+        <Kpi
+          tone="avg"
+          label={t('today.ov.kAvg')}
+          value={avg === null ? t('today.ov.none') : riskChipParts(avg).percent}
+          sub={t('today.ov.kAvgSub', { count: kpis.topRows })}
+          big
+          hi={avg !== null && riskChipParts(avg).level === 'high'}
+        />
       </div>
 
       <div className="ov-block">
         <div className="ov-block-head">
-          <b className="ov-block-title">{t('today.ov.gridProducts')}</b>
+          <b className="ov-block-title">
+            <span>{t('today.ov.gridProducts')}</span>
+          </b>
           <span className="ov-block-hint">
-            {t('today.ov.productsHint')} · {t('today.ov.hint')}
+            <span>{t('today.ov.productsHint')}</span> · <span>{t('today.ov.hint')}</span>
           </span>
         </div>
         {shown ? (
@@ -466,8 +546,12 @@ export function OverviewPane({ groups, filter }: { groups: TodayGroup[]; filter:
 
       <div className="ov-block">
         <div className="ov-block-head">
-          <b className="ov-block-title">{t('today.ov.gridCases')}</b>
-          <span className="ov-block-hint">{t('today.ov.hint')}</span>
+          <b className="ov-block-title">
+            <span>{t('today.ov.gridCases')}</span>
+          </b>
+          <span className="ov-block-hint">
+            <span>{t('today.ov.hint')}</span>
+          </span>
         </div>
         {shown ? (
           <OverviewGrid

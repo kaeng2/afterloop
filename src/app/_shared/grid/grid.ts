@@ -86,7 +86,8 @@ export const DESK_GRID_THEME_PARAMS = {
   cellHorizontalPadding: 14,
   wrapperBorder: false,
   wrapperBorderRadius: 0,
-  rowBorder: { color: 'var(--dk-ag-row-border)' },
+  /** T124b: 행 아래 선은 시안처럼 행(`role=row`) 자체에 `desk.css`가 긋는다 (AG Grid 안쪽 칸 묶음에 긋지 않는다). */
+  rowBorder: false,
   headerRowBorder: { color: 'var(--dk-ag-border)' },
   rowHoverColor: 'var(--dk-ag-hover)',
   selectedRowBackgroundColor: 'var(--dk-ag-hover)',

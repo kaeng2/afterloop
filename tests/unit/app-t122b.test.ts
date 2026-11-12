@@ -28,7 +28,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 
 const { TodayGroupsView } = await import('@/app/today/today-groups');
 const { TodaySelectionProvider, DetailEmpty, BackToAll } = await import('@/app/today/selection');
-const { OverviewPane, productColumns, caseColumns, productRowAction } = await import('@/app/today/overview');
+const { OverviewPane, productColumns, caseColumns, productRowAction, nextSort } = await import('@/app/today/overview');
 const { RiskValuesProvider, riskChipParts, riskLevel } = await import('@/app/today/risk-values');
 const { DESK_OV_COLS, GRID_MODULES, deskGridTheme } = await import('@/app/_shared/grid/grid');
 
@@ -207,6 +207,17 @@ describe('T122b-5: "All products" 전체 현황 값 (세기만, 엔진 위험 �
     // 열 폭은 시안 pCols·cCols 그대로 (grid.ts)
     expect(p.find((col) => col.colId === 'open')?.width).toBe(DESK_OV_COLS.products.open.width);
     expect(c.find((col) => col.colId === 'due')?.width).toBe(DESK_OV_COLS.cases.due.width);
+    // T124b: 위험 열은 시안처럼 왼쪽 맞춤(.ag-hc.num 아님)이지만 높은 순 먼저. 숫자 열은 오른쪽 맞춤
+    for (const risk of [p.find((col) => col.colId === 'risk'), c.find((col) => col.colId === 'risk')]) {
+      expect(risk?.headerComponentParams).toEqual({ right: false });
+      expect(risk?.sortingOrder).toEqual(['desc', 'asc']);
+    }
+    expect(p.find((col) => col.colId === 'open')?.headerComponentParams).toEqual({ right: true });
+    // 머리 칸 클릭 = 시안 sortHead.pick: 정렬 없음 → 첫 방향, 같은 열 → 반대
+    expect(nextSort(undefined, ['desc', 'asc'])).toBe('desc');
+    expect(nextSort(null, ['asc', 'desc'])).toBe('asc');
+    expect(nextSort('desc', ['desc', 'asc'])).toBe('asc');
+    expect(nextSort('asc', ['desc', 'asc'])).toBe('desc');
   });
 
   it('행 클릭: 상품 줄 → 그 상품 칩, "Several products" 줄 → 가장 위험한 항목, 빈 줄 → 아무것도', () => {
@@ -244,16 +255,21 @@ describe('T122b-5: "All products" 전체 현황 값 (세기만, 엔진 위험 �
       ),
     );
     expect(markup).toContain('<section class="today-overview" aria-label="All products">');
-    expect(markup).toMatch(/<span class="ag-tag"><svg[\s\S]*?<\/svg>AG Grid<\/span>/);
+    // T124b: 글은 시안 자리표({{…}})처럼 안쪽 span에 든다
+    expect(markup).toMatch(/<span class="ag-tag"><svg[\s\S]*?<\/svg><span>AG Grid<\/span><\/span>/);
     expect(markup.match(/class="ov-k"/g)).toHaveLength(5);
-    expect(markup).toContain('Avg. dispute risk');
+    expect(markup).toContain('<span>Avg. dispute risk</span>');
     const avgExpected = meanRisk(ov.kpis.topRisks);
     expect(avgExpected).not.toBeNull();
-    expect(markup).toContain(`class="ov-k-val ov-k-val-big">${chipParts(avgExpected as number).percent}<`);
-    expect(markup).toContain('Riskiest case · 3 products');
+    // 시안 k.hi: 평균이 높음 단계면 점·숫자 빨강 (아니면 파랑 big)
+    const avgParts = chipParts(avgExpected as number);
+    const avgClass = avgParts.level === 'high' ? 'ov-k-val ov-k-val-hi' : 'ov-k-val ov-k-val-big';
+    expect(markup).toContain(`class="${avgClass}"><span>${avgParts.percent}</span><`);
+    expect(markup).toContain('<span>Riskiest case · 3 products</span>');
     expect(markup.match(/class="ag ov-grid"/g)).toHaveLength(2);
-    expect(markup).toContain('<div class="ag-f"><span>4 rows</span><span>Sorted by Dispute risk ↓</span></div>');
-    expect(markup).toContain('<div class="ag-f"><span>5 rows</span><span>Sorted by Dispute risk ↓</span></div>');
+    expect(markup).toContain('<div class="ag-f"><span><span>4 rows</span></span><span><span>Sorted by Dispute risk ↓</span></span></div>');
+    expect(markup).toContain('<div class="ag-f"><span><span>5 rows</span></span><span><span>Sorted by Dispute risk ↓</span></span></div>');
+    expect(markup).toContain('<span>Open cases = disputes, buyer questions and prevention tasks still open</span> · <span>Click a column to sort · click a row to open</span>');
     expect(markup).toContain('Click a column to sort · click a row to open');
   });
 
