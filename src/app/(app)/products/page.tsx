@@ -7,7 +7,9 @@
  */
 import { seedDisputes, seedInquiries, seedProducts } from '../../../../seed/index';
 
-import { applyLangParam } from '@/app/_server/locale';
+import { initLocale } from '@/app/_server/locale';
+import { langRedirectTarget } from '@/app/_shared/lang-param';
+import { LangRedirect } from '@/app/_shared/lang-redirect';
 import { writeColorNoteAction } from '@/app/products/actions';
 import { colorComplaintsFor, selectSku } from '@/app/products/model';
 import { ProductsScreen } from '@/app/products/products-screen';
@@ -21,7 +23,10 @@ type Props = { searchParams: Promise<{ sku?: string | string[]; lang?: string | 
 
 export default async function ProductsPage({ searchParams }: Props) {
   const params = await searchParams;
-  await applyLangParam('/products', params);
+  // T113: `?lang=`은 전체 페이지 이동으로 (loading.tsx Suspense 안의 redirect()는 router 이동이 되어 React #310)
+  const langTarget = langRedirectTarget('/products', params);
+  if (langTarget !== null) return <LangRedirect href={langTarget} />;
+  await initLocale();
   const { sku } = params;
   const requested = Array.isArray(sku) ? sku[0] : sku;
   const selected = selectSku(seedProducts, requested);
