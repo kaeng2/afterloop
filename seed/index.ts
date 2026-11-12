@@ -7,6 +7,8 @@
 import type { SeedBuyer, SeedCarrierEvent, SeedDispute, SeedInquiry, SeedOrder, SeedProduct } from '@/types';
 import buyersJson from './buyers.json';
 import carrierEventsJson from './carrier-events.json';
+import demoDisplayJson from './demo-display.json';
+import { type DemoDisplay, demoDisplaySchema } from './demo-schema';
 import disputesJson from './disputes.json';
 import inquiriesJson from './inquiries.json';
 import ordersJson from './orders.json';
@@ -31,6 +33,12 @@ export const seedOrders: SeedOrder[] = seedOrdersSchema.parse(ordersJson);
  * `isDemo: true`다 — 화면은 이 줄에 늘 'Demo data' 배지를 붙인다 (SPEC 10장).
  */
 export const seedCarrierEvents: SeedCarrierEvent[] = seedCarrierEventsSchema.parse(carrierEventsJson);
+
+/**
+ * 시안 v6 표시용 데이터 (T121, SPEC v2.16). 전부 Demo data. 서연 기록 8줄·표시용 주문 번호(#1042·#1038·#1047, PP-R-… 보조)·
+ * 상품·손님 표기·예방 줄·데모 항목(Lena #1029·Yuki #1051). 옮기기만 한다 — 위험·금액 계산은 엔진.
+ */
+export const seedDemoDisplay: DemoDisplay = demoDisplaySchema.parse(demoDisplayJson);
 
 /** 시드 행인지 (화면 'Demo data' 배지) */
 export const isDemoRow = (row: { source: 'sandbox' | 'seed' }): boolean => row.source === 'seed';
