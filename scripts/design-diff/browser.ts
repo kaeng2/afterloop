@@ -98,12 +98,12 @@ export async function runSide(browser: PwBrowser, r: SideRun): Promise<SideCaptu
     await page.evaluate('window.__dd && window.__dd.start()');
     for (const [i, s] of r.steps.entries()) {
       const t = await retryFind(
-        () => page.evaluate<{ ok: boolean; count: number; x?: number; y?: number; disabled?: boolean }>(`${FIND_TARGET}(${JSON.stringify(s)})`),
+        () => page.evaluate<{ ok: boolean; count: number; x?: number; y?: number; disabled?: boolean; near?: string[] }>(`${FIND_TARGET}(${JSON.stringify(s)})`),
         (ms) => page.waitForTimeout(ms),
       );
       if (!t.ok || t.x === undefined || t.y === undefined) {
         res.ok = false;
-        res.error = `${i + 1}번째 단계를 못 찾음 (${JSON.stringify(s)}, 후보 ${t.count}개)`;
+        res.error = `${i + 1}번째 단계를 못 찾음 (${JSON.stringify(s)}, 후보 ${t.count}개${t.near?.length ? `; 같은 역할 요소: ${t.near.map((n) => JSON.stringify(n)).join(', ')}` : ''})`;
         break;
       }
       await page.mouse.click(t.x, t.y);

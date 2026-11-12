@@ -29,7 +29,7 @@ export const STYLE_PROPS = [
 ] as const;
 
 const COMMON = String.raw`
-function __ddCollapse(s){return String(s||'').replace(/\s+/g,' ').trim();}
+function __ddCollapse(s){return String(s||'').replace(/[​-‍﻿]/g,'').replace(/\s+/g,' ').trim();}
 function __ddRole(el){
   var r=el.getAttribute&&el.getAttribute('role'); if(r) return r;
   var t=el.tagName.toLowerCase();
@@ -47,6 +47,11 @@ function __ddLabel(el){
   var walk=function(x){for(var i=0;i<x.children.length;i++){var c=x.children[i];var t=__ddOwn(c);if(t&&!/^\d+$/.test(t))return t;var d=walk(c);if(d)return d;}return '';};
   return walk(el);
 }
+function __ddAlt(el){
+  var s='';(function w(x){for(var i=0;i<x.childNodes.length;i++){var c=x.childNodes[i];
+    if(c.nodeType===3)s+=c.nodeValue; else if(c.nodeType===1&&c.getAttribute('aria-hidden')!=='true')w(c);}})(el);
+  return __ddCollapse(s);
+}
 function __ddVisible(el){
   var r=el.getBoundingClientRect(); if(r.width<=0||r.height<=0) return false;
   var cs=getComputedStyle(el); if(cs.visibility==='hidden'||cs.display==='none') return false;
@@ -61,21 +66,34 @@ function __ddDesc(el){
 /** 단계에 맞는 요소를 찾아 화면 안으로 굴리고 중심 좌표를 돌려준다 */
 export const FIND_TARGET = String.raw`(function(step){
 ${COMMON}
-  var list=[];
+  var list=[], all=[];
   if(step.selector){ list=Array.prototype.slice.call(document.querySelectorAll(step.selector)).filter(__ddVisible); }
   else {
-    var all=document.querySelectorAll('body *');
+    all=document.querySelectorAll('body *');
     for(var i=0;i<all.length;i++){var el=all[i];
       if(step.role!==undefined && __ddRole(el)!==step.role) continue;
       if(step.role===undefined && !(el.onclick||__ddRole(el))) continue;
       var l=__ddLabel(el);
-      if(step.text!==undefined){ if(step.contains? l.indexOf(step.text)<0 : l!==step.text) continue; }
+      if(step.text!==undefined){
+        // 이름표 후보: 자기 글자(시안 기준) · aria-label · aria-hidden 아닌 자손 글자 전부 (앱의 장식 span 대응)
+        var cands=[l,__ddCollapse(el.getAttribute('aria-label')),__ddAlt(el)], hit=false;
+        for(var k=0;k<cands.length;k++){ if(cands[k]&&(step.contains? cands[k].indexOf(step.text)>=0 : cands[k]===step.text)){hit=true;break;} }
+        if(!hit) continue;
+      }
       if(!__ddVisible(el)) continue;
       list.push(el);
     }
   }
   var el=list[step.nth||0];
-  if(!el) return {ok:false,count:list.length};
+  if(!el){
+    // 실패 진단: 같은 역할(없으면 누를 수 있는) 요소의 이름표와 보임 여부
+    var near=[];
+    for(var j=0;j<all.length&&near.length<8;j++){var e2=all[j];
+      if(step.role!==undefined ? __ddRole(e2)!==step.role : !(e2.onclick||__ddRole(e2))) continue;
+      near.push(__ddLabel(e2).slice(0,40)+(__ddVisible(e2)?'':' (안 보임)'));
+    }
+    return {ok:false,count:list.length,near:near};
+  }
   el.scrollIntoView({block:'center',inline:'center'});
   var r=el.getBoundingClientRect();
   return {ok:true,count:list.length,x:r.left+r.width/2,y:r.top+r.height/2,disabled:!!el.disabled};
