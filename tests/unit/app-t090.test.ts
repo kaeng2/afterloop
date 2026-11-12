@@ -233,12 +233,12 @@ describe('완료 기준 1: 검사 하나 실패(가짜) → Send 꺼짐 + Detail
     const markup = await fullCase();
     expect(markup).toMatch(/class="reply-details-toggle" aria-expanded="false"/);
     expect(detailsOf(markup)).toMatch(/^class="reply-details"[^>]*hidden/);
-    expect(markup).toMatch(/<button type="button" class="reply-button"(?![^>]*disabled)[^>]*>Send in Korean/);
+    expect(markup).toMatch(/<button type="button" class="reply-button"(?![^>]*disabled)[^>]*>Send</);
   });
 
   it('새 약속 검사 실패 → Send disabled + Details 펼침(닫을 수 없음) + 실패한 줄이 보인다', async () => {
     const markup = await fullCase(failing);
-    expect(markup).toMatch(/<button type="button" class="reply-button" disabled=""[^>]*>Send in Korean/);
+    expect(markup).toMatch(/<button type="button" class="reply-button" disabled=""[^>]*>Send</);
     expect(markup).toMatch(/class="reply-details-toggle" aria-expanded="true"[^>]*data-forced="true"/);
     const details = detailsOf(markup);
     expect(details).not.toMatch(/^class="reply-details"[^>]*hidden/);
@@ -399,7 +399,8 @@ describe('만들 것 2~5·10: 사례 화면', () => {
     );
     expect(markup).not.toContain('case-carrier-line');
     expect(markup).not.toContain('Carrier:');
-    expect(markup).toContain(`<span>${t('case.view.translated')}</span> · `);
+    // T122a 시안 v6 L314: "Translated" 굵은 파랑
+    expect(markup).toContain(`<b class="case-bubble-tr">${t('case.view.translated')}</b> · `);
     for (const tags of markup.match(/<div class="case-read">[\s\S]*?<\/div>/g) ?? []) {
       expect(tags).toContain(t('case.read.label'));
       expect((tags.match(/class="desk-chip/g) ?? []).length).toBeLessThanOrEqual(2);
@@ -436,11 +437,11 @@ describe('만들 것 2~5·10: 사례 화면', () => {
     expect(css.match(/\.reply-chip-warn\s*\{([^}]*)\}/)?.[1] ?? '').toMatch(/color:\s*var\(--color-pill-high-text\)/);
   });
 
-  it('8: 한국어 미리보기 — 바탕 #F6F7F9(--color-panel), 테두리 없음, 제목 "She’ll see (Korean)" (언어는 데이터에서)', async () => {
+  it('8: 한국어 미리보기 — 바탕 #F6F7F9(--color-panel), 제목 "Translation (Korean)" (T122a 시안 v6, 언어는 데이터에서)', async () => {
     const markup = await fullCase();
-    const box = markup.slice(markup.indexOf('class="reply-block reply-box"'));
-    expect(box).toContain(t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') }));
-    expect(box).toContain('Seo-yeon will see (Korean)');
+    const box = markup.slice(markup.indexOf('class="reply-block reply-box'));
+    expect(box).toContain(t('case.reply.translationTitle', { language: t('case.view.lang.KO') }));
+    expect(box).toContain('Translation (Korean)');
     expect(box).not.toMatch(/\b(She|He)[’']ll see/);
     expect(read('src/app/globals.css')).toMatch(/--color-panel:\s*#f6f7f9/i);
     const rule = read('src/app/cases/reply/reply.css').match(/\.reply-box\s*\{([^}]*)\}/)?.[1] ?? '';
@@ -453,7 +454,7 @@ describe('만들 것 2~5·10: 사례 화면', () => {
     const foot = markup.slice(markup.indexOf('class="reply-foot"'), markup.indexOf('class="reply-result"'));
     expect(foot).not.toContain('Facts match');
     expect(foot).not.toContain('reply-checks');
-    expect(foot.indexOf(t('case.send.mode.simulated'))).toBeLessThan(foot.indexOf('Send in Korean'));
+    expect(foot.indexOf(t('case.send.mode.simulated'))).toBeLessThan(foot.indexOf('>Send</button>'));
   });
 
   it('10: Show history 펼친 줄 — 날짜·점·사건 + 빨간 "Before DisputeLess · <표시>" (실제 기록의 표시만)', () => {

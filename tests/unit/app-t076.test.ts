@@ -25,6 +25,7 @@ import {
   featureChips,
   historyView,
   latinName,
+  NO_REPLY_DAYS,
   reactionView,
   readTags,
   type MoveForecast,
@@ -313,9 +314,9 @@ describe('완료 기준 1: 어댑터가 null이면 화면이 깨지지 않고 �
     expect(markup).not.toContain('reply-editor-pill');
     expect(markup).not.toContain('class="history-summary"');
     expect(markup).not.toMatch(/Chargeback \d+%/);
-    // T090: 전송본 제목은 시안 "She’ll see (Korean)"
-    const sheSees = t('case.reply.sheSees', { name: 'Seo-yeon', language: t('case.view.lang.KO') });
-    for (const needle of ['class="history-card"', 'class="choice-list"', 'class="reply-textarea"', sheSees, 'class="reply-foot"', 'Send in Korean']) {
+    // T122a: 전송본 제목은 시안 v6 "Translation (Korean)", 버튼은 "Send"
+    const sheSees = t('case.reply.translationTitle', { language: t('case.view.lang.KO') });
+    for (const needle of ['class="history-card"', 'class="choice-list"', 'class="reply-textarea"', sheSees, 'class="reply-foot"', '>Send</button>']) {
       expect(markup, needle).toContain(needle);
     }
     // 특징 판정이 없으면 지금 칩("Suggested reply covers")
@@ -393,7 +394,9 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
     expect(markup).toContain(t('case.reaction.cost', { amount: toDollarsRounded(3680) }));
     expect(markup).toContain(t('case.reaction.title', { name: 'Seo-yeon' }).replace(/'/g, '&#x27;'));
     expect(markup).toContain(`class="reaction-mood-value">${t('case.mood.okay')}<`);
-    expect(markup).toContain(t('case.reaction.moodNow', { mood: t('case.moodNow.angry') }));
+    // T122a 시안 v6 L393: "now: angry" 줄은 없다 (오른쪽 칸 = Dispute risk 전 → 후 + "mood next · mood")
+    expect(markup).not.toContain(t('case.reaction.moodNow', { mood: t('case.moodNow.angry') }));
+    expect(markup).toContain(`class="reaction-mood-label">${t('case.reaction.riskTitle')}<`);
     // 입력칸 모서리 "Chargeback 12%"
     expect(markup).toContain(`class="reply-editor-pill num">${t('case.choice.chargeback', { percent: '12%' })}`);
     // T090: 입력칸 모서리 알약 안 Assumption은 뺐다 (Assumption은 반응 막대 쪽 하나만)
@@ -427,7 +430,11 @@ describe('완료 기준 2: 어댑터에 가짜 값(계약 타입)을 넣으면 �
       }),
     );
     const anchor = buildReplyView({ ...base, confirmed: [], sendState: 'idle', outcome: null }).draftEn?.text;
-    expect(calls).toEqual([{ text: anchor, anchorText: anchor, board: AFTER, signals: SIGNALS, delayDays: 4, translated: false }]);
+    // T122a: 두 번째 호출 = 위험 상자 "전" 값의 무응답 예측 (빈 글 + 늦은 날 수 noReplyDays)
+    expect(calls).toEqual([
+      { text: anchor, anchorText: anchor, board: AFTER, signals: SIGNALS, delayDays: 4, translated: false },
+      { text: '', anchorText: anchor, board: AFTER, signals: SIGNALS, delayDays: 4 + (NO_REPLY_DAYS ?? 0), translated: false },
+    ]);
   });
 
   it('선택지 카드 차지백 % = 수별 예측 그대로 (막힌 수·예측 없는 수는 없음)', () => {
@@ -631,7 +638,7 @@ describe('완료 기준 5: 입력칸 글이 초안과 다르면 [Send]가 꺼지
     const withPlan = { ...base, plan };
     expect(canSend(buildReplyView({ ...withPlan, confirmed: [], sendState: 'idle', outcome: null }))).toEqual({ ok: true, reasonKey: null });
     const markup = html(createElement(ReplyPanel, { disputeId: D2, base: withPlan, replyId: 'r-1', languageKey: 'case.view.lang.KO' }));
-    expect(markup).toMatch(/<button type="button" class="reply-button" aria-describedby="reply-send-why">Send in Korean<\/button>/);
+    expect(markup).toMatch(/<button type="button" class="reply-button" aria-describedby="reply-send-why">Send<\/button>/);
     expect(markup).not.toContain(t(EDITED_KEY));
   });
 
