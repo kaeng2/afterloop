@@ -9,6 +9,12 @@
     "maxRate": 0.2,
     "note": "부분 환불 제안은 색상·사이즈만 (원문 10-3). 제안률은 params.offerRate(0.15) 고정, 한도 20%를 넘으면 설정 오류"
   },
+  "repair": {
+    "eligibleSubtypes": [
+      "B3"
+    ],
+    "note": "v2.16 무료 수선(왕복 배송비 손님 부담)은 B3 품질에서만. 실행은 send_message — 돈이 움직이지 않으므로 autopilot.moneyMoves에 넣지 않는다 (사람 승인은 그대로 필요)"
+  },
   "autopilot": {
     "skipCategories": [
       "F"

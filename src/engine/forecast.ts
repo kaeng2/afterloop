@@ -290,12 +290,14 @@ export function forecastMoves(
   model?: ReplyModelConfig,
 ): MoveForecast[] {
   const p = prepare(input, params, rules, model);
-  const pAccept = resolveEngineInput(input.board, params, rules).params.pAccept;
+  const resolved = resolveEngineInput(input.board, params, rules).params;
+  const pAccept = resolved.pAccept;
+  const pAcceptRepair = resolved.pAcceptRepair ?? 0;
   const fightP = core(p.anchorFeatures, p.situation, p.calibration, p.costs, p.model).pChargeback;
   const refundP = core({ ...p.anchorFeatures, refundNow: true }, p.situation, p.calibration, p.costs, p.model).pChargeback;
   return p.recommendation.all.map((e) => {
     const blocked = e.blockedBy !== undefined || e.expectedLossCents === null;
-    const pChargeback = blocked ? null : e.move === 'fight' ? fightP : e.move === 'refund' ? refundP : (1 - pAccept) * fightP;
+    const pChargeback = blocked ? null : e.move === 'fight' ? fightP : e.move === 'refund' ? refundP : e.move === 'repair' ? (1 - pAcceptRepair) * fightP : (1 - pAccept) * fightP;
     return {
       move: e.move,
       expectedLossCents: e.expectedLossCents,

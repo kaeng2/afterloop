@@ -7,10 +7,10 @@
  */
 import type { Evaluation, RecommendFn } from '@/types';
 
-import { fightLoss, offerLoss, pWinFor, refundLoss } from './oracle';
+import { fightLoss, offerLoss, pWinFor, refundLoss, repairLoss } from './oracle';
 import type { EngineInput } from './params';
 import { resolveEngineInput } from './params';
-import { apiMoveFor, BLOCKED, isOfferInScope, MOVE_ORDER, pickBest } from './policy';
+import { ALL_MOVE_ORDER, apiMoveFor, BLOCKED, isOfferInScope, isRepairInScope, pickBest } from './policy';
 import { decideAutopilot } from './autopilot';
 
 /** 계산하지 않은 수 (차단 이유만 남긴다). */
@@ -19,16 +19,19 @@ function blocked(move: Evaluation['move'], blockedBy: string): Evaluation {
 }
 
 /**
- * 세 수를 fight → offer → refund 순서로 평가한다.
+ * 수를 fight → offer → refund → repair 순서로 평가한다.
  * - 대응할 API가 `allowedMoves`에 없는 수는 목록에서 뺀다 (SPEC 5장).
  * - 원인이 없으면 p_win을 정할 수 없어 어느 수도 계산하지 않는다 (`NO_CAUSE`).
  * - 제안은 색상·사이즈(B1·B2)만 계산한다 (`OFFER_SCOPE`).
+ * - 무료 수선(repair, v2.16)은 `rules.repair.eligibleSubtypes`(B3) 사건에만 목록에 넣는다. 그 밖의 사건에는
+ *   repair가 아예 없으므로 기존 세 수의 결과가 바뀌지 않는다. 가정값이 없으면 `REPAIR_PARAMS`로 막는다.
  */
 function evaluateAll({ board, params, rules }: EngineInput): Evaluation[] {
   const pWin = pWinFor(board, params);
   const evaluations: Evaluation[] = [];
 
-  for (const move of MOVE_ORDER) {
+  for (const move of ALL_MOVE_ORDER) {
+    if (move === 'repair' && !isRepairInScope(board, rules)) continue;
     const apiMove = apiMoveFor(move, board);
     if (apiMove === null) continue;
 
@@ -47,6 +50,16 @@ function evaluateAll({ board, params, rules }: EngineInput): Evaluation[] {
         isOfferInScope(board, rules)
           ? { move, apiMove, ...offerLoss(board, params, pWin) }
           : blocked(move, BLOCKED.offerScope),
+      );
+      continue;
+    }
+
+    if (move === 'repair') {
+      const { repairCostCents, pAcceptRepair } = params;
+      evaluations.push(
+        repairCostCents === undefined || pAcceptRepair === undefined
+          ? blocked(move, BLOCKED.repairParams)
+          : { move, apiMove, ...repairLoss(board, params, pWin, repairCostCents, pAcceptRepair) },
       );
       continue;
     }
