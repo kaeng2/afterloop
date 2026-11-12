@@ -30,11 +30,15 @@ export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
           <h2 className="weekly-title" id="weekly-title">
             {t('today.weekly.title')}
           </h2>
-          <span className="weekly-sub">{t('today.weekly.sub')}</span>
+          {/* T110: Demo data(예외)는 부제 줄 끝에. 오른쪽에 두면 1440 폭에서 제목이 두 줄로 꺾이거나 배지·알약이 쌓여
+              카드가 시안(L125 제목 한 줄 + 오른쪽 AI 알약 하나)보다 길어진다 */}
+          <span className="weekly-sub-row">
+            <span className="weekly-sub">{t('today.weekly.sub')}</span>
+            {weekly.usesDemoData ? <Badge kind="demo" /> : null}
+          </span>
         </div>
-        {/* T107 시안 L125: 오른쪽 AI 알약 (그림자 없음). Demo data는 시드가 섞일 때만 그 옆에 */}
+        {/* T107 시안 L125: 오른쪽 AI 알약 (그림자 없음) */}
         <span className="weekly-head-end">
-          {weekly.usesDemoData ? <Badge kind="demo" /> : null}
           <AiPill decorative />
         </span>
       </div>

@@ -335,3 +335,32 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 body:has(.dk) .savings-toast{position:fixed;left:50%;bottom:28px;z-index:20;display:flex;gap:12px;align-items:center;padding:14px 20px;border-radius:16px;background:#000000;color:#FFFFFF;box-shadow:rgba(0,0,0,0.25) 0 8px 24px;font-family:var(--font-figtree),var(--font-noto-kr),Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5}
 .dk .work-head-product{font-weight:inherit}
 body:has(.dk) .savings-toast-check{width:24px;height:24px;border-radius:50%;background:#60CDFF;color:#002991;display:inline-flex;align-items:center;justify-content:center;font-weight:900}
+
+/* ── 3부: T110 그림 비교 1차 후속 (reports/design-match/pixel/round1, 1440 기준) ── */
+/* 위쪽 막대: 시안 L99 막대는 12 + 로고 28 + 12 + 1 = 53px. 앱 전용 오른쪽 묶음(EN/한국어 35px·PayPal activity)이
+   막대를 59px로 늘려 아래 전체가 6px 밀렸다 → 단추 크기는 그대로, 바깥 여백만 줄여 줄 높이를 로고(28px) 안으로 */
+body:has(.dk) .shell-actions{margin-block:-4px}
+/* 시안에서 tabular-nums는 L130 이번 주 숫자 · L144 항목 번호 · L208 기록 날짜 · L748 큰 %뿐.
+   앱 공용 `.num`(globals)이 머리글 제목·메타 줄까지 고정폭 숫자로 만들어 제목이 20px 넓었다 */
+.dk .num{font-variant-numeric:normal}
+.dk .weekly-value,.dk .today-item-name,.dk .history-date,.dk .curve-headline{font-variant-numeric:tabular-nums}
+/* 예외 배지(Demo data · Assumption, DECISIONS 11/11 22:55)는 12px 글자 한 줄(18px) 높이 안에 — 붙은 줄이 늘지 않게 */
+.dk .badge{line-height:16px}
+
+/* L125 이번 주 카드 머리: 제목 한 줄 + 오른쪽 AI 알약 하나. Demo data는 부제 줄 끝 */
+.dk .weekly-titles{min-width:0}
+.dk .weekly-title{white-space:nowrap}
+.dk .weekly-sub-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:18px}
+.dk .weekly-head-end{flex-shrink:0}
+
+/* L144 항목 첫 줄: 번호(실제 분쟁 번호, 시안 #1038보다 길다)는 꺾지 않고, 상품명이 먼저 줄어든다 (…) */
+.dk .today-item-name{white-space:nowrap;flex-shrink:0}
+.dk .today-item-product{flex:1 1 auto;min-width:0}
+
+/* L159 머리글과 곡선 카드는 한 section 안 gap 14px (main gap 18px은 그 다음부터) */
+.dk .case-head+.curve-card{margin-top:-4px}
+/* L187–L192 곡선 카드 오른쪽: 세로 가운데 맞춤 — Assumption 배지(예외)는 자리를 차지하지 않게 (배지 18 + gap 2) */
+.dk .curve-side>.badge{align-self:flex-start;margin-bottom:-20px}
+
+/* L251 선택지 카드 숫자 줄: line-height 물려받음(1.5). 앱 .choice-numbers 1.35 → 카드가 2px 낮았다 */
+.dk .choice-numbers{line-height:1.5}
