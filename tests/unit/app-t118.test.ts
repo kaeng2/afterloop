@@ -84,7 +84,7 @@ describe('3. Send 뒤 빈 "Respond now" 머리 숨김', () => {
     sentFlag.value = false;
     const markup = render();
     expect(markup).toMatch(new RegExp(`^<section class="work zone-work" aria-label="${t('case.work.title')}"><div class="work-head">`));
-    expect(markup).toContain(`<h2 class="desk-card-title" id="work-title">${t('case.reply.title')}</h2>`);
+    expect(markup).toContain(`<h2 class="desk-card-title" id="work-title"><b>${t('case.reply.title')}</b></h2>`);
     expect(markup).toContain('role="switch" aria-checked="true"');
     expect(markup).toMatch(/<\/div>x<\/section>$/);
   });

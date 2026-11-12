@@ -25,7 +25,8 @@ export function CaseHistoryCard({ history }: { history: HistoryView }) {
     <section className="history-card" aria-labelledby="history-title">
       <div className="history-head">
         <h2 className="desk-card-title" id="history-title">
-          {t('case.history.title')}
+          {/* T125a: 시안 `<b>Case history</b>` — 글자 주인을 b로 (제목 역할은 h2 그대로) */}
+          <b>{t('case.history.title')}</b>
         </h2>
         <span className="history-sub num">{sub}</span>
         <span className="history-dots" aria-hidden="true">

@@ -179,7 +179,7 @@ describe('범위 2: "✦ AI Respond now" 스위치', () => {
     const zone = (on: boolean) => html(inDesk(createElement(WorkZone, { titleId: 'work-title', ai: choices }, 'reply'), on));
     const off = zone(false);
     expect(off).toMatch(/^<section class="work work-simple" aria-labelledby="work-title">/);
-    expect(off).toContain(`<h2 class="desk-card-title" id="work-title">${t('case.reply.title')}</h2>`);
+    expect(off).toContain(`<h2 class="desk-card-title" id="work-title"><b>${t('case.reply.title')}</b></h2>`);
     expect(off).not.toContain('choice-list');
     expect(off).not.toContain(t('case.work.sub'));
     expect(off).toMatch(/<\/div>reply<\/section>$/);

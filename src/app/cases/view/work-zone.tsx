@@ -48,7 +48,7 @@ export function WorkZone({ titleId, ai, children }: { titleId: string; ai?: Reac
         <div className="work-head">
           <div className="work-head-left">
             <h2 className="desk-card-title" id={titleId}>
-              {t('case.reply.title')}
+              <b>{t('case.reply.title')}</b>
             </h2>
             {aiOn ? <span className="desk-card-sub">{t('case.work.sub')}</span> : null}
           </div>

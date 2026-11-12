@@ -147,7 +147,7 @@ export function Conversation({
     <section className="case-conversation zone-buyer" aria-labelledby="case-conversation">
       <div className="desk-card-head">
         <h2 className="desk-card-title" id="case-conversation">
-          {t('case.view.conversation')}
+          <b>{t('case.view.conversation')}</b>
         </h2>
         <span className="desk-card-sub">
           {languageKey === null || locale === 'en'

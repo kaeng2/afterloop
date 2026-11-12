@@ -565,7 +565,7 @@ describe('재시도 2번: 원문이 영어면 번역 줄 없음 (영어가 두 �
 describe('재시도 1번: 1920×1080 한 화면 (세로 자리 줄이기)', () => {
   it('T090: "Buyer messages" 제목 줄(시안 v4) + 말풍선 아래 한 줄 "Translated · 영어 · 날짜"', async () => {
     const markup = await fullMarkup();
-    expect(markup).toMatch(/<h2 class="desk-card-title" id="case-conversation">Buyer messages<\/h2>/);
+    expect(markup).toMatch(/<h2 class="desk-card-title" id="case-conversation"><b>Buyer messages<\/b><\/h2>/);
     const start = markup.indexOf('class="case-bubble"');
     const bubble = markup.slice(start, markup.indexOf('</li>', start));
     const sub = bubble.slice(bubble.indexOf('class="case-bubble-sub"'));

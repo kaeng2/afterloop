@@ -56,14 +56,11 @@ function ItemRow({
         <span className="today-item-body">
           <span className="today-item-top">
             {/* T124a: 시안 L166-168처럼 글자는 안쪽 span (`{{it.order}}`·`· {{it.prod}}`·`{{it.cat}}`·…) */}
-            <span className="today-item-name num">
+            {/* T125a: 시안 L166 `<b>{{it.order}}</b>`·`<span>· {{it.prod}}</span>` — 글자 주인은 b / 한 span */}
+            <b className="today-item-name num">
               <span>{row.head}</span>
-            </span>
-            {row.product === null ? null : (
-              <span className="today-item-product">
-                · <span>{row.product}</span>
-              </span>
-            )}
+            </b>
+            {row.product === null ? null : <span className="today-item-product">{`· ${row.product}`}</span>}
           </span>
           <span className="today-item-tags">
             {row.category === null ? null : (
@@ -127,10 +124,11 @@ function GroupCard({
         <span className="today-group-bar" aria-hidden="true" />
         <h2 className="today-group-title" id={`today-group-${group.key}`}>
           {/* T124a: 시안 L161 `<b>{{g.title}} <span>({{g.count}})</span></b>` — 글자는 안쪽 span */}
-          <span>{title}</span>{' '}
-          <span className="today-group-count num">
-            (<span>{group.rows.length}</span>)
-          </span>
+          {/* T125a: round5 — 시안 `<b>제목 <span>(N)</span></b>`: 제목 글자 주인 b, "(N)"은 한 span */}
+          <b>
+            {`${title} `}
+            <span className="today-group-count num">{`(${group.rows.length})`}</span>
+          </b>
         </h2>
         {group.hint === null ? null : (
           <span className="today-group-hint">

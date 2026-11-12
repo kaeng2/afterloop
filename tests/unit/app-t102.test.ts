@@ -143,7 +143,7 @@ describe('목록 그리기 (TodayGroupsView)', () => {
     const at = markup.indexOf('today-group sec today-group-done');
     expect(at).toBeGreaterThan(markup.indexOf('today-group-routine'));
     const done = markup.slice(at);
-    expect(done).toContain(`Done today · Simulated</span> <span class="today-group-count num">(<span>1</span>)</span>`);
+    expect(done).toContain(`<b>Done today · Simulated <span class="today-group-count num">(1)</span></b>`);
     expect(done).not.toContain('today-group-hint');
     // T107: 시안 클래스 `.it`·`.on`·`.done`이 앱 클래스 뒤에 붙는다
     expect(done).toMatch(/class="today-item it( on)? today-item-done done"/);
@@ -159,7 +159,7 @@ describe('목록 그리기 (TodayGroupsView)', () => {
   it('섞임: "Done today" 제목 + simulated 줄에만 작은 Simulated', () => {
     const markup = html({ [D2]: { simulated: true }, tracking: { simulated: false } });
     const done = markup.slice(markup.indexOf('today-group sec today-group-done'));
-    expect(done).toContain(`Done today</span> <span class="today-group-count num">(<span>2</span>)</span>`);
+    expect(done).toContain(`<b>Done today <span class="today-group-count num">(2)</span></b>`);
     expect(done.match(/today-item-simulated/g)?.length).toBe(1);
     expect(done).toContain(`<span class="today-item-simulated">${t('case.progress.simulated')}</span>`);
   });

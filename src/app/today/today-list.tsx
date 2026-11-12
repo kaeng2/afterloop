@@ -29,7 +29,7 @@ export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
         <div className="weekly-titles">
           <h2 className="weekly-title" id="weekly-title">
             {/* T124a: 시안 L147처럼 글자는 안쪽 span (`<b>{{v.dashT}}</b>` 등) */}
-            <span>{t('today.weekly.title')}</span>
+            <b>{t('today.weekly.title')}</b>
           </h2>
           {/* T110: Demo data(예외)는 부제 줄 끝에. 오른쪽에 두면 1440 폭에서 제목이 두 줄로 꺾이거나 배지·알약이 쌓여
               카드가 시안(L125 제목 한 줄 + 오른쪽 AI 알약 하나)보다 길어진다 */}

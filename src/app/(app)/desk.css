@@ -488,6 +488,12 @@ body:has(.dk) .shell-actions{margin-block:-4px}
 .dk .today-risk-med{background:#E3F3FF;color:#002991}
 .dk .today-risk-low{background:#ECEEF0;color:#3F4144}
 .dk .it.done .today-risk{display:none}
+/* T125a (round5): 위험 칩이 없는 줄(ENG-08)은 도구가 구매자 글을 이 줄 상자에 붙인다 — 시안 who span(12px #6C7378, 18px)과 같은 글자 */
+.dk .today-item-subrow{font-size:12px;line-height:18px;color:#6C7378}
+/* PP-R 보조 줄(DATA-01)은 시안에 자리가 없다 — 구매자 줄과 같은 보조 글 크기로 (줄 높이 차이를 줄인다) */
+.dk .today-item-ref{font-size:12px;line-height:18px;color:#6C7378}
+/* 시안 `<b>`는 bold(700). 제목 h2 안 b는 굵기를 그대로 받는다 (bolder → 900 방지) */
+.dk .today-group-title b,.dk .weekly-title b,.dk .desk-card-title b{font-weight:inherit}
 
 /* L180-228 전체 현황 */
 .dk .today-overview{display:flex;flex-direction:column;gap:16px}
