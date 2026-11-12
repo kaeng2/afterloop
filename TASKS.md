@@ -175,6 +175,6 @@
 | T122c | v6 지호·Lena·Yuki·추적 한 장 카드 | ui | 완료 | v2.16 | T120·T121 | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T122c.md` | 사람 결정 20:40 |
 | T120d | 엔진 meanRisk (평균 위험) | engine | 완료 | v2.16 | — | — | sonnet. `tasks/T120d.md` | T122b 요청 |
 | T122d | v6 목록 후속 (Questions·데모 연결, riskLevel, 평균 카드) | ui | 완료 | v2.16 | T120d | — | opus, `lane/ui-desk`. `tasks/T122d.md` | T122b 요청 |
-| T122e | v6 표시 데이터 연결 (#1042 등, 기록 8줄, 예방 줄) | ui | 진행 | v2.16 | T121 | — | opus, `lane/ui`. `tasks/T122e.md` | 사람 결정 20:35 ③ |
+| T122e | v6 표시 데이터 연결 (#1042 등, 기록 8줄, 예방 줄) | ui | 완료 | v2.16 | T121 | — | opus, `lane/ui`. `tasks/T122e.md` | 사람 결정 20:35 ③ |
 | T122f | v6 후속: repair 초안 연결 + Lena·Yuki 카드 연결 | ui | 완료 | v2.16 | T122c | — | opus, `lane/ui-scenes`. `tasks/T122f.md` | T122c 요청 |
 | T122g | 서버 전송 repair 허용 | ui | 완료 | v2.16 | T122f | — | sonnet, `lane/ui-scenes`. `tasks/T122g.md` | T122f 요청 |
