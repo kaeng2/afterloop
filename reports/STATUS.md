@@ -209,3 +209,4 @@ AI 답장 만들기(코칭·영어 초안·한국어 전송본) · 어조 판정
 | 10:38 | T107+T110 병합 — 3번(시안 CSS 통째 복사) 세 화면 모두 끝, **재배포 필요** | 그림 비교(예외 띠만 숨김): Desk 12.0→**4.71%**, /intro 14.7→**0.62%**, /listing 10.1→**0.01%** (1440). 남은 차이는 모두 예외·시안 사본 데이터 사정 → `reports/design-match/pixel/README.md`. T107 Sonnet 검증 통과, T104·T106 동작 다시 확인(오류 0) | 재배포 → 13:00 고정 → video-kit → 3차 리뷰 | **예 — Render 재배포** |
 | 10:43 | 사람 결정: 카드사 문구 밑줄 유지 | DECISIONS 기록, 그림 비교 README 예외로 확정. 시안 관련 열린 결정 없음 | 재배포(a00da7b) 확인 → video-kit 장면 다시 쓰기 → 3차 리뷰 | **예 — Render 재배포** |
 | 10:54 | 사람 결정 10:55 곡선 찌그러짐 → T112 배분 (Opus, lane/ui-scenes, 11:50 보고) | video-kit 다시 쓰기 진행 중(하위 에이전트) | T112 | **예 — 재배포는 T112 뒤 한 번에 해도 됨** |
+| 11:03 | T112 병합 (곡선 찌그러짐: viewBox = 실제 px 폭) — 1280·1440·1920·2560 × DPR2에서 점 모두 원 `reports/screens/curve-fix/`. **버그 발견**: 한국어로 바꾸면 Desk(서연·지호) Application error — ko `case.reply.editSub`에 {{name}} 없음 + React #310(/products도) → T113 | video-kit 다시 쓰기 끝(검토 중) | T113 | **예 — 재배포는 T113 뒤** |

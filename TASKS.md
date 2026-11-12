@@ -157,4 +157,5 @@
 | T109 | /listing 시안 CSS 통째 복사 | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, 브랜치 `lane/ui-desk`. `tasks/T109.md` | 사람 결정 09:25 + "Yes, start now", 12:15 보고 |
 | T110 | Desk 그림 비교 1차 후속 (목록 번호 꺾임, 이번 주 카드 머리, 세로 어긋남) | ui | 완료 | v2.15 | T107 | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T110.md` | 09:25 ③ |
 | T111 | /listing 그림 비교 1차 후속 (1–2px 세로 어긋남) | ui | 완료 | v2.15 | T109 | — | 모델 `claude-sonnet-5-5`, `lane/ui-desk`. `tasks/T111.md` | 09:25 ③ |
-| T112 | 위험 곡선 찌그러짐 수정 (viewBox = 실제 px 폭, non-scaling-stroke) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T112.md` | 사람 결정 10:55, 13:00 전 |
+| T112 | 위험 곡선 찌그러짐 수정 (viewBox = 실제 px 폭, non-scaling-stroke) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T112.md` | 사람 결정 10:55, 13:00 전 |
+| T113 | 버그: 한국어로 바꾸면 Desk가 죽음 (ko 자리표시자 + React #310) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T113.md` | 13:00 전 필수 |
