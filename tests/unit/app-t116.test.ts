@@ -183,7 +183,7 @@ describe('7. F4-67 입력 중 새 약속 경고', () => {
 
 describe('8. F5-3 Send 뒤 랜드마크 이름 "Case progress"', () => {
   it('보내기 전: aria-labelledby (Respond now 제목)', () => {
-    const markup = html(createElement(SentProvider, null, createElement(WorkZone, { titleId: 'work-title' }, 'x')));
+    const markup = html(createElement(SentProvider, null, createElement(WorkZone, { titleId: 'work-title', children: 'x' })));
     expect(markup).toBe('<section class="work zone-work" aria-labelledby="work-title">x</section>');
   });
 
