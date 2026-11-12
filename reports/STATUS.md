@@ -210,3 +210,4 @@ AI 답장 만들기(코칭·영어 초안·한국어 전송본) · 어조 판정
 | 10:43 | 사람 결정: 카드사 문구 밑줄 유지 | DECISIONS 기록, 그림 비교 README 예외로 확정. 시안 관련 열린 결정 없음 | 재배포(a00da7b) 확인 → video-kit 장면 다시 쓰기 → 3차 리뷰 | **예 — Render 재배포** |
 | 10:54 | 사람 결정 10:55 곡선 찌그러짐 → T112 배분 (Opus, lane/ui-scenes, 11:50 보고) | video-kit 다시 쓰기 진행 중(하위 에이전트) | T112 | **예 — 재배포는 T112 뒤 한 번에 해도 됨** |
 | 11:03 | T112 병합 (곡선 찌그러짐: viewBox = 실제 px 폭) — 1280·1440·1920·2560 × DPR2에서 점 모두 원 `reports/screens/curve-fix/`. **버그 발견**: 한국어로 바꾸면 Desk(서연·지호) Application error — ko `case.reply.editSub`에 {{name}} 없음 + React #310(/products도) → T113 | video-kit 다시 쓰기 끝(검토 중) | T113 | **예 — 재배포는 T113 뒤** |
+| 11:04 | video-kit 다시 쓰기 (지금 화면 기준, 장면 12개·약 2:34) | /intro → Desk 서연(위험 40%, 급한 답장 95% → AI 초안 40%, Details "PayPal data only ") → 실제 전송·Send 뒤 진행·추적 201·서랍(경희 녹화분) → /listing 4.5%→2.1% → /products AG Grid. 날짜 규칙: 가능하면 14:00 KST 이후 녹화. [확인 필요] 녹화 모드 화면 글자 몇 개 | T113 | 아니오 |
