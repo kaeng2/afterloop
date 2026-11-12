@@ -53,3 +53,9 @@
 
 ## 컨트롤 타워에 요청할 결정
 - 없음 (위 seller 색은 화면 확인 뒤 판단만).
+
+## 재시도(후속)
+- 요청: 시안 whoCol은 사건의 who로만 색을 정한다 → 위협(`threat`) 표시가 있는 구매자 메시지도 buyer(#3F4144).
+- `src/app/cases/desk-model.ts` `toneOf`: `buyer_message`는 flags와 상관없이 `buyer`. 판매자 답장·추적번호 없음 = bad, 나머지 = sys는 그대로. 곡선 점과 사건 기록 점이 같은 함수를 쓰므로 둘 다 바뀐다.
+- `tests/unit/app-t105.test.ts`: 위협 메시지(Nov 9) 기대를 bad → buyer로 맞춤 (곡선·점줄 모두), 사건 → 색 배열 기대도 갱신.
+- 결과: `npx vitest run app-t105 app-t103` 22 통과 / 실패 0, `npx tsc --noEmit` 통과, `npm run lint` 통과.

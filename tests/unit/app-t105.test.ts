@@ -110,8 +110,8 @@ describe('F3-17: 초안 점·물결 원은 즉시 옮기고, 점선 polyline만 
 // ───────────────────────────── 4. 색 규칙 (F3-13) ─────────────────────────────
 
 describe('F3-13: 곡선 점과 점줄 색 = 시안 whoCol 하나 (buyer · bad · sys)', () => {
-  it('사건 → 색: 추적번호 없음·판매자 답장·위협 메시지 = bad, 구매자 글 = buyer, 나머지 = sys', () => {
-    expect(EVENTS.map((event) => toneOf(event))).toEqual(['sys', 'bad', 'buyer', 'bad', 'buyer', 'sys', 'bad', 'sys']);
+  it('사건 → 색: 추적번호 없음·판매자 답장 = bad, 구매자 글(위협 표시 여부와 상관없이) = buyer, 나머지 = sys', () => {
+    expect(EVENTS.map((event) => toneOf(event))).toEqual(['sys', 'bad', 'buyer', 'bad', 'buyer', 'sys', 'buyer', 'sys']);
   });
 
   it('같은 사건이 곡선 점·사건 기록 점줄에서 같은 색 (서버 줄 tone을 그대로 넘긴다)', () => {
@@ -122,9 +122,9 @@ describe('F3-13: 곡선 점과 점줄 색 = 시안 whoCol 하나 (buyer · bad �
     const markup = html(createElement(RiskCurveGraphic, { curve }));
     const classes = [...markup.matchAll(/<circle class="curve-dot curve-dot-(\w+)"/g)].map((m) => m[1]);
     expect(classes).toEqual(tones);
-    // 위협 메시지(Nov 9)는 곡선에서도 빨강(bad)
-    expect(curve.dots[6].tone).toBe('bad');
-    expect(history.rows[6].tone).toBe('bad');
+    // 위협 메시지(Nov 9)도 구매자 글 → 곡선·점줄 모두 buyer (시안 whoCol은 사건의 who로만 색을 정한다)
+    expect(curve.dots[6].tone).toBe('buyer');
+    expect(history.rows[6].tone).toBe('buyer');
   });
 
   it('css: 곡선·점줄 모두 buyer=--color-text, bad=--color-dot-high, sys=--color-dot-neutral. 판매자 파랑·검정 없음', () => {

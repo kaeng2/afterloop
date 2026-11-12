@@ -190,11 +190,11 @@ export type HistoryView = {
 
 /**
  * 사건 하나의 색 (시안 whoCol). 시안은 판매자 쪽 사건(추적번호 미등록·늦은 답장·지키지 못한 약속)을 모두 bad로 칠한다 →
- * 추적번호 없음·판매자 답장 = bad. 구매자 글은 buyer, 카드사 위협이 표시된 글은 bad. 나머지(결제·발송·배송사·분쟁 접수) = sys.
+ * 추적번호 없음·판매자 답장 = bad. 구매자 글은 위협 표시와 상관없이 buyer (시안 whoCol은 사건의 who로만 색을 정한다 — 마지막 '카드사 언급' 글도 buyer). 나머지(결제·발송·배송사·분쟁 접수) = sys.
  */
 export function toneOf(event: Pick<CaseEvent, 'kind' | 'flags'>): HistoryTone {
   if (event.kind === 'tracking_missing' || event.kind === 'seller_reply') return 'bad';
-  if (event.kind === 'buyer_message') return event.flags?.includes('threat') === true ? 'bad' : 'buyer';
+  if (event.kind === 'buyer_message') return 'buyer';
   return 'sys';
 }
 
