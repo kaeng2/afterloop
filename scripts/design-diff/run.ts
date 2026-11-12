@@ -72,7 +72,7 @@ async function main() {
         for (const [side, c] of [['mock', m] as const, ['app', a] as const]) {
           if (!c.ok) diffs.push({ state: s.name, width, kind: 'repro', key: `repro|${side}`, prop: side, mock: side === 'mock' ? c.error : '', app: side === 'app' ? c.error : '', selectors: [], exceptions: [] });
         }
-        diffs.push(...compareStyles(s.name, width, m.elements, a.elements));
+        diffs.push(...compareStyles(s.name, width, m.elements, a.elements, { looseTags: args.looseTags }));
         diffs.push(...compareMotion(s.name, width, m.motion, a.motion));
         motions.push({ width, mock: m.motion, app: a.motion });
         if (m.png && a.png) {

@@ -41,7 +41,30 @@ function __ddRole(el){
   if(/^h[1-6]$/.test(t)) return 'heading';
   return '';
 }
-function __ddOwn(el){var s='';for(var i=0;i<el.childNodes.length;i++){var c=el.childNodes[i];if(c.nodeType===3)s+=c.nodeValue;}return __ddCollapse(s);}
+// 시안 런타임(support.js)은 {{…}} 값마다 스타일 없는 <span class="sc-interp">를 만든다. 그 글자는 부모의 자기 글자로 친다.
+function __ddInterp(el){return !!(el&&el.nodeType===1&&el.tagName==='SPAN'&&/(^|\s)sc-interp(\s|$)/.test((el.getAttribute&&el.getAttribute('class'))||''));}
+function __ddText(el){var s='';for(var i=0;i<el.childNodes.length;i++){var c=el.childNodes[i];if(c.nodeType===3)s+=c.nodeValue;else if(c.nodeType===1)s+=__ddText(c);}return s;}
+function __ddOwn(el){var s='';for(var i=0;i<el.childNodes.length;i++){var c=el.childNodes[i];if(c.nodeType===3)s+=c.nodeValue;else if(__ddInterp(c))s+=__ddText(c);}return __ddCollapse(s);}
+// 화면 읽기 전용(sr-only) 글자: clip-path inset(50%↑) · clip 넓이 0 · 1px 이하 + overflow hidden/clip
+function __ddSrSelf(el){
+  var cs=getComputedStyle(el), cp=String(cs.clipPath||cs.getPropertyValue&&cs.getPropertyValue('clip-path')||'');
+  var m=/inset\(\s*(\d+(?:\.\d+)?)%/.exec(cp); if(m&&Number(m[1])>=50) return true;
+  var cl=String(cs.clip||''), n=cl.match(/-?\d*\.?\d+/g);
+  if(/^rect\(/.test(cl)&&n&&n.length===4&&(Number(n[2])<=Number(n[0])||Number(n[1])<=Number(n[3]))) return true;
+  var r=el.getBoundingClientRect(), ov=String(cs.overflow||'')+' '+String(cs.overflowX||'')+' '+String(cs.overflowY||'');
+  if(r.width<=1&&r.height<=1&&/hidden|clip/.test(ov)) return true;
+  return false;
+}
+function __ddSrOnly(el,memo){
+  var x=el,chain=[],v=false;
+  while(x&&x.nodeType===1&&x.tagName!=='BODY'&&x.tagName!=='HTML'){
+    if(memo&&memo.has(x)){v=memo.get(x);break;}
+    chain.push(x); if(__ddSrSelf(x)){v=true;break;}
+    x=x.parentElement;
+  }
+  if(memo) for(var i=0;i<chain.length;i++) memo.set(chain[i],v);
+  return v;
+}
 function __ddLabel(el){
   var o=__ddOwn(el); if(o) return o;
   var walk=function(x){for(var i=0;i<x.children.length;i++){var c=x.children[i];var t=__ddOwn(c);if(t&&!/^\d+$/.test(t))return t;var d=walk(c);if(d)return d;}return '';};
@@ -103,13 +126,15 @@ ${COMMON}
 export const CAPTURE = String.raw`(function(selectors){
 ${COMMON}
   var props=${JSON.stringify(STYLE_PROPS)};
-  var out=[],seen={};
+  var out=[],seen={},memo=new Map();
   var all=document.querySelectorAll('body *');
   for(var i=0;i<all.length;i++){var el=all[i];var tag=el.tagName.toLowerCase();
     if(tag==='script'||tag==='style'||tag==='noscript'||tag==='template') continue;
+    if(__ddInterp(el)) continue; // 글자는 부모 쪽 __ddOwn에 들어갔다
     var role=__ddRole(el), own=__ddOwn(el);
     if(!role && !own) continue;
     if(!__ddVisible(el)) continue;
+    if(__ddSrOnly(el,memo)) continue;
     var text=role?__ddLabel(el):own;
     var base=(role||tag)+'|'+text.slice(0,80);
     var n=seen[base]||0; seen[base]=n+1;

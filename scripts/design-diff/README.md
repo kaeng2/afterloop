@@ -39,6 +39,7 @@ npx tsx scripts/design-diff/run.ts --mock docs/design/mockup-v6 --app http://loc
 | `--max-depth` `--max-states` | 탐색 깊이(기본 4)·상한(기본 120) |
 | `--regen` | `<out>/states.json`을 새로 만든 목록으로 덮어쓴다 (기본은 사람이 고친 파일을 지킨다) |
 | `--headed` | 브라우저 창을 띄운다 |
+| `--loose-tags` | (기본 꺼짐) key로 짝 못 찾은 요소 중 태그만 다르고 글자가 같은 것(h1~h6 ↔ b/strong/span)을 `tag` 차이 한 줄로 짝짓고 스타일 비교는 계속한다. 꺼져 있으면 예전처럼 시안에만/앱에만 두 줄 |
 
 종료 코드: 0 통과 · 1 설명 없는 차이 있음 · 2 실행 오류.
 
@@ -55,12 +56,14 @@ npx tsx scripts/design-diff/run.ts --mock docs/design/mockup-v6 --app http://loc
    - `styles.md`: 보이는 요소를 `역할|이름표`(같은 것이 여럿이면 `#n`)로 짝지어 color, background, border, border-radius, box-shadow,
      font-family(첫 글꼴), font-size, font-weight, line-height, letter-spacing, padding, margin, gap, width, height, x, y, opacity, transform, cursor 비교.
      허용 오차: 스타일 숫자 0.5px, 위치·크기 1px. 짝이 없는 요소(시안에만/앱에만)도 차이.
+     시안 런타임의 `<span class="sc-interp">`(`{{…}}` 값)는 따로 잡지 않고 그 글자를 부모의 자기 글자로 합친다(요소 찾기도 같다).
+     화면 읽기 전용 글자(sr-only: `clip-path: inset(50%)` 이상 · `clip: rect(…)` 넓이 0 · 1px 이하 + overflow hidden/clip, 조상 포함)는 보이는 요소로 세지 않는다.
    - `mock-<w>.png`·`app-<w>.png`·`diff-<w>.png`(pixelmatch, 다른 곳 빨강, 크기가 다르면 넓힌 곳은 자홍색 = 차이) + 비율.
    - `motion.md`: 상태를 바꾸는 동안 `document.getAnimations()` 표본(40ms)·transition/animation 이벤트·setTimeout/setInterval 간격.
      시안 타이머 간격(16ms 이상)이 앱에 없으면 차이. 앱에만 있는 타이머는 프레임워크 내부일 수 있어 참고로만 적는다.
    - `mock-<w>.webm`·`app-<w>.webm`: 상태 전환 녹화.
 4. **예외 대조** (`compare.ts`): `exceptions.json`(예: `exceptions.example.json`)의 줄마다 `match`의 모든 조건이 맞으면 그 줄 id를 차이에 붙인다.
-   조건: `kind`(style·missing·extra·pixel·motion·repro), `state`(`*` 가능), `width`, `role`, `text`(부분 일치, `/정규식/`), `key`, `prop`, `selector`(페이지에서 요소나 조상이 맞는지 본다).
+   조건: `kind`(style·missing·extra·tag·pixel·motion·repro), `state`(`*` 가능), `width`, `role`, `text`(부분 일치, `/정규식/`), `key`, `prop`, `selector`(페이지에서 요소나 조상이 맞는지 본다).
    **판정: 설명 없는 차이 0개, 픽셀은 상태당 ≤0.5%(넘으면 `pixel` 차이가 되어 예외로 원인을 적어야 통과).**
 5. **사람용 한 장** `index.html`: 요약표 + 상태별 [시안 | 앱 | 차이] + 녹화 나란히. 상대 경로라 `reports/design-match/v6/`로 통째 복사해도 열린다.
    `summary.json`에 숫자 요약.
