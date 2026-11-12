@@ -1,21 +1,31 @@
 # DisputeLess
 
-**A post-purchase copilot for small sellers on PayPal who sell abroad.** When a buyer opens a dispute in a language the seller can't read, DisputeLess reads the case through the PayPal APIs, finds the cause, compares the expected loss of each move (refund, offer, reply), and drafts a reply in the buyer's language — with code, not AI, deciding the numbers, the dates and what may be sent. Before a dispute happens, it rehearses the stock that is left and shows which fixes cut likely losses.
+**A post-purchase copilot for small sellers on PayPal who sell abroad.** When a buyer opens a dispute in a language the seller can't read, DisputeLess reads the case through the PayPal APIs, finds the cause, compares the expected loss of each move (refund, offer, repair, reply), and drafts a reply in the buyer's language. Code, not AI, decides the numbers, the dates and what may be sent. Before a dispute happens, it checks a new product listing and shows which fixes cut likely losses.
 
-- **Live demo:** https://disputeless.onrender.com (public mode: real PayPal sandbox reads, cached AI, simulated sends)
-- **What is real, what is assumed:** [honesty table](docs/submission/honesty-table.md) — real PayPal sandbox vs demo data vs assumptions vs what AI does vs what code decides, and known limits
-- PayPal AI Hackathon submission. Built with Next.js, TypeScript, AG Grid Community, deployed on Render.
+- **Live demo:** https://disputeless.onrender.com/demo/seller-dashboard (public mode: real PayPal sandbox reads, cached AI, simulated sends; no login)
+- **What is real, what is assumed:** [honesty table](docs/submission/honesty-table.md): real PayPal sandbox vs demo data vs assumptions vs Simulated, what AI does, what code decides, and known limits
+- **Devpost text:** [docs/submission/devpost.md](docs/submission/devpost.md)
+- PayPal AI Hackathon submission. Built with Next.js, React, TypeScript, zod, the Anthropic SDK and AG Grid Community, deployed on Render.
 
 ## How to test
 
-Standalone addresses on the [live demo](https://disputeless.onrender.com):
+No login is needed. On the [live demo](https://disputeless.onrender.com/demo/seller-dashboard):
 
-1. **`/demo/seller-dashboard`** — a demo seller dashboard (mock, not a real PayPal page) → click **Handle all 3 with DisputeLess** (or **Respond** on Seo-yeon's row) to reach **`/`**, the DisputeLess desk with three real PayPal sandbox disputes. The other rows' Respond links also open Seo-yeon's case; pick Ji-ho or Mike from the desk's list.
-2. **`/demo/store/new-product`** (type it in the address bar) — the new-listing check that runs before you publish a product.
+1. **Reply to Seo-yeon.** On `/demo/seller-dashboard` (a mock, not a real PayPal page), click **Handle all 3 with DisputeLess**. Turn on **✦ AI Respond now**, try **Try a rushed reply** (95%) and **Use AI draft** (40%), open **Details**, then **Send** and watch "What happens next · Simulated".
+2. **See the other cases.** Click the **Knit Cardigan** product chip for Ji-ho's card (#1038), **All products** for the two AG Grid tables, and **PayPal activity** for the call log.
+3. **Check a new listing.** Type `/demo/store/new-product` in the address bar, click **Publish product**, then **See details and fix** and **Recalculate** (4.5% → 2.1%).
 
 Public mode never writes to PayPal; sends are simulated. Details: [docs/submission/testing.md](docs/submission/testing.md).
 
-**No login is needed.** To run it against your own PayPal sandbox instead: create a free app at developer.paypal.com, copy `.env.example` to `.env`, fill in `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (and `LLM_API_KEY` for uncached AI), then `npm install && npm run build && npm start`. See [Test credentials](docs/submission/testing.md#test-credentials).
+To run it against your own PayPal sandbox: create a free app at developer.paypal.com, copy `.env.example` to `.env`, fill in `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (and `LLM_API_KEY` for uncached AI), then `npm install && npm run build && npm start`. See [Test credentials](docs/submission/testing.md#test-credentials).
+
+## How it uses PayPal and AI
+
+DisputeLess calls the PayPal sandbox REST APIs from its server: Orders v2 (create, capture, read, and `/track` for tracking), Disputes (list, detail, `send-message`, `make-offer`), with every call listed in an in-app "PayPal activity" drawer. Claude (`claude-opus-5-5`) translates buyer messages, drafts and back-translates replies, and writes listing text; its output is checked with zod schemas and treated as untrusted. Facts such as dates, amounts and names reach the model only as tokens that code fills in. The engine in `src/engine/` decides every number (expected loss, risk %, follow-up date) and whether a message may be sent.
+
+## Built with AG Grid and Render
+
+The **All products** overview uses AG Grid Community for its two tables, "Products" and "Cases by risk": sortable columns, risk bar cells, and a click on a row opens the case. The public demo runs on Render as one Node web service defined in `render.yaml`, in public mode, where reads are real sandbox calls and writes are simulated.
 
 License: [MIT](LICENSE).
 
