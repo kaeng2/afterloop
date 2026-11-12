@@ -57,6 +57,7 @@ npx tsx scripts/design-diff/run.ts --mock docs/design/mockup-v6 --app http://loc
      font-family(첫 글꼴), font-size, font-weight, line-height, letter-spacing, padding, margin, gap, width, height, x, y, opacity, transform, cursor 비교.
      허용 오차: 스타일 숫자 0.5px, 위치·크기 1px. 짝이 없는 요소(시안에만/앱에만)도 차이.
      시안 런타임의 `<span class="sc-interp">`(`{{…}}` 값)는 따로 잡지 않고 그 글자를 부모의 자기 글자로 합친다(요소 찾기도 같다).
+     양쪽 공통 **투명 감싸개**: 자기 상자 스타일이 없는 `span`(배경 투명·테두리 0·padding/margin 0·display inline)이 부모의 유일한 요소 자식이고 부모 글자를 다 가지면 같은 방식으로 합친다(앱 `<span class=pill><span>글자</span></span>` ↔ 시안 `…<span class=sc-interp>글자</span>…`가 겉 span끼리 짝지어진다). sc-interp는 이 규칙의 한 경우(조건 없이 언제나 감싸개).
      화면 읽기 전용 글자(sr-only: `clip-path: inset(50%)` 이상 · `clip: rect(…)` 넓이 0 · 1px 이하 + overflow hidden/clip, 조상 포함)는 보이는 요소로 세지 않는다.
    - `mock-<w>.png`·`app-<w>.png`·`diff-<w>.png`(pixelmatch, 다른 곳 빨강, 크기가 다르면 넓힌 곳은 자홍색 = 차이) + 비율.
    - `motion.md`: 상태를 바꾸는 동안 `document.getAnimations()` 표본(40ms)·transition/animation 이벤트·setTimeout/setInterval 간격.
