@@ -212,6 +212,8 @@ body:has(.dk) .shell-date{font-size:13px;color:#3F4144}
 .dk .curve-card{display:grid;grid-template-columns:minmax(0, 1fr) 190px;gap:16px;align-items:stretch;padding:16px 18px;border-radius:24px;border:1px solid #E4E6E9;background:#FFFFFF}
 .dk .curve-main{display:flex;flex-direction:column;gap:6px;min-width:0}
 .dk .curve-tick{font-size:10px;color:#9AA0A6}
+/* L181–L183: transition은 polyline에만 있고 points는 전환되지 않는다 → 시안에서 점·ping은 바로 옮겨 간다 (차이 목록 ② 17) */
+.dk .curve-ping,.dk .curve-dot-draft{transition:none}
 .dk .curve-side{display:flex;flex-direction:column;justify-content:center;gap:2px;border-left:1px solid #E4E6E9;padding-left:16px}
 .dk .curve-side-label{font-size:13px;font-weight:700;color:#3F4144}
 /* L748 risk.st */

@@ -14,7 +14,7 @@ import type { FactLocale } from '@/ai/tokens';
 import type { EscalationSignals } from '@/types';
 
 import { Badge } from '../../_shared/badges';
-import { t } from '../../_shared/copy';
+import { currentLocale, t } from '../../_shared/copy';
 import { readTags, type ReadTag } from '../desk-model';
 import { shortDate, type CarrierLineView, type CaseMessageView } from '../model';
 import { Segments } from './segments';
@@ -81,7 +81,9 @@ function Bubble({
   const date = <span className="num">{message.date === null ? t('case.view.dateUnknown') : shortDate(message.date)}</span>;
   const demo = bubbleIsDemo(message) ? <Badge kind="demo" /> : null;
   // 원문이 영어면(또는 번역이 원문과 같으면) 번역을 두지 않는다 — 같은 글이 두 번 나오지 않게 (T068 재시도 2번)
-  const noEnglishLine = message.english === null && (locale === 'en' || message.originalIsEnglish);
+  // T107 (시안 DI.ko msgs en:''): 한국어 화면에서 한국어 원문이면 영어 번역 줄 없이 날짜만
+  const koScreen = currentLocale() === 'ko' && locale === 'ko' && !message.originalIsEnglish;
+  const noEnglishLine = koScreen || (message.english === null && (locale === 'en' || message.originalIsEnglish));
   return (
     <li className="case-bubble-wrap">
       <div className="case-bubble">

@@ -458,7 +458,7 @@
   "today.weekly.drafts": "AI가 쓴 답장",
   "today.weekly.draftsNote": "보내기 전에 코드가 검사",
   "today.weekly.fact": "승인 없이는 PayPal에 아무것도 보내지 않아요.",
-  "today.weekly.bump": "방금 +{{amount}}",
+  "today.weekly.bump": "+{{amount}} 방금",
   "today.weekly.toast": "대시보드 갱신 · +{{amount}} 지킴",
   "today.weekly.toastDone": "대시보드 갱신",
   "case.history.title": "이 건의 히스토리",

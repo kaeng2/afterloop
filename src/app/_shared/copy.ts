@@ -58,6 +58,11 @@ export function setLocaleResolver(fn: () => Locale): void {
   resolveAmbient = fn;
 }
 
+/** 지금 화면 언어 (`t`가 쓰는 것과 같은 값). T107: 한국어 화면의 말풍선은 번역 줄 없이 날짜만 (시안 DI.ko). */
+export function currentLocale(): Locale {
+  return resolveAmbient();
+}
+
 export type CopyParams = Record<string, string | number>;
 
 /**

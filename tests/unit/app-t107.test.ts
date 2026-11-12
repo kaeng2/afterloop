@@ -10,7 +10,16 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import React, { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+
+import { setLocaleResolver, t } from '@/app/_shared/copy';
+import type { CaseMessageView } from '@/app/cases/model';
+
+// 화면 파일은 고전 JSX 변환이라 전역 React가 필요하다 (다른 화면 시험과 같은 방법)
+(globalThis as { React?: typeof React }).React = React;
+const { Conversation } = await import('@/app/cases/view/conversation');
 
 const ROOT = path.resolve(__dirname, '../..');
 const read = (rel: string) => readFileSync(path.join(ROOT, rel), 'utf8');
@@ -62,6 +71,38 @@ describe('T107-1 시안 <style> 블록 그대로', () => {
       }
     }
     expect(count).toBe(89);
+  });
+});
+
+describe('T107-3 한국어 화면 말풍선 (시안 DI.ko msgs: 번역 없이 날짜만)', () => {
+  const MESSAGE: CaseMessageView = {
+    source: 'paypal',
+    badges: [],
+    sourceKey: null,
+    date: '2026-11-02',
+    original: [{ text: '배송 조회가 일주일째 그대로예요.', mark: false }],
+    english: [{ text: 'Tracking has not changed in a week.', mark: false }],
+    englishBadges: [],
+    originalIsEnglish: false,
+  };
+  const render = () => renderToStaticMarkup(createElement(Conversation, { messages: [MESSAGE], locale: 'ko' }));
+
+  it('영어 화면: "Translated · 영어 · 날짜" (그대로)', () => {
+    const markup = render();
+    expect(markup).toContain(`<span>${t('case.view.translated', undefined, 'en')}</span>`);
+    expect(markup).toContain('Tracking has not changed in a week.');
+  });
+
+  it('한국어 화면: 영어 번역 줄 없이 날짜만', () => {
+    setLocaleResolver(() => 'ko');
+    try {
+      const markup = render();
+      expect(markup).not.toContain('Tracking has not changed in a week.');
+      expect(markup).not.toContain(t('case.view.translated', undefined, 'ko'));
+      expect(markup).toMatch(/<p class="case-bubble-sub"><span class="num">[^<]+<\/span><\/p>/);
+    } finally {
+      setLocaleResolver(() => 'en');
+    }
   });
 });
 
