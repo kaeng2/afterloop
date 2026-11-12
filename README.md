@@ -276,3 +276,10 @@ Public mode makes real sandbox reads. Send, Send offer, Add all, Refund, Looks g
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## How we built it with Claude Code
+
+- One "control tower" Claude Code session kept the spec ([SPEC.md](SPEC.md)), the decision log ([DECISIONS.md](DECISIONS.md)) and the task board ([TASKS.md](TASKS.md), [tasks/](tasks/)), and merged verified work.
+- Parallel "lane" sessions (engine, PayPal, AI, UI, data) each worked in their own git worktree under the rules in [CLAUDE.md](CLAUDE.md) and [.claude/settings.json](.claude/settings.json), which lock files a lane must not touch.
+- Every task was checked by a separate verification session that had not seen the implementation; [reports/STATUS.md](reports/STATUS.md) is the running log.
+- These process files are mostly in Korean.

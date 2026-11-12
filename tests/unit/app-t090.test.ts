@@ -476,21 +476,8 @@ describe('만들 것 2~5·10: 사례 화면', () => {
 // ───────────────────────────── 모션 ─────────────────────────────
 
 describe('모션 (SPEC v2.15 8-4): config/motion.json = 시안 값, prefers-reduced-motion이면 끈다', () => {
-  const mockup = read('docs/design/mockup-v4/Desk.dc.html');
   const motion = loadMotion();
 
-  it('설정 값이 시안 파일의 값과 같다', () => {
-    const sec = (value: string) => value.replace(/^0\./, '.').replace(/s$/, 's');
-    expect(mockup).toContain(`transition:background-color ${sec(motion.desk.hover.duration)} ease`);
-    expect(mockup).toContain(`transition:border-color ${sec(motion.desk.choiceCard.duration)},background-color ${sec(motion.desk.choiceCard.duration)}`);
-    expect(mockup).toContain(`transition: all ${sec(motion.desk.curve.duration)} ease`);
-    expect(mockup).toContain(`.ping{animation:ping ${motion.desk.ping.duration} ${motion.desk.ping.easing} infinite}`);
-    expect(mockup).toContain(
-      `@keyframes ping{0%{r:${motion.desk.ping.fromRadius};opacity:${sec(String(motion.desk.ping.fromOpacity))}}100%{r:${motion.desk.ping.toRadius};opacity:0}}`,
-    );
-    expect(mockup).toContain(`transition:width ${sec(motion.desk.reactionBar.duration)} ease`);
-    expect(mockup).toContain(`transition:border-color ${sec(motion.desk.editorBorder.duration)} ease`);
-  });
 
   it('루트 <html style>에 --motion-* 변수 (설정에서), css는 변수만 쓴다', () => {
     const vars = motionVars();

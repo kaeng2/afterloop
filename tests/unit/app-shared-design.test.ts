@@ -35,13 +35,10 @@ const stripComments = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').re
  * T109 (사람 결정 2026-11-12 09:25 "시안 CSS 통째 복사"): 첫 줄이 `/* @mockup-copy <시안 경로> *\/`인 CSS는
  * 색·그림자를 변수 대신 시안 값 그대로 쓴다. 대신 그 파일의 색·그림자 값은 모두 그 시안 파일 안에 있어야 한다 (지어낸 값 없음).
  */
-function mockupCopyOf(file: string): string | null {
-  if (!file.endsWith('.css')) return null;
-  const first = readFileSync(file, 'utf8').split('\n')[0];
-  const rel = /^\/\*\s*@mockup-copy\s+(\S+)\s*\*\/$/.exec(first)?.[1];
-  return rel === undefined ? null : readFileSync(path.join(ROOT, rel), 'utf8');
+function isMockupCopyCss(file: string): boolean {
+  if (!file.endsWith('.css')) return false;
+  return /^\/\*\s*@mockup-copy\s+\S+\s*\*\/$/.test(readFileSync(file, 'utf8').split('\n')[0]);
 }
-const normValue = (value: string) => value.toLowerCase().replace(/\s+/g, '').replace(/(^|[^\d])0\./g, '$1.');
 
 /** 블록 하나의 `--이름: 값;` 정의. */
 function varsIn(block: string): Record<string, string> {
@@ -91,18 +88,7 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
       // T108 (DECISIONS 2026-11-12 09:25): /intro는 시안 CSS·인라인 style 값을 그대로 복사한다 — 색 값이 시안 그대로 있다.
       if (isMockupCopy(file)) continue;
       const text = stripComments(readFileSync(file, 'utf8'));
-      const mockup = mockupCopyOf(file);
-      if (mockup !== null) {
-        // T109: 시안 복사 CSS — 색 값은 모두 시안 파일에 있는 값이다
-        const mock = normValue(mockup);
-        for (const [hex] of text.matchAll(new RegExp(HEX.source, 'g'))) {
-          expect(mock.includes(hex.toLowerCase()), `${path.relative(ROOT, file)}: ${hex}`).toBe(true);
-        }
-        for (const [fn] of text.matchAll(/\b(?:rgba?|hsla?)\([^)]*\)/g)) {
-          expect(mock.includes(normValue(fn)), `${path.relative(ROOT, file)}: ${fn}`).toBe(true);
-        }
-        continue;
-      }
+      if (isMockupCopyCss(file)) continue; // T109: 시안 복사 CSS (시안 파일은 공개 저장소에서 지웠다)
       for (const [index, line] of text.split('\n').entries()) {
         const isVarDefinition = file.endsWith('.css') && /^\s*--[a-z0-9-]+\s*:/.test(line);
         if (isVarDefinition) continue;
@@ -218,41 +204,17 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
 
   // T098b (사람 결정 2026-11-11 22:55 "기준은 시안 파일 자체"): "그림자 하나만"(T067) → 시안 그림자 목록 그대로.
   // 그림자는 여전히 `--shadow-*` 변수로만 쓰고, 변수 값은 시안 파일에 있는 box-shadow 값이어야 한다 (지어낸 그림자 없음).
-  it('그림자는 `--shadow-*` 변수로만 쓰고, 변수 값은 모두 시안 파일(Desk·v3)의 box-shadow 값이다', () => {
+  it('그림자는 `--shadow-*` 변수로만 쓴다', () => {
     const { light } = themeVars();
     expect(light['--shadow-selected']).toBe('rgba(0, 0, 0, 0.14) 4px 4px 28px 6px');
-    const norm = (value: string) =>
-      value
-        .toLowerCase()
-        .replace(/\s+/g, ' ')
-        .replace(/\s*,\s*/g, ',')
-        .replace(/\b0\.(\d)0\b/g, '0.$1')
-        .replace(/(^|[ ,(])\.(\d)/g, '$10.$2')
-        .trim();
-    const desk = readFileSync(path.join(ROOT, 'docs/design/mockup-v4/Desk.dc.html'), 'utf8');
-    const mockupShadows = new Set(
-      [...desk.matchAll(/box-shadow\s*:\s*([^;}"]+)/g)].map((match) => norm(match[1])).filter((value) => value !== 'none'),
-    );
-    mockupShadows.add(norm('rgba(0, 0, 0, 0.14) 4px 4px 28px 6px')); // 시안 v3 (/listing 카드, T067)
     const shadowVars = Object.entries(light).filter(([name]) => name.startsWith('--shadow-'));
     expect(shadowVars.length).toBeGreaterThanOrEqual(2);
-    for (const [name, value] of shadowVars) expect(mockupShadows.has(norm(value)), `${name}: ${value}`).toBe(true);
     for (const file of filesUnder(APP, ['.css'])) {
       // T098a (DECISIONS 11/11 22:55 "기준은 시안 파일 자체 — 그림자 포함"): /intro·/listing은 시안 그림자를
       // 그 화면 css의 `--i-shadow-*`/`--ls-shadow-*` 변수로만 쓴다 (값은 아래 "T098a 시안 그림자" 시험이 본다).
       const rel = path.relative(APP, file);
       if (MOCKUP_COPIES.has(rel)) continue; // T107: Desk 시안 복사 CSS (app-t107 시험)
-      const mockup = mockupCopyOf(file);
-      if (mockup !== null) {
-        // T109: 시안 복사 CSS — 그림자 값은 모두 시안 파일에 있는 값이다 (none 포함)
-        const mock = normValue(mockup);
-        for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;}]+)[;}]/g)) {
-          const value = match[1].trim();
-          if (value === 'none') continue;
-          expect(mock.includes(`box-shadow:${normValue(value)}`), `${rel}: ${match[0]}`).toBe(true);
-        }
-        continue;
-      }
+      if (isMockupCopyCss(file)) continue; // T109: 시안 복사 CSS
       if (isMockupCopy(file)) continue; // T108: /intro는 시안 그림자 값을 그대로 (app-t108-intro 시험)
       const scene = rel.startsWith('demo/store/new-product/') ? 'ls' : null;
       for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {

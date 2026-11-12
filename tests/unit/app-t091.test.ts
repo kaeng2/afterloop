@@ -413,13 +413,9 @@ describe('만들 것 7: 상품 칩 필터 · 머리글 sticky', () => {
 // ───────────────────────────── 모션 ─────────────────────────────
 
 describe('모션: 시안 값 그대로 (config/motion.json)', () => {
-  const mock = read('docs/design/mockup-v4/Desk.dc.html');
 
   // T122e: 시안 v6 typeOut = 32ms·1글자 (config/motion.json `desk.typeOut`, DECISIONS 2026-11-12 컨트롤 타워 줄)
   it('타이핑 32ms마다 1글자 (시안 v6 typeOut), 움직임 줄이기면 바로 전체', () => {
-    const mockV6 = read('docs/design/mockup-v6/Desk.dc.html');
-    expect(mockV6).toMatch(/i = Math\.min\(text\.length, i \+ 1\)/);
-    expect(mockV6).toMatch(/\}, 32\);/);
     expect(typeOutTiming()).toEqual({ intervalMs: 32, step: 1 });
     expect(nextTyped(0, 5, 1)).toBe(1);
     expect(nextTyped(4, 5, 1)).toBe(5);
@@ -439,19 +435,13 @@ describe('모션: 시안 값 그대로 (config/motion.json)', () => {
 
   it('✓ 칩 pop .45s cubic-bezier(.2,1.4,.4,1) + n × 0.12s, 줄 rise .3s, 화살표 .2s, 색 .3s, 깜빡임 1.6s, 알림 3000ms', () => {
     const m = loadMotion().desk;
-    expect(mock).toContain('.gchip{background:#FFFFFF;color:#0A1B3D;box-shadow:inset 0 0 0 1px #E4E6E9;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}');
     expect(m.chipPop).toMatchObject({ duration: '0.45s', easing: 'cubic-bezier(.2,1.4,.4,1)', staggerS: 0.12 });
     expect(chipPopDelay(0)).toBe('0s');
     expect(chipPopDelay(2)).toBe('0.24s');
-    expect(mock).toContain('.nlint{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;animation:rise .3s ease both}');
     expect(m.lintRise).toMatchObject({ duration: '0.3s', easing: 'ease' });
-    expect(mock).toContain("histChevSt: 'display:inline-block;transition:transform .2s ease;'");
     expect(m.caret).toMatchObject({ duration: '0.2s', easing: 'ease' });
-    expect(mock).toContain('transition:color .3s ease');
     expect(m.colorFade).toMatchObject({ duration: '0.3s', easing: 'ease' });
-    expect(mock).toContain('.flash{animation:flash 1.6s ease}');
     expect(m.flash).toMatchObject({ duration: '1.6s', easing: 'ease' });
-    expect(mock).toContain('}, 3000); }');
     expect(m.toast.durationMs).toBe(3000);
     const vars = motionVars();
     expect(vars['--motion-pop']).toBe('0.45s cubic-bezier(.2,1.4,.4,1)');
@@ -473,7 +463,6 @@ describe('모션: 시안 값 그대로 (config/motion.json)', () => {
   });
 
   it('보충 22:50: 색 기준값은 config (위험 % riskCol, 알약 50%, 기분 angry)', () => {
-    expect(mock).toContain("const riskCol = (p) => p >= 0.5 ? '#C4321F' : p >= 0.2 ? '#000000' : '#0066F5';");
     expect(loadMotion().desk.riskColor).toEqual(expect.objectContaining({ highFrom: 0.5, midFrom: 0.2 }));
     expect(riskTone(0.5)).toBe('high');
     expect(riskTone(0.2)).toBe('mid');

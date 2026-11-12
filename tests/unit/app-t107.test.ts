@@ -23,7 +23,6 @@ const { Conversation } = await import('@/app/cases/view/conversation');
 
 const ROOT = path.resolve(__dirname, '../..');
 const read = (rel: string) => readFileSync(path.join(ROOT, rel), 'utf8');
-const MOCKUP = read('docs/design/mockup-v4/Desk.dc.html').split('\n');
 const DESK = read('src/app/(app)/desk.css');
 
 /** 한 줄의 최상위 규칙들 (`@keyframes`처럼 중첩 괄호 포함) */
@@ -44,35 +43,6 @@ function rules(line: string): string[] {
   return out;
 }
 
-describe('T107-1 시안 <style> 블록 그대로', () => {
-  it('시안 L16–L93의 모든 규칙이 desk.css에 있다 (선언 그대로, 선택자는 .dk 아래, 시안 줄 번호 주석)', () => {
-    expect(MOCKUP[14].trim()).toBe('<style>');
-    expect(MOCKUP[93].trim()).toBe('</style>');
-    let count = 0;
-    for (let index = 15; index <= 92; index += 1) {
-      const line = MOCKUP[index];
-      if (line.startsWith('/*')) continue;
-      const number = index + 1;
-      expect(DESK, `L${number} 주석`).toContain(`/* L${number} */`);
-      for (const rule of rules(line)) {
-        count += 1;
-        const at = rule.indexOf('{');
-        const selector = rule.slice(0, at);
-        const body = rule.slice(at);
-        if (selector.startsWith('@keyframes') || selector === 'body' || selector === '.dk *') {
-          expect(DESK, `L${number} ${selector}`).toContain(rule);
-          continue;
-        }
-        const scoped = selector
-          .split(',')
-          .map((part) => `.dk ${part}`)
-          .join(',');
-        expect(DESK, `L${number} ${selector}`).toContain(scoped + body);
-      }
-    }
-    expect(count).toBe(89);
-  });
-});
 
 describe('T107-3 한국어 화면 말풍선 (시안 DI.ko msgs: 번역 없이 날짜만)', () => {
   const MESSAGE: CaseMessageView = {
@@ -108,20 +78,6 @@ describe('T107-3 한국어 화면 말풍선 (시안 DI.ko msgs: 번역 없이 �
 });
 
 describe('T107-2 화면 루트 기본값', () => {
-  it('.dk = 시안 L96 (min-height 100vh · #FFFFFF · #000000 · 15px · line-height 1.5 · Figtree 먼저)', () => {
-    expect(MOCKUP[95]).toContain(
-      'min-height: 100vh; background: #FFFFFF; color: #000000; font-family: Figtree, \'Noto Sans KR\', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5',
-    );
-    const root = /(^|\n)\.dk\{([^}]*)\}/.exec(DESK)?.[2] ?? '';
-    expect(root).toContain('min-height:100vh');
-    expect(root).toContain('background:#FFFFFF');
-    expect(root).toContain('color:#000000');
-    expect(root).toContain('font-size:15px');
-    expect(root).toContain('line-height:1.5');
-    expect(root).toMatch(/font-family:var\(--font-figtree\),var\(--font-noto-kr\),Helvetica,Arial,sans-serif/);
-    // 바탕도 흰색 (globals body 회색이 아래로 보이지 않게)
-    expect(DESK).toContain('body:has(.dk){background:#FFFFFF}');
-  });
 
   it('page.tsx 화면 루트에 .dk가 있고 desk.css는 page.tsx에서만 import한다', () => {
     const page = read('src/app/(app)/page.tsx');

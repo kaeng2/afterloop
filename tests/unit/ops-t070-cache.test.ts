@@ -361,13 +361,11 @@ function secretLike(text: string): string[] {
   return found;
 }
 
-describe('T070 4: render.yaml · reports/deploy.md에 비밀값이 없다', () => {
+describe('T070 4: render.yaml에 비밀값이 없다', () => {
   const renderYaml = readFileSync(path.join(ROOT, 'render.yaml'), 'utf8');
-  const deployMd = readFileSync(path.join(ROOT, 'reports/deploy.md'), 'utf8');
 
   it('비밀값 꼴 글자가 없다', () => {
     expect(secretLike(renderYaml)).toEqual([]);
-    expect(secretLike(deployMd)).toEqual([]);
     // 검사 자체가 잡는지 (가짜 꼴)
     expect(secretLike(`x ${'A'.repeat(2)}${'b'.repeat(45)} sk-abc`).length).toBeGreaterThan(0);
   });
@@ -390,24 +388,6 @@ describe('T070 4: render.yaml · reports/deploy.md에 비밀값이 없다', () =
     }
   });
 
-  it('deploy.md: 이름 목록·순서·녹화 날·되돌리기·캐시 명령이 있다', () => {
-    for (const name of [
-      'PAYPAL_CLIENT_ID',
-      'PAYPAL_CLIENT_SECRET',
-      'PAYPAL_BASE_URL',
-      'LLM_API_KEY',
-      'DEMO_MODE',
-      'AI_LIVE_LIMIT_PER_HOUR',
-      'AFTERLOOP_REAL_SEND',
-      'AFTERLOOP_TRACK_LIVE',
-      'AFTERLOOP_TRACK_LIVE_ORDERS',
-      'AFTERLOOP_TRACK_RECORDING',
-    ]) {
-      expect(deployMd, name).toContain(name);
-    }
-    expect(deployMd).toContain('npx tsx --env-file=.env scripts/ai-cache/build.ts');
-    expect(deployMd).toContain('/api/health');
-  });
 
   it('캐시 파일 자리가 있다 (파일 자체는 컨트롤 타워가 만든다)', () => {
     expect(existsSync(path.join(ROOT, 'data/ai-cache/README.md'))).toBe(true);

@@ -147,17 +147,7 @@ describe('완료 기준 1: Send(가짜) → 단계 순서대로, Forward 전에�
 
   it('간격은 config/motion.json caseProgress (시안 1300 * (k - 1) + 400), 시안 파일 값과 같다', () => {
     const motion = model.progressMotion();
-    const mockup = read('docs/design/mockup-v4/Desk.dc.html');
-    expect(mockup).toContain(`}, ${motion.stepMs} * (k - 1) + ${motion.firstStepMs});`);
     expect(model.stepDelayMs(2)).toBe(motion.stepMs + motion.firstStepMs);
-    const sec = (v: string) => v.replace(/^0\./, '.');
-    expect(mockup).toContain(`.step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;animation:rise ${sec(motion.step.duration)} ${motion.step.easing} both}`);
-    expect(mockup).toContain(`animation:ndot ${motion.typingDot.duration} infinite ${motion.typingDot.easing}`);
-    expect(mockup).toContain(`.ndots span:nth-child(2){animation-delay:${sec(motion.typingDot.stagger)}}`);
-    expect(mockup).toContain(`.flash{animation:flash ${motion.flash.duration} ${motion.flash.easing}}`);
-    expect(mockup).toContain(`animation:rise ${sec(motion.toast.duration)} ${motion.toast.easing}}`);
-    expect(mockup).toContain(`.rise{animation:rise ${sec(motion.bubble.duration)} ${motion.bubble.easing} both}`);
-    expect(mockup).toContain(`}, ${motion.toast.hideMs}); }`);
   });
 
   it('css는 --cprog-* 변수만 쓰고(시간 값 직접 없음), 진행 칸이 보이면 선택지 카드·머리 줄을 숨긴다', () => {
