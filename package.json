@@ -20,7 +20,6 @@
     "sandbox:orders": "tsx scripts/create-sandbox-orders.ts",
     "sandbox:capture": "tsx scripts/capture-sandbox-orders.ts",
     "sandbox:order-j1038": "tsx scripts/create-sandbox-order-j1038.ts",
-    "eval:classifier": "tsx scripts/eval-classifier.ts",
     "seed": "tsx seed/generate.ts",
     "ai-cache:build": "tsx scripts/ai-cache/build.ts"
   },
