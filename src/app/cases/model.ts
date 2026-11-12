@@ -225,6 +225,7 @@ const ACTION_KEY: Record<Evaluation['move'], string> = {
   refund: 'case.view.action.refund',
   fight: 'case.view.action.fight',
   offer: 'case.view.action.offer',
+  repair: 'case.view.action.repair',
 };
 const ACTION_NONE_KEY = 'case.view.action.none';
 
