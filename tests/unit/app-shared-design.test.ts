@@ -31,6 +31,18 @@ function filesUnder(dir: string, exts: string[]): string[] {
 
 const stripComments = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
+/**
+ * T109 (사람 결정 2026-11-12 09:25 "시안 CSS 통째 복사"): 첫 줄이 `/* @mockup-copy <시안 경로> *\/`인 CSS는
+ * 색·그림자를 변수 대신 시안 값 그대로 쓴다. 대신 그 파일의 색·그림자 값은 모두 그 시안 파일 안에 있어야 한다 (지어낸 값 없음).
+ */
+function mockupCopyOf(file: string): string | null {
+  if (!file.endsWith('.css')) return null;
+  const first = readFileSync(file, 'utf8').split('\n')[0];
+  const rel = /^\/\*\s*@mockup-copy\s+(\S+)\s*\*\/$/.exec(first)?.[1];
+  return rel === undefined ? null : readFileSync(path.join(ROOT, rel), 'utf8');
+}
+const normValue = (value: string) => value.toLowerCase().replace(/\s+/g, '').replace(/(^|[^\d])0\./g, '$1.');
+
 /** 블록 하나의 `--이름: 값;` 정의. */
 function varsIn(block: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -62,6 +74,9 @@ const contrast = (a: string, b: string) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
+/** T108: 시안 CSS를 통째 복사한 화면 폴더 (값이 시안 그대로라 색·그림자 변수 규칙 밖). 내용은 app-t108-intro 시험이 시안과 맞춰 본다. */
+const isMockupCopy = (file: string) => path.relative(APP, file).startsWith('intro' + path.sep);
+
 const HEX = /(?<![\w&-])#[0-9a-fA-F]{3,8}(?![\w-])/;
 const RGB_FN = /\b(rgba?|hsla?)\s*\(/;
 
@@ -73,7 +88,21 @@ describe('T047 보완 B-1: 색은 변수로만', () => {
   it('src/app의 tsx·css에 변수 정의 자리 밖의 색 값이 없다', () => {
     for (const file of filesUnder(APP, ['.tsx', '.css', '.ts'])) {
       if (MOCKUP_COPIES.has(path.relative(APP, file))) continue;
+      // T108 (DECISIONS 2026-11-12 09:25): /intro는 시안 CSS·인라인 style 값을 그대로 복사한다 — 색 값이 시안 그대로 있다.
+      if (isMockupCopy(file)) continue;
       const text = stripComments(readFileSync(file, 'utf8'));
+      const mockup = mockupCopyOf(file);
+      if (mockup !== null) {
+        // T109: 시안 복사 CSS — 색 값은 모두 시안 파일에 있는 값이다
+        const mock = normValue(mockup);
+        for (const [hex] of text.matchAll(new RegExp(HEX.source, 'g'))) {
+          expect(mock.includes(hex.toLowerCase()), `${path.relative(ROOT, file)}: ${hex}`).toBe(true);
+        }
+        for (const [fn] of text.matchAll(/\b(?:rgba?|hsla?)\([^)]*\)/g)) {
+          expect(mock.includes(normValue(fn)), `${path.relative(ROOT, file)}: ${fn}`).toBe(true);
+        }
+        continue;
+      }
       for (const [index, line] of text.split('\n').entries()) {
         const isVarDefinition = file.endsWith('.css') && /^\s*--[a-z0-9-]+\s*:/.test(line);
         if (isVarDefinition) continue;
@@ -212,8 +241,20 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
       // T098a (DECISIONS 11/11 22:55 "기준은 시안 파일 자체 — 그림자 포함"): /intro·/listing은 시안 그림자를
       // 그 화면 css의 `--i-shadow-*`/`--ls-shadow-*` 변수로만 쓴다 (값은 아래 "T098a 시안 그림자" 시험이 본다).
       const rel = path.relative(APP, file);
-      if (MOCKUP_COPIES.has(rel)) continue;
-      const scene =rel.startsWith('intro/') ? 'i' : rel.startsWith('listing/') ? 'ls' : null;
+      if (MOCKUP_COPIES.has(rel)) continue; // T107: Desk 시안 복사 CSS (app-t107 시험)
+      const mockup = mockupCopyOf(file);
+      if (mockup !== null) {
+        // T109: 시안 복사 CSS — 그림자 값은 모두 시안 파일에 있는 값이다 (none 포함)
+        const mock = normValue(mockup);
+        for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;}]+)[;}]/g)) {
+          const value = match[1].trim();
+          if (value === 'none') continue;
+          expect(mock.includes(`box-shadow:${normValue(value)}`), `${rel}: ${match[0]}`).toBe(true);
+        }
+        continue;
+      }
+      if (isMockupCopy(file)) continue; // T108: /intro는 시안 그림자 값을 그대로 (app-t108-intro 시험)
+      const scene = rel.startsWith('listing/') ? 'ls' : null;
       for (const match of stripComments(readFileSync(file, 'utf8')).matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
         const value = match[1].trim();
         const where = `${path.relative(ROOT, file)}: ${match[0]}`;
@@ -223,6 +264,7 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
       }
     }
     for (const file of filesUnder(APP, ['.tsx'])) {
+      if (isMockupCopy(file)) continue; // T108: 시안 인라인 box-shadow (말풍선) 그대로
       expect(/boxShadow/.test(readFileSync(file, 'utf8')), path.relative(ROOT, file)).toBe(false);
     }
   });
@@ -254,10 +296,8 @@ describe('T047 보완 B-3: 카드 규칙 하나', () => {
 
   it('T098a 시안 그림자: /intro·/listing 그림자 변수 값은 시안 Scene1·Main 파일에 있는 값 그대로다', () => {
     const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/(^|[^\d])0\./g, '$1.');
-    const cases: [string, string, string][] = [
-      ['src/app/intro/intro.css', 'docs/design/mockup-v4/scene1/Scene1.dc.html', '--i-shadow-'],
-      ['src/app/listing/listing.css', 'docs/design/mockup-v4/scene3/Main.dc.html', '--ls-shadow-'],
-    ];
+    // T108·T109: /intro·/listing 모두 시안 CSS 통째 복사로 바뀌어 `--i-shadow-*`·`--ls-shadow-*` 변수가 없다 — 그림자 값은 app-t108-intro 시험과 위 `@mockup-copy` 그림자 시험이 시안 값 그대로인지 본다
+    const cases: [string, string, string][] = [];
     for (const [cssFile, mockFile, prefix] of cases) {
       const css = stripComments(readFileSync(path.join(ROOT, cssFile), 'utf8'));
       const mock = norm(readFileSync(path.join(ROOT, mockFile), 'utf8'));

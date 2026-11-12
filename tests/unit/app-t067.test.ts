@@ -412,20 +412,18 @@ describe('T067 색·글꼴·카드·알약·그림자 값', () => {
       expect(rule(file, selector), `${file} ${selector}`).toContain(decl);
     }
     // /listing: 시안 scene3 값 (남보라 없음 + 토큰과 같은 값)
+    // T109 (사람 결정 11/12 09:25): 변수 대신 시안 <style> 값 그대로 (`.ls ` 범위만 붙임)
     const ls = readFileSync(path.join(APP, 'listing/listing.css'), 'utf8');
     for (const decl of [
-      '--ls-accent: #0066f5',
-      '--ls-accent-deep: #002991',
-      '--ls-accent-soft: #e3f3ff',
-      '--ls-accent-pale: #f5f9ff',
-      // T098a: 시안 L52 .ins는 border가 아니라 box-shadow inset 0 0 0 2px #99C2FF
-      '--ls-shadow-ins: inset 0 0 0 2px #99c2ff',
-      '--ls-navy: #0a1b3d',
-      '--ls-focus: #097ff5',
+      '.ls .b-ai{background:linear-gradient(120deg,#002991,#0066F5 60%,#60CDFF);color:#FFFFFF}',
+      '@keyframes flashA{0%{background:#E3F3FF}100%{background:#FFFFFF}}',
+      // T098a: 시안 L52 .ins는 border가 아니라 box-shadow inset 0 0 0 2px #99C2FF (배경 #F5F9FF)
+      'background:#F5F9FF;color:#002991;box-shadow:inset 0 0 0 2px #99C2FF}',
+      '.ls .addph:focus-within{outline:2px solid #097FF5;outline-offset:2px}',
     ]) {
       expect(ls, decl).toContain(decl);
     }
-    expect(ls).toMatch(/\.ls-addic\s*\{[^}]*background: var\(--ls-navy\)/);
+    expect(ls).toMatch(/\.ls \.addic\{[^}]*background:#0A1B3D/);
     // 지워진 토큰이 다시 정의만 되는 것을 막는다: globals의 모든 --color-accent-* 는 어딘가에서 var()로 쓰인다
     const globals = readFileSync(path.join(APP, 'globals.css'), 'utf8');
     const all = [...filesUnder(APP, '.css'), ...filesUnder(APP, '.tsx'), ...filesUnder(APP, '.ts')]

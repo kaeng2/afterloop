@@ -550,7 +550,7 @@ describe('/intro: 루트 layout은 Today·PayPal을 읽지 않는다 (라우트 
     expect(calls.paypal).toBe(0);
     expect(markup).not.toContain('class="skip-link"');
     expect(markup).not.toContain(t('nav.skipToContent'));
-    expect(markup).toContain('class="intro"');
+    expect(markup).toMatch(/class="intro"/);
   });
 
   it('T096: 앱 화면 layout의 위쪽 막대는 탭이 없어 Today·PayPal 읽기를 하지 않는다', async () => {
