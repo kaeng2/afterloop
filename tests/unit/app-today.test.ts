@@ -313,15 +313,17 @@ describe('T060 Today 목록 (데이터에서 만든다)', () => {
     expect(byId['FK-CD-OAT']).toBe('/?item=FK-CD-OAT'); // T099: /products 링크 없음
   });
 
-  it('고른 항목에만 aria-current가 붙는다 (링크라 키보드로 고를 수 있다)', () => {
+  it('고른 항목에만 aria-current가 붙는다 (T106: 버튼이라 키보드로 고를 수 있다)', () => {
     const view = today();
     const html = renderToStaticMarkup(createElement(TodayList, { view, selectedId: D1, paypalNotice: null }));
     expect(html.match(/aria-current="true"/g)?.length).toBe(1);
-    expect(html).toMatch(new RegExp(`aria-current="true" href="/\\?item=${D1}"`));
-    // T076: 날짜 줄은 위쪽 막대로 옮겼다 (TopBar dateLine). 가게 전체 한 줄은 이번 주 카드 아래 글 (T096: 링크 아님)
+    expect(html).toMatch(new RegExp(`<button type="button" class="today-item" aria-current="true" data-item="${D1}"`));
+    // T076: 날짜 줄은 위쪽 막대로 옮겼다 (TopBar dateLine)
     expect(view.dateLine).toBe('Tue, Nov 10 · Black Friday in 17 days');
     expect(html).not.toContain('href="/products"');
-    expect(html).toContain(`class="weekly-link">${view.storeLine.text}</p>`);
+    // T106 (F1-33): 이번 주 카드 아래 "Stock left could cost …" 줄은 없다 (값은 모델에 남는다)
+    expect(html).not.toContain('weekly-link');
+    expect(html).not.toContain(view.storeLine.text);
   });
 });
 

@@ -36,8 +36,10 @@ export function TrackingRegister({
   const { report, markDone } = useSavings();
   const [outcome, setOutcome] = useState<TrackingOutcome | null>(initial);
   const [pending, startTransition] = useTransition();
+  const finished = outcome !== null && countsAsDone(outcome.kind);
 
   const onClick = () => {
+    if (pending || finished) return;
     startTransition(async () => {
       const next = await action();
       setOutcome(next);
@@ -51,8 +53,9 @@ export function TrackingRegister({
 
   return (
     <div className="tracking-register">
-      <button type="button" className="tracking-button" onClick={onClick} disabled={pending}>
-        {pending ? t('today.tracking.adding') : label}
+      {/* T106 (F1-59): 끝나면(가짜 포함) 꺼진 채 "Added ✓" — 다시 누를 수 없다. Simulated 결과 줄은 아래에 그대로 */}
+      <button type="button" className="tracking-button" onClick={onClick} disabled={pending || finished}>
+        {pending ? t('today.tracking.adding') : finished ? t('today.tracking.addedDone') : label}
       </button>
       {outcome === null ? null : (
         <div className={`tracking-result tracking-result-${outcome.kind}`} role="status">

@@ -158,11 +158,20 @@ export type ProductChipView = {
   icon: ProductIconKind;
   /** 이 상품에 걸린 화면 속 열린 분쟁 수 (세기만). */
   cases: number;
+  /** 이 상품의 재고 수 (칩 아래 글. T106: 화면이 done이 아닌 사건 수와 함께 다시 쓴다). */
+  units: number;
   href: string;
   selected: boolean;
 };
 
-export type ProductFilterView = { chips: ProductChipView[]; summary: string; selectedSku: string | null };
+export type ProductFilterView = {
+  chips: ProductChipView[];
+  summary: string;
+  selectedSku: string | null;
+  /** 요약 줄의 상품 수·재고 합 (T106: 화면이 done이 아닌 사건 수와 함께 다시 쓴다). */
+  products: number;
+  units: number;
+};
 
 /** 추적 등록 안 된 주문 한 줄 (보기용). */
 export type TrackingOrderView = {
@@ -485,6 +494,7 @@ function productFilter(
     sub: t('today.filter.allSub', { count: products.length, units }),
     icon: 'multi',
     cases: disputeItems.length,
+    units,
     href: todayHref(null, null),
     selected: selectedSku === null,
   };
@@ -499,6 +509,7 @@ function productFilter(
           : t(cases === 1 ? 'today.filter.subOne' : 'today.filter.sub', { units: product.stock, cases }),
       icon: productIconOf(product.itemName),
       cases,
+      units: product.stock,
       href: todayHref(product.sku, null),
       selected: selectedSku === product.sku,
     };
@@ -507,6 +518,8 @@ function productFilter(
     chips: [all, ...chips],
     summary: t('today.filter.summary', { products: products.length, units, cases: disputeItems.length }),
     selectedSku,
+    products: products.length,
+    units,
   };
 }
 

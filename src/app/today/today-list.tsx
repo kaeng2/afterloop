@@ -8,20 +8,21 @@
  * 항목 한 줄 (시안 v4): 상품 아이콘(오른쪽 위 점 = 위험 등급) · "PP-R-… · Wool Sweater" · 범주 알약 ·
  * "Reply by Nov 30" · "Seo-yeon Kim · KR". 고른 줄은 옅은 강조색 바탕 + 왼쪽 띠.
  *
- * **계산하지 않는다** — 모든 글자·숫자는 `buildToday`·`weeklyView`(엔진 결과를 옮긴 값)에서 온다. 항목은 링크라서
- * 키보드로 고를 수 있고, 고른 항목에는 `aria-current`가 붙는다.
+ * **계산하지 않는다** — 모든 글자·숫자는 `buildToday`·`weeklyView`(엔진 결과를 옮긴 값)에서 온다. 항목은 버튼이라서
+ * 키보드로 고를 수 있고(T106, 화면 안 상태), 고른 항목에는 `aria-current`가 붙는다.
+ * T106 (F1-33): 카드 아래 "Stock left could cost …" 링크 줄은 없다 (시안에 없음. /products는 주소로만).
  */
-import Link from 'next/link';
-
 import { Badge } from '../_shared/badges';
 import { t } from '../_shared/copy';
-import { ProductTile } from '../_shared/product-icon';
 import { weeklyView, type TodayView, type WeeklyView } from './model';
 import { WeeklyBumpCell } from './savings';
 import { TodayGroups } from './today-groups';
 
+// T106: 상품 거르개 줄은 화면 안 상태로 바뀌는 클라이언트 칩 (`product-filter.tsx`)
+export { ProductFilterBar } from './product-filter';
+
 /** "DisputeLess this week" 카드. 숫자는 `WeeklyView` 그대로 (없는 칸은 그리지 않는다). */
-export function WeeklyCard({ weekly, storeLine }: { weekly: WeeklyView; storeLine: string }) {
+export function WeeklyCard({ weekly }: { weekly: WeeklyView }) {
   return (
     <section className="weekly" aria-labelledby="weekly-title">
       <div className="weekly-head">
@@ -66,7 +67,6 @@ export function WeeklyCard({ weekly, storeLine }: { weekly: WeeklyView; storeLin
           </div>
         )}
       </div>
-      <p className="weekly-link">{storeLine}</p>
     </section>
   );
 }
@@ -87,7 +87,7 @@ export function TodayList({
   return (
     <div className="today-list">
       <h1 className="today-sr-only">{t('today.title')}</h1>
-      <WeeklyCard weekly={card} storeLine={view.storeLine.text} />
+      <WeeklyCard weekly={card} />
 
       {paypalNotice === null ? null : <p className="notice">{paypalNotice}</p>}
 
@@ -97,33 +97,5 @@ export function TodayList({
         <TodayGroups groups={view.groups} selectedId={selectedId} />
       </nav>
     </div>
-  );
-}
-
-/** 상품 거르개 줄 (위쪽 막대 아래 가로 한 줄). 누르면 왼쪽 목록을 그 상품으로 거른다 (`?sku=`). */
-export function ProductFilterBar({ view }: { view: TodayView }) {
-  const { filter } = view;
-  return (
-    <nav className="product-filter" aria-label={t('today.filter.label')}>
-      <ul className="product-filter-list">
-        {filter.chips.map((chip) => (
-          <li key={chip.sku ?? 'all'}>
-            <Link
-              href={chip.href}
-              className="product-filter-chip"
-              aria-current={chip.selected ? 'true' : undefined}
-              scroll={false}
-            >
-              <ProductTile kind={chip.icon} badge={chip.sku === null ? undefined : chip.cases} />
-              <span className="product-filter-text">
-                <span className="product-filter-name">{chip.name}</span>
-                <span className="product-filter-sub num">{chip.sub}</span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <span className="product-filter-summary num">{filter.summary}</span>
-    </nav>
   );
 }
