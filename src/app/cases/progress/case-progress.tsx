@@ -4,49 +4,48 @@
  * Send 뒤 "What happens next · Simulated" 칸 (T092, SPEC v2.15 8-4장, 시안 Desk.dc.html phase 'sent').
  * 답장 칸(`../reply/reply-panel.tsx`)이 보내기에 성공하면(공개 모드는 Simulated 성공) 이 칸으로 바뀐다.
  *
- * 순서 (시안 `send()` 그대로, 간격은 config/motion.json `caseProgress`):
- *  1. 보낸 말풍선(보낸 글 = 구매자 언어 전송본) + "typing" 점 세 개 → 대화 목록 끝에 붙는다
- *  2. 1300·(k−1)+400ms 뒤 손님 답장 (Simulated, 고정 문구는 copy, 통관번호 가림)
- *  3. [Forward to carrier] — **판매자가 누를 때까지 멈춘다** (시안의 Auto 대신, 사람 결정 22:55). 누르면 Simulated
- *  4. 1300ms 뒤 세관 통과 (Simulated) → "이번 주" 카드 숫자 칸 flash + 토스트 "+$N kept" (N = 엔진 `actionSavings`)
- *  5. [Replay this case] → 처음(답장 칸)으로
+ * T104: 흐름은 보낸 답장의 예측으로 고른 분기(`outcome`, 시안 L661 `out` = `scenarioOutcome`)를 따른다.
+ *  - ok: 보낸 말풍선 + typing → 1300·(k−1)+400ms 뒤 손님 답장(통관번호, 가림) → [Forward to carrier](판매자, Simulated)
+ *    → 1300ms 뒤 세관 통과 (끝)
+ *  - refund: 보낸 말풍선(typing 없음) → 환불 승인 대기 [Approve refund](Simulated) → 1300ms 뒤 손님 환불 확인 (끝)
+ *  - cb: 보낸 말풍선 + typing → 화난 손님 답장(차지백 언급) + 환불 승인 대기 [Approve refund](Simulated) → 끝
+ * 승인 버튼은 **화면 상태만 바꾼다** (환불·전달 쓰기 0회).
  *
- * 단계별 위험 %는 엔진 `scenarioRisk`(어댑터 `progress-client.ts`) + Assumption. 곡선 카드 끝점·큰 %도 같은 값으로
- * 옮긴다 (`useDraftForecast`). **PayPal·배송사·AI 호출 0회, PayPal activity 서랍에 아무것도 남기지 않는다** — 이 파일은
- * 서버 액션·fetch를 부르지 않는다. 숫자를 만들지 않는다. `prefers-reduced-motion`이면 간격 0·애니메이션 끔.
+ * 끝(마지막 단계)에서 한 번만: 부르는 쪽 `onFinish` (이번 주 카드 "+$N just now"·토스트·Done today — T102 상자) +
+ * ok 분기면 "이번 주" 카드 숫자 칸 flash (시안 bump, 마지막 단계 때 한 번). 이 칸은 따로 토스트를 띄우지 않는다.
+ *
+ * 단계별 위험 %는 엔진 `scenarioRisk`(어댑터 `progress-client.ts`) + Assumption. 계약 단계(`ScenarioStepKind`)가 아닌
+ * 줄에는 위험 칩이 없다. 곡선 카드 끝점·큰 %도 같은 값으로 옮긴다 (`useDraftForecast`).
+ * **PayPal·배송사·AI 호출 0회, PayPal activity 서랍에 아무것도 남기지 않는다** — 이 파일은 서버 액션·fetch를 부르지
+ * 않는다. 숫자를 만들지 않는다. `prefers-reduced-motion`이면 간격 0·애니메이션 끔.
  */
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-import type { BoardState, Evaluation, ReplyForecast } from '@/types';
+import type { ReplyForecast } from '@/types';
 
 import { AiPill, Badge } from '../../_shared/badges';
 import { useT } from '../../_shared/locale-context';
-import { toDollarsRounded } from '../../_shared/money';
 import { useDraftForecast } from '../view/draft-forecast';
+import { scenarioRiskClient, type ScenarioInput, type ScenarioRiskClient } from './progress-client';
 import {
-  actionSavingsClient,
-  scenarioRiskClient,
-  type ActionSavingsClient,
-  type ScenarioInput,
-  type ScenarioRiskClient,
-} from './progress-client';
-import {
+  approveStep,
   awaitingForward,
+  buyerBubble,
   buyerReplied,
-  buyerReplyText,
   currentRisk,
   customsCleared,
-  forwardToCarrier,
-  PROGRESS_START,
   progressFinished,
   progressMotion,
   progressMotionVars,
   progressRunning,
+  progressStart,
   riskTrail,
+  stepAfterApproval,
   stepDelayMs,
   stepRows,
   type ProgressState,
+  type ScenarioOutcome,
   type StepRow,
 } from './progress-model';
 
@@ -63,18 +62,18 @@ export type CaseProgressProps = {
   /** 보낸 글 (구매자 언어 전송본). */
   sentText: string | null;
   sentLocale: string | null;
-  /** 엔진 `scenarioRisk` 입력 (보낸 글 = 기준 초안). 없으면 위험 % 없음. */
+  /** 엔진 `scenarioRisk` 입력 (보낸 글 = input.text). 없으면 위험 % 없음. */
   scenarioInput: ScenarioInput | null;
-  /** 토스트 금액용 (엔진 `actionSavings`). 없으면 토스트 없음. */
-  board: BoardState | null;
-  move: Evaluation['move'] | null;
+  /** T104: 보낸 답장의 예측으로 고른 분기 (`scenarioOutcome`). 없으면 ok. */
+  outcome?: ScenarioOutcome;
   /** 보내기 직전 예측 (곡선 카드에 되돌릴 값). */
   baseForecast: ReplyForecast | null;
+  /** T104: 마지막 단계 때 한 번 (이번 주 카드·토스트·Done today는 부르는 쪽이 T102 상자로). */
+  onFinish?: (outcome: ScenarioOutcome) => void;
   onReplay: () => void;
   /** 시험용 주입. */
   initial?: ProgressState;
   scenario?: ScenarioRiskClient;
-  savings?: ActionSavingsClient;
 };
 
 const REDUCED = '(prefers-reduced-motion: reduce)';
@@ -111,7 +110,7 @@ function StepIconView({ row }: { row: StepRow }) {
   );
 }
 
-function Step({ row, onForward }: { row: StepRow; onForward: () => void }) {
+function Step({ row, onApprove }: { row: StepRow; onApprove: () => void }) {
   const t = useT();
   return (
     <li className="cprog-step" data-step={row.step} data-source={row.event?.source ?? undefined}>
@@ -135,10 +134,11 @@ function Step({ row, onForward }: { row: StepRow; onForward: () => void }) {
           </span>
         )}
         {row.sub === '' ? null : <span className="cprog-sub">{row.sub}</span>}
-        {row.pending ? (
+        {row.pending && row.actionKey !== null ? (
           <div className="cprog-act">
-            <button type="button" className="cprog-btn" onClick={onForward}>
-              {t('case.progress.forward.button')}
+            {/* 화면 상태만 바꾼다 (Simulated) — 서버 액션·fetch 없음 */}
+            <button type="button" className="cprog-btn" onClick={onApprove}>
+              {t(row.actionKey)}
             </button>
           </div>
         ) : null}
@@ -150,6 +150,7 @@ function Step({ row, onForward }: { row: StepRow; onForward: () => void }) {
 /** 대화 목록 끝에 붙는 말풍선 (시안 thread push: bub-out → typing → bub-sim). */
 function Bubbles({
   state,
+  outcome,
   live,
   language,
   buyerShort,
@@ -158,6 +159,7 @@ function Bubbles({
   style,
 }: {
   state: ProgressState;
+  outcome: ScenarioOutcome;
   live: boolean;
   language: string;
   buyerShort: string | null;
@@ -166,7 +168,7 @@ function Bubbles({
   style: CSSProperties;
 }) {
   const t = useT();
-  const reply = buyerReplyText();
+  const reply = buyerBubble(state, outcome);
   return (
     <>
       {sentText === null ? null : (
@@ -190,8 +192,8 @@ function Bubbles({
           </div>
         </li>
       ) : null}
-      {state.shown >= 2 ? (
-        <li className="cprog-bubble-wrap" style={style} data-source="simulated">
+      {reply === null ? null : (
+        <li className="cprog-bubble-wrap" style={style} data-source="simulated" data-outcome={outcome}>
           <div className="cprog-bubble cprog-bubble-sim">
             <span className="cprog-bubble-tag">{t('case.progress.simReply')}</span>
             <p className="cprog-bubble-text" lang="ko">
@@ -203,11 +205,14 @@ function Bubbles({
           </div>
           <div className="case-read">
             <span className="case-read-label">{t('case.read.label')}</span>
-            <span className="desk-chip">{t('case.progress.buyer.tagSent')}</span>
-            <span className="desk-chip">{t('case.progress.buyer.tagCalm')}</span>
+            {reply.tags.map((tag) => (
+              <span key={tag.key} className={tag.bad ? 'desk-chip desk-chip-bad' : 'desk-chip'}>
+                {t(tag.key)}
+              </span>
+            ))}
           </div>
         </li>
-      ) : null}
+      )}
     </>
   );
 }
@@ -220,46 +225,41 @@ export function CaseProgress({
   sentText,
   sentLocale,
   scenarioInput,
-  board,
-  move,
+  outcome = 'ok',
   baseForecast,
+  onFinish,
   onReplay,
-  initial = PROGRESS_START,
+  initial,
   scenario = scenarioRiskClient,
-  savings = actionSavingsClient,
 }: CaseProgressProps) {
   const t = useT();
   const motion = progressMotion();
   const varMap = useMemo(() => progressMotionVars(motion), [motion]);
   const vars = varMap as CSSProperties;
-  const [state, setState] = useState<ProgressState>(initial);
-  const [toast, setToast] = useState<string | null>(null);
+  const [state, setState] = useState<ProgressState>(() => initial ?? progressStart(outcome));
   const [thread, setThread] = useState<Element | null>(null);
-  const [body, setBody] = useState<Element | null>(null);
   const [at] = useState(() => new Date().toISOString());
   const root = useRef<HTMLElement | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const finishRef = useRef(onFinish);
+  useEffect(() => {
+    finishRef.current = onFinish;
+  });
   const { setForecast, setTrail } = useDraftForecast();
 
   const points = useMemo(() => (scenarioInput === null ? null : scenario(scenarioInput)), [scenario, scenarioInput]);
-  const rows = stepRows({ state, points, live, disputeId, language, buyerName: buyerShort, at });
-  const risk = currentRisk(state, points);
-  const finished = progressFinished(state);
+  const rows = stepRows({ state, points, live, disputeId, language, buyerName: buyerShort, at, outcome });
+  const risk = currentRisk(state, points, outcome);
+  const finished = progressFinished(state, outcome);
 
   function later(fn: () => void, ms: number) {
     timers.current.push(setTimeout(fn, prefersReducedMotion() ? 0 : ms));
-  }
-
-  /** 토스트 숨김 (T098b): 움직임 줄이기여도 시안처럼 3초 보인다 — 애니메이션만 끈다(css). 읽을 시간을 줄이지 않는다. */
-  function hideLater(fn: () => void, ms: number) {
-    timers.current.push(setTimeout(fn, ms));
   }
 
   // 대화 목록(서버가 그린 `.case-thread`)을 찾는다 — 찾으면 말풍선을 그 끝에 붙인다 (시안 thread.push)
   useEffect(() => {
     const page = root.current?.closest('.case-page') ?? null;
     setThread(page?.querySelector('.case-thread') ?? null);
-    setBody(document.body);
     const pending = timers.current;
     return () => {
       pending.forEach(clearTimeout);
@@ -267,7 +267,7 @@ export function CaseProgress({
     };
   }, []);
 
-  // 시안 send(): k = 2 (손님 답장)는 1300·(2−1)+400ms 뒤. 그 다음은 판매자가 [Forward to carrier]를 누를 때까지 멈춘다
+  // 시안 send(): k = 2는 1300·(2−1)+400ms 뒤. 그 다음은 판매자가 승인 버튼을 누를 때까지 멈춘다
   useEffect(() => {
     if (state.shown !== 1) return;
     later(() => setState(buyerReplied), stepDelayMs(2, motion));
@@ -276,7 +276,7 @@ export function CaseProgress({
 
   // 곡선 카드: 단계마다 점이 하나씩 늘어난다 (T098b, 시안 liveP — 값은 엔진 scenarioRisk, 큰 % = 마지막 값).
   // 칸을 떠나면(Replay) 점을 지우고 보내기 전 예측으로 되돌린다
-  const trail = useMemo(() => riskTrail(state, points), [state, points]);
+  const trail = useMemo(() => riskTrail(state, points, outcome), [state, points, outcome]);
   useEffect(() => {
     setTrail(trail);
   }, [trail, setTrail]);
@@ -291,10 +291,10 @@ export function CaseProgress({
     [baseForecast, setForecast, setTrail],
   );
 
-  // 끝: "이번 주" 카드 숫자 칸 flash + 토스트 (시안 bump + toast, 3초 뒤 사라짐). 금액은 엔진 값만
+  // 끝 (마지막 단계 때 한 번, 시안 L668-670 bump): ok면 "이번 주" 카드 숫자 칸 flash. 금액·토스트·Done today는 onFinish
   useEffect(() => {
     if (!finished) return;
-    if (!prefersReducedMotion()) {
+    if (outcome === 'ok' && !prefersReducedMotion()) {
       const cells = Array.from(document.querySelectorAll<HTMLElement>(WEEKLY_CELLS)).slice(0, FLASH_CELLS);
       for (const cell of cells) {
         cell.classList.remove(FLASH_CLASS);
@@ -304,19 +304,15 @@ export function CaseProgress({
         cell.addEventListener('animationend', () => cell.classList.remove(FLASH_CLASS), { once: true });
       }
     }
-    const cents = board === null || move === null ? null : savings(board, move);
-    if (cents !== null && cents > 0) {
-      const text = t('case.progress.toast', { amount: toDollarsRounded(cents) });
-      setToast(text);
-      hideLater(() => setToast((now) => (now === text ? null : now)), motion.toast.hideMs);
-    }
+    finishRef.current?.(outcome);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 끝날 때 한 번
   }, [finished]);
 
-  function forward() {
+  /** 승인 ([Forward to carrier] · [Approve refund]) — 화면 상태만 (Simulated, 쓰기 0). */
+  function approve() {
     if (!awaitingForward(state)) return;
-    setState(forwardToCarrier);
-    later(() => setState(customsCleared), motion.stepMs);
+    setState(approveStep);
+    if (stepAfterApproval(outcome)) later(() => setState(customsCleared), motion.stepMs);
   }
 
   function replay() {
@@ -328,6 +324,7 @@ export function CaseProgress({
   const bubbles = (
     <Bubbles
       state={state}
+      outcome={outcome}
       live={live}
       language={language}
       buyerShort={buyerShort}
@@ -337,18 +334,16 @@ export function CaseProgress({
     />
   );
   const threadNode: ReactNode = thread === null ? <ol className="case-thread cprog-thread">{bubbles}</ol> : createPortal(bubbles, thread);
-  const toastNode =
-    toast === null ? null : (
-      <div className="cprog-toast" role="status" style={vars}>
-        <span className="cprog-toast-check" aria-hidden="true">
-          ✓
-        </span>
-        <span className="num">{toast}</span>
-      </div>
-    );
 
   return (
-    <section ref={root} className="cprog" aria-labelledby={`cprog-title-${disputeId}`} style={vars} data-shown={state.shown}>
+    <section
+      ref={root}
+      className="cprog"
+      aria-labelledby={`cprog-title-${disputeId}`}
+      style={vars}
+      data-shown={state.shown}
+      data-outcome={outcome}
+    >
       <div className="cprog-top">
         <AiPill />
         <h2 className="desk-card-title" id={`cprog-title-${disputeId}`}>
@@ -360,10 +355,10 @@ export function CaseProgress({
       {threadNode}
       <ol className="cprog-steps">
         {rows.map((row) => (
-          <Step key={`${row.step}-${row.pending ? 'pending' : 'done'}`} row={row} onForward={forward} />
+          <Step key={`${row.step}-${row.pending ? 'pending' : 'done'}`} row={row} onApprove={approve} />
         ))}
       </ol>
-      {progressRunning(state) ? (
+      {progressRunning(state, outcome) ? (
         <p className="cprog-running">
           <Dots />
           <span className="case-sr-only">{t('case.progress.running')}</span>
@@ -374,7 +369,6 @@ export function CaseProgress({
           {t('case.progress.replay')}
         </button>
       </div>
-      {body === null ? toastNode : toastNode === null ? null : createPortal(toastNode, body)}
     </section>
   );
 }

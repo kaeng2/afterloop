@@ -244,6 +244,10 @@ describe('T081: 문구 파일', () => {
       'case.reply.refundDraftNoName', // T091: 같은 글, 이름을 모를 때
       'case.progress.buyer.original', // T092: 손님의 시뮬레이션 답장 원문 (구매자 언어 한국어 그대로가 맞다)
       'case.progress.buyer.english', // T092: 그 답장의 영어 번역 줄 ("Translated · …", 두 언어 모두 영어)
+      'case.progress.refundBuyer.original', // T104: refund 분기 손님 답장 원문 (한국어 그대로)
+      'case.progress.refundBuyer.english', // T104: 그 영어 번역 줄
+      'case.progress.angryBuyer.original', // T104: cb 분기 손님 답장 원문 (한국어 그대로)
+      'case.progress.angryBuyer.english', // T104: 그 영어 번역 줄
     ]);
     const same = copyKeys(copyTables.en).filter((key) => copyTables.en[key] === copyTables.ko[key]);
     expect(same.filter((key) => !allowed.has(key))).toEqual([]);

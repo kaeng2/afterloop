@@ -123,7 +123,8 @@ describe('T098b ①: Send 뒤 단계마다 곡선에 점이 하나씩 늘어난�
 
   it('진행 칸이 곡선에 trail을 넘기고, 떠날 때 비운다 (값을 만들지 않는다)', () => {
     const src = strip(read('src/app/cases/progress/case-progress.tsx'));
-    expect(src).toMatch(/useMemo\(\(\) => riskTrail\(state, points\), \[state, points\]\)/);
+    // T104: 분기(outcome)도 넘긴다 (refund·cb는 보낸 답장 점 하나)
+    expect(src).toMatch(/useMemo\(\(\) => riskTrail\(state, points, outcome\), \[state, points, outcome\]\)/);
     expect(src).toMatch(/setTrail\(trail\)/);
     expect(src).toMatch(/setTrail\(\[\]\)/);
   });
@@ -131,11 +132,10 @@ describe('T098b ①: Send 뒤 단계마다 곡선에 점이 하나씩 늘어난�
 
 describe('T098b ②: 움직임 줄이기여도 토스트는 3초 보인다 (애니메이션만 끈다)', () => {
   it('토스트 숨김 타이머는 prefers-reduced-motion을 보지 않고 config hideMs(3000)를 그대로 쓴다', () => {
+    // T104 F5-25: Send 뒤 토스트는 한 번만 — 진행 칸은 자기 토스트를 띄우지 않고 마지막 단계 때 Today 토스트(savings.tsx)를 부른다
     const src = strip(read('src/app/cases/progress/case-progress.tsx'));
-    const hide = /function hideLater\([^)]*\)[^{]*\{([^}]*)\}/.exec(src)?.[1] ?? '';
-    expect(hide).toContain('setTimeout(fn, ms)');
-    expect(hide).not.toMatch(/prefersReducedMotion/);
-    expect(src).toMatch(/hideLater\(\(\) => setToast\([^;]*motion\.toast\.hideMs\)/);
+    expect(src).not.toMatch(/setToast|cprog-toast/);
+    expect(src).toMatch(/finishRef\.current\?\.\(outcome\)/);
     expect(model.progressMotion().toast.hideMs).toBe(3000);
     // Today 토스트(savings.tsx)도 같은 3초, 줄이기 분기 없음
     const savings = strip(read('src/app/today/savings.tsx'));

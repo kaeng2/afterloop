@@ -15,6 +15,7 @@
  * 숫자를 만들지 않는다. 금액 표기는 실행 층과 같은 함수(`centsToDisplay`)로 만든 글자를 찾기만 한다.
  */
 import { findCommitments, type CommitmentCategory } from '@/ai/commitments';
+import { SELLER_NAME_TOKEN } from '@/ai/names';
 import type { ReplyTranslation } from '@/ai/reply';
 import { checkTokens, formatFact, isNameFact } from '@/ai/tokens';
 import { centsToDisplay } from '@/exec/amount';
@@ -86,7 +87,23 @@ export function revertToTokens(
     const pattern = pair.token.startsWith('{{') ? new RegExp(escapeRe(pair.shown), 'g') : boundedPattern(pair.shown);
     out = out.replace(pattern, pair.token);
   }
-  return out;
+  return keepSignOff(out, originalDraftEn);
+}
+
+/**
+ * T104 (3차 리뷰 ③): 서명 줄 유지. 검사받은 AI 초안이 판매자 서명(`⟦SELLER_NAME_1⟧`, SPEC v2.9 "답장의 서명에 이름을
+ * 넣는다")으로 끝맺었는데 고친 글에 서명이 없으면, 서명 토큰을 글 끝에 그대로 둔다.
+ *
+ * 이유: 번역 프롬프트는 "⟦SELLER_NAME_1⟧ stays as the sign-off"이고 사실값 목록에 서명이 들어 있어서, 서명 없는 글
+ * (예: "Try a rushed reply" → 칩으로 고친 글)을 번역하면 번역이 서명 토큰을 붙인다 → 초안(0개)·전송본(1개)의 토큰 수가
+ * 달라 "Facts match failed ⟦SELLER_NAME_1⟧"로 Send가 막혔다. 토큰 검사(`checkTokens`)는 그대로 엄격하다 —
+ * 여기서는 보낼 글에 원래 초안의 서명 줄을 남길 뿐이다 (값이 아니라 토큰, 화면 전송본에 채워 보인다).
+ * 원래 초안에 서명이 없으면 아무것도 더하지 않는다.
+ */
+export function keepSignOff(tokenized: string, originalDraftEn: string): string {
+  if (!originalDraftEn.includes(SELLER_NAME_TOKEN) || tokenized.includes(SELLER_NAME_TOKEN)) return tokenized;
+  const body = tokenized.trimEnd();
+  return body === '' ? tokenized : `${body} ${SELLER_NAME_TOKEN}`;
 }
 
 /** 이름 조각으로 보지 않는 호칭·짧은 낱말. */

@@ -71,6 +71,7 @@ import {
   buildReplyView,
   canSend,
   canSendOffer,
+  detailsBackTranslation,
   detailsChecks,
   detailsMustOpen,
   editGate,
@@ -90,6 +91,7 @@ import {
 } from '../reply-model';
 import { CaseProgress } from '../progress/case-progress';
 import type { ScenarioInput } from '../progress/progress-client';
+import { scenarioOutcome, type ScenarioOutcome } from '../progress/progress-model';
 import { useDeskSelection } from '../view/desk-selection';
 import { useDraftForecast } from '../view/draft-forecast';
 import { useSent } from '../view/sent-state';
@@ -347,12 +349,15 @@ function DetailsToggle({
 function DetailsPanel({
   id,
   view,
+  backTranslationEn,
   paypalOnly,
   hidden,
   goods = [],
 }: {
   id: string;
   view: ReplyView;
+  /** T104 F4-52: 보일 역번역 (`detailsBackTranslation`). 고친 글인데 검사 결과가 없으면 `null` → 줄 없음. */
+  backTranslationEn: string | null;
   paypalOnly: string | null;
   hidden: boolean;
   /** T091: ✓ 칩마다 기여한 %p(엔진 `replyFeatureEffects`)와 그 문장 (시안 goodsOpen 목록). */
@@ -368,11 +373,11 @@ function DetailsPanel({
           {paypalOnly}
         </p>
       )}
-      {view.backTranslationEn === null ? null : (
+      {backTranslationEn === null ? null : (
         <div className="reply-details-back">
           <span className="reply-details-label">{t('case.reply.backTranslation')}</span>
           <p className="reply-text" lang="en">
-            {view.backTranslationEn}
+            {backTranslationEn}
           </p>
         </div>
       )}
@@ -476,6 +481,8 @@ export function ReplyPanel({
   const [outcome, setOutcome] = useState<SendOutcome | null>(null);
   /** T100: 고친 글 하나의 번역·검사 결과 (그 글자에 묶인다). */
   const [editRun, setEditRun] = useState<{ text: string; result: EditedPrepareOutcome | 'translating' } | null>(null);
+  /** T104: 보낸 순간의 입력칸 글과 그 예측 (Send 뒤 분기·단계 위험의 입력). 다시 쓰기면 비운다. */
+  const [sentSnap, setSentSnap] = useState<{ text: string; forecast: ReplyForecast | null } | null>(null);
   const inFlight = useRef(false);
   const { setSent } = useSent();
   const { setForecast } = useDraftForecast();
@@ -618,7 +625,14 @@ export function ReplyPanel({
   ) : null;
   const detailsPanel = (goods: EffectRowView[]) =>
     view.available ? (
-      <DetailsPanel id={detailsId} view={shownView} paypalOnly={paypalOnly} hidden={!detailsShown} goods={goods} />
+      <DetailsPanel
+        id={detailsId}
+        view={shownView}
+        backTranslationEn={detailsBackTranslation(edited, view, editedView)}
+        paypalOnly={paypalOnly}
+        hidden={!detailsShown}
+        goods={goods}
+      />
     ) : null;
 
   // 예측 (브라우저 어댑터 = 엔진 순수 함수. 쓸 수 없으면 null → 칸이 숨는다). 입력 글이 바뀔 때마다 다시 받는다
@@ -664,13 +678,17 @@ export function ReplyPanel({
   const reaction = reactionView(forecast, forecastBase?.signals.angryTone ?? null);
   // T103: Send 뒤 칸의 엔진 입력은 렌더마다 같은 객체여야 한다. 새 객체면 그 칸이 점(scenarioRisk)을 다시 내고
   // 곡선 상자(`setTrail`)를 갱신 → 이 칸이 다시 그려짐 → 또 새 객체 … 로 끝없이 돌아 목록 링크 이동이 막혔다
+  // T104 F5-15·16: 보낸 글(보낸 순간의 입력칸 글)에서 시작한다 — 고친 글(급한 답장 등)이면 그 글의 예측대로
+  const sentText = sentSnap?.text ?? anchor;
   const scenarioInput: ScenarioInput | null = useMemo(
     () =>
-      forecastBase === null || anchor === null || board === null
+      forecastBase === null || anchor === null || board === null || sentText === null
         ? null
-        : { text: anchor, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays, translated },
-    [forecastBase, anchor, board, translated],
+        : { text: sentText, anchorText: anchor, board, signals: forecastBase.signals, delayDays: forecastBase.delayDays, translated },
+    [forecastBase, anchor, board, translated, sentText],
   );
+  // 분기 (시안 L661 `out`): 보낸 글의 엔진 예측 중 큰 것 (같으면 ok > refund > cb). 예측이 없으면 ok
+  const sentOutcome: ScenarioOutcome = useMemo(() => scenarioOutcome(sentSnap?.forecast ?? null), [sentSnap]);
 
   function onChip(row: EffectRowView) {
     if (typing) return;
@@ -688,6 +706,8 @@ export function ReplyPanel({
     const sendId = kind === 'message' && edited ? editedReplyId : replyId;
     if (!allowed || sendId === null || inFlight.current) return;
     inFlight.current = true;
+    // T104: 보낸 순간의 글·예측 (Send 뒤 분기와 단계 위험의 입력)
+    const snap = { text, forecast };
     setSendState('sending');
     const confirmText =
       kind === 'offer' && view.offer !== null
@@ -711,13 +731,22 @@ export function ReplyPanel({
       };
     }
     inFlight.current = false;
+    if (next.ok) setSentSnap(snap);
     setOutcome(next);
     setSendState(next.ok ? 'done' : 'failed');
     setSent(next.ok);
-    // T091: 보내기(가짜 전송 포함)가 끝나면 이번 주 카드에 "+$N just now" (엔진 actionSavings 값, 화면 상태만)
-    if (next.ok) report(savings);
-    // T102: 같은 순간 Today 목록에서 "Done today"로 (화면 상태만. 가짜 전송은 Simulated로 표시)
-    if (next.ok) markDone(disputeId, { simulated: next.mode === 'simulated' });
+    // T104 F5-25·28·29: 메시지는 Send 뒤 칸의 **마지막 단계 때 한 번** (CaseProgress onFinish → completeAction).
+    // 제안은 뒤 칸이 없으므로 성공한 순간에 (T091·T102 그대로)
+    if (next.ok && kind === 'offer') completeAction(next.mode === 'simulated', savings);
+  }
+
+  /**
+   * T091·T102 상자: 이번 주 카드 "+$N just now"·토스트 (엔진 actionSavings 값, 화면 상태만) + Today 목록 "Done today"
+   * (가짜 전송은 Simulated로 표시). 성공한 보내기에서만 부른다.
+   */
+  function completeAction(simulated: boolean, amount: string | null) {
+    report(amount);
+    markDone(disputeId, { simulated });
   }
 
   /** T100: 고친 글을 서버에서 번역·검사한다 (보내지 않는다). 결과는 지금 글자에 묶는다. */
@@ -735,6 +764,7 @@ export function ReplyPanel({
   }
 
   function again() {
+    setSentSnap(null);
     setOutcome(null);
     setSendState('idle');
     setSent(false);
@@ -899,9 +929,12 @@ export function ReplyPanel({
         sentText={shownView.outgoing?.text ?? null}
         sentLocale={base.buyerLocale ?? null}
         scenarioInput={scenarioInput}
-        board={board}
-        move={base.plan?.move ?? null}
+        outcome={sentOutcome}
         baseForecast={forecast}
+        onFinish={(out) => {
+          // 금액은 ok 분기만 (refund·cb는 환불로 끝나 엔진 actionSavings(refund) = 0 → "+$N"·토스트 없음)
+          completeAction(outcome.mode === 'simulated', out === 'ok' ? savings : null);
+        }}
         onReplay={() => {
           again();
           setText(anchor ?? '');
