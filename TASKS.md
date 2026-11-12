@@ -159,3 +159,4 @@
 | T111 | /listing 그림 비교 1차 후속 (1–2px 세로 어긋남) | ui | 완료 | v2.15 | T109 | — | 모델 `claude-sonnet-5-5`, `lane/ui-desk`. `tasks/T111.md` | 09:25 ③ |
 | T112 | 위험 곡선 찌그러짐 수정 (viewBox = 실제 px 폭, non-scaling-stroke) | ui | 완료 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui-scenes`. `tasks/T112.md` | 사람 결정 10:55, 13:00 전 |
 | T113 | 버그: 한국어로 바꾸면 Desk가 죽음 (ko 자리표시자 + React #310) | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui`. `tasks/T113.md` | 13:00 전 필수 |
+| T114 | /products 화면 제거 (308 → /), AG Grid 래퍼·엔진은 남김 | ui | 진행 | v2.15 | — | — | 모델 `claude-opus-5-5`, `lane/ui-desk`. `tasks/T114.md` | 사람 결정 11:15, 13:00 전 |
